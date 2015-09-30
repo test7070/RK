@@ -724,10 +724,10 @@
                 }
 				size_change();
 				//q_popPost('txtProductno_');
-				$('input[id*="txtProduct_"]').each(function() {
+				/*$('input[id*="txtProduct_"]').each(function() {
 					thisId = $(this).attr('id').split('_')[$(this).attr('id').split('_').length - 1];
 					$(this).attr('OldValue', $('#txtProductno_' + thisId).val());
-				});
+				});*/
 			}
 
 			function q_popPost(s1) {
@@ -737,7 +737,7 @@
 	                	var t_style = $.trim($('#txtStyle_'+b_seq).val());
 	                	var t_comp = q_getPara('sys.comp');          	
 	                	q_gt('getproduct',"where=^^[N'"+t_productno+"',N'"+t_style+"',N'"+t_comp+"')^^", 0, 0, 0, "getproduct_"+b_seq); 
-                        $('#txtStyle_' + b_seq).focus();
+                        //$('#txtStyle_' + b_seq).focus();
 						break;
 					case 'txtStyle_':
                    		var t_productno = $.trim($('#txtProductno_'+b_seq).val());
