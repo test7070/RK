@@ -42,6 +42,7 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @width float
 	declare @lengthb float
 	declare @spec nvarchar(20)
+	declare @scolor nvarchar(30)
 	declare @classa nvarchar(20)
 	declare @style nvarchar(20)
 	declare @source nvarchar(20)
@@ -71,6 +72,7 @@ z_quat_rkp02:--z_quat_rkp02
 		width float,
 		lengthb float,
 		spec nvarchar(20),
+		scolor nvarchar(30),
 		classa nvarchar(20),
 		style nvarchar(20),
 		[source] nvarchar(20),
@@ -105,26 +107,26 @@ z_quat_rkp02:--z_quat_rkp02
 		---- BBS
 		set @n = 1
 		declare cursor_table2 cursor for
-		select productno,product,dime,radius,width,lengthb,spec,class
+		select productno,product,dime,radius,width,lengthb,spec,scolor,class
 			,style,[source],mount,[weight],unit,price,po,pn
 		from view_quats
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
-		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@classa
+		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
 			,@style,@source,@mount,@weight,@unit,@price,@po,@pn
 		while(@@FETCH_STATUS <> -1)
 		begin
-			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,classa
+			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
 				,style,[source],mount,unit,price,po,pn)
-			values('2',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@classa
+			values('2',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
 				,@style,@source
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
 				,@unit,@price,@po,@pn)
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
-			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@classa
+			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
 			,@style,@source,@mount,@weight,@unit,@price,@po,@pn
 		end
 		close cursor_table2
@@ -205,6 +207,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+CAST(lengthb as nvarchar)+'</a>' size
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+style+'</a>' style
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source]
