@@ -30,7 +30,8 @@
             brwCount2 = 15;
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial', 'txtCustno,txtComp,txtNick,txtSerial', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
-            	,['txtSpec_', 'btnSpec_', 'ucc', 'noa,product', 'txtSpec_,txtClass_', 'ucc_b.aspx']);
+            	//,['txtSpec_', 'btnSpec_', 'ucc', 'noa,product', 'txtSpec_,txtClass_', 'ucc_b.aspx']
+            	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']);
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'no3'];
@@ -191,11 +192,11 @@
                             var n = $(this).attr('id').replace('txtProductno_', '');
                             $('#btnProduct_'+n).click();
                         });
-                        $('#txtSpec_' + i).bind('contextmenu', function(e) {
+                        $('#txtScolor_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtSpec_', '');
-                            $('#btnSpec_'+n).click();
+                            var n = $(this).attr('id').replace('txtScolor_', '');
+                            $('#btnScolor_'+n).click();
                         });
                     	$('#txtMount_'+i).change(function(e){
                     		sum();
@@ -644,9 +645,9 @@
 					<td><input id="txtLengthb.*" type="text" class="txt c1 num"/></td>
 
 					<td>
-						<input id="txtSpec.*" type="text" style="width:45%"/>
+						<input id="txtScolor.*" type="text" style="width:45%"/>
 						<input id="txtClass.*" type="text" style="width:45%"/>
-						<input id="btnSpec.*" type="button" style="display:none;"/>
+						<input id="btnScolor.*" type="button" style="display:none;"/>
 					</td>
 					<td><input id="txtUcolor.*" type="text" class="txt c1"/></td>
 					<td><input id="txtSource.*" type="text" class="txt c1"/></td>
