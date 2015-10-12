@@ -188,7 +188,7 @@
 			function mainPost() {
 				q_getFormat();
 				bbmMask = [['txtDatea', r_picd], ['txtOdate', r_picd]];
-				bbsMask = [['txtSdate', r_picd], ['txtRdate', r_picd]];
+				bbsMask = [['txtRdate', r_picd]];
 				q_mask(bbmMask);
 				q_cmbParse("cmbKind", q_getPara('sys.stktype'));
 				//q_cmbParse("cmbCoin", q_getPara('sys.coin'));
@@ -1221,9 +1221,7 @@
 					<td align="center" style="width:60px;"><a>鋼廠</a></td>
 					<td align="center" style="width:30px;"><a id='lblEnda_st'> </a></td>
 					<td align="center" style="width:40px;"><a id='lblOrdcrecord'> </a></td>
-					<td align="center" style="width:100px;"><a>包裝方式</a></td>
-					<td align="center" style="width:100px;"><a>保存期限</a></td>
-					<td align="center" style="width:100px;"><a>實際交期</a></td>
+					<td align="center" style="width:100px;"><a>預計交期</a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
@@ -1286,8 +1284,6 @@
 					<td> <input id="txtSource.*" type="text" style="float:left;width:95%;" /> </td>
 					<td> <input id="chkEnda.*" type="checkbox"/> </td>
 					<td> <input class="btn"  id="btnOrdcrecord.*" type="button" value='.' style=" font-weight: bold;" /> </td>
-					<td> <input id="txtPack.*" type="text" style="float:left;width:95%;" /> </td>
-					<td> <input id="txtSdate.*" type="text" style="float:left;width:95%;" /> </td>
 					<td> <input id="txtRdate.*" type="text" style="float:left;width:95%;" /> </td>
 				</tr>
 			</table>

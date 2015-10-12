@@ -32,6 +32,8 @@
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	//,['txtSpec_', 'btnSpec_', 'ucc', 'noa,product', 'txtSpec_,txtClass_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']);
+            
+            t_spec='';
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'no3'];
@@ -61,6 +63,8 @@
                 bbsMask = [];
                 q_mask(bbmMask);
                 q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
+                q_cmbParse("cmbSpec", t_spec,'s');
+                
                 $("#combPaytype").change(function(e) {
 					if (q_cur == 1 || q_cur == 2){
 						$('#txtPaytype').val($('#combPaytype').find(":selected").text());
@@ -119,17 +123,6 @@
 
             function q_gtPost(t_name) {
                 switch (t_name) {
-                	case 'custaddr':
-						var as = _q_appendData("custaddr", "", true);
-						var t_item = " @ ";
-						if (as[0] != undefined) {
-							for ( i = 0; i < as.length; i++) {
-								t_item = t_item + (t_item.length > 0 ? ',' : '') + as[i].post + '@' + as[i].addr;
-							}
-						}
-						document.all.combAddr.options.length = 0;
-						q_cmbParse("combAddr", t_item);
-						break;
                 	case 'flors_coin':
 						var as = _q_appendData("flors", "", true);
 						var z_coin='';
@@ -141,8 +134,29 @@
 						q_cmbParse("cmbCoin", z_coin);
 						if(abbm[q_recno])
 							$('#cmbCoin').val(abbm[q_recno].coin);
+						q_gt('spec', '', 0, 0, 0, '');
+						break;
+                	case 'spec':
+						var as = _q_appendData("spec", "", true);
+						t_spec='';
+						for ( i = 0; i < as.length; i++) {
+							t_spec+=','+as[i].noa+'@'+as[i].product;
+						}
+						if(t_spec.length==0) t_spec=' ';
 						q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
 						break;
+                	case 'custaddr':
+						var as = _q_appendData("custaddr", "", true);
+						var t_item = " @ ";
+						if (as[0] != undefined) {
+							for ( i = 0; i < as.length; i++) {
+								t_item = t_item + (t_item.length > 0 ? ',' : '') + as[i].post + '@' + as[i].addr;
+							}
+						}
+						document.all.combAddr.options.length = 0;
+						q_cmbParse("combAddr", t_item);
+						break;
+                	
                     case q_name:
                         if (q_cur == 4)
                             q_Seek_gtPost();
@@ -618,9 +632,11 @@
 					<td style="width:60px;">皮膜厚</td>
 					<td style="width:60px;">寬</td>
 					<td style="width:60px;">長</td>
+					<td style="width:100px;">規格</td>
 					<td style="width:160px;">皮膜</td>
 					<td style="width:60px;">背面<BR>處理</td>
-					<td style="width:100px;">保護膜</td>
+					<td style="width:100px;">保護膜(一)</td>
+					<td style="width:100px;">保護膜(二)</td>
 					<td style="width:60px;">單位</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
@@ -643,7 +659,7 @@
 					<td><input id="txtRadius.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWidth.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtLengthb.*" type="text" class="txt c1 num"/></td>
-
+					<td><select id='cmbSpec.*' style="width:95%;" class="txt c1"> </select></td>
 					<td>
 						<input id="txtScolor.*" type="text" style="width:45%"/>
 						<input id="txtClass.*" type="text" style="width:45%"/>
@@ -651,7 +667,7 @@
 					</td>
 					<td><input id="txtUcolor.*" type="text" class="txt c1"/></td>
 					<td><input id="txtSource.*" type="text" class="txt c1"/></td>
-					
+					<td><input id="txtUno.*" type="text" class="txt c1"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>
