@@ -21,7 +21,7 @@
             var bbmNum = [];
             var bbsNum = [];
             var bbmMask = [];
-            var bbsMask = [];
+            var bbsMask = [['txtPrice',10,3,1],['txtMount',10,0,1],['txtWeight',10,0,1]];
             q_sqlCount = 6;
             brwCount = 6;
             brwList = [];
@@ -31,7 +31,9 @@
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial', 'txtCustno,txtComp,txtNick,txtSerial', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	//,['txtSpec_', 'btnSpec_', 'ucc', 'noa,product', 'txtSpec_,txtClass_', 'ucc_b.aspx']
-            	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']);
+            	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
+            	,['txtSource_', 'btnSource_', 'ucc', 'noa,product', 'txtSource_,txtSource_', 'ucc_b.aspx']
+            	,['txtUno_', 'btnUno_', 'ucc', 'noa,product', 'txtUno_,txtUno_', 'ucc_b.aspx']);
             
             t_spec='';
             $(document).ready(function() {
