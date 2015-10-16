@@ -19,7 +19,7 @@
             var q_readonly = ['txtWorker', 'txtWorker2','txtMoney','txtTax','txtTotal','txtQuatno'];
             var q_readonlys = ['txtNo2'];
             var bbmNum = [];
-            var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1]];
+            var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtPrice', 15, 3, 1]];
             var bbmMask = [];
             var bbsMask = [];
             q_sqlCount = 6;
@@ -53,10 +53,9 @@
                 
 				var t_money = 0,t_tax=0,t_total=0;
 				for(var i=0;i<q_bbsCount;i++){
-					//t_unit = $.trim($('#txtUnit_'+i).val()).toUpperCase();
-					//t_count = (t_unit=='KG' || t_unit=='公斤'|| t_unit=='噸')?q_float('txtWeight_'+i):q_float('txtMount_'+i);
-					//t_moneys = round(q_mul(q_float('txtPrice_'+i),t_count),0);
-					t_moneys = round(q_mul(q_float('txtPrice_'+i),q_float('txtWeight_'+i)),0);		
+					t_unit = $.trim($('#txtUnit_'+i).val()).toUpperCase();
+					t_count = (t_unit=='KG' || t_unit=='公斤'|| t_unit=='噸'|| t_unit.length==0)?q_float('txtWeight_'+i):q_float('txtMount_'+i);
+					t_moneys = round(q_mul(q_float('txtPrice_'+i),t_count),0);
 					q_tr('txtTotal_'+i,t_moneys,0);
 					t_money = q_add(t_money,t_moneys);
 				}
