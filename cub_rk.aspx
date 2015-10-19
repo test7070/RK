@@ -627,7 +627,7 @@
 				font-size: medium;
 			}
 			.dbbs {
-				width: 2500px;
+				width: 2700px;
 			}
 			.dbbs .tbbs {
 				margin: 0;
@@ -764,8 +764,10 @@
 						<td style="width:150px;" align="center">PVC皮批號</td>	
 						<td style="width:100px;" align="center">PVC皮<BR>型號<BR>規格</td>
 						<td style="width:100px;" align="center">PVC皮<BR>用量M<BR>KG</td>
-						<td style="width:150px;" align="center">保護膜批號</td>	
-						<td style="width:100px;" align="center">保護膜<BR>用量M<BR>KG</td>
+						<td style="width:150px;" align="center">保護膜批號(一)</td>	
+						<td style="width:100px;" align="center">保護膜(一)<BR>用量M<BR>KG</td>
+						<td style="width:150px;" align="center">保護膜批號(二)</td>	
+						<td style="width:100px;" align="center">保護膜(二)<BR>用量M<BR>KG</td>
 						<td style="width:100px;" align="center">RECOIL<BR>重量(KG)</td>
 						<td style="width:200px;" align="center">RECOIL編號</td>
 						<td style="width:100px;" align="center">廢料重量(KG)</td>
@@ -838,6 +840,11 @@
 							<input id="txtSource.*" type="text" style="float:left;width:95%;display:none;"/>
 							<input id="txtLengthc.*" type="text" class="num" style="float:left;width:95%;"/>
 							<input id="txtW06.*" type="text" class="num" style="float:left;width:95%;"/>
+						</td>
+						<td><input id="txtUno4.*" type="text" style="float:left;width:95%;"/></td>
+						<td title="保護膜用量M/KG">
+							<input id="txtW07.*" type="text" class="num" style="float:left;width:95%;"/>
+							<input id="txtW08.*" type="text" class="num" style="float:left;width:95%;"/>
 						</td>
 						<td title="RECOIL重量(KG)">
 							<input id="txtHweight.*" type="text" class="num" style="float:left;width:95%;"/>
