@@ -768,8 +768,8 @@
 						<td style="width:100px;" align="center">保護膜(一)<BR>用量M<BR>KG</td>
 						<td style="width:150px;" align="center">保護膜批號(二)</td>	
 						<td style="width:100px;" align="center">保護膜(二)<BR>用量M<BR>KG</td>
-						<td style="width:100px;" align="center">RECOIL<BR>重量(KG)</td>
 						<td style="width:200px;" align="center">RECOIL編號</td>
+						<td style="width:100px;" align="center">RECOIL<BR>M<BR>重量(KG)</td>
 						<td style="width:100px;" align="center">廢料重量(KG)</td>
 						<td style="width:100px;" align="center">包裝數量<BR>/LOT</td>
 						<td style="width:100px;" align="center">開始時間</td>
@@ -846,12 +846,14 @@
 							<input id="txtW07.*" type="text" class="num" style="float:left;width:95%;"/>
 							<input id="txtW08.*" type="text" class="num" style="float:left;width:95%;"/>
 						</td>
-						<td title="RECOIL重量(KG)">
-							<input id="txtHweight.*" type="text" class="num" style="float:left;width:95%;"/>
-						</td>
 						<td title="RECOIL編號">
 							<input id="txtOth.*" type="text" style="float:left;width:95%;"/>
 						</td>
+						<td title="RECOIL重量(KG)">
+							<input id="txtW09.*" type="text" class="num" style="float:left;width:95%;"/>
+							<input id="txtHweight.*" type="text" class="num" style="float:left;width:95%;"/>
+						</td>
+						
 						<td title="廢料重量(KG)">
 							<input id="txtPrice.*" type="text" class="num" style="float:left;width:95%;"/>
 						</td>
