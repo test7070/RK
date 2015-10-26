@@ -44,6 +44,7 @@ z_orde_rkp01:--z_orde_rkp01
 	declare @width float
 	declare @lengthb float
 	declare @spec nvarchar(20)
+	declare @scolor nvarchar(50)
 	declare @class nvarchar(20)
 	declare @ucolor nvarchar(20)
 	declare @source nvarchar(20)
@@ -73,11 +74,12 @@ z_orde_rkp01:--z_orde_rkp01
 		width float,
 		lengthb float,
 		spec nvarchar(20),
+		scolor nvarchar(50),
 		class nvarchar(20),
 		ucolor nvarchar(20),
 		[source] nvarchar(20),
 		mount float,
-		weight float,
+		[weight] float,
 		unit nvarchar(20),
 		price float,
 		po nvarchar(50),
@@ -111,13 +113,13 @@ z_orde_rkp01:--z_orde_rkp01
 		---- BBS
 		set @n = 1
 		declare cursor_table2 cursor for
-		select productno,product,dime,radius,width,lengthb,spec,class
+		select productno,product,dime,radius,width,lengthb,spec,scolor,class
 			,ucolor,[source],mount,weight,unit,price,memo
 		from view_ordes 
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
-		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@class
+		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 			,@ucolor,@source,@mount,@weight,@unit,@price,@memos
 		while(@@FETCH_STATUS <> -1)
 		begin	
@@ -127,23 +129,27 @@ z_orde_rkp01:--z_orde_rkp01
 				set @po = LEFT(@memos,CHARINDEX('chr(10)',@memos)-1)
 				set @pn = SUBSTRING(@memos,CHARINDEX('chr(10)',@memos)+7,LEN(@memos))
 			end
+			else
+			begin
+				set @po= isnull(@memos,0)
+			end
 			
-			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,class
+			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
 				,ucolor,[source],mount,unit,price,po,pn)
-			values('2',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@class
+			values('2',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
 				,@unit,@price,@po,@pn)
-			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,class
+			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
 				,ucolor,[source],mount,unit,price,po,pn)
-			values('3',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@class
+			values('3',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
 				,@unit,@price,@po,@pn)
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
-			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@class
+			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 			,@ucolor,@source,@mount,@weight,@unit,@price,@memos
 		end
 		close cursor_table2
@@ -232,11 +238,12 @@ z_orde_rkp01:--z_orde_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+CAST(lengthb as nvarchar)+'</a>' size
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+class+'</a>' class
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source]
-		,dbo.getComma(mount,0) mount
-		,dbo.getComma(price,0) price
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0)+unit+'</a>' mount
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,0)+'</a>' price
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
