@@ -71,14 +71,15 @@
 			<table id="tFixedTitle" class='tFixedTitle'  border="2"  cellpadding='2' cellspacing='1' style='width:100%;'  >
 				<tr style='color:white; background:#003366;' >
 					<th align="center" style="width:2%;"><input type="checkbox" id="checkAllCheckbox"/></th>
-					<td align="center" style="width:10%;">單號</td>
-					<td align="center" style="width:20%;">品名</td>
+					<td align="center" style="width:8%;">單號</td>
+					<td align="center" style="width:18%;">品名</td>
 					<td align="center" style="width:5%;">厚</td>
 					<td align="center" style="width:5%;">皮膜厚</td>
 					<td align="center" style="width:5%;">寬</td>
 					<td align="center" style="width:5%;">長</td>
-					<td align="center" style="width:5%;">單位</td>
-					<td align="center" style="width:10%;">皮膜</td>
+					<td align="center" style="width:4%;">單位</td>
+					<td align="center" style="width:5%;">規格</td>
+					<td align="center" style="width:8%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
 					<td align="center" style="width:5%;">保護膜</td>
 					<td align="center" style="width:5%;">數量<BR>重量</td>
@@ -92,14 +93,15 @@
 			<table id="tbbs" class='tbbs' border="2" cellpadding='2' cellspacing='1' style='width:100%;' >
 				<tr style="display:none;">
 					<th align="center" style="width:2%;"></th>
-					<td align="center" style="width:10%;">單號</td>
-					<td align="center" style="width:20%;">品名</td>
+					<td align="center" style="width:8%;">單號</td>
+					<td align="center" style="width:18%;">品名</td>
 					<td align="center" style="width:5%;">厚</td>
 					<td align="center" style="width:5%;">皮膜厚</td>
 					<td align="center" style="width:5%;">寬</td>
 					<td align="center" style="width:5%;">長</td>
-					<td align="center" style="width:5%;">單位</td>
-					<td align="center" style="width:10%;">皮膜</td>
+					<td align="center" style="width:4%;">單位</td>
+					<td align="center" style="width:5%;">規格</td>
+					<td align="center" style="width:8%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
 					<td align="center" style="width:5%;">保護膜</td>
 					<td align="center" style="width:5%;">數量<BR>重量</td>
@@ -109,12 +111,12 @@
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td style="width:2%;"><input type="checkbox" class="ccheck" id="chkSel.*"/></td>
-					<td style="width:10%;">
+					<td style="width:8%;">
 						<input id="txtAccy.*" type="text" style="display:none;"  readonly="readonly" />
 						<input id="txtNoa.*" type="text" style="float:left;width:85%;"  readonly="readonly" />
 						<input id="txtNo3.*" type="text" style="float:left;width:15%;"  readonly="readonly" />
 					</td>
-					<td style="width:20%;">
+					<td style="width:18%;">
 						<input id="txtProductno.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
 						<input id="txtProduct.*" type="text" style="float:left;width:55%;"  readonly="readonly" />
 					</td>
@@ -122,9 +124,10 @@
 					<td style="width:5%;"><input id="txtRadius.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtWidth.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtLengthb.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:5%;"><input id="txtUnit.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:10%;">
-						<input id="txtSpec.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
+					<td style="width:4%;"><input id="txtUnit.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:5%;"><input id="txtSpec.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:8%;">
+						<input id="txtScolor.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 						<input id="txtClass.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>

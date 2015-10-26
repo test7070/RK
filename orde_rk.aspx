@@ -30,14 +30,15 @@
             brwCount2 = 8;
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,addr_fact,tel,fax', 'txtCustno,txtComp,txtNick,txtAddr,txtTel,txtFax', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
-            	,['txtSpec_', 'btnSpec_', 'ucc', 'noa,product', 'txtSpec_,txtClass_', 'ucc_b.aspx']
+            	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
             	,['txtSource_', 'btnSource_', 'ucc', 'noa,product', 'txtSource_,txtSource_', 'ucc_b.aspx']
             	,['txtUno_', 'btnUno_', 'ucc', 'noa,product', 'txtUno_,txtUno_', 'ucc_b.aspx']);
+           	t_spec='';
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'no2'];
                 q_brwCount();
-                q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
+                q_gt('spec', '', 0, 0, 0, '');
             });
 			function sum(){
 				if(!(q_cur==1 || q_cur==2))
@@ -120,6 +121,8 @@
                 q_mask(bbmMask);
                 q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
                 q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
+                q_cmbParse("cmbSpec", t_spec,'s');
+                
                 $("#cmbTaxtype").change(function(e) {
                     sum();
                 });
@@ -197,8 +200,8 @@
                 	case 'quat_orde':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtQuatno,txtNo3,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtSource,txtUno,txtUnit,txtMount,txtWeight,txtPrice'
-                        	, as.length, as, 'noa,no3,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,uno,unit,emount,eweight,price', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtQuatno,txtNo3,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,cmbSpec,txtScolor,txtClass,txtUcolor,txtSource,txtUno,txtUnit,txtMount,txtWeight,txtPrice'
+                        	, as.length, as, 'noa,no3,productno,product,dime,radius,width,lengthb,spec,scolor,class,ucolor,source,uno,unit,emount,eweight,price', '','');
                         	
                         	var t_quatno = $('#txtQuatno_0').length>0?$('#txtQuatno_0').val():'';
                         	q_gt('view_quat', "where=^^ noa='"+t_quatno+"' ^^", 0, 0, 0, JSON.stringify({action:'importQuat'}));
@@ -215,6 +218,15 @@
 
             function q_gtPost(t_name) {
                 switch (t_name) {
+                	case 'spec':
+						var as = _q_appendData("spec", "", true);
+						t_spec='';
+						for ( i = 0; i < as.length; i++) {
+							t_spec+=','+as[i].noa+'@'+as[i].product;
+						}
+						if(t_spec.length==0) t_spec=' ';
+						q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
+						break;
                 	case 'getAcomp':
 						var as = _q_appendData("acomp", "", true);
 						if (as[0] != undefined) {
@@ -307,11 +319,11 @@
                             var n = $(this).attr('id').replace('txtProductno_', '');
                             $('#btnProduct_'+n).click();
                         });
-                        $('#txtSpec_' + i).bind('contextmenu', function(e) {
+                        $('#txtScolor_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtSpec_', '');
-                            $('#btnSpec_'+n).click();
+                            var n = $(this).attr('id').replace('txtScolor_', '');
+                            $('#btnScolor_'+n).click();
                         });
                     	$('#txtMount_'+i).change(function(e){
                     		sum();
@@ -723,6 +735,7 @@
 					<td style="width:60px;">皮膜厚</td>
 					<td style="width:60px;">寬</td>
 					<td style="width:60px;">長</td>
+					<td style="width:100px;">規格</td>
 					<td style="width:160px;">皮膜</td>
 					<td style="width:60px;">背面<BR>處理</td>
 					<td style="width:100px;">保護膜(一)</td>
@@ -753,11 +766,11 @@
 					<td><input id="txtRadius.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWidth.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtLengthb.*" type="text" class="txt c1 num"/></td>
-
+					<td><select id='cmbSpec.*' style="width:95%;" class="txt c1"> </select></td>
 					<td>
-						<input id="txtSpec.*" type="text" style="width:45%"/>
+						<input id="txtScolor.*" type="text" style="width:45%"/>
 						<input id="txtClass.*" type="text" style="width:45%"/>
-						<input id="btnSpec.*" type="button" style="display:none;"/>
+						<input id="btnScolor.*" type="button" style="display:none;"/>
 					</td>
 					<td><input id="txtUcolor.*" type="text" class="txt c1"/></td>
 					<td><input id="txtSource.*" type="text" class="txt c1"/></td>

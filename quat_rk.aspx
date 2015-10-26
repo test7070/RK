@@ -432,7 +432,7 @@
                 font-size: medium;
             }
             .dbbs {
-                width: 1250px;
+                width: 1350px;
             }
             .dbbs .tbbs {
                 margin: 0;
