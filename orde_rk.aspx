@@ -292,10 +292,11 @@
                 else
                     $('#txtWorker2').val(r_name);
                 sum();
+                //共六碼:前二碼西元年,例:2015為15,第三碼為部門別,固定是1,第四碼為月份,10月取A,11月取B,12月取C,後面2碼為當月序號
                 var t_noa = trim($('#txtNoa').val());
-                var t_date = trim($('#txtDatea').val()).substring(0,3);
+                var t_date = new Date();
                 if (t_noa.length == 0 || t_noa == "AUTO")
-                    q_gtnoa(q_name, t_date,7);
+                    q_gtnoa(q_name, (''+t_date.getFullYear()).slice(-2,4)+'1'+('123456789ABC').substring(t_date.getMonth(),t_date.getMonth()+1),6);
                 else
                     wrServer(t_noa);
             }

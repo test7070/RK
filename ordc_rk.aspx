@@ -503,9 +503,10 @@
 					$('#txtWorker2').val(r_name);
 				sum();
                 var t_noa = trim($('#txtNoa').val());
-                var t_date = trim($('#txtOdate').val());
+                var t_date = new Date();
+                var x_part = $('#txtPartno').val();
                 if (t_noa.length == 0 || t_noa == "AUTO")
-                    q_gtnoa(q_name, replaceAll(q_getPara('sys.key_ordc') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
+                    q_gtnoa(q_name, (''+t_date.getFullYear()).slice(-2,4)+(x_part.length==0?'1':x_part)+('123456789ABC').substring(t_date.getMonth(),t_date.getMonth()+1),6);
                 else
                     wrServer(t_noa);
 			}
