@@ -97,7 +97,8 @@
 					<td align="center" style="width:5%;">單位</td>
 					<td align="center" style="width:10%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
-					<td align="center" style="width:5%;">保護膜</td>
+					<td align="center" style="width:5%;">保護膜(一)</td>
+					<td align="center" style="width:5%;">保護膜(二)</td>
 					<td align="center" style="width:5%;">數量</td>
 					<td align="center" style="width:5%;">重量</td>
 					<td align="center" style="width:5%;">單價</td>
@@ -119,7 +120,8 @@
 					<td align="center" style="width:5%;">單位</td>
 					<td align="center" style="width:10%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
-					<td align="center" style="width:5%;">保護膜</td>
+					<td align="center" style="width:5%;">保護膜(一)</td>
+					<td align="center" style="width:5%;">保護膜(二)</td>
 					<td align="center" style="width:5%;">數量</td>
 					<td align="center" style="width:5%;">重量</td>
 					<td align="center" style="width:5%;">單價</td>
@@ -147,7 +149,14 @@
 						<input id="txtClass.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:5%;"><input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:5%;">
+						<input id="txtZinc.*" type="text" style="display:none;"  readonly="readonly" />
+						<input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
+					</td>
+					<td style="width:5%;">
+						<input id="txtHard.*" type="text" style="display:none;"  readonly="readonly" />
+						<input id="txtUno.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
+					</td>
 					<td style="width:5%;"><input id="txtMount.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtWeight.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtPrice.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>

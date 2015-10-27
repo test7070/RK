@@ -149,7 +149,7 @@
 		                			$('#txtWidth_'+t_para.n).val(as[0].width);	
 		                			$('#txtLengthb_'+t_para.n).val(as[0].lengthb);
 		                			$('#txtSpec_'+t_para.n).val(as[0].spec);
-		                			$('#txtSource_'+t_para.n).val(as[0].source);		
+		                			$('#txtSource_'+t_para.n).val(as[0].source);	
 		                		}else{
 		                			alert('找不到訂單【'+t_para.ordeno+'-'+t_para.no2+'】');
 		                		}
