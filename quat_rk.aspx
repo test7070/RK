@@ -30,10 +30,9 @@
             brwCount2 = 15;
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial', 'txtCustno,txtComp,txtNick,txtSerial', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
-            	//,['txtSpec_', 'btnSpec_', 'ucc', 'noa,product', 'txtSpec_,txtClass_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
-            	,['txtSource_', 'btnSource_', 'ucc', 'noa,product', 'txtSource_,txtSource_', 'ucc_b.aspx']
-            	,['txtUno_', 'btnUno_', 'ucc', 'noa,product', 'txtUno_,txtUno_', 'ucc_b.aspx']);
+            	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtSource_', 'ucc_b.aspx']
+            	,['txtHard_', 'btnHard_', 'ucc', 'noa,product', 'txtHard_,txtUno_', 'ucc_b.aspx']);
             
             t_spec='';
             $(document).ready(function() {
@@ -217,7 +216,18 @@
                     	$('#txtMount_'+i).change(function(e){
                     		sum();
                     	});
-                    	
+                    	$('#txtZinc_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtZinc_', '');
+                            $('#btnZinc_'+n).click();
+                        });
+                        $('#txtHard_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtHard_', '');
+                            $('#btnHard_'+n).click();
+                        });
                     }
                 }
                 _bbsAssign();
@@ -637,8 +647,8 @@
 					<td style="width:100px;">規格</td>
 					<td style="width:160px;">皮膜</td>
 					<td style="width:60px;">背面<BR>處理</td>
-					<td style="width:100px;">保護膜(一)</td>
-					<td style="width:100px;">保護膜(二)</td>
+					<td style="width:100px;">保護膜(一)<br>編號<BR>名稱</td>
+					<td style="width:100px;">保護膜(二)<br>編號<BR>名稱</td>
 					<td style="width:60px;">單位</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
@@ -668,8 +678,16 @@
 						<input id="btnScolor.*" type="button" style="display:none;"/>
 					</td>
 					<td><input id="txtUcolor.*" type="text" class="txt c1"/></td>
-					<td><input id="txtSource.*" type="text" class="txt c1"/></td>
-					<td><input id="txtUno.*" type="text" class="txt c1"/></td>
+					<td>
+						<input id="txtZinc.*" type="text" class="txt c1"/>
+						<input id="txtSource.*" type="text" class="txt c1"/>
+						<input id="btnZinc.*" type="button" style="display:none;"/>
+					</td>
+					<td>
+						<input id="txtHard.*" type="text" class="txt c1"/>
+						<input id="txtUno.*" type="text" class="txt c1"/>
+						<input id="btnHard.*" type="button" style="display:none;"/>
+					</td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>

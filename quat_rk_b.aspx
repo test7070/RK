@@ -18,7 +18,6 @@
             $(document).ready(function() {
                 main();
             });
-            /// end ready
 
             function main() {
                 if (dataErr) {
@@ -72,7 +71,7 @@
 				<tr style='color:white; background:#003366;' >
 					<th align="center" style="width:2%;"><input type="checkbox" id="checkAllCheckbox"/></th>
 					<td align="center" style="width:8%;">單號</td>
-					<td align="center" style="width:18%;">品名</td>
+					<td align="center" style="width:10%;">品名</td>
 					<td align="center" style="width:5%;">厚</td>
 					<td align="center" style="width:5%;">皮膜厚</td>
 					<td align="center" style="width:5%;">寬</td>
@@ -81,7 +80,8 @@
 					<td align="center" style="width:5%;">規格</td>
 					<td align="center" style="width:8%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
-					<td align="center" style="width:5%;">保護膜</td>
+					<td align="center" style="width:5%;">保護膜(一)</td>
+					<td align="center" style="width:5%;">保護膜(二)</td>
 					<td align="center" style="width:5%;">數量<BR>重量</td>
 					<td align="center" style="width:8%;">備註</td>
 					<td align="center" style="width:5%;">已訂數量<BR>已訂重量</td>
@@ -94,7 +94,7 @@
 				<tr style="display:none;">
 					<th align="center" style="width:2%;"></th>
 					<td align="center" style="width:8%;">單號</td>
-					<td align="center" style="width:18%;">品名</td>
+					<td align="center" style="width:10%;">品名</td>
 					<td align="center" style="width:5%;">厚</td>
 					<td align="center" style="width:5%;">皮膜厚</td>
 					<td align="center" style="width:5%;">寬</td>
@@ -103,7 +103,8 @@
 					<td align="center" style="width:5%;">規格</td>
 					<td align="center" style="width:8%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
-					<td align="center" style="width:5%;">保護膜</td>
+					<td align="center" style="width:5%;">保護膜(一)</td>
+					<td align="center" style="width:5%;">保護膜(二)</td>
 					<td align="center" style="width:5%;">數量<BR>重量</td>
 					<td align="center" style="width:8%;">備註</td>
 					<td align="center" style="width:5%;">已訂數量<BR>已訂重量</td>
@@ -116,9 +117,9 @@
 						<input id="txtNoa.*" type="text" style="float:left;width:85%;"  readonly="readonly" />
 						<input id="txtNo3.*" type="text" style="float:left;width:15%;"  readonly="readonly" />
 					</td>
-					<td style="width:18%;">
-						<input id="txtProductno.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
-						<input id="txtProduct.*" type="text" style="float:left;width:55%;"  readonly="readonly" />
+					<td style="width:10%;">
+						<input id="txtProductno.*" type="text" style="float:left;width:95%;"  readonly="readonly" />
+						<input id="txtProduct.*" type="text" style="float:left;width:95%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtDime.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtRadius.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
@@ -131,7 +132,14 @@
 						<input id="txtClass.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:5%;"><input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:5%;">
+						<input id="txtZinc.*" type="text" style="display:noxne;"  readonly="readonly" />
+						<input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
+					</td>
+					<td style="width:5%;">
+						<input id="txtHard.*" type="text" style="display:noxne;"  readonly="readonly" />
+						<input id="txtUno.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
+					</td>
 					<td style="width:5%;">
 						<input id="txtMount.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
 						<input id="txtWeight.*" type="text" style="float:left;width:100%;"   readonly="readonly" />

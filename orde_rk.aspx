@@ -31,8 +31,8 @@
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,addr_fact,tel,fax', 'txtCustno,txtComp,txtNick,txtAddr,txtTel,txtFax', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
-            	,['txtSource_', 'btnSource_', 'ucc', 'noa,product', 'txtSource_,txtSource_', 'ucc_b.aspx']
-            	,['txtUno_', 'btnUno_', 'ucc', 'noa,product', 'txtUno_,txtUno_', 'ucc_b.aspx']);
+            	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtSource_', 'ucc_b.aspx']
+            	,['txtHard_', 'btnHard_', 'ucc', 'noa,product', 'txtHard_,txtUno_', 'ucc_b.aspx']);
            	t_spec='';
             $(document).ready(function() {
                 bbmKey = ['noa'];
@@ -200,8 +200,8 @@
                 	case 'quat_orde':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtQuatno,txtNo3,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,cmbSpec,txtScolor,txtClass,txtUcolor,txtSource,txtUno,txtUnit,txtMount,txtWeight,txtPrice'
-                        	, as.length, as, 'noa,no3,productno,product,dime,radius,width,lengthb,spec,scolor,class,ucolor,source,uno,unit,emount,eweight,price', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtQuatno,txtNo3,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,cmbSpec,txtScolor,txtClass,txtUcolor,txtZinc,txtHard,txtSource,txtUno,txtUnit,txtMount,txtWeight,txtPrice'
+                        	, as.length, as, 'noa,no3,productno,product,dime,radius,width,lengthb,spec,scolor,class,ucolor,zinc,hard,source,uno,unit,emount,eweight,price', '','');
                         	
                         	var t_quatno = $('#txtQuatno_0').length>0?$('#txtQuatno_0').val():'';
                         	q_gt('view_quat', "where=^^ noa='"+t_quatno+"' ^^", 0, 0, 0, JSON.stringify({action:'importQuat'}));
@@ -338,6 +338,18 @@
                     	$('#txtUnit_'+i).change(function(e){
                     		sum();
                     	});
+                    	$('#txtZinc_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtZinc_', '');
+                            $('#btnZinc_'+n).click();
+                        });
+                        $('#txtHard_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtHard_', '');
+                            $('#btnHard_'+n).click();
+                        });
                     }
                 }
                 _bbsAssign();
@@ -739,8 +751,8 @@
 					<td style="width:100px;">規格</td>
 					<td style="width:160px;">皮膜</td>
 					<td style="width:60px;">背面<BR>處理</td>
-					<td style="width:100px;">保護膜(一)</td>
-					<td style="width:100px;">保護膜(二)</td>
+					<td style="width:100px;">保護膜(一)<br>編號<BR>名稱</td>
+					<td style="width:100px;">保護膜(二)<br>編號<BR>名稱</td>
 					<td style="width:60px;">單位</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
@@ -774,8 +786,16 @@
 						<input id="btnScolor.*" type="button" style="display:none;"/>
 					</td>
 					<td><input id="txtUcolor.*" type="text" class="txt c1"/></td>
-					<td><input id="txtSource.*" type="text" class="txt c1"/></td>
-					<td><input id="txtUno.*" type="text" class="txt c1"/></td>
+					<td>
+						<input id="txtZinc.*" type="text" class="txt c1"/>
+						<input id="txtSource.*" type="text" class="txt c1"/>
+						<input id="btnZinc.*" type="button" style="display:none;"/>
+					</td>
+					<td>
+						<input id="txtHard.*" type="text" class="txt c1"/>
+						<input id="txtUno.*" type="text" class="txt c1"/>
+						<input id="btnHard.*" type="button" style="display:none;"/>
+					</td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>

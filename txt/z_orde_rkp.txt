@@ -47,7 +47,8 @@ z_orde_rkp01:--z_orde_rkp01
 	declare @scolor nvarchar(50)
 	declare @class nvarchar(20)
 	declare @ucolor nvarchar(20)
-	declare @source nvarchar(20)
+	declare @source nvarchar(30)
+	declare @uno nvarchar(30)
 	declare @mount float
 	declare @weight float
 	declare @unit nvarchar(20)
@@ -77,7 +78,8 @@ z_orde_rkp01:--z_orde_rkp01
 		scolor nvarchar(50),
 		class nvarchar(20),
 		ucolor nvarchar(20),
-		[source] nvarchar(20),
+		[source] nvarchar(30),
+		uno nvarchar(30),
 		mount float,
 		[weight] float,
 		unit nvarchar(20),
@@ -114,13 +116,13 @@ z_orde_rkp01:--z_orde_rkp01
 		set @n = 1
 		declare cursor_table2 cursor for
 		select productno,product,dime,radius,width,lengthb,spec,scolor,class
-			,ucolor,[source],mount,weight,unit,price,memo
+			,ucolor,[source],uno,mount,weight,unit,price,memo
 		from view_ordes 
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
 		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
-			,@ucolor,@source,@mount,@weight,@unit,@price,@memos
+			,@ucolor,@source,@uno,@mount,@weight,@unit,@price,@memos
 		while(@@FETCH_STATUS <> -1)
 		begin	
 			select @po='',@pn=''
@@ -135,22 +137,22 @@ z_orde_rkp01:--z_orde_rkp01
 			end
 			
 			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
-				,ucolor,[source],mount,unit,price,po,pn)
+				,ucolor,[source],uno,mount,unit,price,po,pn)
 			values('2',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
-				,@ucolor,@source
+				,@ucolor,@source,@uno
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
 				,@unit,@price,@po,@pn)
 			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
-				,ucolor,[source],mount,unit,price,po,pn)
+				,ucolor,[source],uno,mount,unit,price,po,pn)
 			values('3',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
-				,@ucolor,@source
+				,@ucolor,@source,@uno
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
 				,@unit,@price,@po,@pn)
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
 			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
-			,@ucolor,@source,@mount,@weight,@unit,@price,@memos
+			,@ucolor,@source,@uno,@mount,@weight,@unit,@price,@memos
 		end
 		close cursor_table2
 		deallocate cursor_table2
@@ -241,7 +243,8 @@ z_orde_rkp01:--z_orde_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+class+'</a>' class
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source]
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace([source],'~#$',"'")+'</a>' [source]
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace([uno],'~#$',"'")+'</a>' [uno]
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0)+unit+'</a>' mount
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,0)+'</a>' price
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
