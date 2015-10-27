@@ -133,11 +133,11 @@
 					</td>
 					<td style="width:5%;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;">
-						<input id="txtZinc.*" type="text" style="display:noxne;"  readonly="readonly" />
+						<input id="txtZinc.*" type="text" style="display:none;"  readonly="readonly" />
 						<input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;">
-						<input id="txtHard.*" type="text" style="display:noxne;"  readonly="readonly" />
+						<input id="txtHard.*" type="text" style="display:none;"  readonly="readonly" />
 						<input id="txtUno.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;">
