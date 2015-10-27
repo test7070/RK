@@ -269,11 +269,9 @@ z_cub_rk03:--z_cub_rk03
 	insert into @tmp(gno,[weight])values('3',@z03)
 	insert into @tmp(gno,[weight])values('4',0)
 -------------------------------------------------------------------------------------------------------------------	
-	update @tmp set spec3=c.noa,spec4=d.noa
+	update @tmp set spec3=b.zinc,spec4=b.hard
 	from @tmp a
 	left join view_ordes b on a.accy=b.accy and a.ordeno=b.noa and a.no2=b.no2
-	left join ucc c on b.source=c.product
-	left join ucc d on b.uno=d.product
 	
 	declare @title nvarchar(max) = left(@t_mon,3)+'年'+right(@t_mon,2)+'月生產月報表'
 	
