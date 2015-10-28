@@ -7,6 +7,7 @@ z_cub_rkp01:--z_cub_rkp01
 	declare @t_bmon nvarchar(20)=case when '#non' = [4] then '' else [4] end
 	declare @t_emon nvarchar(20)=case when '#non' = [5] then char(255) else [5] end
 	---------------------------------------------------------------------------------------------
+	---------------------------------------------------------------------------------------------
 	declare @tmp table(
 		makeno nvarchar(30),
 		mins float
@@ -94,13 +95,15 @@ z_cub_rkp01:--z_cub_rkp01
 		mount02 float,
 		price02 float,
 		money02 float,
-		uno03 nvarchar(30),--保護膜(一)
+		spec03 nvarchar(20),--保護膜(一)
+		uno03 nvarchar(30),
 		size03 nvarchar(max),
 		weight03 float,
 		mount03 float,
 		price03 float,
 		money03 float,
-		uno04 nvarchar(30),--保護膜(二)
+		spec04 nvarchar(20),--保護膜(二)
+		uno04 nvarchar(30),
 		size04 nvarchar(max),
 		weight04 float,
 		mount04 float,
@@ -150,19 +153,20 @@ z_cub_rkp01:--z_cub_rkp01
 		,makeno,ordeno,no2,custno,cust
 		,uno01,size01,weight01
 		,uno02,size02,weight02,mount02
-		,uno03,size03,weight03,mount03
-		,uno04,size04,weight04,mount04
+		,spec03,uno03,size03,weight03,mount03
+		,spec04,uno04,size04,weight04,mount04
 		,a06)
 	select '1',a.noa,a.noq,a.mins
 		,a.dime,a.radius,a.width,a.lengthb,a.spec
 		,a.makeno,a.ordeno,a.no2,a.custno,a.comp
 		,a.uno,a.size,a.[weight]
 		,a.uno2,a.size,a.lengthb2,a.hard
-		,a.uno3,a.size,a.w06,a.lengthc
-		,a.uno4,a.size,a.w08,a.w07
+		,c.zinc,a.uno3,a.size,a.w06,a.lengthc
+		,c.hard,a.uno4,a.size,a.w08,a.w07
 		,isnull(a.hweight,0)
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa 		
+	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
 	where left(b.datea,6) between @t_bmon and @t_emon	
 	and len(ISNULL(a.makeno,''))>0										
 	
@@ -235,6 +239,7 @@ z_cub_rkp01:--z_cub_rkp01
 	end
 	close cursor_table
 	deallocate cursor_table
+	
 -----------------------------------------------------------------------------------------------------------------------	
 	declare @result table(
 		gno nvarchar(20),
@@ -263,6 +268,7 @@ z_cub_rkp01:--z_cub_rkp01
 		price02 float,
 		money02 float,
 		--------------------------------------
+		spec03 nvarchar(20),
 		uno03 nvarchar(30),
 		dime03 float,
 		width03 float,
@@ -272,6 +278,7 @@ z_cub_rkp01:--z_cub_rkp01
 		price03 float,
 		money03 float,
 		--------------------------------------
+		spec04 nvarchar(20),
 		uno04 nvarchar(30),
 		dime04 float,
 		width04 float,
@@ -326,8 +333,8 @@ z_cub_rkp01:--z_cub_rkp01
 		,dime,radius,width,lengthb,spec,mins,minsrate
 		,uno01,weight01,price01,money01
 		,uno02,weight02,mount02,price02,money02
-		,uno03,weight03,mount03,price03,money03,dime03,width03,lengthb03
-		,uno04,weight04,mount04,price04,money04,dime04,width04,lengthb04
+		,spec03,uno03,weight03,mount03,price03,money03,dime03,width03,lengthb03
+		,spec04,uno04,weight04,mount04,price04,money04,dime04,width04,lengthb04
 		,weight05,price05,money05
 		,weight06,price06,money06
 		,weight07,price07,money07
@@ -342,8 +349,8 @@ z_cub_rkp01:--z_cub_rkp01
 		,a.dime,a.radius,a.width,a.lengthb,a.spec,a.mins,case when @totmins=0 then 0 else a.mins/@totmins end
 		,a.uno01,a.weight01,a.price01,a.money01
 		,a.uno02,a.weight02,a.mount02,a.price02,a.money02
-		,a.uno03,a.weight03,a.mount03,a.price03,a.money03,c.dime,c.width,c.lengthb
-		,a.uno04,a.weight04,a.mount04,a.price04,a.money04,e.dime,e.width,e.lengthb
+		,a.spec03,a.uno03,a.weight03,a.mount03,a.price03,a.money03,c.dime,c.width,c.lengthb
+		,a.spec04,a.uno04,a.weight04,a.mount04,a.price04,a.money04,e.dime,e.width,e.lengthb
 		,a.mount05,price05,money05
 		,a.mount06,price06,money06
 		,a.mount07,price07,money07
@@ -437,50 +444,51 @@ z_cub_rkp01:--z_cub_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a14
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money02,-1)+'</a>' a15
 		
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(dime03,-1)+'</a>' a16
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(width03,-1)+'</a>' a17
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(lengthb03,-1)+'</a>' a18
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount03,-1)+'</a>' a19
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight03,-1)+'</a>' a20
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price03,-1)+'</a>' a21
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money03,-1)+'</a>' a22
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec03+'</a>' a16
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(dime03,-1)+'</a>' a17
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(width03,-1)+'</a>' a18
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(lengthb03,-1)+'</a>' a19
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount03,-1)+'</a>' a20
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight03,-1)+'</a>' a21
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price03,-1)+'</a>' a22
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money03,-1)+'</a>' a23
 		
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(dime04,-1)+'</a>' a23
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(width04,-1)+'</a>' a24
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(lengthb04,-1)+'</a>' a25
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount04,-1)+'</a>' a26
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight04,-1)+'</a>' a27
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price04,-1)+'</a>' a28
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money04,-1)+'</a>' a29
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec04+'</a>' a24
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(dime04,-1)+'</a>' a25
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(width04,-1)+'</a>' a26
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(lengthb04,-1)+'</a>' a27
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount04,-1)+'</a>' a28
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight04,-1)+'</a>' a29
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price04,-1)+'</a>' a30
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money04,-1)+'</a>' a31
 		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight05,-1)+'</a>' a32
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price05,-1)+'</a>' a33
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money05,-1)+'</a>' a34
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight06,-1)+'</a>' a35
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price06,-1)+'</a>' a36
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money06,-1)+'</a>' a37
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight07,-1)+'</a>' a38
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price07,-1)+'</a>' a39
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money07,-1)+'</a>' a40
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight08,-1)+'</a>' a41
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price08,-1)+'</a>' a42
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money08,-1)+'</a>' a43
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight09,-1)+'</a>' a44
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price09,-1)+'</a>' a45
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money09,-1)+'</a>' a46
 		
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight05,-1)+'</a>' a30
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price05,-1)+'</a>' a31
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money05,-1)+'</a>' a32
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight06,-1)+'</a>' a33
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price06,-1)+'</a>' a34
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money06,-1)+'</a>' a35
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight07,-1)+'</a>' a36
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price07,-1)+'</a>' a37
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money07,-1)+'</a>' a38
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight08,-1)+'</a>' a39
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price08,-1)+'</a>' a40
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money08,-1)+'</a>' a41
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight09,-1)+'</a>' a42
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price09,-1)+'</a>' a43
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money09,-1)+'</a>' a44
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(bweight,-1)+'</a>' a47
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(total,-1)+'</a>' a48
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(eweight,-1)+'</a>' a49
 		
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(bweight,-1)+'</a>' a45
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(total,-1)+'</a>' a46
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(eweight,-1)+'</a>' a47
-		
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a01,-1)+'</a>' a48
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a02,-1)+'</a>' a49
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a03,-1)+'</a>' a50
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a04,-1)+'</a>' a51
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a05,-1)+'</a>' a52
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a06,-1)+'</a>' a53
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+a07+'</a>' a54
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a01,-1)+'</a>' a50
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a02,-1)+'</a>' a51
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a03,-1)+'</a>' a52
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a04,-1)+'</a>' a53
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a05,-1)+'</a>' a54
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a06,-1)+'</a>' a55
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+a07+'</a>' a56
 	from @result
 	order by gno,sel;
 
