@@ -14,6 +14,7 @@ z_cubp_rk01:--z_cubp_rk01
 		noa nvarchar(20),typea nvarchar(20),datea nvarchar(20),vcceno nvarchar(20)
 		,a01 nvarchar(max),a02 nvarchar(max),a03 nvarchar(max),a04 nvarchar(max),a05 nvarchar(max),a06 nvarchar(max),b01 nvarchar(max),b02 nvarchar(max),b03 nvarchar(max),b04 nvarchar(max),b05 nvarchar(max),b06 nvarchar(max),c01 nvarchar(max),c02 nvarchar(max),c03 nvarchar(max),c04 nvarchar(max),c05 nvarchar(max),c06 nvarchar(max),d01 nvarchar(max),d02 nvarchar(max),d03 nvarchar(max),d04 nvarchar(max),d05 nvarchar(max),d06 nvarchar(max),e01 nvarchar(max),e02 nvarchar(max),e03 nvarchar(max),e04 nvarchar(max),e05 nvarchar(max),e06 nvarchar(max),f01 nvarchar(max),f02 nvarchar(max),f03 nvarchar(max),f04 nvarchar(max),f05 nvarchar(max),f06 nvarchar(max),g01 nvarchar(max),g02 nvarchar(max),g03 nvarchar(max),g04 nvarchar(max),g05 nvarchar(max),g06 nvarchar(max),h01 nvarchar(max),h02 nvarchar(max),h03 nvarchar(max),h04 nvarchar(max),h05 nvarchar(max),h06 nvarchar(max),i01 nvarchar(max),i02 nvarchar(max),i03 nvarchar(max),i04 nvarchar(max),i05 nvarchar(max),i06 nvarchar(max),j01 nvarchar(max),j02 nvarchar(max),j03 nvarchar(max),j04 nvarchar(max),j05 nvarchar(max),j06 nvarchar(max),k01 nvarchar(max),k02 nvarchar(max),k03 nvarchar(max),k04 nvarchar(max),k05 nvarchar(max),k06 nvarchar(max),l01 nvarchar(max),l02 nvarchar(max),l03 nvarchar(max),l04 nvarchar(max),l05 nvarchar(max),l06 nvarchar(max),m01 nvarchar(max),m02 nvarchar(max),m03 nvarchar(max),m04 nvarchar(max),m05 nvarchar(max),m06 nvarchar(max),n01 nvarchar(max),n02 nvarchar(max),n03 nvarchar(max),n04 nvarchar(max),n05 nvarchar(max),n06 nvarchar(max),o01 nvarchar(max),o02 nvarchar(max),o03 nvarchar(max),o04 nvarchar(max),o05 nvarchar(max),o06 nvarchar(max),p01 nvarchar(max),p02 nvarchar(max),p03 nvarchar(max),p04 nvarchar(max),p05 nvarchar(max),p06 nvarchar(max),q01 nvarchar(max),q02 nvarchar(max),q03 nvarchar(max),q04 nvarchar(max),q05 nvarchar(max),q06 nvarchar(max),r01 nvarchar(max),r02 nvarchar(max),r03 nvarchar(max),r04 nvarchar(max),r05 nvarchar(max),r06 nvarchar(max),s01 nvarchar(max),s02 nvarchar(max),s03 nvarchar(max),s04 nvarchar(max),s05 nvarchar(max),s06 nvarchar(max),t01 nvarchar(max),t02 nvarchar(max),t03 nvarchar(max),t04 nvarchar(max),t05 nvarchar(max),t06 nvarchar(max),u01 nvarchar(max),u02 nvarchar(max),u03 nvarchar(max),u04 nvarchar(max),u05 nvarchar(max),u06 nvarchar(max),v01 nvarchar(max),v02 nvarchar(max),v03 nvarchar(max),v04 nvarchar(max),v05 nvarchar(max),v06 nvarchar(max),w01 nvarchar(max),w02 nvarchar(max),w03 nvarchar(max),w04 nvarchar(max),w05 nvarchar(max),w06 nvarchar(max),x01 nvarchar(max),x02 nvarchar(max),x03 nvarchar(max),x04 nvarchar(max),x05 nvarchar(max),x06 nvarchar(max),y01 nvarchar(max),y02 nvarchar(max),y03 nvarchar(max),y04 nvarchar(max),y05 nvarchar(max),y06 nvarchar(max)
 		,z01 nvarchar(max),z02 nvarchar(max),z03 nvarchar(max),z04 nvarchar(max),z05 nvarchar(max),z06 nvarchar(max)
+		,aa01 nvarchar(max),aa02 nvarchar(max),aa03 nvarchar(max),aa04 nvarchar(max),aa05 nvarchar(max),aa06 nvarchar(max)
 	)
 	declare @datea nvarchar(max) = ''
 	declare @vcceno nvarchar(max) = ''
@@ -47,8 +48,17 @@ z_cubp_rk01:--z_cubp_rk01
 	declare @hard float
 	declare @lengthb2 float
 	declare @source nvarchar(max)
+	
+	declare @scolor nvarchar(30)--保護膜(一)
+	declare @process nvarchar(30)
 	declare @lengthc float
 	declare @w06 float
+	
+	declare @zinc nvarchar(30)--保護膜(二)
+	declare @flower nvarchar(30)
+	declare @w07 float
+	declare @w08 float
+	
 	declare @hweight float
 	declare @uno nvarchar(max)
 	declare @oth nvarchar(max)
@@ -96,8 +106,10 @@ z_cubp_rk01:--z_cubp_rk01
 	select top 6 a.noa,a.noq,a.ordeno,a.no2,a.custno,a.comp
 		,a.size,a.dime,a.radius,a.width,a.lengthb,a.[weight],a.bdime
 		,a.productno2,a.product2,a.edime,a.bspec,a.hmount,a.wmount
-		,a.spec,a.hard,a.lengthb2,a.[source],a.lengthc,a.w06,a.hweight
-		,a.uno,a.oth,a.price,a.mount,a.btime,a.etime,a.need
+		,a.spec,a.hard,a.lengthb2,a.[source]
+		,a.scolor,a.process,a.lengthc,a.w06
+		,a.zinc,a.flower,a.w07,a.w08
+		,a.hweight,a.uno,a.oth,a.price,a.mount,a.btime,a.etime,a.need
 	from view_cubs a 
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.noa is not null
@@ -108,8 +120,10 @@ z_cubp_rk01:--z_cubp_rk01
 	into @noa,@noq,@ordeno,@no2,@custno,@comp
 		,@size,@dime,@radius,@width,@lengthb,@weight,@bdime
 		,@productno2,@product2,@edime,@bspec,@hmount,@wmount
-		,@spec,@hard,@lengthb2,@source,@lengthc,@w06,@hweight
-		,@uno,@oth,@price,@mount,@btime,@etime,@need
+		,@spec,@hard,@lengthb2,@source
+		,@scolor,@process,@lengthc,@w06
+		,@zinc,@flower,@w07,@w08
+		,@hweight,@uno,@oth,@price,@mount,@btime,@etime,@need
 	while(@@FETCH_STATUS <> -1)
 	begin		
 		select @t_bdime=0,@t_productno2='',@t_product2=''
@@ -180,39 +194,47 @@ z_cubp_rk01:--z_cubp_rk01
 			,m"+@key+"=dbo.getComma(@wmount,0),n"+@key+"=@spec
 			,o"+@key+"=cast(@radius as nvarchar)+'X'+cast(@lengthb as nvarchar)
 			,p"+@key+"=dbo.getComma(@hard,0),q"+@key+"=dbo.getComma(@lengthb2,0)
-			,r"+@key+"=dbo.getComma(@lengthc,0),s"+@key+"=dbo.getComma(@w06,0)
+			,r"+@key+"=dbo.getComma(@lengthc,0)+case when len(isnull(@zinc,''))>0 then '、'+dbo.getComma(@w07,0) else '' end
+			,s"+@key+"=dbo.getComma(@w06,0)+case when len(isnull(@zinc,''))>0 then '、'+dbo.getComma(@w08,0) else '' end
 			,t"+@key+"=dbo.getComma(@hweight,0),u"+@key+"=@uno,v"+@key+"=@oth
 			,w"+@key+"=dbo.getComma(@price,0),x"+@key+"=dbo.getComma(@mount,0)
 			,y"+@key+"=@btime
-			,z"+@key+"=@need" 
+			,z"+@key+"=@need
+			,aa"+@key+"=@scolor+case when len(isnull(@zinc,''))>0 then '、'+@zinc else '' end" 
 		execute sp_executesql @cmd,N'@ordeno nvarchar(max),@no2 nvarchar(max)
 			,@comp nvarchar(max),@n int,@size nvarchar(max),@dime float,@width float
 			,@weight float,@bdime float,@productno2 nvarchar(max),@product2 nvarchar(max)
 			,@edime float,@bspec nvarchar(max),@hmount float,@wmount float,@spec nvarchar(max)
-			,@radius float,@lengthb float,@hard float,@lengthb2 float
-			,@source nvarchar(max),@lengthc float,@w06 float,@hweight float,@uno nvarchar(max)
+			,@radius float,@lengthb float,@hard float,@lengthb2 float,@source nvarchar(max)
+			,@scolor nvarchar(30),@process nvarchar(30),@lengthc float,@w06 float
+			,@zinc nvarchar(30),@flower nvarchar(30),@w07 float,@w08 float
+			,@hweight float,@uno nvarchar(max)
 			,@oth nvarchar(max),@price float,@mount float,@btime nvarchar(max),@etime nvarchar(max)
 			,@need nvarchar(max)'
 			,@ordeno=@ordeno,@no2=@no2,@comp=@comp
 			,@n=@n,@size=@size,@dime=@dime,@width=@width,@weight=@weight,@bdime=@t_bdime
 			,@productno2=@t_productno2,@product2=@t_product2,@edime=@t_edime
 			,@bspec=@t_bspec,@hmount=@t_hmount,@wmount=@t_wmount,@spec=@t_spec
-			,@radius=@t_radius,@lengthb=@t_lengthb,@hard=@t_hard,@lengthb2=@t_lengthb2
-			,@source=@source,@lengthc=@lengthc,@w06=@w06,@hweight=@hweight,@uno=@uno
+			,@radius=@t_radius,@lengthb=@t_lengthb,@hard=@t_hard,@lengthb2=@t_lengthb2,@source=@source
+			,@scolor=@scolor,@process=@process,@lengthc=@lengthc,@w06=@w06
+			,@zinc=@zinc,@flower=@flower,@w07=@w07,@w08=@w08
+			,@hweight=@hweight,@uno=@uno
 			,@oth=@oth,@price=@price,@mount=@mount,@btime=@btime,@etime=@etime,@need=@t_need
 			
 		fetch next from cursor_table
 		into @noa,@noq,@ordeno,@no2,@custno,@comp
 		,@size,@dime,@radius,@width,@lengthb,@weight,@bdime
 		,@productno2,@product2,@edime,@bspec,@hmount,@wmount
-		,@spec,@hard,@lengthb2,@source,@lengthc,@w06,@hweight
-		,@uno,@oth,@price,@mount,@btime,@etime,@need
+		,@spec,@hard,@lengthb2,@source
+		,@scolor,@process,@lengthc,@w06
+		,@zinc,@flower,@w07,@w08
+		,@hweight,@uno,@oth,@price,@mount,@btime,@etime,@need
 	end
 	close cursor_table
 	deallocate cursor_table
 	---------------------------------------------------------------------------------------
 	declare @reportno nvarchar(max) = '表單編號：LC-11-00-02-05'
-	
+
 	select '0' gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
@@ -227,6 +249,13 @@ z_cubp_rk01:--z_cubp_rk01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+z04 +'</a>' z04
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+z05 +'</a>' z05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+z06 +'</a>' z06
+		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa01 +'</a>' axa01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa02 +'</a>' axa02
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa03 +'</a>' axa03
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa04 +'</a>' axa04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa05 +'</a>' axa05
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa06 +'</a>' axa06
 	from #z_cubp_rk01
 	
 	drop table #z_cubp_rk01;
