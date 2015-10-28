@@ -588,32 +588,42 @@ z_cub_rkp02:--z_cub_rkp02
 		mount02 float,
 		price02 float,
 		money02 float,
-		uno03 nvarchar(30),--PE膜
+		uno03 nvarchar(30),--保護膜(一)
+		productno03 nvarchar(30),
+		product03 nvarchar(30),
 		size03 nvarchar(max),
 		weight03 float,
 		mount03 float,
 		price03 float,
 		money03 float,
-		--接著劑
+		uno04 nvarchar(30),--保護膜(二)
+		productno04 nvarchar(30),
+		product04 nvarchar(30),
+		size04 nvarchar(max),
+		weight04 float,
 		mount04 float,
 		price04 float,
 		money04 float,
-		--接著劑稀釋劑
+		--接著劑
 		mount05 float,
 		price05 float,
 		money05 float,
-		--背漆
+		--接著劑稀釋劑
 		mount06 float,
 		price06 float,
 		money06 float,
-		--背漆稀釋劑
+		--背漆
 		mount07 float,
 		price07 float,
 		money07 float,
-		--面漆
+		--背漆稀釋劑
 		mount08 float,
 		price08 float,
 		money08 float,
+		--面漆
+		mount09 float,
+		price09 float,
+		money09 float,
 		
 		a01 nvarchar(20),--材質
 		a02 float,--工時
@@ -638,14 +648,16 @@ z_cub_rkp02:--z_cub_rkp02
 		,makeno,ordeno,no2,custno,cust
 		,uno01,size01,weight01
 		,uno02,size02,weight02,mount02
-		,uno03,size03,weight03,mount03
+		,productno03,product03,uno03,size03,weight03,mount03
+		,productno04,product04,uno04,size04,weight04,mount04
 		,a06)
 	select '1',a.noa,a.noq,a.mins
 		,a.dime,a.radius,a.width,a.lengthb,a.spec
 		,a.makeno,a.ordeno,a.no2,a.custno,a.comp
 		,a.uno,a.size,a.[weight]
 		,a.uno2,a.size,a.lengthb2,a.hard
-		,a.uno3,a.size,a.w06,a.lengthc
+		,a.scolor,a.process,a.uno3,a.size,a.w06,a.lengthc
+		,a.zinc,a.flower,a.uno4,a.size,a.w07,a.w08
 		,isnull(a.hweight,0)
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa 		
@@ -661,6 +673,9 @@ z_cub_rkp02:--z_cub_rkp02
 	update @tmpb set price03=b.sprice,money03 = round(ISNULL(weight03,0)*ISNULL(b.sprice,0),0)
 	from @tmpb a
 	left join view_uccb b on a.uno03=b.uno
+	update @tmpb set price04=b.sprice,money04 = round(ISNULL(weight04,0)*ISNULL(b.sprice,0),0)
+	from @tmpb a
+	left join view_uccb b on a.uno04=b.uno
 	-----------------------------------------------------------------------------------------------------------
 	declare @sel int
 	declare @noa nvarchar(20)
@@ -694,23 +709,23 @@ z_cub_rkp02:--z_cub_rkp02
 		set @money = ROUND(@price*@mount,0)
 		if @typea='A01'
 		begin
-			update @tmpb set price04=@price,mount04=ISNULL(mount04,0)+@mount, money04=ISNULL(money04,0)+@money where  sel=@sel
+			update @tmpb set price05=@price,mount05=ISNULL(mount05,0)+@mount, money05=ISNULL(money05,0)+@money where  sel=@sel
 		end
 		else if @typea='A02'
 		begin
-			update @tmpb set price05=@price,mount05=ISNULL(mount05,0)+@mount, money05=ISNULL(money05,0)+@money where  sel=@sel
+			update @tmpb set price06=@price,mount06=ISNULL(mount06,0)+@mount, money06=ISNULL(money06,0)+@money where  sel=@sel
 		end
 		else if @typea='A03'
 		begin
-			update @tmpb set price06=@price,mount06=ISNULL(mount06,0)+@mount, money06=ISNULL(money06,0)+@money where  sel=@sel
+			update @tmpb set price07=@price,mount07=ISNULL(mount07,0)+@mount, money07=ISNULL(money07,0)+@money where  sel=@sel
 		end
 		else if @typea='A04'
 		begin
-			update @tmpb set price07=@price,mount07=ISNULL(mount07,0)+@mount, money07=ISNULL(money07,0)+@money where  sel=@sel
+			update @tmpb set price08=@price,mount08=ISNULL(mount08,0)+@mount, money08=ISNULL(money08,0)+@money where  sel=@sel
 		end
 		else if @typea='A05'
 		begin
-			update @tmpb set price08=@price,mount08=ISNULL(mount08,0)+@mount, money08=ISNULL(money08,0)+@money where  sel=@sel
+			update @tmpb set price09=@price,mount09=ISNULL(mount09,0)+@mount, money09=ISNULL(money09,0)+@money where  sel=@sel
 		end
 		
 		fetch next from cursor_table
@@ -731,6 +746,12 @@ z_cub_rkp02:--z_cub_rkp02
 		a06 nvarchar(30),--製造批號
 		a07 nvarchar(30),--客戶名稱
 		a08 nvarchar(30),--材質
+		
+		aa01 nvarchar(30),--保護膜(一)
+		aa02 nvarchar(30),
+		ab01 nvarchar(30),--保護膜(二)
+		ab02 nvarchar(30),
+		
 		a09 float,--工時
 		a09rate float,--工時比率
 		a10 float,--投入重量/KG
@@ -760,7 +781,7 @@ z_cub_rkp02:--z_cub_rkp02
 		
 		memo nvarchar(max)
 	)
-	insert into @result(gno,a01,a02,a03,a04,a05,a06,a07,a08,a09,a09rate
+	insert into @result(gno,a01,a02,a03,a04,a05,a06,a07,a08,aa01,aa02,ab01,ab02,a09,a09rate
 		,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20)
 	select a.gno
 		--規格尺寸	
@@ -776,17 +797,24 @@ z_cub_rkp02:--z_cub_rkp02
 		,case when len(ISNULL(c.nick,''))>0 then c.nick else LEFT(c.comp,4) end a07
 		--材質
 		,'' a08
+		--保護膜(一)
+		,a.productno03
+		,a.product03
+		--保護膜(二)
+		,a.productno04
+		,a.product04
+		
 		--工時
 		,a.mins a09
 		,case when @totmins=0 then 0 else a.mins/@totmins end a09rate
 		--投入重量/KG
-		,ISNULL(a.weight01,0)+ISNULL(a.weight02,0)+ISNULL(a.weight03,0)
-		+ISNULL(a.mount04,0)+ISNULL(a.mount05,0)+ISNULL(a.mount06,0)+ISNULL(a.mount07,0)+ISNULL(a.mount08,0) a10
+		,ISNULL(a.weight01,0)+ISNULL(a.weight02,0)+ISNULL(a.weight03,0)+ISNULL(a.mount04,0)
+		+ISNULL(a.mount05,0)+ISNULL(a.mount06,0)+ISNULL(a.mount07,0)+ISNULL(a.mount08,0)+ISNULL(a.mount09,0) a10
 		--完工重量/KG
 		,a.a06 a11
 		--半成品
 		,ISNULL(a.money01,0)+ISNULL(a.money02,0)+ISNULL(a.money03,0)+ISNULL(a.money04,0)
-		+ISNULL(a.money05,0)+ISNULL(a.money06,0)+ISNULL(a.money07,0)+ISNULL(a.money08,0) a12
+		+ISNULL(a.money05,0)+ISNULL(a.money06,0)+ISNULL(a.money07,0)+ISNULL(a.money08,0)+ISNULL(a.money09,0) a12
 		--﹪ 半成品/合計
 		,'' a13
 		--直接人工
@@ -822,6 +850,11 @@ z_cub_rkp02:--z_cub_rkp02
 		,a20 = case when isnull(a11,0) =0 then 0 else round(a18/a11,0) end	
 	-----------------------------------------------------------------------------------
 	select gno,sel,a01,a02,a03,a04,a05,a06,a07,a08,a09
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa01+'</a>' aa01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa02+'</a>' aa02
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ab01+'</a>' ab01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ab02+'</a>' ab02
+		
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a10,-1)+'</a>' a10 
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a11,-1)+'</a>' a11
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a12,-1)+'</a>' a12 
