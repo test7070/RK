@@ -42,7 +42,10 @@
 				,['txtCustno_', 'btnCustno_', 'cust', 'noa,nick', 'txtCustno_', 'cust_b.aspx']
 				,['txtSpec_', 'btnSpec_', 'spec', 'noa,product', 'txtSpec_', 'spec_b.aspx']
 				,['txtProductno__', 'btnProduct__', 'bcc', 'noa,product', 'txtProductno__,txtProduct__', 'bcc_b.aspx']
-			);
+				,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtProcess_', 'ucc_b.aspx']
+            	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtFlower_', 'ucc_b.aspx']);
+			
+			
 			$(document).ready(function() {
 				bbmKey = ['noa'];
 				bbsKey = ['noa', 'noq'];
@@ -119,8 +122,6 @@
                 	var t_where ='';
                 	q_box("orde_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,page:'cub_rk'}), "orde_cub", "95%", "95%", '');
 				});
-			
-				
 			}
 
 			function q_gtPost(t_name) {
@@ -148,8 +149,13 @@
 		                			$('#txtRadius_'+t_para.n).val(as[0].radius);	
 		                			$('#txtWidth_'+t_para.n).val(as[0].width);	
 		                			$('#txtLengthb_'+t_para.n).val(as[0].lengthb);
-		                			$('#txtSpec_'+t_para.n).val(as[0].spec);
+		                			$('#txtSpec_'+t_para.n).val(as[0].scolor);
 		                			$('#txtSource_'+t_para.n).val(as[0].source);	
+		                			
+		                			$('#txtScolor_'+t_para.n).val(as[0].zinc);
+		                			$('#txtProcess_'+t_para.n).val(as[0].source);
+		                			$('#txtZinc_'+t_para.n).val(as[0].hard);
+		                			$('#txtFlower_'+t_para.n).val(as[0].uno);
 		                		}else{
 		                			alert('找不到訂單【'+t_para.ordeno+'-'+t_para.no2+'】');
 		                		}
@@ -174,8 +180,8 @@
 					case 'orde_cub':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtComp,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtScolor,txtRackno,txtUnit,txtPrice,txtSize'
-                        	, as.length, as, 'noa,no2,custno,comp,productno,product,dime,radius,width,lengthb,spec,class,ucolor,scolor,source,unit,price,size', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtComp,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtUnit,txtSize,txtSpec,txtScolor,txtProcess,txtZinc,txtFlower'
+                        	, as.length, as, 'noa,no2,custno,comp,productno,product,dime,radius,width,lengthb,unit,size,spec,zinc,source,hard,uno', '','');             	
                         }else{
                         	Unlock(1);
                         }
@@ -410,6 +416,19 @@
 		                	var t_where ='';
 		                	q_box("cng_cub_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,n:n,page:'cub_rk'}), "cng_cub_"+n, "95%", "95%", '');
                         });
+                        $('#txtScolor_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtScolor_', '');
+                            $('#btnScolor_'+n).click();
+                        });
+                        $('#txtZinc_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtZinc_', '');
+                            $('#btnZinc_'+n).click();
+                        });
+                        
 					}
 				}
 				_bbsAssign();
@@ -627,7 +646,7 @@
 				font-size: medium;
 			}
 			.dbbs {
-				width: 2700px;
+				width: 2900px;
 			}
 			.dbbs .tbbs {
 				margin: 0;
@@ -765,8 +784,10 @@
 						<td style="width:100px;" align="center">PVC皮<BR>型號<BR>規格</td>
 						<td style="width:100px;" align="center">PVC皮<BR>用量M<BR>KG</td>
 						<td style="width:150px;" align="center">保護膜批號(一)</td>	
+						<td style="width:100px;" align="center">保護膜(一)<br>編號<BR>名稱</td>
 						<td style="width:100px;" align="center">保護膜(一)<BR>用量M<BR>KG</td>
 						<td style="width:150px;" align="center">保護膜批號(二)</td>	
+						<td style="width:100px;" align="center">保護膜(二)<br>編號<BR>名稱</td>
 						<td style="width:100px;" align="center">保護膜(二)<BR>用量M<BR>KG</td>
 						<td style="width:200px;" align="center">RECOIL編號</td>
 						<td style="width:100px;" align="center">RECOIL<BR>M<BR>重量(KG)</td>
@@ -836,12 +857,22 @@
 							<input id="txtLengthb2.*" type="text" class="num" style="float:left;width:95%;"/>
 						</td>
 						<td><input id="txtUno3.*" type="text" style="float:left;width:95%;"/></td>
+						<td>
+							<input id="txtScolor.*" type="text" style="width:95%"/>
+							<input id="txtProcess.*" type="text" style="width:95%"/>
+							<input id="btnScolor.*" type="button" style="display:none;"/>
+						</td>
 						<td title="保護膜用量M/KG">
 							<input id="txtSource.*" type="text" style="float:left;width:95%;display:none;"/>
 							<input id="txtLengthc.*" type="text" class="num" style="float:left;width:95%;"/>
 							<input id="txtW06.*" type="text" class="num" style="float:left;width:95%;"/>
 						</td>
 						<td><input id="txtUno4.*" type="text" style="float:left;width:95%;"/></td>
+						<td>
+							<input id="txtZinc.*" type="text" style="width:95%"/>
+							<input id="txtFlower.*" type="text" style="width:95%"/>
+							<input id="btnZinc.*" type="button" style="display:none;"/>
+						</td>
 						<td title="保護膜用量M/KG">
 							<input id="txtW07.*" type="text" class="num" style="float:left;width:95%;"/>
 							<input id="txtW08.*" type="text" class="num" style="float:left;width:95%;"/>
