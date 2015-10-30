@@ -808,7 +808,7 @@ z_cub_rkp02:--z_cub_rkp02
 		,a.mins a09
 		,case when @totmins=0 then 0 else a.mins/@totmins end a09rate
 		--投入重量/KG
-		,ISNULL(a.weight01,0)+ISNULL(a.weight02,0)+ISNULL(a.weight03,0)+ISNULL(a.mount04,0)
+		,ISNULL(a.weight01,0)+ISNULL(a.weight02,0)+ISNULL(a.weight03,0)+ISNULL(a.weight04,0)
 		+ISNULL(a.mount05,0)+ISNULL(a.mount06,0)+ISNULL(a.mount07,0)+ISNULL(a.mount08,0)+ISNULL(a.mount09,0) a10
 		--完工重量/KG
 		,a.a06 a11
