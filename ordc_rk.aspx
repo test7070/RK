@@ -115,13 +115,8 @@
 					t_prices = q_float('txtPrice_' + j);
 					t_mounts = q_float('txtMount_' + j);
 					
-					//RK ：ordb , ordc, rc2 bbs  lbl重量  改   lbl重量/M
-					if (t_unit.length == 0 || t_unit == 'KG' |t_unit == '噸' || t_unit == '頓') {
-						//物料以數量計算
-						t_moneys = q_mul(t_prices, t_weights);
-					} else {
-						t_moneys = q_mul(t_prices, t_mounts);
-					}
+					t_moneys = q_mul(t_prices, t_weights);
+
 					t_moneys = round(t_moneys, 0);
 					t_weight = q_add(t_weight, t_weights);
 					t_mount = q_add(t_mount, t_mounts);

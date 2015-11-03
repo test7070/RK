@@ -101,11 +101,7 @@
                     t_weights = q_float('txtWeight_' + j);
                     t_prices = q_float('txtPrice_' + j);
                     t_mounts = q_float('txtMount_' + j);
-                    if(t_unit=='KG' || t_unit=='公斤' || t_unit=='噸' || t_unit=='頓'){
-                    	t_moneys = q_mul(t_prices,t_weights);
-                    }else{
-                    	t_moneys = q_mul(t_prices,t_mounts);
-                    }
+                	t_moneys = q_mul(t_prices,t_weights);
                     if(t_float==0){
                     	t_moneys = round(t_moneys,0);
                     }else{
