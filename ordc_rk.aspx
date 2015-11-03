@@ -114,7 +114,9 @@
 					t_weights = q_float('txtWeight_' + j);
 					t_prices = q_float('txtPrice_' + j);
 					t_mounts = q_float('txtMount_' + j);
-					if (t_kind!='1' && (t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M'|| t_unit == 'MT' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓')) {
+					
+					//RK ：ordb , ordc, rc2 bbs  lbl重量  改   lbl重量/M
+					if (t_unit.length == 0 || t_unit == 'KG' |t_unit == '噸' || t_unit == '頓') {
 						//物料以數量計算
 						t_moneys = q_mul(t_prices, t_weights);
 					} else {
@@ -199,7 +201,7 @@
 				q_cmbParse("cmbCoin", t_coin);
 				//if(abbm[q_recno]) $('#cmbCoin').val(abbm[q_recno].coin);
 				q_cmbParse("cmbSpec", t_spec,'s');
-							
+				
 				$("#combPaytype").change(function(e) {
 					if (q_cur == 1 || q_cur == 2)
 						$('#txtPaytype').val($('#combPaytype').find(":selected").text());
@@ -237,21 +239,19 @@
 				$('#cmbKind').change(function() {
 					size_change();
 				});
-
+				
 				$('#lblOrdb').click(function() {
 					if (!(q_cur == 1 || q_cur == 2))
 						return;
 					var t_tggno = trim($('#txtTggno').val());
 					var t_ordbno = trim($('#txtOrdbno').val());
 					var t_where = "enda=0 and notv >0 ";
-					if (t_tggno.length > 0) {
-						t_where += (t_tggno.length > 0 ? q_sqlPara2("tggno", t_tggno) : "") + " && kind='" + $('#cmbKind').val() + "'";
-					} else {
-						alert(q_getMsg('msgTggEmp'));
-						return;
-					}
+					t_where += (t_tggno.length > 0 ? q_sqlPara2("tggno", t_tggno) : " and len(isnull(tggno,''))=0") + " && kind='" + $('#cmbKind').val() + "'";
+					
 					q_box('ordbsst_b.aspx', 'ordbs;' + t_where, "95%", "650px", q_getMsg('popOrdbs'));
 				});
+				
+				
 			}
 
 			function distinct(arr1) {
@@ -653,6 +653,9 @@
 				}
 				_bbsAssign();
 				size_change();
+				if(q_getPara('sys.project').toUpperCase()=='RK'){
+					$('#lblWeights_st').text('重量/M');
+				}		
 			}
 
 			function btnIns() {
