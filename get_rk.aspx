@@ -419,12 +419,12 @@
 						<td><input id="txtIdno" type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
-						<td><span> </span><a id="lblProduct" class="lbl" > </a></td>
+						<td><span> </span><a id="lblProduct" class="lbl" >產品</a></td>
 						<td colspan="2">
 							<input id="txtProductno" type="text" class="txt" style="float:left;width:40%;"/>
 							<input id="txtProduct" type="text" class="txt" style="float:left;width:60%;"/>
 						</td>
-						<td><span> </span><a id="lblWeight" class="lbl"> </a></td>
+						<td><span> </span><a id="lblWeight" class="lbl">重量</a></td>
 						<td><input id="txtWeight" type="text" class="txt c1 num"/></td>
 					</tr>
 					<tr>
