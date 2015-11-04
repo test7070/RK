@@ -673,7 +673,7 @@
 				font-size: medium;
 			}
 			#dbbt {
-                width: 800px;
+                width: 1000px;
             }
             #tbbt {
                 margin: 0;
@@ -913,6 +913,7 @@
 						<input id="btnPlut" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
 						</td>
 						<td style="width:20px;"><input type="button" value="關閉" onclick="$('#dbbt').hide();"/></td>
+						<td style="width:200px; text-align: center;">批號</td>
 						<td style="width:200px; text-align: center;">品名</td>
 						<!--<td style="width:100px; text-align: center;">數量</td>-->
 						<td style="width:100px; text-align: center;">重量</td>
@@ -925,6 +926,7 @@
 							<input class="txt" id="txtNor..*" type="text" style="display: none;"/>
 						</td>
 						<td><a id="lblNo..*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+						<td><input class="txt" id="txtUno..*" type="text" style="width:95%;" /></td>
 						<td>
 							<input class="txt" id="txtProductno..*" type="text" style="width:45%;float:left;"/>
 							<input class="txt" id="txtProduct..*" type="text" style="width:45%;float:left;"/>
