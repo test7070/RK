@@ -32,13 +32,13 @@
 			brwList = [];
 			brwNowPage = 0;
 			brwKey = 'Datea';
-			brwCount2 = 4;
+			brwCount2 = 6;
 			aPop = new Array(
 				//['txtPost', 'lblPost', 'addr', 'post,addr', 'txtPost', 'addr_b.aspx'],
 				['txtStoreno', 'lblStore', 'store', 'noa,store', '0txtStoreno,txtStore', 'store_b.aspx'],
 				['txtUno_', 'btnUno_', 'view_uccc', 'uno,productno,product,size,unit', '0txtUno_,txtProductno_,txtProduct_,txtSize_,txtUnit_', 'uccc_seek_b.aspx?;;;1=0', '95%', '60%'],
 				['txtProductno_', 'btnProductno_', 'ucaucc', 'noa,product,unit', '0txtProductno_,txtProduct_,txtUnit_', 'ucaucc_b.aspx'],
-				['txtProductno', 'lblProduct', 'ucaucc', 'noa,product', '0txtProductno,txtProduct', 'ucaucc_b.aspx'],
+				['txtProductno', 'lblProduct', 'ucaucc', 'noa,product', 'txtProductno,txtProduct', 'ucaucc_b.aspx'],
 				['txtRackno', 'lblRackno', 'rack', 'noa,rack,storeno,store', '0txtRackno', 'rack_b.aspx']
 			);
 			function sum(){
@@ -62,7 +62,7 @@
 
 			function mainPost() {
 				q_getFormat();
-				document.title = '領退料作業';
+				document.title = '領料組合作業';
 				bbmMask = [['txtDatea', r_picd], ['txtCucdate', r_picd]];
 				q_mask(bbmMask);
 				q_cmbParse("cmbTypea", '領料單,退料單');
@@ -416,13 +416,13 @@
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblIdno" class="lbl" > </a></td>
-						<td><input id="txtIdno" type="text" class="txt c1"/></td>
+						<td colspan="2"><input id="txtIdno" type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblProduct" class="lbl" >產品</a></td>
-						<td colspan="2">
-							<input id="txtProductno" type="text" class="txt" style="float:left;width:40%;"/>
-							<input id="txtProduct" type="text" class="txt" style="float:left;width:60%;"/>
+						<td colspan="3">
+							<input id="txtProductno" type="text" class="txt" style="float:left;width:35%;"/>
+							<input id="txtProduct" type="text" class="txt" style="float:left;width:65%;"/>
 						</td>
 						<td><span> </span><a id="lblWeight" class="lbl">重量</a></td>
 						<td><input id="txtWeight" type="text" class="txt c1 num"/></td>
