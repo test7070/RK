@@ -15,7 +15,7 @@
 		<script type="text/javascript">
 			var q_name = "orde_rk_s";
 			var q_readonly = [];
-			aPop = new Array();
+			aPop = new Array( ['txtCustno', 'lblCustno', 'cust', 'noa,nick', 'txtCustno', 'cust_b.aspx']);
 			$(document).ready(function() {
 				main();
 			});
@@ -42,11 +42,15 @@
 				var t_bdate = $.trim($('#txtBdate').val());
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
+				var t_custno = $.trim($('#txtCustno').val());
+				var t_cust = $.trim($('#txtCust').val());
 
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
-					+ q_sqlPara2("noa", t_noa);
-					
+					+ q_sqlPara2("noa", t_noa)
+					+ q_sqlPara2("custno", t_custno);
+				if(t_cust.length>0)
+					t_where += " and charindex('"+t_cust+"',comp)>0";
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -84,6 +88,14 @@
 				<tr class='seek_tr'>
 					<td class='seek' style="width:90px;"><a id='lblNoa'>電腦編號</a></td>
 					<td><input class="txt" id="txtNoa" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td><a id='lblCustno'>客戶編號</a></td>
+					<td><input id="txtCustno" type="text"/></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td><a id='lblCust'>客戶名稱</a></td>
+					<td><input id="txtCust" type="text"/></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->

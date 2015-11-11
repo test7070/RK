@@ -191,7 +191,7 @@
             function _btnSeek() {
                 if (q_cur > 0 && q_cur < 4)// 1-3
                     return;
-                q_box('quat_rk_s.aspx', q_name + '_s', "500px", "310px", q_getMsg("popSeek"));
+                q_box('quat_rk_s.aspx', q_name + '_s', "550px", "400px", q_getMsg("popSeek"));
             }
 
             function combPay_chg() {
