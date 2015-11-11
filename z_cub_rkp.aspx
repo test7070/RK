@@ -75,10 +75,11 @@
             }
 			function q_funcPost(t_func, result) {
                 switch(t_func) {
-                    case 'ucf.bcc':
+                	//改成批號領料,成本單價改由VIEW_UCCB抓
+                    /*case 'ucf.bcc':
                         alert('計算完成。');
                         Unlock(1);
-                        break;
+                        break;*/
                     default:
                         break;
                 }
@@ -98,7 +99,7 @@
 	ondrop="event.dataTransfer.dropEffect='none';event.stopPropagation(); event.preventDefault();">
 		<div id="q_menu"> </div>
 		<div style="position: absolute;top: 10px;left:50px;z-index: 1;width:2000px;">
-			<input type="button" id="btnCostbcc" value="物料成本計算"/>
+			<!--<input type="button" id="btnCostbcc" value="物料成本計算"/>-->
 			<div id="container">
 				<div id="q_report"> </div>
 			</div>
