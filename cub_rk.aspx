@@ -43,7 +43,8 @@
 				,['txtSpec_', 'btnSpec_', 'spec', 'noa,product', 'txtSpec_', 'spec_b.aspx']
 				,['txtProductno__', 'btnProduct__', 'bcc', 'noa,product', 'txtProductno__,txtProduct__', 'bcc_b.aspx']
 				,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtProcess_', 'ucc_b.aspx']
-            	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtFlower_', 'ucc_b.aspx']);
+            	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtFlower_', 'ucc_b.aspx']
+            	,['txtUno__', 'btnUno__', 'view_uccc2', 'uno,productno,product,eweight', '0txtUno__,txtProductno__,txtProduct__,txtWeight__', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']);
 			
 			
 			$(document).ready(function() {
@@ -452,6 +453,12 @@
                             e.preventDefault();
                             var n = $(this).attr('id').replace('txtProductno__', '');
                             $('#btnProduct__'+n).click();
+                        });
+                        $('#txtUno__' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtUno__', '');
+                            $('#btnUno__'+n).click();
                         });
                     }
                 }
@@ -926,15 +933,17 @@
 							<input class="txt" id="txtNor..*" type="text" style="display: none;"/>
 						</td>
 						<td><a id="lblNo..*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
-						<td><input class="txt" id="txtUno..*" type="text" style="width:95%;" /></td>
+						<td>
+							<input class="txt" id="txtUno..*" type="text" style="width:95%;" />
+							<input id="btnUno..*" type="button" style="display:none;" />
+						</td>
 						<td>
 							<input class="txt" id="txtProductno..*" type="text" style="width:45%;float:left;"/>
 							<input class="txt" id="txtProduct..*" type="text" style="width:45%;float:left;"/>
 							<input id="btnProduct..*" type="button" style="display:none;">
 						</td>
-						<!-- 物料都用ＭＯＵＮＴ計算 -->
-						<td><input class="txt" id="txtMount..*" type="text" style="width:95%;text-align: right;"/></td>
-						<!--<td><input class="txt" id="txtWeight..*" type="text" style="width:95%;text-align: right;"/></td>-->
+						<!--<td><input class="txt" id="txtMount..*" type="text" style="width:95%;text-align: right;"/></td>-->
+						<td><input class="txt" id="txtWeight..*" type="text" style="width:95%;text-align: right;"/></td>
 						<td><input class="txt" id="txtMemo..*" type="text" style="width:95%;" /></td>
 					</tr>
 				</tbody>

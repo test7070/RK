@@ -129,7 +129,7 @@ z_cubp_rk01:--z_cubp_rk01
 		select @t_bdime=0,@t_productno2='',@t_product2=''
 			,@t_need=0,@t_edime=0,@t_bspec='',@t_hmount=0,@t_wmount=0
 		--bdime 前處理液總用量
-		select @t_bdime=isnull(a.mount,0)
+		select @t_bdime=isnull(a.weight,0)
 		from view_cubt a
 		left join bcc b on a.productno=b.noa
 		left join bcctype c on b.typea=c.noa
@@ -137,26 +137,26 @@ z_cubp_rk01:--z_cubp_rk01
 		--Productno2 接著劑型號
 		--Product2 接著劑規格
 		--need 接著劑總用量 (kg)
-		select @t_productno2=a.productno,@t_product2=a.product,@t_need=isnull(a.mount,0)
+		select @t_productno2=a.productno,@t_product2=a.product,@t_need=isnull(a.weight,0)
 		from view_cubt a
 		left join bcc b on a.productno=b.noa
 		left join bcctype c on b.typea=c.noa
 		where a.noa=@noa and a.nor=@noq and CHARINDEX('接著劑',c.namea)>0
 		--edime 稀釋液用量/清洗(KG)
-		select @t_edime=isnull(a.mount,0)
+		select @t_edime=isnull(a.weight,0)
 		from view_cubt a
 		left join bcc b on a.productno=b.noa
 		left join bcctype c on b.typea=c.noa
 		where a.noa=@noa and a.nor=@noq and CHARINDEX('稀釋液',a.product)>0 and CHARINDEX('背漆稀釋液',a.product)=0
 		--bspec 背漆型號規格
 		--hmount 背漆重量 
-		select @t_bspec=a.product,@t_hmount=isnull(a.mount,0)
+		select @t_bspec=a.product,@t_hmount=isnull(a.weight,0)
 		from view_cubt a
 		left join bcc b on a.productno=b.noa
 		left join bcctype c on b.typea=c.noa
 		where a.noa=@noa and a.nor=@noq and CHARINDEX('背漆',c.namea)>0 and CHARINDEX('背漆稀釋液',a.product)=0
 		--wmount 背漆稀釋液總用量(KG)
-		select @t_wmount=isnull(a.mount,0)
+		select @t_wmount=isnull(a.weight,0)
 		from view_cubt a
 		left join bcc b on a.productno=b.noa
 		left join bcctype c on b.typea=c.noa
@@ -170,7 +170,7 @@ z_cubp_rk01:--z_cubp_rk01
 			left join bcctype c on b.typea=c.noa
 			where a.noa=@noa and a.nor=@noq and CHARINDEX('面漆',c.namea)>0)
 		begin
-			select @t_spec=a.product,@t_hard=isnull(a.mount,0)
+			select @t_spec=a.product,@t_hard=isnull(a.weight,0)
 			from view_cubt a
 			left join bcc b on a.productno=b.noa
 			left join bcctype c on b.typea=c.noa
