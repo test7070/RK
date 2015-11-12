@@ -1,0 +1,51 @@
+post:--post  get_rk	
+	SET QUOTED_IDENTIFIER OFF 
+	declare @cmd nvarchar(max) 
+	declare @t_noa nvarchar(20) = [1]
+	declare @t_condition nvarchar(10) = [2]
+	declare @t_userno nvarchar(20) = [3]
+	--------------------------------------------------------
+	declare @t_accy nvarchar(20)
+	--------------------------------------------------------
+	if @t_condition='0'
+	begin
+		--刪除入庫單
+		select @t_accy=''
+		select @t_accy=accy from view_get where noa=@t_noa
+		set @cmd ="delete ina"+@t_accy+" where noa=@t_noa"
+		execute sp_executesql @cmd,N'@t_noa nvarchar(20)',@t_noa=@t_noa
+		
+		set @cmd = "delete inas"+@t_accy+" where noa=@t_noa"
+		execute sp_executesql @cmd,N'@t_noa nvarchar(20)',@t_noa=@t_noa
+	end
+	else if @t_condition='1'
+	begin
+		declare @datea nvarchar(10)=''
+		declare @uno nvarchar(30) = ''
+		declare @productno nvarchar(50) = ''
+		declare @product nvarchar(50) = ''
+		declare @mount float = 1
+		declare @weight float = 0
+		declare @money float = 0
+		declare @price float
+		
+		select @datea=a.datea,@uno=a.idno,@productno=a.productno,@product=a.product
+			,@weight=a.[weight],@money=a.[money]
+		from view_get a
+		where noa=@t_noa
+		
+		set @price = case when @weight=0 then 0 else ROUND(@money/@weight,2) end
+		
+		insert into ina104(datea,noa)values(@datea,@t_noa)
+		insert into inas104(noa,noq,uno,productno,product,mount,[weight],price,total)
+		values(@t_noa,'001',@uno,@productno,@product,@mount,@weight,@price,@money)
+		insert into drun(datea,timea,usera,[action],noa,tablea,title,memo)
+		select dbo.AD2ChineseEraName( CONVERT(nvarchar,getdate(),111))
+			,LEFT(CONVERT(nvarchar,getdate(),108),5)
+			,@t_userno
+			,'Insert'
+			,@t_noa
+			,'ina'
+			,''
+			,'領料組合作業'
+	end;
