@@ -127,6 +127,45 @@
 				if (!(q_cur == 1 || q_cur == 2))
 					return false;
 				Unlock(1);
+				var t_noa = $('#txtNoa').val();
+					if(t_noa.length>0){
+						q_func('qtxt.query.postUpdate', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+						//var item = {action:'post0',noa:t_noa,condition:'0',userno:r_userno};
+					//	alert('000')
+						//q_func('qtxt.query.'+JSON.stringify(item), 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+					}
+			}
+			function q_funcPost(t_func, result) {
+				switch(t_func) {
+					case 'qtxt.query.postDelete':
+						//done;
+						break;
+					case 'qtxt.query.postUpdate':
+						var t_noa = $('#txtNoa').val();
+						if(t_noa.length>0){
+							q_func('qtxt.query.post1', 'get_rk.txt,post,'+t_noa+';1;' + r_userno );
+						}
+						break;
+					case 'qtxt.query.post1':
+						//done;
+						break;
+					/*default:
+						try{
+							if(t_func.substring(0,11)=='qtxt.query.'){
+								alert(t_func.substring(11,t_func.length))	
+								t_para = JSON.parse(t_func.substring(11,t_func.length));
+								
+								if(t_para.action=='post0'){
+									var item = {action:'post1',noa:t_para.noa,condition:'1',userno:t_para.userno};
+									alert('111')
+									q_func('qtxt.query.'+JSON.stringify(item), 'get_rk.txt,post,'+t_para.noa+';1;' + t_para.userno +';');
+								}else if(t_para.action=='post1'){
+									//done!!
+								}
+							}
+						}catch(e){}
+						break;*/
+				}
 			}
 			
 			function _btnSeek() {
@@ -254,7 +293,11 @@
 			}
 
 			function btnDele() {
+				var t_noa = $('#txtNoa').val();
 				_btnDele();
+				if(t_noa.length>0){
+					q_func('qtxt.query.postDelete', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+				}
 			}
 
 			function btnCancel() {
