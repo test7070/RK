@@ -57,6 +57,7 @@
                 
                 $('#txtXdate').mask('999/99/99');
                 $('#txtXdate').datepicker();
+                $('#txtXdate').val(q_date());
                 
 	            $('#textBmon').mask('999/99');
                 $('#textEmon').mask('999/99');
