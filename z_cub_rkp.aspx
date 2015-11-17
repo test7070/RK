@@ -36,7 +36,10 @@
 					},{//[4][5]
                         type : '1',
                         name : 'xmon'
-                    }]
+                    },{
+						type : '6', //[6]
+						name : 'xdate'
+					}]
 				});
 				q_popAssign();
 
@@ -51,6 +54,9 @@
 	            }
 	            $('#txtXmon1').mask('999/99');
                 $('#txtXmon2').mask('999/99');
+                
+                $('#txtXdate').mask('999/99/99');
+                $('#txtXdate').datepicker();
                 
 	            $('#textBmon').mask('999/99');
                 $('#textEmon').mask('999/99');

@@ -1134,3 +1134,57 @@ z_cub_rkp03:--z_cub_rkp03
 		,dbo.getComma(money07,-1) a28
 	from @tmp 
 	order by gno,sel;
+
+z_cub_rkp04:--z_cub_rkp04
+	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
+	declare @t_date nvarchar(20) = case when '#non' = [6] then char(255) else [6] end
+	--------------------------------------------------------------------------------------------------
+	declare @table nvarchar(20)
+	declare @tables nvarchar(20)
+	
+	declare cursor_table cursor for
+	SELECT replace(TABLE_NAME,'rc2s','rc2'),TABLE_NAME 
+	FROM INFORMATION_SCHEMA.TABLES 
+	where TABLE_NAME like 'rc2s[0-9][0-9][0-9]%' 
+	open cursor_table
+	fetch next from cursor_table
+	into @table,@tables
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		set @cmd="
+		update "+@tables+" set sprice=a.price,sprice2=a.price 
+		from "+@tables+" a
+		left join "+@table+" b on a.noa=b.noa
+		where b.datea<=@t_date"
+		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_date
+		
+		fetch next from cursor_table
+		into @table,@tables
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	declare cursor_table cursor for
+	SELECT replace(TABLE_NAME,'inas','ina'),TABLE_NAME 
+	FROM INFORMATION_SCHEMA.TABLES 
+	where TABLE_NAME like 'inas[0-9][0-9][0-9]%' 
+	open cursor_table
+	fetch next from cursor_table
+	into @table,@tables
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		set @cmd="
+		update "+@tables+" set sprice=a.price,sprice2=a.price 
+		from "+@tables+" a
+		left join "+@table+" b on a.noa=b.noa
+		where b.datea<=@t_date"
+		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_date
+		
+		fetch next from cursor_table
+		into @table,@tables
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	select '0' gno, '結轉完成!' msg;
