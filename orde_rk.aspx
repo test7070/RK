@@ -265,7 +265,8 @@
 		                			$('#txtPaytype').val(as[0].paytype);	
 		                			$('#txtMemo2').val(as[0].memo2);
 		                			$('#txtFax').val(as[0].fax);
-		                			$('#txtTel').val(as[0].tel);		
+		                			$('#txtTel').val(as[0].tel);
+		                			$('#txtMemo').val(as[0].memo.replace('chr(10)','\n'));
 		                		}
                     			sum();
                     		}

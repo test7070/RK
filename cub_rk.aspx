@@ -121,7 +121,7 @@
 						return;
 					var t_noa = $('#txtNoa').val();
                 	var t_where ='';
-                	q_box("orde_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,page:'cub_rk'}), "orde_cub", "95%", "95%", '');
+                	q_box("orde_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,page:'cub_rk'}), "orde_cub", "100%", "100%", '');
 				});
 			}
 

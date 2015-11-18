@@ -78,7 +78,7 @@ z_cub_rk03:--z_cub_rk03
 		,ordeno,no2)
 	select a.accy,a.noa,a.noq,b.datea,a.makeno,a.custno,a.comp
 		,a.size,a.uno,a.dime,a.width,a.mount,a.weight
-		,a.spec,a.uno2,a.radius,a.lengthb,a.hard,a.lengthb
+		,a.spec,a.uno2,a.radius,a.lengthb,a.hard,a.lengthb2
 		,'',a.uno3,0,0,a.lengthc,a.w06
 		,'',a.uno4,0,0,a.w07,a.w08
 		,a.w09,a.hweight,a.price
