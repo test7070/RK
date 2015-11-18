@@ -458,7 +458,7 @@
 						<td><input id="txtNoa" type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
-						<td><span> </span><a id="lblIdno" class="lbl" > </a></td>
+						<td><span> </span><a class="lbl" >入庫批號</a></td>
 						<td colspan="2"><input id="txtIdno" type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
