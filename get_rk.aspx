@@ -85,14 +85,7 @@
 				b_pop = '';
 			}
 
-			function q_gtPost(t_name) {
-				switch (t_name) {
-					case q_name:
-						if (q_cur == 4)
-							q_Seek_gtPost();
-						break;
-				}
-			}
+			
 
 			function btnOk() {
 				t_err = q_chkEmpField([['txtNoa', q_getMsg('lblNoa')]]);
@@ -128,43 +121,65 @@
 					return false;
 				Unlock(1);
 				var t_noa = $('#txtNoa').val();
-					if(t_noa.length>0){
-						q_func('qtxt.query.postUpdate', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
-						//var item = {action:'post0',noa:t_noa,condition:'0',userno:r_userno};
-					//	alert('000')
-						//q_func('qtxt.query.'+JSON.stringify(item), 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
-					}
+				if(t_noa.length>0){
+					q_gt('view_ina', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_ina",1);
+				}
+			}
+			function q_gtPost(t_name) {
+				switch (t_name) {
+					case 'isexist_ina':
+						var t_noa = $('#txtNoa').val();
+						var as = _q_appendData("view_ina", "", true);
+						if(as[0]!=undefined){
+							q_func('ina_post.post.post0', r_accy + ',' + t_noa + ',0');
+						}else{
+							q_func('qtxt.query.post0', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+						}
+						break;
+					case 'isexist_ina_delete':
+						var t_noa = $('#txtNoa').val();
+						var as = _q_appendData("view_ina", "", true);
+						if(as[0]!=undefined){
+							q_func('ina_post.post.post0_delete', r_accy + ',' + t_noa + ',0');
+						}else{
+							q_func('qtxt.query.post0_delete', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+						}
+						break;
+					case q_name:
+						if (q_cur == 4)
+							q_Seek_gtPost();
+						break;
+				}
 			}
 			function q_funcPost(t_func, result) {
 				switch(t_func) {
-					case 'qtxt.query.postDelete':
-						//done;
-						break;
-					case 'qtxt.query.postUpdate':
+					case 'ina_post.post.post0':
 						var t_noa = $('#txtNoa').val();
 						if(t_noa.length>0){
-							q_func('qtxt.query.post1', 'get_rk.txt,post,'+t_noa+';1;' + r_userno );
+							q_func('qtxt.query.post0', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+						}
+						break;
+					case 'qtxt.query.post0':
+						var t_noa = $('#txtNoa').val();
+						if(t_noa.length>0){
+							q_func('qtxt.query.post1', 'get_rk.txt,post,'+t_noa+';1;' + r_userno );	
 						}
 						break;
 					case 'qtxt.query.post1':
-						//done;
+						var t_noa = $('#txtNoa').val();
+						if(t_noa.length>0){
+							q_func('ina_post.post', r_accy + ',' + t_noa + ',1');
+						}
 						break;
-					/*default:
-						try{
-							if(t_func.substring(0,11)=='qtxt.query.'){
-								alert(t_func.substring(11,t_func.length))	
-								t_para = JSON.parse(t_func.substring(11,t_func.length));
-								
-								if(t_para.action=='post0'){
-									var item = {action:'post1',noa:t_para.noa,condition:'1',userno:t_para.userno};
-									alert('111')
-									q_func('qtxt.query.'+JSON.stringify(item), 'get_rk.txt,post,'+t_para.noa+';1;' + t_para.userno +';');
-								}else if(t_para.action=='post1'){
-									//done!!
-								}
-							}
-						}catch(e){}
-						break;*/
+					case 'ina_post.post.post0_delete':
+						var t_noa = $('#txtNoa').val();
+						if(t_noa.length>0){
+							q_func('qtxt.query.post0_delete', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+						}
+						break;
+					case 'qtxt.query.post0_delete':
+						_btnOk($('#txtNoa').val(), bbmKey[0], ( bbsHtm ? bbsKey[1] : ''), '', 3);
+						break;
 				}
 			}
 			
@@ -293,10 +308,17 @@
 			}
 
 			function btnDele() {
+				 if (emp($('#txtNoa').val()))
+                    return;
+
+                if (!confirm(mess_dele))
+                    return;
+                q_cur = 3;
+
 				var t_noa = $('#txtNoa').val();
-				_btnDele();
+				//_btnDele();
 				if(t_noa.length>0){
-					q_func('qtxt.query.postDelete', 'get_rk.txt,post,'+t_noa+';0;' + r_userno );
+					q_gt('view_ina', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_ina_delete",1);
 				}
 			}
 

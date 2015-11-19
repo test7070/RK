@@ -28,9 +28,10 @@ post:--post  get_rk
 		declare @weight float = 0
 		declare @money float = 0
 		declare @price float
+		declare @memo nvarchar(max)=''
 		
 		select @t_accy=a.accy,@datea=a.datea,@uno=a.idno,@productno=a.productno,@product=a.product
-			,@weight=a.[weight],@money=a.[money]
+			,@weight=a.[weight],@money=a.[money],@memo=a.memo
 		from view_get a
 		where noa=@t_noa
 		
@@ -39,14 +40,14 @@ post:--post  get_rk
 		if len(@t_accy)>0
 		begin
 			--都當成物料
-			set @cmd = "insert into ina"+@t_accy+"(datea,noa,itype,typea,kind)values(@datea,@t_noa,'1','生產入庫','F6')"
+			set @cmd = "insert into ina"+@t_accy+"(datea,noa,itype,typea,kind,storeno,store)values(@datea,@t_noa,'1','生產入庫','F6','','')"
 			execute sp_executesql @cmd,N'@datea nvarchar(20),@t_noa nvarchar(20)'
 				,@datea=@datea,@t_noa=@t_noa
 			
-			set @cmd = "insert into inas"+@t_accy+"(noa,noq,uno,productno,product,mount,[weight],price,total)
-				values(@t_noa,'001',@uno,@productno,@product,@mount,@weight,@price,@money)"
-			execute sp_executesql @cmd,N'@t_noa nvarchar(20),@uno nvarchar(30),@productno nvarchar(50),@product nvarchar(100),@mount float,@weight float,@price float,@money float'
-				,@t_noa=@t_noa,@uno=@uno,@productno=@productno,@product=@product,@mount=@mount,@weight=@weight,@price=@price,@money=@money
+			set @cmd = "insert into inas"+@t_accy+"(noa,noq,uno,productno,product,mount,[weight],price,total,storeno,store,dime,width,lengthb,radius,memo)
+				values(@t_noa,'001',@uno,@productno,@product,@mount,@weight,@price,@money,'','',0,0,0,0,@memo)"
+			execute sp_executesql @cmd,N'@t_noa nvarchar(20),@uno nvarchar(30),@productno nvarchar(50),@product nvarchar(100),@mount float,@weight float,@price float,@money float,@memo nvarchar(max)'
+				,@t_noa=@t_noa,@uno=@uno,@productno=@productno,@product=@product,@mount=@mount,@weight=@weight,@price=@price,@money=@money,@memo=@memo
 			
 			
 			insert into drun(datea,timea,usera,[action],noa,tablea,title,memo)
