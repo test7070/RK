@@ -82,6 +82,7 @@
                 bbmMask = [['txtDatea', r_picd]];
                 bbsMask = [['txtDatea',r_picd],['txtBtime','99:99'],['txtEtime','99:99']];
                 q_mask(bbmMask);
+                q_cmbParse("cmbKind", q_getPara('sys.stktype'));
 				q_cmbParse("cmbTypea", '製成品,再製品');
 				
 				$('#btnOrde').click(function() {
@@ -186,6 +187,10 @@
                     alert(q_getMsg('lblDatea') + '錯誤。');
                     Unlock(1);
                     return;
+                }
+                for(var i=0;i<q_bbsCount;i++){
+                	if($('#txtDatea_'+i).val().length==0)
+                		$('#txtDatea_'+i).val($('#txtDatea').val());
                 }
                 
                 if (q_cur == 1)
@@ -330,7 +335,7 @@
             }
 
             function bbsSave(as) {
-                if (!as['ordeno']) {
+                if (!as['ordeno'] && !as['bno']) {
                     as[bbsKey[1]] = '';
                     return;
                 }
@@ -590,8 +595,10 @@
 						<td><input id="txtDatea"  type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
-						<td><span> </span><a class="lbl">入庫類型</a></td>
-						<td><select id="cmbTypea" class="txt c1"> </select></td>
+						<td><span> </span><a class="lbl">類別</a></td>
+						<td>
+							<select id="cmbKind" class="txt c1"> </select>
+							<select id="cmbTypea" class="txt c1" style="display:none;"> </select></td>
 						<td></td>
 						<td><input type="button" id="btnOrde" value="訂單匯入" /></td>
 					</tr>
