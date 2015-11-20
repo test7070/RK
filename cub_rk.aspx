@@ -283,7 +283,10 @@
                 		}
                 	}	
             	}    
-                
+                //寫入bbt  gweight
+        		for(var i=0;i<q_bbtCount;i++){
+        			$('#txtGweight__'+i).val($('#txtWeight__'+i).val());
+            	}	
                 
                 sum();
                 refreshBbt();
@@ -943,7 +946,10 @@
 							<input id="btnProduct..*" type="button" style="display:none;">
 						</td>
 						<!--<td><input class="txt" id="txtMount..*" type="text" style="width:95%;text-align: right;"/></td>-->
-						<td><input class="txt" id="txtWeight..*" type="text" style="width:95%;text-align: right;"/></td>
+						<td>
+							<input class="txt" id="txtWeight..*" type="text" style="width:95%;text-align: right;"/>
+							<input class="txt" id="txtGweight..*" type="text" style="display:none;"/>
+						</td>
 						<td><input class="txt" id="txtMemo..*" type="text" style="width:95%;" /></td>
 					</tr>
 				</tbody>
