@@ -36,7 +36,7 @@
 				,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtSpec_', 'btnSpec_', 'spec', 'noa,product', 'txtSpec_,txtClass_', 'spec_b.aspx']
             	,['txtCardealno', 'lblCardeal', 'cardeal', 'noa,comp', 'txtCardealno,txtCardeal', 'cardeal_b.aspx']
-				,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,emount,eweight,productno,product,dime,radius,width,lengthb,spec,class', '0txtUno_,txtMount_,txtWeight_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']
+				,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,mount,weight,productno,product,dime,radius,width,lengthb,spec,class', '0txtUno_,txtMount_,txtWeight_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']
 			);
 			brwCount2 = 12;
 			$(document).ready(function() {
@@ -310,8 +310,8 @@
                     case 'cut_vcc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtUno,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice'
-                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,unit,price', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtUno,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice,txtMount,txtWeight'
+                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,unit,price,mount,weight', '','');             	
                         	//訂單資料
                         	var t_ordeno = $('#txtOrdeno_0').length>0?$('#txtOrdeno_0').val():'';
                     		q_gt('view_orde', "where=^^ noa='"+t_ordeno+"' ^^", 0, 0, 0, JSON.stringify({action:'importOrde'}));
