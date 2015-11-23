@@ -114,8 +114,8 @@
                 	case 'orde_cut':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtSpec,txtClass,txtMount,txtWeight,txtCustno,txtComp,txtDime,txtWidth,txtLengthb,txtRadius'
-                        	, as.length, as, 'noa,no2,spec,class,mount,weight,custno,comp,dime,width,lengthb,radius', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtSpec,txtClass,txtMount,txtWeight,txtCustno,txtComp,txtDime,txtWidth,txtLengthb,txtRadius,txtProductno,txtProduct'
+                        	, as.length, as, 'noa,no2,scolor,class,mount,weight,custno,comp,dime,width,lengthb,radius,productno,product', '','');             	
                         }else{
                         	Unlock(1);
                         }
@@ -157,15 +157,15 @@
 		                			$('#txtCustno_'+t_para.n).val(as[0].custno);
 		                			$('#txtComp_'+t_para.n).val(as[0].comp);
 		                			$('#txtProductno_'+t_para.n).val(as[0].productno);
-		                			$('#txtproduct_'+t_para.n).val(as[0].product);
+		                			$('#txtProduct_'+t_para.n).val(as[0].product);
 		                			$('#txtDime_'+t_para.n).val(as[0].dime);
 		                			$('#txtRadius_'+t_para.n).val(as[0].radius);
 		                			$('#txtWidth_'+t_para.n).val(as[0].width);
 		                			$('#txtLengthb_'+t_para.n).val(as[0].lengthb);
-		                			$('#txtSpec_'+t_para.n).val(as[0].spec);
+		                			$('#txtSpec_'+t_para.n).val(as[0].scolor);
 		                			$('#txtClass_'+t_para.n).val(as[0].class);
 		                			$('#txtUcolor_'+t_para.n).val(as[0].ucolor);
-		                			$('#txtsource_'+t_para.n).val(as[0].source);	
+		                			$('#txtSource_'+t_para.n).val(as[0].source);	
 		                		}else{
 		                			alert('找不到訂單【'+t_para.ordeno+'-'+t_para.no2+'】');
 		                		}
@@ -623,7 +623,8 @@
 					<td style="width:200px;">訂單號碼</td>
 					<td style="width:200px;">製造批號</td>
 					<td style="width:200px;">Coil編號</td>
-					<td style="width:400px;">規格</td>
+					<td style="width:100px;">品名</td>
+					<td style="width:400px;">皮膜<BR>規格</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
 					<td style="width:200px;">客戶</td>
@@ -648,10 +649,12 @@
 					<td><input id="txtCname.*" type="text" style="float:left;width:95%;"/></td>
 					<td><input id="txtUno.*" maxlength="20" type="text" style="float:left;width:95%;"/></td>			
 					<td>
+						<input id="txtProductno.*" type="text" style="float:left;width:95%;"/>
+						<input id="txtProduct.*" type="text" style="float:left;width:95%;"/>
+					</td>
+					<td>
 						<input id="txtSpec.*" type="text" style="float:left;width:45%;"/>
 						<input id="txtClass.*" type="text" style="float:left;width:45%;"/>
-						<input id="txtProductno.*" type="text" style="display:none;"/>
-						<input id="txtProduct.*" type="text" style="display:none;"/>
 						<input id="txtUcolor.*" type="text" style="display:none;"/>
 						<input id="txtSource.*" type="text" style="display:none;"/>
 						<input id="txtDime.*" type="text" class="txt num" style="float:left;width:22%;"/>

@@ -18,9 +18,9 @@
 			q_tables = 's';
 			var q_name = "vcc";
 			var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
-			var q_readonlys = [];
+			var q_readonlys = ['txtTotal'];
 			var bbmNum = [];
-			var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1]];
+			var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtLengthc', 10, 0, 1], ['txtPrice', 15, 3, 1]];
 			var bbmMask = [];
 			var bbsMask = [];
 			q_sqlCount = 6;
@@ -36,6 +36,7 @@
 				,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtSpec_', 'btnSpec_', 'spec', 'noa,product', 'txtSpec_,txtClass_', 'spec_b.aspx']
             	,['txtCardealno', 'lblCardeal', 'cardeal', 'noa,comp', 'txtCardealno,txtCardeal', 'cardeal_b.aspx']
+				,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,productno,product,dime,radius,width,lengthb,spec,class', '0txtUno_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']
 			);
 			brwCount2 = 12;
 			$(document).ready(function() {
@@ -81,12 +82,9 @@
 					}
 					t_weights = q_float('txtWeight_' + j);
 					t_prices = q_float('txtPrice_' + j);
-					t_mounts = q_float('txtMount_' + j);
-					if (t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓') {
-						t_moneys = q_mul(t_prices, t_weights);
-					} else {
-						t_moneys = q_mul(t_prices, t_mounts);
-					}
+					t_count = (t_unit=='KG' || t_unit=='公斤'|| t_unit=='噸'|| t_unit.length==0)?q_float('txtWeight_'+j):q_float('txtMount_'+j);
+					t_moneys = round(q_mul(q_float('txtPrice_'+j),t_count),0);
+					
 					if (t_float == 0) {
 						t_moneys = round(t_moneys, 0);
 					} else {
@@ -96,9 +94,11 @@
 					var t_styles = $.trim($('#txtStyle_' + j).val());
 					var t_unos = $.trim($('#txtUno_' + j).val());
 					var t_dimes = $.trim($('#txtDime_' + j).val());
+					
+					//判斷需不需要加到重量總計,有時候只是打備註用,可以忽略
 					if (!(t_styles == '' && t_unos == '' && t_dimes == 0))
 						t_weight = q_add(t_weight, t_weights);
-					t_mount = q_add(t_mount, t_mounts);
+
 					t_money = q_add(t_money, t_moneys);
 					$('#txtTotal_' + j).val(t_moneys);
 				}
@@ -422,11 +422,26 @@
 			}
 
 			function bbsAssign() {/// 表身運算式
-				for (var j = 0; j < q_bbsCount; j++) {
-					$('#lblNo_' + j).text(j + 1);
-					if (!$('#btnMinus_' + j).hasClass('isAssign')) {
+				for (var i = 0; i < q_bbsCount; i++) {
+					$('#lblNo_' + i).text(i + 1);
+					if (!$('#btnMinus_' + i).hasClass('isAssign')) {
+						$('#txtUnit_' + i).change(function() {
+								sum();
+						});
+						$('#txtWeight_' + i).change(function() {
+								sum();
+						});
+						$('#txtPrice_' + i).change(function() {
+								sum();
+						});
+						$('#txtUno_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtUno_', '');
+                            $('#btnUno_'+n).click();
+                        });
 					}
-				}//j
+				}
 				_bbsAssign();
 			}
 
@@ -854,7 +869,7 @@
 					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
-					<td style="width:80px;">單價(KG)</td>
+					<td style="width:80px;">單價</td>
 					<td style="width:80px;">金額</td>
 					<td style="width:200px;">備註</td>
 					<td style="width:200px;">訂單編號</td>
@@ -865,7 +880,10 @@
 						<input id="txtNoq.*" type="text" style="display: none;"/>
 					</td>
 					<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
-					<td><input id="txtUno.*" type="text" class="txt c1"/></td>
+					<td>
+						<input id="txtUno.*" type="text" class="txt c1"/>
+						<input id="btnUno.*" type="button" style="display:none;"/>
+					</td>
 					<td>
 						<input id="txtProductno.*" type="text" style="width:45%"/>
 						<input id="txtProduct.*" type="text" style="width:45%"/>
