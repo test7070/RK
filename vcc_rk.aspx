@@ -36,7 +36,7 @@
 				,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtSpec_', 'btnSpec_', 'spec', 'noa,product', 'txtSpec_,txtClass_', 'spec_b.aspx']
             	,['txtCardealno', 'lblCardeal', 'cardeal', 'noa,comp', 'txtCardealno,txtCardeal', 'cardeal_b.aspx']
-				,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,productno,product,dime,radius,width,lengthb,spec,class', '0txtUno_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']
+				,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,emount,eweight,productno,product,dime,radius,width,lengthb,spec,class', '0txtUno_,txtMount_,txtWeight_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']
 			);
 			brwCount2 = 12;
 			$(document).ready(function() {
@@ -511,6 +511,9 @@
 
 			function q_popPost(s1) {
 				switch (s1) {
+					case 'txtUno_':
+						sum();
+						break;
 					default:
 						break;
 				}
