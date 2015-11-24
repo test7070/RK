@@ -87,9 +87,9 @@
 			<table id="tFixedTitle" class='tFixedTitle'  border="2"  cellpadding='2' cellspacing='1' style='width:100%;'  >
 				<tr style='color:white; background:#003366;' >
 					<th align="center" style="width:2%;"><input type="checkbox" id="checkAllCheckbox"/></th>
-					<td align="center" style="width:10%;">單號</td>
+					<td align="center" style="width:10%;">製造批號</td>
 					<td align="center" style="width:5%;">客戶</td>
-					<td align="center" style="width:15%;">品名</td>
+					<td align="center" style="width:10%;">品名</td>
 					<td align="center" style="width:5%;">厚</td>
 					<td align="center" style="width:5%;">皮膜厚</td>
 					<td align="center" style="width:5%;">寬</td>
@@ -110,9 +110,9 @@
 			<table id="tbbs" class='tbbs' border="2" cellpadding='2' cellspacing='1' style='width:100%;' >
 				<tr style="display:none;">
 					<th align="center" style="width:2%;"></th>
-					<td align="center" style="width:10%;">單號</td>
+					<td align="center" style="width:10%;">製造批號</td>
 					<td align="center" style="width:5%;">客戶</td>
-					<td align="center" style="width:15%;">品名</td>
+					<td align="center" style="width:10%;">品名</td>
 					<td align="center" style="width:5%;">厚</td>
 					<td align="center" style="width:5%;">皮膜厚</td>
 					<td align="center" style="width:5%;">寬</td>
@@ -130,14 +130,15 @@
 				<tr style='background:#cad3ff;'>
 					<td style="width:2%;"><input type="checkbox" class="ccheck" id="chkSel.*"/></td>
 					<td style="width:10%;">
+						<input id="txtMakeno.*" type="text" style="float:left;width:95%;"  readonly="readonly" />
 						<input id="txtAccy.*" type="text" style="display:none;"  readonly="readonly" />
-						<input id="txtNoa.*" type="text" style="float:left;width:75%;"  readonly="readonly" />
-						<input id="txtNo2.*" type="text" style="float:left;width:25%;"  readonly="readonly" />
+						<input id="txtNoa.*" type="text" style="display:none;"  readonly="readonly" />
+						<input id="txtNo2.*" type="text" style="display:none;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtNick.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:15%;">
-						<input id="txtProductno.*" type="text" style="float:left;width:30%;"  readonly="readonly" />
-						<input id="txtProduct.*" type="text" style="float:left;width:65%;"  readonly="readonly" />
+					<td style="width:10%;">
+						<input id="txtProductno.*" type="text" style="float:left;width:25%;"  readonly="readonly" />
+						<input id="txtProduct.*" type="text" style="float:left;width:60%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtDime.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtRadius.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
@@ -150,12 +151,12 @@
 					</td>
 					<td style="width:5%;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;">
-						<input id="txtZinc.*" type="text" style="display:none;"  readonly="readonly" />
-						<input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
+						<input id="txtScolor.*" type="text" style="display:none;"  readonly="readonly" />
+						<input id="txtProcess.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;">
-						<input id="txtHard.*" type="text" style="display:none;"  readonly="readonly" />
-						<input id="txtUno.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
+						<input id="txtZinc.*" type="text" style="display:none;"  readonly="readonly" />
+						<input id="txtFlower.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtMount.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtWeight.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>

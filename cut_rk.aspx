@@ -90,7 +90,7 @@
 						return;
 					var t_noa = $('#txtNoa').val();
                 	var t_where ='';
-                	q_box("orde_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk'}), "orde_cut", "95%", "95%", '');
+                	q_box("orde_cut_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk'}), "orde_cut", "95%", "95%", '');
 				});
             }
 
@@ -600,7 +600,7 @@
 							<select id="cmbKind" class="txt c1"> </select>
 							<select id="cmbTypea" class="txt c1" style="display:none;"> </select></td>
 						<td></td>
-						<td><input type="button" id="btnOrde" value="訂單匯入" /></td>
+						<td><input type="button" id="btnOrde" value="生產匯入" /></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl"> </a></td>
