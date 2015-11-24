@@ -194,12 +194,12 @@ z_cub_rkp01:--z_cub_rkp01
 	declare @money float
 	-------------------------------------------------------------------------------------------------------------
 	declare cursor_table cursor for
-	select a.sel,a.noa,a.noq,isnull(d.typea,''),c.productno,c.[weight],LEFT(isnull(b.datea,''),6) 
+	select a.sel,a.noa,a.noq,isnull(d.groupano,''),c.productno,c.[weight],LEFT(isnull(b.datea,''),6) 
 		,e.sprice
 		from @tmpb a
 		left join view_cub b on a.noa=b.noa
 		left join view_cubt c on a.noa=c.noa and a.noq=c.nor
-		left join bcc d on c.productno=d.noa
+		left join ucc d on c.productno=d.noa
 		left join view_uccb e on c.uno=e.uno
 		where b.noa is not null
 		and c.noa is not null

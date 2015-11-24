@@ -110,45 +110,45 @@ z_cub_rk03:--z_cub_rk03
 	left join(select a.sel,SUM(ISNULL(b.weight,0)) mount
 	from @tmp a
 	left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
-	left join bcc c on b.productno=c.noa
+	left join ucc c on b.productno=c.noa
 	where len(ISNULL(b.productno,''))>0
-	and c.typea = 'A01' group by a.sel)b on a.sel=b.sel
+	and c.groupano = 'A01' group by a.sel)b on a.sel=b.sel
 	--接著劑稀釋液
 	update @tmp set w02 = b.mount
 	from @tmp a
 	left join(select a.sel,SUM(ISNULL(b.weight,0)) mount
 	from @tmp a
 	left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
-	left join bcc c on b.productno=c.noa
+	left join ucc c on b.productno=c.noa
 	where len(ISNULL(b.productno,''))>0
-	and c.typea = 'A02' group by a.sel)b on a.sel=b.sel
+	and c.groupano = 'A02' group by a.sel)b on a.sel=b.sel
 	--背漆
 	update @tmp set w03= b.mount
 	from @tmp a
 	left join(select a.sel,SUM(ISNULL(b.weight,0)) mount
 	from @tmp a
 	left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
-	left join bcc c on b.productno=c.noa
+	left join ucc c on b.productno=c.noa
 	where len(ISNULL(b.productno,''))>0
-	and c.typea = 'A03' group by a.sel)b on a.sel=b.sel
+	and c.groupano = 'A03' group by a.sel)b on a.sel=b.sel
 	--背漆稀釋液
 	update @tmp set w04= b.mount
 	from @tmp a
 	left join(select a.sel,SUM(ISNULL(b.weight,0)) mount
 	from @tmp a
 	left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
-	left join bcc c on b.productno=c.noa
+	left join ucc c on b.productno=c.noa
 	where len(ISNULL(b.productno,''))>0
-	and c.typea = 'A04' group by a.sel)b on a.sel=b.sel
+	and c.groupano = 'A04' group by a.sel)b on a.sel=b.sel
 	--面漆
 	update @tmp set w05 = b.mount
 	from @tmp a
 	left join(select a.sel,SUM(ISNULL(b.weight,0)) mount
 	from @tmp a
 	left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
-	left join bcc c on b.productno=c.noa
+	left join ucc c on b.productno=c.noa
 	where len(ISNULL(b.productno,''))>0
-	and c.typea = 'A05' group by a.sel)b on a.sel=b.sel
+	and c.groupano = 'A05' group by a.sel)b on a.sel=b.sel
 	
 	insert into @tmp(gno,[mount],[weight]
 		,[mount2],[weight2]
@@ -330,6 +330,7 @@ z_cub_rk03:--z_cub_rk03
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(PARTITION by datea order by recno) recno from @tmp) b on a.sel=b.sel
 	order by a.gno,a.recno;
+
 
 
 z_cub_rk01:--z_cub_rk01
