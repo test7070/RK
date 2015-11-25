@@ -27,18 +27,21 @@
 						name : 'path',
 						value : location.protocol + '//' +location.hostname + location.pathname.toLowerCase().replace('z_cub_rkp.aspx','')
 					},{
-						type : '0', //[2]
+						type : '0', //[2] 
 						name : 'db',
 						value : q_db
 					},{
-						type : '6', //[3]
+						type : '6', //[3] 1
 						name : 'noa'
-					},{//[4][5]
+					},{//[4][5] 2
                         type : '1',
                         name : 'xmon'
                     },{
-						type : '6', //[6]
+						type : '6', //[6] 3
 						name : 'xdate'
+					},{
+						type : '6', //[6] 4
+						name : 'ymon'
 					}]
 				});
 				q_popAssign();
@@ -58,6 +61,7 @@
                 $('#txtXdate').mask('999/99/99');
                 $('#txtXdate').datepicker();
                 $('#txtXdate').val(q_date());
+                $('#txtYmon').val(q_date().substring(0,6));
                 
 	            $('#textBmon').mask('999/99');
                 $('#textEmon').mask('999/99');

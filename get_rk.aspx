@@ -23,7 +23,7 @@
 			var q_name = "get";
 			var q_readonly = ['txtNoa', 'txtWorker','txtComp','txtStore','txtWorker2'];
 			var q_readonlys = [];
-			var bbmNum = [];
+			var bbmNum = [['txtMoney',10,0,1]];
 			var bbsNum = [];
 			var bbmMask = [];
 			var bbsMask = [];
@@ -489,8 +489,13 @@
 							<input id="txtProductno" type="text" class="txt" style="float:left;width:35%;"/>
 							<input id="txtProduct" type="text" class="txt" style="float:left;width:65%;"/>
 						</td>
+						
+					</tr>
+					<tr>
 						<td><span> </span><a id="lblWeight" class="lbl">重量</a></td>
 						<td><input id="txtWeight" type="text" class="txt c1 num"/></td>
+						<td><span> </span><a id="lblMoney" class="lbl">入庫金額</a></td>
+						<td><input id="txtMoney" type="text" class="txt c1 num"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl" > </a></td>
@@ -504,7 +509,6 @@
 						<td><span> </span><a id="lblWorker2" class="lbl"> </a></td>
 						<td><input id="txtWorker2" type="text" class="txt c1"/></td>
 					</tr>
-					<tr></tr>
 				</table>
 			</div>
 		</div>
