@@ -40,7 +40,7 @@
 						type : '6', //[6] 3
 						name : 'xdate'
 					},{
-						type : '6', //[6] 4
+						type : '6', //[7] 4
 						name : 'ymon'
 					}]
 				});
