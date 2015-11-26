@@ -35,7 +35,7 @@ post:--post  get_rk
 		from view_get a
 		where noa=@t_noa
 		
-		set @money = round(@weight*@price)
+		set @money = round(@weight*@price,0)
 		
 		if len(@t_accy)>0
 		begin
