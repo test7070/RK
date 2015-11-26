@@ -26,16 +26,16 @@ post:--post  get_rk
 		declare @product nvarchar(50) = ''
 		declare @mount float = 1
 		declare @weight float = 0
+		declare @price float = 0
 		declare @money float = 0
-		declare @price float
 		declare @memo nvarchar(max)=''
 		
 		select @t_accy=a.accy,@datea=a.datea,@uno=a.idno,@productno=a.productno,@product=a.product
-			,@weight=a.[weight],@money=a.[money],@memo=a.memo
+			,@weight=a.[weight],@price=dbo.getsprice_rk(a.idno),@memo=a.memo
 		from view_get a
 		where noa=@t_noa
 		
-		set @price = case when @weight=0 then 0 else ROUND(@money/@weight,2) end
+		set @money = round(@weight*@price)
 		
 		if len(@t_accy)>0
 		begin
