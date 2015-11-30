@@ -44,6 +44,19 @@
 			function sum(){
 				if(!(q_cur==1 || q_cur==2))
 					return;
+				var t_n = $('#cmbTypea').val()=='退料單' ? -1 : 1; 
+				var t_weight = 0;
+				for(var i=0;i<q_bbsCount;i++){
+					$('#txtEweight_'+i).val(Math.abs(q_float('txtEweight_'+i)));
+					$('#txtMweight_'+i).val(Math.abs(q_float('txtMweight_'+i)));
+					
+					t_weight = q_add(t_weight,q_float('txtMweight_'+i));
+					
+					$('#txtGmount_'+i).val(t_n*q_float('txtEweight_'+i));
+					$('#txtGweight_'+i).val(t_n*q_float('txtMweight_'+i));	
+				}
+				if($('#txtIdno').val().length>0)
+					$('#txtWeight').val(t_weight);
 			}
 			$(document).ready(function() {
 				bbmKey = ['noa'];
@@ -96,14 +109,7 @@
 				Lock(1, {
 					opacity : 0
 				});
-				var t_n = $('#cmbTypea').val()=='退料單' ? -1 : 1; 
-				for(var i=0;i<q_bbsCount;i++){
-					$('#txtEweight_'+i).val(Math.abs(q_float('txtEweight_'+i)));
-					$('#txtMweight_'+i).val(Math.abs(q_float('txtMweight_'+i)));
 				
-					$('#txtGmount_'+i).val(t_n*q_float('txtEweight_'+i));
-					$('#txtGweight_'+i).val(t_n*q_float('txtMweight_'+i));	
-				}
 				if (q_cur == 1)
                     $('#txtWorker').val(r_name);
                 else
@@ -112,7 +118,7 @@
                 var t_noa = trim($('#txtNoa').val());
                 var t_date = trim($('#txtDatea').val());
                 if (t_noa.length == 0 || t_noa == "AUTO")
-                    q_gtnoa(q_name, replaceAll(q_getPara('sys.key_vcc') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
+                    q_gtnoa(q_name, replaceAll(q_getPara('sys.key_get') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
                 else
                     wrServer(t_noa);
 			}
@@ -167,7 +173,8 @@
 						break;
 					case 'qtxt.query.post1':
 						var t_noa = $('#txtNoa').val();
-						if(t_noa.length>0){
+						var t_idno = $('#txtIdno').val();
+						if(t_noa.length>0 && t_idno.length>0){
 							q_func('ina_post.post', r_accy + ',' + t_noa + ',1');
 						}
 						break;
@@ -206,7 +213,9 @@
 						$('#txtWeight_' + j).change(function() {
 							sum();
 						});
-						
+						$('#txtMweight_' + j).change(function() {
+							sum();
+						});
 						$('#txtPrice_' + j).change(function() {
 							sum();
 						});

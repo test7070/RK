@@ -31,9 +31,20 @@ post:--post  get_rk
 		declare @memo nvarchar(max)=''
 		
 		select @t_accy=a.accy,@datea=a.datea,@uno=a.idno,@productno=a.productno,@product=a.product
-			,@weight=a.[weight],@price=dbo.getsprice_rk(a.idno),@memo=a.memo
+			,@weight=a.[weight],@memo=a.memo
 		from view_get a
 		where noa=@t_noa
+		and len(ISNULL(a.idno,''))>0
+			
+		begin try
+			select @price= dbo.getsprice_rk(a.idno)
+			from view_get a
+			where noa=@t_noa
+			and len(ISNULL(a.idno,''))>0
+		end try
+		begin catch
+			--dbo.getsprice_rk()  當一直找不到時會出現巢狀錯誤,那時就當單價為0
+		end catch
 		
 		set @money = round(@weight*@price,0)
 		
