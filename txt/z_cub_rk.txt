@@ -108,9 +108,9 @@ z_cub_rk02:--z_cub_rk02
 	from @tmp
 	--w15 float,
 	update @tmp set w15 = 0--原物料損耗  (損耗率減項)      ??/w07
-		,w16=case when ISNULL(w01,0)=0 then 0 else w11/w01 end--不良品廠內損耗率	w11/w01
-		,w17=case when ISNULL(w01,0)=0 then 0 else w12/w01 end--尺寸損耗率	        w12/w01
-		,w18=case when ISNULL(w01,0)=0 then 0 else (w03+w04+w13)/w01 end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,0) end--不良品廠內損耗率	w11/w01
+		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,0) end--尺寸損耗率	        w12/w01
+		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,0) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
 		,w19=0--扣除求償損耗率	
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		,w22=ISNULL(w09,0)+ISNULL(w10,0)--當月耗量(1+2+3)	  w09+w10
