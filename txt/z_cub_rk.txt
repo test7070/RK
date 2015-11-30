@@ -47,8 +47,10 @@ z_cub_rk02:--z_cub_rk02
 
 		memo nvarchar(max)
 	)
-	insert into @tmp(gno,ordeno,no2,makeno,custno,cust,w03,w10,w11,w12,w13)
+	insert into @tmp(gno,ordeno,no2,makeno,custno,cust,w03,w10,w11,w12,w13
+		,uno,dime,radius,width,lengthb,spec)
 	select '1',a.ordeno,a.no2,a.makeno,a.custno,a.comp,a.price,a.w04,a.w01,a.w02,a.w03
+		,a.uno,a.dime,a.radius,a.width,a.lengthb,a.spec
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where left(b.datea,6) = @t_mon
@@ -112,7 +114,7 @@ z_cub_rk02:--z_cub_rk02
 		,w19=0--扣除求償損耗率	
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		,w22=ISNULL(w09,0)+ISNULL(w10,0)--當月耗量(1+2+3)	  w09+w10
-
+		
 	select gno
 		,'' a01
 		,ordeno a02
