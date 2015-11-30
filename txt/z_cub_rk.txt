@@ -56,17 +56,17 @@ z_cub_rk02:--z_cub_rk02
 	where left(b.datea,6) = @t_mon
 	
 	--製造成本
-	IF OBJECT_ID('tempdb..#z_cub_rkp02')is not null
+	IF OBJECT_ID('tempdb..#z_cub_rk02')is not null
 	BEGIN
-		drop table #z_cub_rkp02
+		drop table #z_cub_rk02
 	END
-	select * into #z_cub_rkp02 from dbo.makeno(@t_mon)
+	select * into #z_cub_rk02 from dbo.makeno(@t_mon)
 	
 	update @tmp set 
 		w01=ISNULL(b.weight01,0)--投入重量
 		,w02=ISNULL(b.weight02,0)
 	from @tmp a
-	left join #z_cub_rkp02 b on a.makeno=b.makeno
+	left join #z_cub_rk02 b on a.makeno=b.makeno
 	
 	update @tmp set w04=b.weight4
 	from @tmp a
@@ -108,9 +108,9 @@ z_cub_rk02:--z_cub_rk02
 	from @tmp
 	--w15 float,
 	update @tmp set w15 = 0--原物料損耗  (損耗率減項)      ??/w07
-		,w16=case when ISNULL(w01,0)=0 then 0 else w11/w07 end--不良品廠內損耗率	w11/w01
-		,w17=case when ISNULL(w01,0)=0 then 0 else w12/w07 end--尺寸損耗率	        w12/w01
-		,w18=case when ISNULL(w01,0)=0 then 0 else (w03+w04+w13)/w07 end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		,w16=case when ISNULL(w01,0)=0 then 0 else w11/w01 end--不良品廠內損耗率	w11/w01
+		,w17=case when ISNULL(w01,0)=0 then 0 else w12/w01 end--尺寸損耗率	        w12/w01
+		,w18=case when ISNULL(w01,0)=0 then 0 else (w03+w04+w13)/w01 end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
 		,w19=0--扣除求償損耗率	
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		,w22=ISNULL(w09,0)+ISNULL(w10,0)--當月耗量(1+2+3)	  w09+w10
@@ -150,7 +150,9 @@ z_cub_rk02:--z_cub_rk02
 		,'' a30
 		,'' a31
 	from @tmp
-	order by gno,makeno;
+	order by gno,makeno
+	
+	drop table #z_cub_rk02;
 
 z_cub_rk03:--z_cub_rk03
 	SET QUOTED_IDENTIFIER OFF
