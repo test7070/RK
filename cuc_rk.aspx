@@ -472,7 +472,7 @@
             input[type="text"], input[type="button"] {
                 font-size: medium;
             }
-            .dbbs{width: 1980px;}
+            .dbbs{width: 2180px;}
             .tbbs {
                 margin: 0;
                 padding: 2px;
@@ -590,6 +590,8 @@
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
+					<td style="width:100px;"></td>
+					<td style="width:100px;"></td>
 					<td style="width:80px;"></td>
 				</tr>
 				<tr style='color:white; background:#003366;' >
@@ -609,6 +611,8 @@
 					<td colspan="2">待修品</td>
 					<td rowspan="2">廢料重量<BR>(KG)</td>
 					<td rowspan="2">裁剪(包裝)<BR>工時(分)</td>
+					<td rowspan="2">樣品重</td>
+					<td rowspan="2">報廢重</td>
 					<td rowspan="2">開始時間</td>
 					<td rowspan="2">結束時間</td>	
 					<td rowspan="2">施工工時(分)</td>
@@ -654,6 +658,8 @@
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
+					<td style="width:100px;"></td>
+					<td style="width:100px;"></td>
 					<td style="width:80px;"></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -692,6 +698,8 @@
 					<td><input id="txtWeight5.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWaste.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtHours.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtWeight6.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtWeight7.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtBtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtEtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
