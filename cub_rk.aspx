@@ -810,8 +810,9 @@
 						<td style="width:100px;" align="center">不良損耗</td>
 						<td style="width:100px;" align="center">尺寸損耗</td>
 						<td style="width:100px;" align="center">頭尾損耗 </td>
-						<td style="width:100px;" align="center">樣品重</td>
-						<td style="width:100px;" align="center">報廢重</td>
+						<!-- 樣品重、報廢重 改到CUC輸入-->
+						<td style="display:none;" align="center">樣品重</td>
+						<td style="display:none;" align="center">報廢重</td>
 						<td style="width:150px;" align="center">製造批號</td>
 					</tr>
 					<tr style='background:#cad3ff;'>
@@ -908,8 +909,9 @@
 						<td><input id="txtW01.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtW02.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtW03.*" type="text" class="num" style="float:left;width:95%;"/></td>
-						<td><input id="txtW04.*" type="text" class="num" style="float:left;width:95%;"/></td>
-						<td><input id="txtW05.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<!-- 樣品重、報廢重 改到CUC輸入-->
+						<td style="display:none;"><input id="txtW04.*" type="text" class="num" /></td>
+						<td style="display:none;"><input id="txtW05.*" type="text" class="num" /></td>
 						<td><input id="txtMakeno.*" type="text" style="float:left;width:95%;"/></td>
 					</tr>
 				</table>
