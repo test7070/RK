@@ -277,6 +277,7 @@ z_cub_rk03:--z_cub_rk03
 		w17 float,--樣品重	
 		w18 float,--報廢重
 		
+		
 		memo nvarchar(max)
 	)
 
