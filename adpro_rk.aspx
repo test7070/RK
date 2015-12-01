@@ -89,7 +89,7 @@
 			function _btnSeek() {
 				if (q_cur > 0 && q_cur < 4)
 					return;
-				q_box('adpro_s.aspx', q_name + '_s', "500px", "450px", q_getMsg("popSeek"));
+				q_box('adpro_rk_s.aspx', q_name + '_s', "500px", "450px", q_getMsg("popSeek"));
 			}
 
 			function btnIns() {
@@ -126,8 +126,10 @@
 					q_gt('adpro', t_where, 0, 0, 0, "btnOk_checkNoa", r_accy);
 					return;
 				}
-				if (t_noa.length == 0)
-					q_gtnoa(q_name, t_noa);
+				if (t_noa.length == 0){
+					//q_gtnoa(q_name, t_noa);
+					q_gtnoa('', t_noa);
+				}
 				else
 					wrServer(t_noa);
 			}
@@ -361,11 +363,11 @@
 						<td class="tdZ"></td>
 					</tr>
 					<tr>
-						<td><span> </span><a id='lblNoa' class="lbl"> </a></td>
+						<td><span> </span><a class="lbl">編號</a></td>
 						<td><input id="txtNoa"  type="text" class="txt c1" /></td>
 					</tr>
 					<tr>
-						<td><span> </span><a id='lblProductno' class="lbl btn"> </a></td>
+						<td><span> </span><a class="lbl">類別</a></td>
 						<td><input id="txtProduct"  type="text" class="txt c1" /></td>
 						<!--<td colspan="3">
 							<input id="txtProductno" type="text" class="txt c2" />
