@@ -308,7 +308,7 @@
             }
 
             function bbsSave(as) {
-                if (!as['ordeno']) {
+                if (!as['ordeno'] && !as['cubno']) {
                     as[bbsKey[1]] = '';
                     return;
                 }

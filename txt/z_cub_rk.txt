@@ -294,11 +294,13 @@ z_cub_rk03:--z_cub_rk03
 		,'',a.uno3,0,0,a.lengthc,a.w06
 		,'',a.uno4,0,0,a.w07,a.w08
 		,a.w09,a.hweight,a.price
-		,a.gweight,a.w01,a.w02,a.w03,a.w04,a.w05
+		,a.gweight,a.w01,a.w02,a.w03,ISNULL(c.weight6,0),ISNULL(c.weight7,0)
 		,a.ordeno,a.no2
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	outer apply (select SUM(ISNULL(weight6,0)) weight6,SUM(ISNULL(weight7,0)) weight7 from view_cucs where cubno=a.makeno) c
 	where LEFT(b.datea,6)=@t_mon
+	
 	
 	update @tmp set dime3=ISNULL(b.dime,0),width3=ISNULL(b.width,0)
 	from @tmp a
