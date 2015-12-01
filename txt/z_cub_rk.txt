@@ -1,5 +1,6 @@
 z_cub_rk02:--z_cub_rk02
 	declare @t_mon nvarchar(max) = case when '#non' = [1] then '' else [1] end
+-----------------------------------------------------------------------------------------------
 	-----------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -9,6 +10,7 @@ z_cub_rk02:--z_cub_rk02
 		makeno nvarchar(30),
 		custno nvarchar(20),
 		cust nvarchar(30),
+		typea nvarchar(20),
 		
 		uno nvarchar(30),--鋼捲
 		dime float,
@@ -48,11 +50,12 @@ z_cub_rk02:--z_cub_rk02
 		memo nvarchar(max)
 	)
 	insert into @tmp(gno,ordeno,no2,makeno,custno,cust,w03,w10,w11,w12,w13
-		,uno,dime,radius,width,lengthb,spec)
+		,uno,dime,radius,width,lengthb,spec,typea)
 	select '1',a.ordeno,a.no2,a.makeno,a.custno,a.comp,a.price,a.w04,a.w01,a.w02,a.w03
-		,a.uno,a.dime,a.radius,a.width,a.lengthb,a.spec
+		,a.uno,a.dime,a.radius,a.width,a.lengthb,a.spec,c.custpro
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
 	where left(b.datea,6) = @t_mon
 	
 	--製造成本
@@ -106,6 +109,56 @@ z_cub_rk02:--z_cub_rk02
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp
+	where gno='1'
+	
+	--類別 小
+	insert into @tmp(gno,typea,w01,w02,w03,w04,w05,w06,w07
+		,w09,w10,w11,w12,w13
+		,w15,w16,w17,w18,w19
+		,w21,w22,w23)
+	select '3',typea
+		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
+		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
+	from @tmp
+	where gno='1'
+	and len(typea)>2
+	group by typea
+	--類別 中
+	insert into @tmp(gno,typea,w01,w02,w03,w04,w05,w06,w07
+		,w09,w10,w11,w12,w13
+		,w15,w16,w17,w18,w19
+		,w21,w22,w23)
+	select '4',left(typea,2)
+		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
+		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
+	from @tmp a
+	where gno='1'
+	and len(typea)>2
+	and exists(select * from adpro where noa=left(a.typea,2))
+	group by left(typea,2)
+	--類別 大
+	insert into @tmp(gno,typea,w01,w02,w03,w04,w05,w06,w07
+		,w09,w10,w11,w12,w13
+		,w15,w16,w17,w18,w19
+		,w21,w22,w23)
+	select '5',left(typea,1)
+		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
+		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
+	from @tmp a
+	where gno='1'
+	and len(typea)>2
+	and exists(select * from adpro where noa=left(a.typea,1))
+	group by left(typea,1)
+	
 	--w15 float,
 	update @tmp set w15 = 0--原物料損耗  (損耗率減項)      ??/w07
 		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,0) end--不良品廠內損耗率	w11/w01
@@ -115,42 +168,45 @@ z_cub_rk02:--z_cub_rk02
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		,w22=ISNULL(w09,0)+ISNULL(w10,0)--當月耗量(1+2+3)	  w09+w10
 		
-	select gno
+	select a.gno
+		,ROW_NUMBER()over(order by a.gno,a.makeno) rr
 		,'' a01
-		,ordeno a02
-		,ROW_NUMBER()over(order by gno,makeno) a03
-		,makeno a04
-		,cust a05
-		,uno a06
-		,spec a07
-		,CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+CAST(lengthb as nvarchar) a08
-		,dbo.getComma(w01,-1) a09
-		,dbo.getComma(w02,-1) a10
-		,dbo.getComma(w03,-1) a11
-		,dbo.getComma(w04,-1) a12
-		,dbo.getComma(w05,-1) a13
-		,dbo.getComma(w06,-1) a14
-		,dbo.getComma(w07,-1) a15
-		,w08 a16
-		,dbo.getComma(w09,-1) a17
-		,dbo.getComma(w10,-1) a18
-		,dbo.getComma(w11,-1) a19
-		,dbo.getComma(w12,-1) a20
-		,dbo.getComma(w13,-1) a21
+		,a.ordeno a02
+		,a.typea
+		,b.product a03
+		,a.makeno a04
+		,a.cust a05
+		,a.uno a06
+		,a.spec a07
+		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar) a08
+		,dbo.getComma(a.w01,-1) a09
+		,dbo.getComma(a.w02,-1) a10
+		,dbo.getComma(a.w03,-1) a11
+		,dbo.getComma(a.w04,-1) a12
+		,dbo.getComma(a.w05,-1) a13
+		,dbo.getComma(a.w06,-1) a14
+		,dbo.getComma(a.w07,-1) a15
+		,a.w08 a16
+		,dbo.getComma(a.w09,-1) a17
+		,dbo.getComma(a.w10,-1) a18
+		,dbo.getComma(a.w11,-1) a19
+		,dbo.getComma(a.w12,-1) a20
+		,dbo.getComma(a.w13,-1) a21
 		
-		,dbo.getComma(w15,-1) a22
-		,dbo.getComma(w16,-1) a23
-		,dbo.getComma(w17,-1) a24
-		,dbo.getComma(w18,-1) a25
-		,dbo.getComma(w19,-1) a26
+		,dbo.getComma(a.w15,-1) a22
+		,dbo.getComma(a.w16,-1) a23
+		,dbo.getComma(a.w17,-1) a24
+		,dbo.getComma(a.w18,-1) a25
+		,dbo.getComma(a.w19,-1) a26
 		
-		,dbo.getComma(w21,-1) a27
-		,dbo.getComma(w22,-1) a28
-		,dbo.getComma(w23,-1) a29
+		,dbo.getComma(a.w21,-1) a27
+		,dbo.getComma(a.w22,-1) a28
+		,dbo.getComma(a.w23,-1) a29
 		,'' a30
 		,'' a31
-	from @tmp
-	order by gno,makeno
+	from @tmp a
+	left join adpro b on a.typea=b.noa
+	order by a.gno,a.makeno
 	
 	drop table #z_cub_rk02;
 

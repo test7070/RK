@@ -33,7 +33,7 @@
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
             	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtSource_', 'ucc_b.aspx']
             	,['txtHard_', 'btnHard_', 'ucc', 'noa,product', 'txtHard_,txtUno_', 'ucc_b.aspx']);
-           	t_spec='';
+           	t_spec='',t_adpro='';
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'no2'];
@@ -122,6 +122,7 @@
                 q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
                 q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
                 q_cmbParse("cmbSpec", t_spec,'s');
+                q_cmbParse("cmbCustpro", t_adpro,'s');
                 
                 $("#cmbTaxtype").change(function(e) {
                     sum();
@@ -225,6 +226,15 @@
 							t_spec+=','+as[i].noa+'@'+as[i].product;
 						}
 						if(t_spec.length==0) t_spec=' ';
+						q_gt('adpro', 'where=^^len(noa)>2^^', 0, 0, 0, '');
+						break;
+					case 'adpro':
+						var as = _q_appendData("adpro", "", true);
+						t_adpro='';
+						for ( i = as.length-1; i >=0; i--) {
+							t_adpro+=','+as[i].noa+'@'+as[i].product;
+						}
+						if(t_adpro.length==0) t_adpro=' ';
 						q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
 						break;
                 	case 'getAcomp':
@@ -744,7 +754,8 @@
 					</td>
 					<td style="width:20px;"></td>
 					<td style="width:50px;">序</td>
-					<td style="width:200px;">品名</td>
+					<td style="width:80px;">類別</td>
+					<td style="width:120px;">品名</td>
 					<td style="width:60px;">厚</td>
 					<td style="width:60px;">皮膜厚</td>
 					<td style="width:60px;">寬</td>
@@ -771,9 +782,10 @@
 					</td>
 					<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
 					<td><input id="txtNo2.*" type="text" class="txt c1"/></td>
+					<td><select id='cmbCustpro.*' style="width:95%;" class="txt c1"> </select></td>
 					<td>
-						<input id="txtProductno.*" type="text" style="width:45%"/>
-						<input id="txtProduct.*" type="text" style="width:45%"/>
+						<input id="txtProductno.*" type="text" style="width:95%"/>
+						<input id="txtProduct.*" type="text" style="width:95%"/>
 						<input id="btnProduct.*" type="button" style="display:none;"/>
 					</td>
 					<td><input id="txtDime.*" type="text" class="txt c1 num"/></td>
