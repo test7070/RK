@@ -35,7 +35,7 @@
 			brwCount2 = 6;
 			aPop = new Array(
 				//['txtPost', 'lblPost', 'addr', 'post,addr', 'txtPost', 'addr_b.aspx'],
-				['txtStoreno', 'lblStore', 'store', 'noa,store', '0txtStoreno,txtStore', 'store_b.aspx'],
+				['txtStationno', 'lblStore', 'store', 'noa,store', '0txtStationno,txtStation', 'store_b.aspx'],
 				['txtUno_', 'btnUno_', 'view_uccc', 'uno,productno,product,size,unit', '0txtUno_,txtProductno_,txtProduct_,txtSize_,txtUnit_', 'uccc_seek_b.aspx?;;;1=0', '95%', '60%'],
 				['txtProductno_', 'btnProductno_', 'ucaucc', 'noa,product,unit', '0txtProductno_,txtProduct_,txtUnit_', 'ucaucc_b.aspx'],
 				['txtProductno', 'lblProduct', 'ucaucc', 'noa,product', 'txtProductno,txtProduct', 'ucaucc_b.aspx'],
@@ -491,6 +491,12 @@
 					<tr>
 						<td><span> </span><a class="lbl" >入庫批號</a></td>
 						<td colspan="2"><input id="txtIdno" type="text" class="txt c1"/></td>
+						<td> </td>
+						<td><span> </span><a id="lblStore" class="lbl" >倉庫</a></td>
+						<td>
+							<input id="txtStationno" type="text" class="txt" style="float:left;width:50%;"/>
+							<input id="txtStation" type="text" class="txt" style="float:left;width:50%;"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblProduct" class="lbl" >產品</a></td>
