@@ -46,6 +46,7 @@
 			}
 
 			function mainPost() {
+				document.title='訂單類別';
 				//bbmMask = [['txtMon', r_picm], ['txtDatea', r_picd]];
 				//q_mask(bbmMask);
 				//bbmNum = [['txtExreprice', 10, q_getPara('vcc.pricePrecision'), 1],['txtExprice', 10, q_getPara('vcc.pricePrecision'), 1],['txtDiffprice', 10, q_getPara('vcc.pricePrecision'), 1],['txtWeight', 10, q_getPara('vcc.weightPrecision'), 1]];

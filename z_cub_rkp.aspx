@@ -57,6 +57,7 @@
 	            }
 	            $('#txtXmon1').mask('999/99');
                 $('#txtXmon2').mask('999/99');
+                $('#txtYmon').mask('999/99');
                 
                 $('#txtXdate').mask('999/99/99');
                 $('#txtXdate').datepicker();
