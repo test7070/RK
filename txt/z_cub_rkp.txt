@@ -1,4 +1,203 @@
+z_cub_rkp03:--z_cub_rkp03	
+	SET QUOTED_IDENTIFIER OFF
+	--[1]
+	--[2]
+	--[3]
+	--[4]
+	--[5]
+	--[6]
+	declare @t_mon nvarchar(max) = case when '#non' = [7] then '' else [7] end	
+	--------------------------------------------------------------
+	declare @tmp table(
+		gno nvarchar(10),
+		sel int identity(1,1),
+		makeno nvarchar(30),
+		datea nvarchar(10),
+		dime float,
+		radius float,
+		width float,
+		lengthb float,
+		spec nvarchar(30),
+		ordeno nvarchar(20),
+		ordenoq nvarchar(10),
+		--期初
+		mount01 float,
+		price01 float,
+		money01 float,
+		--盤點
+		mount02 float,
+		price02 float,
+		money02 float,
+		--本期入
+		mount03 float,
+		price03 float,
+		money03 float,
+		--本期耗料  =  損耗月報表 本期生產半成品
+		mount04 float,
+		price04 float,
+		money04 float,
+		--本期樣品
+		mount05 float,
+		price05 float,
+		money05 float,
+		--本期報廢
+		mount06 float,
+		price06 float,
+		money06 float,
+		--期末存貨 = 期初+盤點+本期入-本期耗料-本期樣品-本期報廢
+		mount07 float,
+		price07 float,
+		money07 float,
+		
+		memo nvarchar(max)
+	)
 
+	insert into @tmp(gno,makeno,datea,dime,radius,width,lengthb,spec,ordeno,ordenoq)
+	select '1',a.makeno,b.datea,a.dime,a.radius,a.width,a.lengthb,a.spec,a.ordeno,a.no2
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	
+	declare @makeno nvarchar(30)
+	declare @mon nvarchar(10)
+	declare @weight float
+	--投入重量 、 耗料
+	declare cursor_table cursor for
+	select left(datea,6) from @tmp where len(datea)>0 group by left(datea,6)
+	open cursor_table
+	fetch next from cursor_table
+	into @mon
+	while(@@FETCH_STATUS <> -1)
+	begin
+		IF OBJECT_ID('tempdb..#z_cub_rkp03')is not null
+		BEGIN
+			drop table #z_cub_rkp03
+		END
+		select * into #z_cub_rkp03 from dbo.makeno(@mon)
+		
+		if @mon<@t_mon
+		begin
+			update @tmp set mount01 =ISNULL(a.mount01,0)+ISNULL(b.weight01,0)-ISNULL(b.weight02,0)
+				,money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
+					+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
+			from @tmp a
+			left join #z_cub_rkp03 b on a.makeno=b.makeno
+		end
+		else
+		begin
+			update @tmp set mount03 = ISNULL(a.mount03,0)+ISNULL(b.weight01,0)
+				,mount04 = ISNULL(a.mount04,0)+ISNULL(b.weight02,0)
+				,money03=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
+					+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
+			from @tmp a
+			left join #z_cub_rkp03 b on a.makeno=b.makeno
+		end
+		fetch next from cursor_table
+		into @mon
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	--CUC 樣品重、報廢重
+	declare @weight2 float
+	
+	declare cursor_table cursor for
+	select ISNULL(a.cubno,''),LEFT(b.datea,6),SUM(isnull(a.weight6,0)),SUM(isnull(a.weight7,0))
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where LEFT(b.datea,6) <= @t_mon
+	group by ISNULL(a.cubno,''),LEFT(b.datea,6)
+	having not (SUM(isnull(a.weight6,0))=0 and SUM(isnull(a.weight7,0))=0)
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno,@mon,@weight,@weight2
+	while(@@FETCH_STATUS <> -1)
+	begin
+		if @mon=@t_mon
+		begin
+			UPDATE @tmp SET mount05 = ISNULL(mount05,0)+isnull(@weight,0)
+				,mount06 = ISNULL(mount06,0)+isnull(@weight2,0)
+			where makeno=@makeno
+		end
+		else
+		begin	
+			update @tmp set money01 = isnull(money01,0)-isnull(@weight,0)-isnull(@weight2,0)
+			where makeno=@makeno
+		end
+		
+		fetch next from cursor_table
+		into @makeno,@mon,@weight,@weight2
+	end
+	close cursor_table
+	deallocate cursor_table
+	-----------------------------------------------------------------------------------------
+	update @tmp set mount07=ISNULL(mount01,0)+ISNULL(mount02,0)+ISNULL(mount03,0)
+		-ISNULL(mount04,0)-ISNULL(mount05,0)-ISNULL(mount06,0)	
+		,price01 = case when ISNULL(mount01,0)=0 then 0 else round(money01/mount01,2) end
+		,price03 = case when ISNULL(mount03,0)=0 then 0 else round(money03/mount03,2) end
+	
+	--耗料、樣品、報廢   單位與期初或入庫一樣
+	update @tmp set price04 = case when ISNULL(price01,0)=0 then price03 else price01 end
+		,price05 = case when ISNULL(price01,0)=0 then price03 else price01 end
+		,price06 = case when ISNULL(price01,0)=0 then price03 else price01 end
+	update @tmp set money04 = ROUND(price04*mount04,0)
+		,money05 = ROUND(price05*mount05,0)
+		,money06 = ROUND(price06*mount06,0)
+	update @tmp set money07 = ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
+		-ISNULL(money04,0)-ISNULL(money05,0)-ISNULL(money06,0)
+	update @tmp set price07 = case when ISNULL(mount07,0)=0 then 0 else ROUND(money07/mount07,2) end	
+	--小計
+	insert into @tmp(gno,mount01,money01,mount02,money02,mount03,money03
+		,mount04,money04,mount05,money05,mount06,money06,mount07,money07)
+	select '2',SUM(ISNULL(mount01,0)),SUM(ISNULL(money01,0)),SUM(ISNULL(mount02,0)),SUM(ISNULL(money02,0)),SUM(ISNULL(mount03,0)),SUM(ISNULL(money03,0))
+		,SUM(ISNULL(mount04,0)),SUM(ISNULL(money04,0)),SUM(ISNULL(mount05,0)),SUM(ISNULL(money05,0)),SUM(ISNULL(mount06,0)),SUM(ISNULL(money06,0))
+		,SUM(ISNULL(mount07,0)),SUM(ISNULL(money07,0))
+	from @tmp
+	where gno='1'
+	
+	update @tmp set price01 = case when ISNULL(mount01,0)=0 then 0 else ROUND(money01/mount01,2) end
+		,price02 = case when ISNULL(mount02,0)=0 then 0 else ROUND(money02/mount02,2) end
+		,price03 = case when ISNULL(mount03,0)=0 then 0 else ROUND(money03/mount03,2) end
+		,price04 = case when ISNULL(mount04,0)=0 then 0 else ROUND(money04/mount04,2) end
+		,price05 = case when ISNULL(mount05,0)=0 then 0 else ROUND(money05/mount05,2) end
+		,price06 = case when ISNULL(mount06,0)=0 then 0 else ROUND(money06/mount06,2) end
+		,price07 = case when ISNULL(mount07,0)=0 then 0 else ROUND(money07/mount07,2) end
+	where gno='2'
+	
+	IF OBJECT_ID('tempdb..#z_cub_rkp03')is not null
+	BEGIN
+		drop table #z_cub_rkp03
+	END
+	
+	select gno
+		,dime a01
+		,radius a02
+		,width a03
+		,lengthb a04
+		,spec a05
+		,makeno a06
+		,ordeno a07
+		,dbo.getComma(mount01,-1) a08
+		,dbo.getComma(price01,-1) a09
+		,dbo.getComma(money01,-1) a10
+		,dbo.getComma(mount02,-1) a11
+		,dbo.getComma(price02,-1) a12
+		,dbo.getComma(money02,-1) a13
+		,dbo.getComma(mount03,-1) a14
+		,dbo.getComma(price03,-1) a15
+		,dbo.getComma(money03,-1) a16
+		,dbo.getComma(mount04,-1) a17
+		,dbo.getComma(price04,-1) a18
+		,dbo.getComma(money04,-1) a19
+		,dbo.getComma(mount05,-1) a20
+		,dbo.getComma(price05,-1) a21
+		,dbo.getComma(money05,-1) a22
+		,dbo.getComma(mount06,-1) a23
+		,dbo.getComma(price06,-1) a24
+		,dbo.getComma(money06,-1) a25
+		,dbo.getComma(mount07,-1) a26
+		,dbo.getComma(price07,-1) a27
+		,dbo.getComma(money07,-1) a28
+	from @tmp;
 	
 z_cub_rkp01:--z_cub_rkp01	
 	SET QUOTED_IDENTIFIER OFF
@@ -1350,7 +1549,7 @@ z_cub_rkp02_old:--z_cub_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' memo
 	from @result order by gno,sel;
 	
-z_cub_rkp03:--z_cub_rkp03
+z_cub_rkp03_old:--z_cub_rkp03
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
