@@ -56,6 +56,7 @@ z_cub_rkp03:--z_cub_rkp03
 	select '1',a.makeno,b.datea,a.dime,a.radius,a.width,a.lengthb,a.spec,a.ordeno,a.no2
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where LEFT(b.datea,6)<=@t_mon
 	
 	declare @makeno nvarchar(30)
 	declare @mon nvarchar(10)
