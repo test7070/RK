@@ -52,6 +52,7 @@ z_cub_rkp03:--z_cub_rkp03
 		memo nvarchar(max)
 	)
 
+				
 	insert into @tmp(gno,makeno,datea,dime,radius,width,lengthb,spec,ordeno,ordenoq)
 	select '1',a.makeno,b.datea,a.dime,a.radius,a.width,a.lengthb,a.spec,a.ordeno,a.no2
 	from view_cubs a
@@ -77,19 +78,20 @@ z_cub_rkp03:--z_cub_rkp03
 		
 		if @mon<@t_mon
 		begin
-			update @tmp set mount01 =ISNULL(a.mount01,0)+ISNULL(b.weight01,0)-ISNULL(b.weight02,0)
+			update @tmp set mount01 =ISNULL(a.mount01,0)+ISNULL(b.weight02,0)
 				,money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
 					+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
 			from @tmp a
 			left join #z_cub_rkp03 b on a.makeno=b.makeno
-			
+			where left(a.datea,6)=@mon
+					
 			update @tmp set mount01 = ISNULL(a.mount01,0)-ISNULL(b.weight,0)
 			from @tmp a
 			outer apply (select SUM(ISNULL(x.weight,0)) weight
 				from view_cuts x
 				left join view_cut y on x.accy=y.accy and x.noa=y.noa
 				where x.cname=a.makeno and LEFT(y.datea,6)<@t_mon) b
-			
+			where left(a.datea,6)=@mon
 			
 			update @tmp set mount01 = ISNULL(a.mount01,0)-ISNULL(b.weight8,0)-ISNULL(b.weight9,0)-ISNULL(b.weight10,0)
 			from @tmp a
@@ -99,17 +101,16 @@ z_cub_rkp03:--z_cub_rkp03
 				from view_cucs x 
 				left join view_cuc y on x.accy=y.accy and x.noa=y.noa
 				where a.makeno=x.cubno and LEFT(y.datea,6)<@t_mon) b
-		
+			where left(a.datea,6)=@mon
 		end
 		else
 		begin
-			update @tmp set mount03 = ISNULL(a.mount03,0)+ISNULL(b.weight01,0)
-				,mount04 = ISNULL(a.mount04,0)+ISNULL(b.weight02,0)
+			update @tmp set mount03 = ISNULL(a.mount03,0)+ISNULL(b.weight02,0)
 				,money03=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
 					+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
 			from @tmp a
 			left join #z_cub_rkp03 b on a.makeno=b.makeno
-			
+			where left(a.datea,6)=@mon
 			
 			update @tmp set mount04=ISNULL(a.mount04,0)+ISNULL(b.weight,0)
 			from @tmp a
@@ -117,6 +118,7 @@ z_cub_rkp03:--z_cub_rkp03
 				from view_cuts x
 				left join view_cut y on x.accy=y.accy and x.noa=y.noa
 				where x.cname=a.makeno and LEFT(y.datea,6)=@t_mon)b
+			where left(a.datea,6)=@mon
 			
 			update @tmp set mount04 = ISNULL(a.mount04,0)+ ISNULL(b.weight8,0)+ISNULL(b.weight9,0)+ISNULL(b.weight10,0)
 			from @tmp a
@@ -126,6 +128,7 @@ z_cub_rkp03:--z_cub_rkp03
 				from view_cucs x 
 				left join view_cuc y on x.accy=y.accy and x.noa=y.noa
 				where a.makeno=x.cubno and LEFT(y.datea,6)=@t_mon) b
+			where left(a.datea,6)=@mon
 		end
 		fetch next from cursor_table
 		into @mon
