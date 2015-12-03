@@ -28,11 +28,11 @@ z_cub_rkp03:--z_cub_rkp03
 		mount02 float,
 		price02 float,
 		money02 float,
-		--本期入
+		--本期入   =  損耗月報表 本期生產半成品
 		mount03 float,
 		price03 float,
 		money03 float,
-		--本期耗料  =  損耗月報表 本期生產半成品
+		--本期耗料  =  成品進倉 + cucs.weight8+ cucs.weight9+ cucs.weight10
 		mount04 float,
 		price04 float,
 		money04 float,
@@ -82,6 +82,24 @@ z_cub_rkp03:--z_cub_rkp03
 					+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
 			from @tmp a
 			left join #z_cub_rkp03 b on a.makeno=b.makeno
+			
+			update @tmp set mount01 = ISNULL(a.mount01,0)-ISNULL(b.weight,0)
+			from @tmp a
+			outer apply (select SUM(ISNULL(x.weight,0)) weight
+				from view_cuts x
+				left join view_cut y on x.accy=y.accy and x.noa=y.noa
+				where x.cname=a.makeno and LEFT(y.datea,6)<@t_mon) b
+			
+			
+			update @tmp set mount01 = ISNULL(a.mount01,0)-ISNULL(b.weight8,0)-ISNULL(b.weight9,0)-ISNULL(b.weight10,0)
+			from @tmp a
+			outer apply (select SUM(ISNULL(x.weight6,0)) weight6,SUM(ISNULL(x.weight7,0)) weight7
+				,SUM(ISNULL(x.weight8,0)) weight8,SUM(ISNULL(x.weight9,0)) weight9
+				,SUM(ISNULL(x.weight10,0)) weight10 
+				from view_cucs x 
+				left join view_cuc y on x.accy=y.accy and x.noa=y.noa
+				where a.makeno=x.cubno and LEFT(y.datea,6)<@t_mon) b
+		
 		end
 		else
 		begin
@@ -91,6 +109,23 @@ z_cub_rkp03:--z_cub_rkp03
 					+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
 			from @tmp a
 			left join #z_cub_rkp03 b on a.makeno=b.makeno
+			
+			
+			update @tmp set mount04=ISNULL(a.mount04,0)+ISNULL(b.weight,0)
+			from @tmp a
+			outer apply(select SUM(ISNULL(x.weight,0)) weight
+				from view_cuts x
+				left join view_cut y on x.accy=y.accy and x.noa=y.noa
+				where x.cname=a.makeno and LEFT(y.datea,6)=@t_mon)b
+			
+			update @tmp set mount04 = ISNULL(a.mount04,0)+ ISNULL(b.weight8,0)+ISNULL(b.weight9,0)+ISNULL(b.weight10,0)
+			from @tmp a
+			outer apply (select SUM(ISNULL(x.weight6,0)) weight6,SUM(ISNULL(x.weight7,0)) weight7
+				,SUM(ISNULL(x.weight8,0)) weight8,SUM(ISNULL(x.weight9,0)) weight9
+				,SUM(ISNULL(x.weight10,0)) weight10 
+				from view_cucs x 
+				left join view_cuc y on x.accy=y.accy and x.noa=y.noa
+				where a.makeno=x.cubno and LEFT(y.datea,6)=@t_mon) b
 		end
 		fetch next from cursor_table
 		into @mon
