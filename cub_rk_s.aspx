@@ -48,7 +48,7 @@
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
 					+ q_sqlPara2("noa", t_noa)
 					+ q_sqlPara2("vcceno", t_vcceno);
-					
+				
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}

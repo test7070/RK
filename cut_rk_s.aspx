@@ -42,11 +42,15 @@
 				var t_bdate = $.trim($('#txtBdate').val());
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
-
+				var t_makeno = $.trim($('#txtMakeno').val());
+				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
 					+ q_sqlPara2("noa", t_noa);
-					
+				
+				if(t_makeno.length>0)
+		       		t_where += " and exists(select noa from view_cuts"+r_accy+" where view_cuts"+r_accy+".noa=view_cut"+r_accy+".noa and view_cuts"+r_accy+".cname='"+t_makeno+"')";
+		       				
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -82,8 +86,12 @@
 					</td>
 				</tr>
 				<tr class='seek_tr'>
-					<td class='seek' style="width:90px;"><a id='lblNoa'>電腦編號</a></td>
+					<td class='seek' style="width:90px;"><a id='lblNoa'>單據編號</a></td>
 					<td><input class="txt" id="txtNoa" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblMakeno'>製造批號</a></td>
+					<td><input class="txt" id="txtMakeno" type="text" style="width:220px;" /></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
