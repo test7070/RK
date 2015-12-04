@@ -2,7 +2,7 @@ z_cub_rk02:--z_cub_rk02
 	declare @t_mon nvarchar(max) = case when '#non' = [1] then '' else [1] end
 -----------------------------------------------------------------------------------------------
 	-----------------------------------------------------------------------------------------------
-declare @tmp table(
+	declare @tmp table(
 		sel int identity(1,1),
 		gno nvarchar(10),
 		ordeno nvarchar(20),
@@ -46,7 +46,7 @@ declare @tmp table(
 		w21 float,--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		w22 float,--當月耗量(1+2+3)	  w09+w10
 		w23 float,--期末半成品結存
-
+		w24 float,--完工總損耗
 		memo nvarchar(max)
 	)
 	insert into @tmp(gno,ordeno,no2,makeno,custno,cust,w03,w10,w11,w12,w13
@@ -168,13 +168,16 @@ declare @tmp table(
 	
 	--w15 float,
 	update @tmp set w15 = 0--原物料損耗  (損耗率減項)      ??/w07
-		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,0) end--不良品廠內損耗率	w11/w01
-		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,0) end--尺寸損耗率	        w12/w01
-		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,0) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,1) end--不良品廠內損耗率	w11/w01
+		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,1) end--尺寸損耗率	        w12/w01
+		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,1) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
 		,w19=0--扣除求償損耗率	
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		,w22=ISNULL(w09,0)+ISNULL(w10,0)--當月耗量(1+2+3)	  w09+w10
-		
+	
+	update @tmp set w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)	
+		,w23 = ISNULL(w02,0)+ISNULL(w05,0)-ISNULL(w09,0)-ISNULL(w10,0)
+			-ISNULL(w11,0)-ISNULL(w12,0)-ISNULL(w13,0)-ISNULL(w15,0)
 	select a.gno
 		,ROW_NUMBER()over(order by a.gno,a.makeno) rr
 		,'' a01
@@ -201,15 +204,15 @@ declare @tmp table(
 		,dbo.getComma(a.w13,-1) a21
 		
 		,dbo.getComma(a.w15,-1) a22
-		,dbo.getComma(a.w16,-1) a23
-		,dbo.getComma(a.w17,-1) a24
-		,dbo.getComma(a.w18,-1) a25
-		,dbo.getComma(a.w19,-1) a26
+		, case when ISNULL(a.w16,0)=0 then '' else dbo.getComma(a.w16,-1)+'%' end a23
+		, case when ISNULL(a.w17,0)=0 then '' else dbo.getComma(a.w17,-1) +'%' end a24
+		, case when ISNULL(a.w18,0)=0 then '' else dbo.getComma(a.w18,-1) +'%' end a25
+		, case when ISNULL(a.w19,0)=0 then '' else dbo.getComma(a.w19,-1) +'%' end a26
 		
 		,dbo.getComma(a.w21,-1) a27
 		,dbo.getComma(a.w22,-1) a28
 		,dbo.getComma(a.w23,-1) a29
-		,'' a30
+		,case when ISNULL(a.w24,0)=0 then '0%' else dbo.getComma(a.w24,-1) +'%' end a30
 		,'' a31
 	from @tmp a
 	left join adpro b on a.typea=b.noa
