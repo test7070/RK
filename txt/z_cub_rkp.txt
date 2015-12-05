@@ -1,3 +1,293 @@
+z_cub_rkp06:--z_cub_rkp06	
+	SET QUOTED_IDENTIFIER OFF
+	--[1]
+	--[2]
+	--[3]
+	--[4]
+	--[5]
+	--[6]
+	declare @t_mon nvarchar(max) = case when '#non' = [7] then '' else [7] end	
+	-------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1),
+		gno nvarchar(10),
+		makeno nvarchar(30),
+		uno nvarchar(30),
+		dime float,
+		radius float,
+		width float,
+		lengthb float,
+		spec nvarchar(50),
+		datea nvarchar(10),
+		--前期
+		wwa01 float,--cuts
+		ppa01 float,
+		mma01 float,
+		wwa02 float,--gets
+		ppa02 float,
+		mma02 float,
+		wwa03 float,--vccs
+		ppa03 float,--成本單價
+		mma03 float,
+		ppa04 float,--出貨單價
+		mma04 float,--出貨金額
+		wwa05 float,--退貨重量
+		ppa05 float,--退貨單價
+		mma05 float,--退貨金額
+		
+		profita float,-- mma04 - mma03
+		wwa00 float,--重量小計
+		ppa00 float,--單價
+		mma00 float,--金額小計
+		--本期
+		wwb01 float,--cuts
+		ppb01 float,
+		mmb01 float,
+		wwb02 float,--gets
+		ppb02 float,
+		mmb02 float,
+		wwb03 float,--vccs
+		ppb03 float,
+		mmb03 float,
+		ppb04 float,--出貨單價
+		mmb04 float,--出貨金額
+		wwb05 float,--退貨重量
+		ppb05 float,--退貨單價
+		mmb05 float,--退貨金額
+		
+		profitb float,-- mmb04 - mmb03
+		wwb00 float,--重量小計
+		ppb00 float,--單價
+		mmb00 float,--金額小計
+		memo nvarchar(max)
+	)
+	
+	insert into @tmp(gno,makeno,uno,dime,radius,width,lengthb,spec,datea
+		,wwa01,wwb01)
+	select '1',a.cname,a.bno,a.dime,a.radius,a.width,a.lengthb,a.spec,b.datea
+		,case when left(b.datea,6)<@t_mon then a.[weight] else 0 end
+		,case when left(b.datea,6)=@t_mon then a.[weight] else 0 end 
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa 
+	and LEFT(b.datea,6)<=@t_mon
+	------------------------------------------------------------------------
+	declare @uno nvarchar(30)
+	declare @datea nvarchar(10)
+	declare @weight float
+	declare @total float
+	declare @typea nvarchar(10)
+	
+	declare cursor_table cursor for
+	select uno
+	from @tmp
+	open cursor_table
+	fetch next from cursor_table
+	into @uno
+	while(@@FETCH_STATUS <> -1)
+	begin
+		--gets
+		declare cursor_table2 cursor for
+			select b.datea,a.gweight 
+			from view_gets a
+			left join view_get b on a.accy=b.accy and a.noa=b.noa
+			where uno=@uno
+			and LEFT(b.datea,6)<=@t_mon
+		open cursor_table2
+		fetch next from cursor_table2
+		into @datea,@weight
+		while(@@FETCH_STATUS <> -1)
+		begin
+			if LEFT(@datea,6)<@t_mon
+			begin
+				update @tmp set wwa02 = ISNULL(wwa02,0)+ISNULL(@weight,0) where uno=@uno
+			end
+			else
+			begin
+				update @tmp set wwb02 = ISNULL(wwb02,0)+ISNULL(@weight,0) where uno=@uno
+			end
+		
+			fetch next from cursor_table2
+			into @datea,@weight
+		end
+		close cursor_table2
+		deallocate cursor_table2
+		---vccs
+		declare cursor_table2 cursor for
+			select b.typea,b.datea
+				,case when isnull(a.gweight,0)!=0 then isnull(a.gweight,0) else isnull(a.[weight],0)end
+				,a.total
+			from view_vccs a
+			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+			where a.uno=@uno
+			and LEFT(b.datea,6)<=@t_mon
+		open cursor_table2
+		fetch next from cursor_table2
+		into @typea,@datea,@weight,@total
+		while(@@FETCH_STATUS <> -1)
+		begin
+			if LEFT(@datea,6)<@t_mon
+			begin
+				if @typea='1'
+				begin
+					update @tmp set wwa03 = ISNULL(wwa03,0)+ISNULL(@weight,0) 
+						,mma04 = ISNULL(mma04,0)+@total
+					where uno=@uno
+				end
+				else
+				begin
+					update @tmp set wwa05 = ISNULL(wwa05,0)+ISNULL(@weight,0) 
+						,mma05 = ISNULL(mma05,0)+@total
+					where uno=@uno
+				end
+			end
+			else
+			begin
+				if @typea='1'
+				begin
+					update @tmp set wwb03 = ISNULL(wwb03,0)+ISNULL(@weight,0) 
+						,mmb04 = ISNULL(mmb04,0)+@total
+					where uno=@uno
+				end
+				else
+				begin
+					update @tmp set wwb05 = ISNULL(wwb05,0)+ISNULL(@weight,0) 
+						,mmb05 = ISNULL(mmb05,0)+@total
+					where uno=@uno
+				end
+			end
+		
+			fetch next from cursor_table2
+			into @typea,@datea,@weight,@total
+		end
+		close cursor_table2
+		deallocate cursor_table2
+		
+		fetch next from cursor_table
+		into @uno
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	--------------------------------------------------------------------------------
+	declare @mon nvarchar(10)
+
+	declare cursor_table cursor for
+	select left(c.datea,6)
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	left join view_cub c on b.accy=c.accy and b.noa=c.noa 
+	group by left(c.datea,6)
+	open cursor_table
+	fetch next from cursor_table
+	into @mon
+	while(@@FETCH_STATUS <> -1)
+	begin
+		update @tmp set ppa01= case when isnull(b.weight03,0)=0 then 0
+			else round((ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
+			+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
+			+ISNULL(b.wages01,0)+ISNULL(b.makeless01,0)
+			+ISNULL(b.wages02,0)+ISNULL(b.makeless02,0)
+			+ISNULL(b.wages03,0)+ISNULL(b.makeless03,0)
+			+ISNULL(b.wages04,0)+ISNULL(b.makeless04,0)
+			+ISNULL(b.wages05,0)+ISNULL(b.makeless05,0)
+			+ISNULL(b.wages06,0)+ISNULL(b.makeless06,0)
+			+ISNULL(b.wages07,0)+ISNULL(b.makeless07,0))/b.weight03,2) end
+		from @tmp a
+		left join dbo.makeno(@mon) b on a.makeno=b.makeno
+		where b.makeno is not null
+		
+		fetch next from cursor_table
+		into @mon
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update @tmp set ppa02=ppa01,ppb01=ppa01,ppb02=ppa01
+		,ppa03=ppa01,ppb03=ppa01
+		,ppa04=case when ISNULL(wwa03,0)=0 then 0 else ROUND(mma04/wwa03,2) end
+		,ppb04=case when ISNULL(wwb03,0)=0 then 0 else ROUND(mmb04/wwb03,2) end
+		,ppa05=case when ISNULL(wwa05,0)=0 then 0 else ROUND(mma05/wwa05,2) end
+		,ppb05=case when ISNULL(wwb05,0)=0 then 0 else ROUND(mmb05/wwb05,2) end
+	update @tmp set mma01 = round(ISNULL(ppa01,0)*ISNULL(wwa01,0),0)
+		,mma02 = round(ISNULL(ppa02,0)*ISNULL(wwa02,0),0)
+		,mma03 = round(ISNULL(ppa03,0)*ISNULL(wwa03,0),0)
+		,mmb01 = round(ISNULL(ppb01,0)*ISNULL(wwb01,0),0)
+		,mmb02 = round(ISNULL(ppb02,0)*ISNULL(wwb02,0),0)
+		,mmb03 = round(ISNULL(ppb03,0)*ISNULL(wwb03,0),0)
+	update @tmp set profita = isnull(mma04,0)-isnull(mma03,0)
+		,profitb = isnull(mmb04,0)-isnull(mmb03,0)
+		,wwa00 = isnull(wwa01,0)-isnull(wwa02,0)-isnull(wwa03,0)+isnull(wwa05,0)
+		,mma00 = isnull(mma01,0)-isnull(mma02,0)-isnull(mma03,0)+isnull(mma05,0)
+	update @tmp set wwb00 = isnull(wwa00,0)+isnull(wwb01,0)-isnull(wwb02,0)-isnull(wwb03,0)+isnull(wwb05,0)
+		,mmb00 = isnull(mma00,0)+isnull(mmb01,0)-isnull(mmb02,0)-isnull(mmb03,0)+isnull(mmb05,0)
+	update @tmp set ppa00=case when ISNULL(wwa00,0)=0 then 0 else ROUND(mma00/wwa00,2) end
+		,ppb00=case when ISNULL(wwb00,0)=0 then 0 else ROUND(mmb00/wwb00,2) end
+	
+	insert into @tmp(gno,wwa01,mma01,wwa02,mma02,wwa03,mma03,mma04,wwa05,mma05,wwa00,mma00
+		,wwb01,mmb01,wwb02,mmb02,wwb03,mmb03,mmb04,wwb05,mmb05,wwb00,mmb00,profita,profitb)
+	select '2',sum(isnull(wwa01,0)),sum(isnull(mma01,0)),sum(isnull(wwa02,0)),sum(isnull(mma02,0))
+		,sum(isnull(wwa03,0)),sum(isnull(mma03,0)),sum(isnull(mma04,0)),sum(isnull(wwa05,0)),sum(isnull(mma05,0))
+		,sum(isnull(wwa00,0)),sum(isnull(mma00,0)),sum(isnull(wwb01,0)),sum(isnull(mmb01,0))
+		,sum(isnull(wwb02,0)),sum(isnull(mmb02,0)),sum(isnull(wwb03,0)),sum(isnull(mmb03,0))
+		,sum(isnull(mmb04,0)),sum(isnull(wwb05,0)),sum(isnull(mmb05,0)),sum(isnull(wwb00,0)),sum(isnull(mmb00,0))
+		,sum(isnull(profita,0)),sum(isnull(profitb,0))
+	from @tmp where gno='1'
+	
+	select gno,ROW_NUMBER()over(partition by gno order by a.makeno,a.datea,a.uno) rr
+		,'' a01
+		,a.dime a02
+		,a.radius a03
+		,a.width a04
+		,a.lengthb a05
+		,a.spec a06
+		,a.makeno a07
+		,b.comp a08
+		--期初存貨
+		,dbo.getComma(a.wwa00,-1) a09
+		,dbo.getComma(a.ppa00,-1) a10
+		,dbo.getComma(a.mma00,-1) a11
+		--盤點
+		,'' a12
+		,'' a13
+		,'' a14
+		--銷貨退回
+		,dbo.getComma(a.wwb05,-1) a15
+		,dbo.getComma(a.ppb05,-1) a16
+		,dbo.getComma(a.mmb05,-1) a17
+		--本期耗料
+		,dbo.getComma(a.wwb02,-1) a18
+		,dbo.getComma(a.ppb02,-1) a19
+		,dbo.getComma(a.mmb02,-1) a20
+		--本期生產
+		,dbo.getComma(a.wwb01,-1) a21
+		,dbo.getComma(a.ppb01,-1) a22
+		,dbo.getComma(a.mmb01,-1) a23
+		--委外加工
+		,'' a24
+		,'' a25
+		,'' a26
+		--本期銷售收入
+		,dbo.getComma(a.wwb03,-1) a27
+		,dbo.getComma(a.ppb04,-1) a28
+		,dbo.getComma(a.mmb04,-1) a29
+		--本期銷售成本
+		,dbo.getComma(a.wwb03,-1) a30
+		,dbo.getComma(a.ppb03,-1) a31
+		,dbo.getComma(a.mmb03,-1) a32
+		--銷售毛利
+		,dbo.getComma(a.profitb,-1) a33
+		--本期報廢
+		,'' a34
+		,'' a35
+		,'' a36
+		--期末存貨
+		,dbo.getComma(a.wwb00,-1) a37
+		,dbo.getComma(a.ppb00,-1) a38
+		,dbo.getComma(a.mmb00,-1) a39
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	order by gno,a.makeno,a.datea,a.uno;
+
 z_cub_rkp03:--z_cub_rkp03	
 	SET QUOTED_IDENTIFIER OFF
 	--[1]
