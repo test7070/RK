@@ -222,7 +222,12 @@ z_cub_rkp06:--z_cub_rkp06
 		,mmb00 = isnull(mma00,0)+isnull(mmb01,0)-isnull(mmb02,0)-isnull(mmb03,0)+isnull(mmb05,0)
 	update @tmp set ppa00=case when ISNULL(wwa00,0)=0 then 0 else ROUND(mma00/wwa00,2) end
 		,ppb00=case when ISNULL(wwb00,0)=0 then 0 else ROUND(mmb00/wwb00,2) end
-	
+	--刪除 無庫存、本月
+	delete @tmp
+	where isnull(wwa00,0)=0
+	and (isnull(wwb01,0)=0 and isnull(wwb02,0)=0 and isnull(wwb03,0)=0 and isnull(wwb05,0)=0 ) 
+
+	--小計
 	insert into @tmp(gno,wwa01,mma01,wwa02,mma02,wwa03,mma03,mma04,wwa05,mma05,wwa00,mma00
 		,wwb01,mmb01,wwb02,mmb02,wwb03,mmb03,mmb04,wwb05,mmb05,wwb00,mmb00,profita,profitb)
 	select '2',sum(isnull(wwa01,0)),sum(isnull(mma01,0)),sum(isnull(wwa02,0)),sum(isnull(mma02,0))
