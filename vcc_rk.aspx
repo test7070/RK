@@ -19,7 +19,7 @@
 			var q_name = "vcc";
 			var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
 			var q_readonlys = ['txtTotal'];
-			var bbmNum = [];
+			var bbmNum = [['txtCartrips', 10, 0, 1]];
 			var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtLengthc', 10, 0, 1], ['txtPrice', 15, 3, 1]];
 			var bbmMask = [];
 			var bbsMask = [];
@@ -834,6 +834,8 @@
 						<td><input id="txtPrice" type="text" class="txt num c1" /></td>
 						<td><span> </span><a id='lblTranmoney' class="lbl"> </a></td>
 						<td><input id="txtTranmoney" type="text" class="txt num c1" /></td>
+						<td><span> </span><a class="lbl">包裝費用</a></td>
+						<td><input id="txtCartrips" type="text" class="txt num c1" /></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id='lblMemo' class="lbl"> </a></td>
