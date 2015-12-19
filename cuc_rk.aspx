@@ -109,8 +109,8 @@
                 	case 'orde_cuc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtSpec,txtClass,txtSize'
-                        	, as.length, as, 'noa,no2,spec,class,size', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtSpec,txtClass,txtSize,txtCubno'
+                        	, as.length, as, 'noa,no2,spec,class,size,makeno', '','');             	
                         }else{
                         	Unlock(1);
                         }
