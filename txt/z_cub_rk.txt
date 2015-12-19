@@ -1,4 +1,242 @@
 z_cub_rk02:--z_cub_rk02
+	declare @t_date nvarchar(max) = case when '#non' = [2] then '' else [2] end
+-----------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1),
+		gno nvarchar(10),
+		ordeno nvarchar(20),
+		no2 nvarchar(10),
+		makeno nvarchar(30),
+		custno nvarchar(20),
+		cust nvarchar(30),
+		typea nvarchar(20),
+		
+		uno nvarchar(30),--鋼捲
+		dime float,
+		radius float,
+		width float,
+		lengthb float,
+		
+		spec nvarchar(20),--皮膜
+	
+		w01 float,--原材料投入重量 	
+		w02 float,--本期生產半成品	
+		w03 float,--生產線廠內廢料(a1)	cubs.price
+		w04 float,--生產線廠內餘料(a2)	  cucs.weight4
+
+		w05 float,--期初半成品結存	 XXXXXXXXXXXXXXX
+		w06 float,--待修品再投入	
+		w07 float,--成品再投入	
+		w08 nvarchar(40),--成品規格	
+		w09 float,--(1)進倉成品	
+
+		w10 float,--(3)樣品+報廢	cucs.wright6 + cucs.wright7
+		w11 float,--不良品廠內(b1)	cucs.wright8 + cuds.weight2 + cuds.weight7
+		w12 float,--尺寸損耗(b3)	cucs.wright9
+		w13 float,--頭尾(廠內)損耗(b4)	cucs.wright10
+
+		w15 float,--原物料損耗  (損耗率減項)      /w07
+		
+		w16 float,--不良品廠內損耗率	w11/w01
+		w17 float,--尺寸損耗率	        w12/w01
+		w18 float,--頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		w19 float,--扣除求償損耗率	
+		
+		w21 float,--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
+		w22 float,--當月耗量(1+2+3)	  w09+w10
+		w23 float,--期末半成品結存
+		w24 float,--完工總損耗
+		memo nvarchar(max)
+	)
+	insert into @tmp(gno,ordeno,no2,makeno,custno,cust,w03
+		,uno,dime,radius,width,lengthb,spec,typea
+		,w01,w02)
+	select '1',a.ordeno,a.no2,a.makeno,a.custno,a.comp,a.price
+		,a.uno,a.dime,a.radius,a.width,a.lengthb,a.spec,c.custpro
+		,ISNULL(a.[weight],0)+ISNULL(a.[lengthb2],0)+ISNULL(a.[w06],0)+ISNULL(a.[w08],0)--投入重量
+		,ISNULL(a.hweight,0)
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
+	where b.datea<=@t_date
+	
+	--	update @tmp set w06=b.weight5,w07=b.weight3,w08=b.size
+--	from @tmp a
+--	left join view_cucs b on a.makeno=b.cubno
+
+	update @tmp set 
+		 w04=ISNULL(b.weight4,0)
+		,w06=ISNULL(b.weight5,0)
+		,w07=ISNULL(b.weight3,0) 
+		,w10=ISNULL(b.weight6,0)+ISNULL(b.weight7,0)
+		,w11=ISNULL(b.weight8,0)
+		,w12=ISNULL(b.weight9,0)
+		,w13=ISNULL(b.weight10,0)
+	from @tmp a
+	left join(
+		select a.cubno makeno
+			,SUM(ISNULL(a.weight3,0)) weight3
+			,SUM(ISNULL(a.weight4,0)) weight4
+			,SUM(ISNULL(a.weight5,0)) weight5
+			,SUM(ISNULL(a.weight6,0)) weight6
+			,SUM(ISNULL(a.weight7,0)) weight7
+			,SUM(ISNULL(a.weight8,0)) weight8
+			,SUM(ISNULL(a.weight9,0)) weight9
+			,SUM(ISNULL(a.weight10,0)) weight10
+		from view_cucs a
+		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+		where ISNULL(b.datea,'')<=@t_date
+		group by a.cubno)b on a.makeno=b.makeno
+	--投入重量 (物料)
+	update @tmp set w01 = ISNULL(a.w01,0)+ISNULL(b.weight,0)
+	from @tmp a
+	left join(
+		select a.makeno,Sum(isnull(c.gweight,0)) [weight]
+			from @tmp a
+			left join view_cubs b on a.makeno=b.makeno
+			left join view_cubt c on b.noa=c.noa and b.noq=c.nor
+			where len(ISNULL(a.makeno,''))>0
+		group by a.makeno) b on a.makeno=b.makeno
+	
+	--(1)進倉成品	
+	update @tmp set w09=b.[weight]
+	from @tmp a
+	left join (
+		select cname makeno,SUM(ISNULL([weight],0)) [weight] 
+		from view_cuts
+		where isnull(datea,'')<=@t_date 
+		group by cname
+	) b on a.makeno = b.makeno
+	--不良品廠內(b1)
+	update @tmp set w09=b.[weight]
+	from @tmp a
+	left join (
+		select a.memo makeno,SUM(ISNULL([weight],0)) [weight] 
+		from view_cuds a
+		left join view_cud b on a.accy=b.accy and a.noa=b.noa
+		where isnull(b.datea,'')<=@t_date 
+		group by a.memo
+	) b on a.makeno = b.makeno
+	
+		
+	update @tmp set w11=ISNULL(w11,0)+ISNULL(b.weight2,0)+ISNULL(b.weight7,0)
+	from @tmp a
+	left join view_cuds b on a.makeno = b.memo
+	
+	-------------小計
+	insert into @tmp(gno,w01,w02,w03,w04,w05,w06,w07
+		,w09,w10,w11,w12,w13
+		,w15,w16,w17,w18,w19
+		,w21,w22,w23)
+	select '2',sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
+		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
+	from @tmp
+	where gno='1'
+	
+	--類別 小
+	insert into @tmp(gno,typea,w01,w02,w03,w04,w05,w06,w07
+		,w09,w10,w11,w12,w13
+		,w15,w16,w17,w18,w19
+		,w21,w22,w23)
+	select '3',typea
+		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
+		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
+	from @tmp
+	where gno='1'
+	and len(typea)>2
+	group by typea
+	--類別 中
+	insert into @tmp(gno,typea,w01,w02,w03,w04,w05,w06,w07
+		,w09,w10,w11,w12,w13
+		,w15,w16,w17,w18,w19
+		,w21,w22,w23)
+	select '4',left(typea,2)
+		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
+		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
+	from @tmp a
+	where gno='1'
+	and len(typea)>2
+	and exists(select * from adpro where noa=left(a.typea,2))
+	group by left(typea,2)
+	--類別 大
+	insert into @tmp(gno,typea,w01,w02,w03,w04,w05,w06,w07
+		,w09,w10,w11,w12,w13
+		,w15,w16,w17,w18,w19
+		,w21,w22,w23)
+	select '5',left(typea,1)
+		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
+		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
+	from @tmp a
+	where gno='1'
+	and len(typea)>2
+	and exists(select * from adpro where noa=left(a.typea,1))
+	group by left(typea,1)
+	
+	--w15 float,
+	update @tmp set w15 = 0--原物料損耗  (損耗率減項)      ??/w07
+		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,1) end--不良品廠內損耗率	w11/w01
+		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,1) end--尺寸損耗率	        w12/w01
+		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,1) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		,w19=0--扣除求償損耗率	
+		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
+		,w22=ISNULL(w09,0)+ISNULL(w10,0)--當月耗量(1+2+3)	  w09+w10
+	
+	update @tmp set w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)	
+		,w23 = ISNULL(w02,0)+ISNULL(w05,0)-ISNULL(w09,0)-ISNULL(w10,0)
+			-ISNULL(w11,0)-ISNULL(w12,0)-ISNULL(w13,0)-ISNULL(w15,0)
+	select a.gno
+		,ROW_NUMBER()over(order by a.gno,a.makeno) rr
+		,'' a01
+		,a.ordeno a02
+		,a.typea
+		,b.product a03
+		,a.makeno a04
+		,a.cust a05
+		,a.uno a06
+		,a.spec a07
+		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar) a08
+		,dbo.getComma(a.w01,-1) a09
+		,dbo.getComma(a.w02,-1) a10
+		,dbo.getComma(a.w03,-1) a11
+		,dbo.getComma(a.w04,-1) a12
+		,dbo.getComma(a.w05,-1) a13
+		,dbo.getComma(a.w06,-1) a14
+		,dbo.getComma(a.w07,-1) a15
+		,a.w08 a16
+		,dbo.getComma(a.w09,-1) a17
+		,dbo.getComma(a.w10,-1) a18
+		,dbo.getComma(a.w11,-1) a19
+		,dbo.getComma(a.w12,-1) a20
+		,dbo.getComma(a.w13,-1) a21
+		
+		,dbo.getComma(a.w15,-1) a22
+		, case when ISNULL(a.w16,0)=0 then '' else dbo.getComma(a.w16,-1)+'%' end a23
+		, case when ISNULL(a.w17,0)=0 then '' else dbo.getComma(a.w17,-1) +'%' end a24
+		, case when ISNULL(a.w18,0)=0 then '' else dbo.getComma(a.w18,-1) +'%' end a25
+		, case when ISNULL(a.w19,0)=0 then '' else dbo.getComma(a.w19,-1) +'%' end a26
+		
+		,dbo.getComma(a.w21,-1) a27
+		,dbo.getComma(a.w22,-1) a28
+		,dbo.getComma(a.w23,-1) a29
+		,case when ISNULL(a.w24,0)=0 then '0%' else dbo.getComma(a.w24,-1) +'%' end a30
+		,'' a31
+	from @tmp a
+	left join adpro b on a.typea=b.noa
+	order by a.gno,a.makeno;
+
+z_cub_rk02_mon:--z_cub_rk02_mon
 	declare @t_mon nvarchar(max) = case when '#non' = [1] then '' else [1] end
 -----------------------------------------------------------------------------------------------
 	declare @tmp table(
