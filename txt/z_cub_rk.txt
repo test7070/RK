@@ -25,29 +25,30 @@ z_cub_rk02:--z_cub_rk02
 		w04 float,--生產線廠內餘料(a2)	  cucs.weight4
 
 		w05 float,--期初半成品結存	 XXXXXXXXXXXXXXX
-		w06 float,--待修品再投入	
-		w07 float,--成品再投入	
+		w06 float,--待修品再投入   cucs.weight5	
+		w07 float,--成品再投入	   cucs.weight3
 		w08 nvarchar(40),--成品規格	
-		w09 float,--(1)進倉成品	
+		w09 float,--(1)進倉成品	   cuts.weight
 
-		w10 float,--(3)樣品+報廢	cucs.wright6 + cucs.wright7
-		w11 float,--不良品廠內(b1)	cucs.wright8 + cuds.weight2 + cuds.weight7
+		w10 float,--(3)樣品+報廢	cucs.weight6 + cucs.weight7 + cucs.waste
+		w11 float,--不良品(b1)	cucs.wright8  + (cuds.weight1 ~ cuds.weight10)
 		w12 float,--尺寸損耗(b3)	cucs.wright9
 		w13 float,--頭尾(廠內)損耗(b4)	cucs.wright10
 
 		w15 float,--原物料損耗  (損耗率減項)      /w07
 		
-		w16 float,--不良品廠內損耗率	w11/w01
+		w16 float,--不良品損耗率	w11/w01
 		w17 float,--尺寸損耗率	        w12/w01
 		w18 float,--頭尾(廠內)損耗率	(w03+w04+w13)/w01
 		w19 float,--扣除求償損耗率	
 		
 		w21 float,--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		w22 float,--當月耗量(1+2+3)	  w09+w10
-		w23 float,--期末半成品結存
-		w24 float,--完工總損耗
+		w23 float,--期末半成品結存   w03+w05-w09-w10-w11-w12-w13-w15
+		w24 float,--完工總損耗 w16+w17+w18+w19
 		memo nvarchar(max)
 	)
+
 	insert into @tmp(gno,ordeno,no2,makeno,custno,cust,w03
 		,uno,dime,radius,width,lengthb,spec,typea
 		,w01,w02)
@@ -60,10 +61,6 @@ z_cub_rk02:--z_cub_rk02
 	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
 	where b.datea<=@t_date
 	
-	--	update @tmp set w06=b.weight5,w07=b.weight3,w08=b.size
---	from @tmp a
---	left join view_cucs b on a.makeno=b.cubno
-
 	update @tmp set 
 		 w04=ISNULL(b.weight4,0)
 		,w06=ISNULL(b.weight5,0)
@@ -107,22 +104,25 @@ z_cub_rk02:--z_cub_rk02
 		where isnull(datea,'')<=@t_date 
 		group by cname
 	) b on a.makeno = b.makeno
-	--不良品廠內(b1)
-	update @tmp set w09=b.[weight]
+	
+	
+	--不良品(b1)
+	update @tmp set w11=ISNULL(a.w11,0) + ISNULL(b.weight,0)
 	from @tmp a
 	left join (
-		select a.memo makeno,SUM(ISNULL([weight],0)) [weight] 
+		select a.memo makeno
+			,SUM(ISNULL(a.[weight1],0)+ISNULL(a.[weight2],0)
+				+ISNULL(a.[weight3],0)+ISNULL(a.[weight4],0)
+				+ISNULL(a.[weight5],0)+ISNULL(a.[weight6],0)
+				+ISNULL(a.[weight7],0)+ISNULL(a.[weight8],0)
+				+ISNULL(a.[weight9],0)+ISNULL(a.[weight10],0)
+				) [weight] 
 		from view_cuds a
 		left join view_cud b on a.accy=b.accy and a.noa=b.noa
 		where isnull(b.datea,'')<=@t_date 
 		group by a.memo
 	) b on a.makeno = b.makeno
-	
-		
-	update @tmp set w11=ISNULL(w11,0)+ISNULL(b.weight2,0)+ISNULL(b.weight7,0)
-	from @tmp a
-	left join view_cuds b on a.makeno = b.memo
-	
+
 	-------------小計
 	insert into @tmp(gno,w01,w02,w03,w04,w05,w06,w07
 		,w09,w10,w11,w12,w13
@@ -186,7 +186,7 @@ z_cub_rk02:--z_cub_rk02
 	
 	--w15 float,
 	update @tmp set w15 = 0--原物料損耗  (損耗率減項)      ??/w07
-		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,1) end--不良品廠內損耗率	w11/w01
+		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,1) end--不良品損耗率	w11/w01
 		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,1) end--尺寸損耗率	        w12/w01
 		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,1) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
 		,w19=0--扣除求償損耗率	
