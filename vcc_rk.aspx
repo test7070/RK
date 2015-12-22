@@ -440,6 +440,12 @@
                             var n = $(this).attr('id').replace('txtUno_', '');
                             $('#btnUno_'+n).click();
                         });
+                        $('#txtProductno_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtProductno_', '');
+                            $('#btnProduct_'+n).click();
+                        });
 					}
 				}
 				_bbsAssign();
