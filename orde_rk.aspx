@@ -123,6 +123,7 @@
                 q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
                 q_cmbParse("cmbSpec", t_spec,'s');
                 q_cmbParse("cmbCustpro", t_adpro,'s');
+                q_cmbParse("cmbStype", q_getPara('orde.stype'));
                 
                 $("#cmbTaxtype").change(function(e) {
                     sum();
@@ -678,7 +679,7 @@
 							<input id="txtComp"  type="text" class="txt" style="width:70%;" maxlength="50"/>
 							<input id="txtNick"  type="text" class="txt" style="display:none;" maxlength="20"/>
 						</td>
-						<td> </td>
+						<td><select id="cmbStype" class="txt c1"> </select></td>
 						<td> </td>
 						<td align="center">
                             <input id="chkIsproj" type="checkbox"/>
