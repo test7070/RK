@@ -33,15 +33,21 @@
 					},{
 						type : '6', //[3] 1
 						name : 'noa'
-					},{//[4][5] 2
-                        type : '1',
+					},{
+                        type : '1',//[4][5] 2
                         name : 'xmon'
                     },{
 						type : '6', //[6] 3
 						name : 'xdate'
 					},{
-						type : '6', //[7] 4
-						name : 'ymon'
+						type : '1', //[7,8] 4
+						name : 'ydate'
+					},{
+						type : '2', //[9,10] 5
+						name : 'ycust',
+						dbf : 'cust',
+						index : 'noa,comp',
+						src : 'cust_b.aspx'
 					}]
 				});
 				q_popAssign();
@@ -63,6 +69,11 @@
                 $('#txtXdate').datepicker();
                 $('#txtXdate').val(q_date());
                 $('#txtYmon').val(q_date().substring(0,6));
+                
+                $('#txtYdate1').mask('999/99/99');
+                $('#txtYdate1').datepicker();
+                $('#txtYdate2').mask('999/99/99');
+                $('#txtYdate2').datepicker();
                 
 	            $('#textBmon').mask('999/99');
                 $('#textEmon').mask('999/99');
