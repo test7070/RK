@@ -28,7 +28,19 @@
 					},{							
 						type : '6', //[2]
 						name : 'xdate'
-						}
+					},{							
+						type : '6', //[3]
+						name : 'xmakeno'
+					},{							
+						type : '6', //[4]
+						name : 'xspec'
+					},{							
+						type : '1', //[5,6]
+						name : 'xdime'
+					},{							
+						type : '1', //[7,8]
+						name : 'xwidth'
+					}
 					]
 				});
 				q_langShow();
@@ -36,6 +48,11 @@
 				$('#txtXmon').mask('999/99');
 				$('#txtXdate').mask('999/99/99');
 				$('#txtXdate').datepicker();
+				
+				$('#txtXdime1').val(0);
+				$('#txtXdime2').val(99999);
+				$('#txtXwidth1').val(0);
+				$('#txtXwidth2').val(99999);
 				
 				var t_date, t_year, t_month, t_day;
 				t_date = new Date();
