@@ -309,11 +309,13 @@ z_vcc_rkp01:--z_vcc_rkp01
 	insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
 	select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
 	from @tmp
+	where gno='1'
 	group by productno,spec,size
 	
 	insert into @tmp(pno,gno,lengthc,mount,[weight])
 	select '3','3',SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
 	from @tmp
+	where gno='1'
 	------------------------------------------------------------------------------------
 	declare @noa nvarchar(20) = ''
 	declare @custno nvarchar(20) = ''
