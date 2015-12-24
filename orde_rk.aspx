@@ -38,7 +38,7 @@
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'no2'];
                 q_brwCount();
-                q_gt('spec', '', 0, 0, 0, '');
+                q_gt('flors_coin', '', 0, 0, 0, "flors_coin");
             });
 			function sum(){
 				if(!(q_cur==1 || q_cur==2))
@@ -220,6 +220,19 @@
 
             function q_gtPost(t_name) {
                 switch (t_name) {
+                	case 'flors_coin':
+						var as = _q_appendData("flors", "", true);
+						var z_coin='';
+						for ( i = 0; i < as.length; i++) {
+							z_coin+=','+as[i].coin;
+						}
+						if(z_coin.length==0) z_coin=' ';
+						
+						q_cmbParse("cmbCoin", z_coin);
+						if(abbm[q_recno])
+							$('#cmbCoin').val(abbm[q_recno].coin);
+						q_gt('spec', '', 0, 0, 0, '');
+						break;
                 	case 'spec':
 						var as = _q_appendData("spec", "", true);
 						t_spec='';
@@ -731,6 +744,14 @@
                         </td>
                         <td><span> </span><a id='lblTotal' class="lbl"> </a></td>
                         <td><input id="txtTotal" type="text" class="txt num c1" /></td>
+                    </tr>
+                    <tr>
+                    	<td><span> </span><a id='lblFloata' class="lbl"> </a></td>
+						<td><input id="txtFloata" type="text" class="txt num c1" /></td>
+						<td>
+							<span style="float:left;display:block;width:10px;"></span>
+							<select id="cmbCoin" style="float:left;width:80px;" onchange='coin_chg()'></select>
+						</td>
                     </tr>
 					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl"> </a></td>
