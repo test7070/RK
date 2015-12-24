@@ -38,7 +38,8 @@
             });
 			function sum() {
 				for (var i = 0; i < q_bbsCount; i++) {
-					$('#txtMins_'+i).val(getMins($('#txtBtime_'+i).val(),$('#txtEtime_'+i).val()));	
+					if($('#txtBtime_'+i).val().length>0 || $('#txtEtime_'+i).val().length>0)
+						$('#txtMins_'+i).val(getMins($('#txtBtime_'+i).val(),$('#txtEtime_'+i).val()));	
 				}
 			}
 			function getMins(btime,etime){
