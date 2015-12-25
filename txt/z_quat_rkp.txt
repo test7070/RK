@@ -226,7 +226,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+style+'</a>' style
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0)+'</a>' mount
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,-1)+'</a>' mount
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
