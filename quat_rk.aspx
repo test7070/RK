@@ -649,10 +649,11 @@
 					<td style="width:60px;">背面<BR>處理</td>
 					<td style="width:100px;">保護膜(一)<br>編號<BR>名稱</td>
 					<td style="width:100px;">保護膜(二)<br>編號<BR>名稱</td>
-					<td style="width:60px;">單位</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
+					<td style="width:60px;">計量<BR>單位</td>
 					<td style="width:80px;">單價</td>
+					<td style="width:60px;">計價<BR>單位</td>
 					<td style="width:120px;display:none;">P/O</td>
 					<td style="width:120px;display:none;">P/N</td>
 				</tr>
@@ -688,10 +689,11 @@
 						<input id="txtUno.*" type="text" class="txt c1"/>
 						<input id="btnHard.*" type="button" style="display:none;"/>
 					</td>
-					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>
+					<td><input id="txtUnit2.*" type="text" class="txt c1"/></td>
 					<td><input id="txtPrice.*" type="text" class="txt c1 num"/></td>
+					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td style="display:none;"><input id="txtPo.*" type="text" class="txt c1"/></td>
 					<td style="display:none;"><input id="txtPn.*" type="text" class="txt c1"/></td>
 				</tr>

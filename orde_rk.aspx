@@ -202,8 +202,8 @@
                 	case 'quat_orde':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtQuatno,txtNo3,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,cmbSpec,txtScolor,txtClass,txtUcolor,txtZinc,txtHard,txtSource,txtUno,txtUnit,txtMount,txtWeight,txtPrice'
-                        	, as.length, as, 'noa,no3,productno,product,dime,radius,width,lengthb,spec,scolor,class,ucolor,zinc,hard,source,uno,unit,emount,eweight,price', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtQuatno,txtNo3,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,cmbSpec,txtScolor,txtClass,txtUcolor,txtZinc,txtHard,txtSource,txtUno,txtUnit,txtUnit2,txtMount,txtWeight,txtPrice'
+                        	, as.length, as, 'noa,no3,productno,product,dime,radius,width,lengthb,spec,scolor,class,ucolor,zinc,hard,source,uno,unit,unit2,emount,eweight,price', '','');
                         	
                         	var t_quatno = $('#txtQuatno_0').length>0?$('#txtQuatno_0').val():'';
                         	q_gt('view_quat', "where=^^ noa='"+t_quatno+"' ^^", 0, 0, 0, JSON.stringify({action:'importQuat'}));

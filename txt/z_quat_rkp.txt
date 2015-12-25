@@ -51,6 +51,7 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @mount float
 	declare @weight float
 	declare @unit nvarchar(20)
+	declare @unit2 nvarchar(20)
 	declare @price float
 	declare @po nvarchar(50)
 	declare @pn nvarchar(50)
@@ -79,7 +80,9 @@ z_quat_rkp02:--z_quat_rkp02
 		style nvarchar(20),
 		[source] nvarchar(20),
 		mount float,
+		weight float,
 		unit nvarchar(20),
+		unit2 nvarchar(20),
 		price float,
 		po nvarchar(50),
 		pn nvarchar(50),
@@ -111,38 +114,36 @@ z_quat_rkp02:--z_quat_rkp02
 		set @n = 1
 		declare cursor_table2 cursor for
 		select productno,product,dime,radius,width,lengthb,spec,scolor,uno,class
-			,style,[source],mount,[weight],unit,price,po,pn
+			,style,[source],mount,[weight],unit,unit2,price,po,pn
 		from view_quats
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
 		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@uno,@classa
-			,@style,@source,@mount,@weight,@unit,@price,@po,@pn
+			,@style,@source,@mount,@weight,@unit,@unit2,@price,@po,@pn
 		while(@@FETCH_STATUS <> -1)
 		begin
 		
 			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
-				,style,[source],mount,unit,price,po,pn,coin)
+				,style,[source],mount,weight,unit,price,po,pn,coin)
 			values(case when len(@uno)=0 then '2' else '3' end
 				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
-				,@style,@source
-				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
-				,@unit,@price,@po,@pn,@coin)
+				,@style,@source,@mount,@weight
+				,@unit,@unit2,@price,@po,@pn,@coin)
 			
 			if len(@uno)>0
 			begin
 				insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
-					,style,[source],mount,unit,price,po,pn,coin)
+					,style,[source],mount,weight,unit,price,po,pn,coin)
 				values('4',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
-					,@style,@source
-					,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
-					,@unit,@price,@po,@pn,@coin)
+					,@style,@source,@mount,@weight
+					,@unit,@unit2,@price,@po,@pn,@coin)
 			end
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
 			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@uno,@classa
-			,@style,@source,@mount,@weight,@unit,@price,@po,@pn
+			,@style,@source,@mount,@weight,@unit,@unit2,@price,@po,@pn
 		end
 		close cursor_table2
 		deallocate cursor_table2
@@ -226,7 +227,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+style+'</a>' style
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,-1)+'</a>' mount
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+' '+unit2+'</a>' mount
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
