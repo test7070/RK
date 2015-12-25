@@ -896,7 +896,7 @@
 						<td align="center" style="width:20px; color:black;"><a id="vewChk"> </a></td>
 						<td align="center" style="width:80px; color:black;"><a id="vewOdate"> </a></td>
 						<td align="center" style="width:100px; color:black;"><a id="vewNoa"> </a></td>
-						<td align="center" style="width:80px; color:black;"><a id="vewNick"> </a></td>
+						<td align="center" style="width:80px; color:black;"><a id="vewKind">類別</a></td>
 					</tr>
 					<tr>
 						<td >
@@ -904,7 +904,7 @@
 						</td>
 						<td align="center" id='odate'>~odate</td>
 						<td align="center" id='noa'>~noa</td>
-						<td align="center" id='nick'>~nick</td>
+						<td align="center" id='kind=cmbKind'>~kind=cmbKind</td>
 					</tr>
 				</table>
 			</div>
