@@ -125,7 +125,7 @@ z_quat_rkp02:--z_quat_rkp02
 		begin
 		
 			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
-				,style,[source],mount,weight,unit,price,po,pn,coin)
+				,style,[source],mount,weight,unit,unit2,price,po,pn,coin)
 			values(case when len(@uno)=0 then '2' else '3' end
 				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
 				,@style,@source,@mount,@weight
@@ -134,7 +134,7 @@ z_quat_rkp02:--z_quat_rkp02
 			if len(@uno)>0
 			begin
 				insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
-					,style,[source],mount,weight,unit,price,po,pn,coin)
+					,style,[source],mount,weight,unit,unit2,price,po,pn,coin)
 				values('4',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
 					,@style,@source,@mount,@weight
 					,@unit,@unit2,@price,@po,@pn,@coin)
