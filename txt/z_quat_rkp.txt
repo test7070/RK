@@ -34,6 +34,7 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @chkb3 bit
 	declare @chkb4 bit
 	declare @memo nvarchar(max)
+	declare @coin nvarchar(20)
 	
 	declare @productno nvarchar(20)
 	declare @product nvarchar(50)
@@ -81,7 +82,8 @@ z_quat_rkp02:--z_quat_rkp02
 		unit nvarchar(20),
 		price float,
 		po nvarchar(50),
-		pn nvarchar(50)
+		pn nvarchar(50),
+		coin nvarchar(20)
 	)
 
 	
@@ -90,7 +92,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,paytype,memo2,packtype
 		,chka1,chka2,chka3,chka4,chka5
 		,addr,tolerance
-		,chkb1,chkb2,chkb3,chkb4,memo
+		,chkb1,chkb2,chkb3,chkb4,memo,coin
 	from view_quat
 	where noa=@t_noa	
 	open cursor_table
@@ -99,7 +101,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,@paytype,@memo2,@packtype
 		,@chka1,@chka2,@chka3,@chka4,@chka5
 		,@addr,@tolerance
-		,@chkb1,@chkb2,@chkb3,@chkb4,@memo
+		,@chkb1,@chkb2,@chkb3,@chkb4,@memo,@coin
 	while(@@FETCH_STATUS <> -1)
 	begin
 		--insert into @tmp(gno,aa,bb)values('1','合約編號：',@noa)
@@ -120,21 +122,21 @@ z_quat_rkp02:--z_quat_rkp02
 		begin
 		
 			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
-				,style,[source],mount,unit,price,po,pn)
+				,style,[source],mount,unit,price,po,pn,coin)
 			values(case when len(@uno)=0 then '2' else '3' end
 				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
 				,@style,@source
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
-				,@unit,@price,@po,@pn)
+				,@unit,@price,@po,@pn,@coin)
 			
 			if len(@uno)>0
 			begin
 				insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
-					,style,[source],mount,unit,price,po,pn)
+					,style,[source],mount,unit,price,po,pn,coin)
 				values('4',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
 					,@style,@source
 					,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
-					,@unit,@price,@po,@pn)
+					,@unit,@price,@po,@pn,@coin)
 			end
 			
 			set @n = @n + 1
@@ -203,7 +205,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,@paytype,@memo2,@packtype
 		,@chka1,@chka2,@chka3,@chka4,@chka5
 		,@addr,@tolerance
-		,@chkb1,@chkb2,@chkb3,@chkb4,@memo
+		,@chkb1,@chkb2,@chkb3,@chkb4,@memo,@coin
 	end
 	close cursor_table
 	deallocate cursor_table
@@ -224,8 +226,8 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+style+'</a>' style
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0)+unit+'</a>' mount
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,0)+'</a>' price
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0)+'</a>' mount
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn

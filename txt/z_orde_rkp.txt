@@ -36,6 +36,7 @@ z_orde_rkp01:--z_orde_rkp01
 	declare @chkb3 bit
 	declare @chkb4 bit
 	declare @memo nvarchar(max)
+	declare @coin nvarchar(20)
 	
 	declare @productno nvarchar(20)
 	declare @product nvarchar(50)
@@ -89,7 +90,8 @@ z_orde_rkp01:--z_orde_rkp01
 		po nvarchar(50),
 		pn nvarchar(50),
 		zinc nvarchar(20),
-		hard nvarchar(20)
+		hard nvarchar(20),
+		coin nvarchar(20)
 	)
 	select @t_quatno=quatno from view_orde where noa=@t_noa
 
@@ -100,7 +102,7 @@ z_orde_rkp01:--z_orde_rkp01
 		,b.chka1,b.chka2,b.chka3,b.chka4,b.chka5
 		,a.addr2,b.tolerance
 		,b.chkb1,b.chkb2,b.chkb3,b.chkb4
-		,a.memo
+		,a.memo,a.coin
 	from view_orde a
 	left join view_quat b on a.quatno=b.noa
 	where a.noa=@t_noa
@@ -110,7 +112,7 @@ z_orde_rkp01:--z_orde_rkp01
 		,@paytype,@memo2,@packtype
 		,@chka1,@chka2,@chka3,@chka4,@chka5
 		,@addr,@tolerance
-		,@chkb1,@chkb2,@chkb3,@chkb4,@memo
+		,@chkb1,@chkb2,@chkb3,@chkb4,@memo,@coin
 	while(@@FETCH_STATUS <> -1)
 	begin
 		--insert into @tmp(gno,aa,bb)values('1','合約編號：',@noa)
@@ -141,17 +143,17 @@ z_orde_rkp01:--z_orde_rkp01
 			end
 			
 			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
-				,ucolor,[source],uno,mount,unit,price,po,pn,zinc,hard)
+				,ucolor,[source],uno,mount,unit,price,po,pn,zinc,hard,coin)
 			values('2',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source,@uno
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
-				,@unit,@price,@po,@pn,@zinc,@hard)
+				,@unit,@price,@po,@pn,@zinc,@hard,@coin)
 			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
-				,ucolor,[source],uno,mount,unit,price,po,pn,zinc,hard)
+				,ucolor,[source],uno,mount,unit,price,po,pn,zinc,hard,coin)
 			values('3',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source,@uno
 				,case when len(isnull(@unit,''))=0 or upper(@unit)='KG' then @weight else  @mount end
-				,@unit,@price,@po,@pn,@zinc,@hard)
+				,@unit,@price,@po,@pn,@zinc,@hard,@coin)
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
@@ -227,11 +229,11 @@ z_orde_rkp01:--z_orde_rkp01
 		,@paytype,@memo2,@packtype
 		,@chka1,@chka2,@chka3,@chka4,@chka5
 		,@addr,@tolerance
-		,@chkb1,@chkb2,@chkb3,@chkb4,@memo
+		,@chkb1,@chkb2,@chkb3,@chkb4,@memo,@coin
 	end
 	close cursor_table
 	deallocate cursor_table
-	
+
 	select gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
@@ -249,8 +251,8 @@ z_orde_rkp01:--z_orde_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace([source],'~#$',"'")+'</a>' [source]
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace([uno],'~#$',"'")+'</a>' [uno]
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0)+unit+'</a>' mount
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,0)+'</a>' price
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0)+'</a>' mount
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
