@@ -1228,7 +1228,7 @@ z_cub_rkp01:--z_cub_rkp01
 	--[4]
 	--[5]
 	--[6]
-	declare @t_mon nvarchar(max) = case when '#non' = [7] then '' else [7] end
+	declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -1317,7 +1317,7 @@ z_cub_rkp01:--z_cub_rkp01
 		,a.uno4,a.zinc,a.w07,a.w08
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
-	where LEFT(b.datea,6)=@t_mon
+	where b.datea<=@t_datea
 	
 	update @tmp set dime03=b.dime,width03=b.width,lengthb03=b.lengthb
 	from @tmp a
@@ -1330,25 +1330,32 @@ z_cub_rkp01:--z_cub_rkp01
 	BEGIN
 		drop table #z_cub_rkp01
 	END
-	select * into #z_cub_rkp01 from dbo.makeno(@t_mon)
+	select * into #z_cub_rkp01 from dbo.makeno2(@t_datea,1)
 	
-	update @tmp set price01 =b.price01,money01=b.mma01--coil
-		,price02=b.price02,money02=b.mma02
-		,price03=b.price03,money03=b.mma03
-		,price04=b.price04,money04=b.mma04
-		,weight05=b.wwa05,money05=b.mma05,price05=case when b.wwa05=0 then 0 else ROUND(b.mma05/b.wwa05,2) end--A01 接著劑
-		,weight06=b.wwa06,money06=b.mma06,price06=case when b.wwa06=0 then 0 else ROUND(b.mma06/b.wwa06,2) end--A02 接著劑稀釋劑	
-		,weight07=b.wwa07,money07=b.mma07,price07=case when b.wwa07=0 then 0 else ROUND(b.mma07/b.wwa07,2) end--A03 背漆
-		,weight08=b.wwa08,money08=b.mma08,price08=case when b.wwa08=0 then 0 else ROUND(b.mma08/b.wwa08,2) end--A04 背漆稀釋液
-		,weight09=b.wwa09,money09=b.mma09,price09=case when b.wwa09=0 then 0 else ROUND(b.mma09/b.wwa09,2) end--A05 面漆
-		,weight10=b.weight01--投入重量
-		,money10=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)--半成品金額
-		,weight11=b.weight02--完工重量
-		,money11=ISNULL(b.wages01,0)+ISNULL(b.wages02,0)+ISNULL(b.wages03,0)+ISNULL(b.wages04,0)+ISNULL(b.wages05,0)+ISNULL(b.wages06,0)+ISNULL(b.wages07,0)--直接人工
-		,money12=ISNULL(b.makeless01,0)+ISNULL(b.makeless02,0)+ISNULL(b.makeless03,0)+ISNULL(b.makeless04,0)+ISNULL(b.makeless05,0)+ISNULL(b.makeless06,0)+ISNULL(b.makeless07,0)--製造費用
-		,weight12=b.weight03--成品重量
+	update @tmp set price01 =b.price1,money01=ISNULL(b.money1,0)--coil
+		,price02=b.price2,money02=ISNULL(b.money2,0)
+		,price03=b.price3,money03=ISNULL(b.money3,0)
+		,price04=b.price4,money04=ISNULL(b.money4,0)
+		,weight05=b.wwa01,money05=b.mma01,price05=case when b.wwa01=0 then 0 else ROUND(b.mma01/b.wwa01,2) end--A01 接著劑
+		,weight06=b.wwa02,money06=b.mma02,price06=case when b.wwa02=0 then 0 else ROUND(b.mma02/b.wwa02,2) end--A02 接著劑稀釋劑	
+		,weight07=b.wwa03,money07=b.mma03,price07=case when b.wwa03=0 then 0 else ROUND(b.mma03/b.wwa03,2) end--A03 背漆
+		,weight08=b.wwa04,money08=b.mma04,price08=case when b.wwa04=0 then 0 else ROUND(b.mma04/b.wwa04,2) end--A04 背漆稀釋液
+		,weight09=b.wwa05,money09=b.mma05,price09=case when b.wwa05=0 then 0 else ROUND(b.mma05/b.wwa05,2) end--A05 面漆
+		--投入重量
+		,weight10=ISNULL(b.weight1,0)+ISNULL(b.weight2,0)+ISNULL(b.weight3,0)+ISNULL(b.weight4,0)
+			+isnull(b.wwa01,0)+isnull(b.wwa02,0)+isnull(b.wwa03,0)+isnull(b.wwa04,0)+isnull(b.wwa05,0)
+		,money10=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)
+			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)+ISNULL(b.money4,0)--半成品金額
+		--,weight11=b.weight02--完工重量
+		---,money11=ISNULL(b.wages01,0)+ISNULL(b.wages02,0)+ISNULL(b.wages03,0)+ISNULL(b.wages04,0)+ISNULL(b.wages05,0)+ISNULL(b.wages06,0)+ISNULL(b.wages07,0)--直接人工
+		--,money12=ISNULL(b.makeless01,0)+ISNULL(b.makeless02,0)+ISNULL(b.makeless03,0)+ISNULL(b.makeless04,0)+ISNULL(b.makeless05,0)+ISNULL(b.makeless06,0)+ISNULL(b.makeless07,0)--製造費用
+		--,weight12=b.weight03--成品重量
 	from @tmp a
 	left join #z_cub_rkp01 b on a.makeno=b.makeno
+	
+	update @tmp set weight12 = isnull(b.[weight],0)
+	from @tmp a
+	left join (select cname makeno,SUM(ISNULL([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.makeno
 	
 	update @tmp set money13=ISNULL(money10,0)+ISNULL(money11,0)+ISNULL(money12,0)
 	--合計
@@ -1373,7 +1380,7 @@ z_cub_rkp01:--z_cub_rkp01
 	left join view_cuts b on a.makeno=b.cname
 	left join view_cut c on b.accy=c.accy and b.noa=c.noa
 	where gno='1'
-	
+
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar)+'</a>' rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a01
@@ -1437,7 +1444,7 @@ z_cub_rkp01:--z_cub_rkp01
 	
 z_cub_rkp02:--z_cub_rkp02	
 	SET QUOTED_IDENTIFIER OFF
-	declare @t_mon nvarchar(max) = case when '#non' = [7] then '' else [7] end
+	declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -1470,23 +1477,25 @@ z_cub_rkp02:--z_cub_rkp02
 		
 		memo nvarchar(max)
 	)
-	insert into @tmp(gno,dime,radius,width,lengthb,pvc,makeno,custno,cust,spec,peno1,pe1,peno2,pe2,timea)
+	insert into @tmp(gno,dime,radius,width,lengthb,pvc,makeno,custno,cust,spec,peno1,pe1,peno2,pe2,timea,weight02)
 	select '1',a.dime,a.radius,a.width,a.lengthb,a.spec,a.makeno,a.custno,a.comp,c.spec
-		,a.scolor,a.process,a.zinc,a.flower,a.mins
+		,a.scolor,a.process,a.zinc,a.flower,a.mins,a.hweight
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
-	where LEFT(b.datea,6)=@t_mon
+	where b.datea<=@t_datea
 	--製造成本
 	IF OBJECT_ID('tempdb..#z_cub_rkp02')is not null
 	BEGIN
 		drop table #z_cub_rkp02
 	END
-	select * into #z_cub_rkp02 from dbo.makeno(@t_mon)
+	select * into #z_cub_rkp02 from dbo.makeno2(@t_datea,1)
 	
-	update @tmp set weight01=ISNULL(b.weight01,0)--投入重量
-		,weight02=ISNULL(b.weight02,0)--完工重量
-		,money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)--半成品金額
+	update @tmp set weight01=ISNULL(b.weight1,0)+ISNULL(b.weight2,0)+ISNULL(b.weight3,0)+ISNULL(b.weight4,0)
+			+isnull(b.wwa01,0)+isnull(b.wwa02,0)+isnull(b.wwa03,0)+isnull(b.wwa04,0)+isnull(b.wwa05,0)--投入重量
+
+		,money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)
+			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)+ISNULL(b.money4,0)--半成品金額
 		,money02=ISNULL(b.wages01,0)--直接人工金額
 		,money03=ISNULL(b.makeless01,0)--製造費用金額
 	from @tmp a
