@@ -143,21 +143,21 @@ z_cub_rk02:--z_cub_rk02
 	
 	
 	--不良品(b1)
-	update @tmp set w11=ISNULL(a.w11,0) + ISNULL(b.weight,0)
-	from @tmp a
-	left join (
-		select a.memo makeno
-			,SUM(ISNULL(a.[weight1],0)+ISNULL(a.[weight2],0)
-				+ISNULL(a.[weight3],0)+ISNULL(a.[weight4],0)
-				+ISNULL(a.[weight5],0)+ISNULL(a.[weight6],0)
-				+ISNULL(a.[weight7],0)+ISNULL(a.[weight8],0)
-				+ISNULL(a.[weight9],0)+ISNULL(a.[weight10],0)
-				) [weight] 
-		from view_cuds a
-		left join view_cud b on a.accy=b.accy and a.noa=b.noa
-		where isnull(b.datea,'')<=@t_date 
-		group by a.memo
-	) b on a.makeno = b.makeno
+	--update @tmp set w11=ISNULL(a.w11,0) + ISNULL(b.weight,0)
+	--from @tmp a
+	--left join (
+	--	select a.memo makeno
+	--		,SUM(ISNULL(a.[weight1],0)+ISNULL(a.[weight2],0)
+	--			+ISNULL(a.[weight3],0)+ISNULL(a.[weight4],0)
+	--			+ISNULL(a.[weight5],0)+ISNULL(a.[weight6],0)
+	--			+ISNULL(a.[weight7],0)+ISNULL(a.[weight8],0)
+	--			+ISNULL(a.[weight9],0)+ISNULL(a.[weight10],0)
+	--			) [weight] 
+	--	from view_cuds a
+	--	left join view_cud b on a.accy=b.accy and a.noa=b.noa
+	--	where isnull(b.datea,'')<=@t_date 
+	--	group by a.memo
+	--) b on a.makeno = b.makeno
 
 	-------------小計
 	insert into @tmp(gno,w01,w02,w03,w04,w05,w06,w07

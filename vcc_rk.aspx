@@ -393,6 +393,9 @@
 					Unlock(1);
 					return;
 				}
+				if($('#txtMon').val().length==0){
+					$('#txtMon').val($('#txtDatea').val().substring(0, 6));
+				}
 				if ($.trim($('#txtNick').val()).length == 0 && $.trim($('#txtComp').val()).length > 0)
 					$('#txtNick').val($.trim($('#txtComp').val()).substring(0, 4));
 				if (q_cur == 1)
