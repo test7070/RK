@@ -221,7 +221,12 @@ z_quat_rkp02:--z_quat_rkp02
 		,recno rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+CAST(lengthb as nvarchar)+'</a>' size
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
+			+CAST(dime as nvarchar)
+			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
+			+'*'+CAST(width as nvarchar)
+			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end
+			+'</a>' size
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa

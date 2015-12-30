@@ -60,6 +60,8 @@ z_orde_rkp01:--z_orde_rkp01
 	declare @memos nvarchar(max)
 	declare @zinc nvarchar(20)
 	declare @hard nvarchar(20)
+	declare @custpro nvarchar(20)
+	
 	
 	declare @string nvarchar(max)
 	declare @n int
@@ -72,6 +74,7 @@ z_orde_rkp01:--z_orde_rkp01
 		cc nvarchar(max),
 		dd nvarchar(max),	
 		recno int,
+		custpro nvarchar(20),
 		productno nvarchar(20),
 		product nvarchar(50),
 		dime float,
@@ -123,13 +126,13 @@ z_orde_rkp01:--z_orde_rkp01
 		---- BBS
 		set @n = 1
 		declare cursor_table2 cursor for
-		select productno,product,dime,radius,width,lengthb,spec,scolor,class
+		select custpro,productno,product,dime,radius,width,lengthb,spec,scolor,class
 			,ucolor,[source],uno,mount,weight,unit,unit2,price,memo,zinc,hard
 		from view_ordes 
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
-		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
+		into @custpro,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 			,@ucolor,@source,@uno,@mount,@weight,@unit,@unit2,@price,@memos,@zinc,@hard
 		while(@@FETCH_STATUS <> -1)
 		begin	
@@ -144,20 +147,20 @@ z_orde_rkp01:--z_orde_rkp01
 				set @po= isnull(@memos,0)
 			end
 			
-			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
+			insert into @tmp(gno,recno,noa,custpro,productno,product,dime,radius,width,lengthb,spec,scolor,class
 				,ucolor,[source],uno,mount,[weight],unit,unit2,price,po,pn,zinc,hard,coin)
-			values('2',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
+			values('2',@n,@noa,@custpro,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source,@uno,@mount,@weight
 				,@unit,@unit2,@price,@po,@pn,@zinc,@hard,@coin)
-			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,class
+			insert into @tmp(gno,recno,noa,custpro,productno,product,dime,radius,width,lengthb,spec,scolor,class
 				,ucolor,[source],uno,mount,[weight],unit,unit2,price,po,pn,zinc,hard,coin)
-			values('3',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
+			values('3',@n,@noa,@custpro,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source,@uno,@mount,@weight
 				,@unit,@unit2,@price,@po,@pn,@zinc,@hard,@coin)
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
-			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
+			into @custpro,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 			,@ucolor,@source,@uno,@mount,@weight,@unit,@unit2,@price,@memos,@zinc,@hard
 		end
 		close cursor_table2
@@ -234,6 +237,10 @@ z_orde_rkp01:--z_orde_rkp01
 	close cursor_table
 	deallocate cursor_table
 
+	update @tmp set custpro=ISNULL(b.product,a.custpro)
+	from @tmp a
+	left join adpro b on a.custpro=b.noa
+
 	select gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
@@ -244,7 +251,13 @@ z_orde_rkp01:--z_orde_rkp01
 		,recno rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+CAST(lengthb as nvarchar)+'</a>' size
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+custpro+' '+productno+' '+product+'</a>'ppx
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
+			+CAST(dime as nvarchar)
+			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
+			+'*'+CAST(width as nvarchar)
+			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end
+			+'</a>' size
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+class+'</a>' class
