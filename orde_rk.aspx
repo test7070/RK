@@ -22,6 +22,7 @@
             var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtPrice', 15, 3, 1]];
             var bbmMask = [];
             var bbsMask = [];
+            q_copy=1;
             q_sqlCount = 6;
             brwCount = 6;
             brwList = [];
