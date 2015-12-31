@@ -20,7 +20,7 @@
 			var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
 			var q_readonlys = ['txtTotal'];
 			var bbmNum = [['txtCartrips', 10, 0, 1]];
-			var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtLengthc', 10, 0, 1], ['txtPrice', 15, 3, 1]];
+			var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtMweight', 10, 2, 1], ['txtLengthc', 10, 0, 1], ['txtPrice', 15, 3, 1]];
 			var bbmMask = [];
 			var bbsMask = [];
 			q_sqlCount = 6;
@@ -883,6 +883,7 @@
 					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
+					<td style="width:80px;">毛重</td>
 					<td style="width:80px;">單價</td>
 					<td style="width:80px;">金額</td>
 					<td style="width:200px;">備註</td>
@@ -920,6 +921,7 @@
 					<td><input id="txtLengthc.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>
+					<td><input id="txtMweight.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtPrice.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtTotal.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtMemo.*" type="text" class="txt c1"/></td>
