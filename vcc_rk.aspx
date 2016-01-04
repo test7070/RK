@@ -216,16 +216,7 @@
 						input.selectionEnd = $(this).val().indexOf(n) + (n + "").length;
 					}
 				});
-				//=====================================================================
-				/* 若非本會計年度則無法存檔 */
-				$('#txtDatea').focusout(function() {
-					if ($(this).val().substr(0, 3) != r_accy) {
-						$('#btnOk').attr('disabled', 'disabled');
-						alert(q_getMsg('lblDatea') + '非本會計年度。');
-					} else {
-						$('#btnOk').removeAttr('disabled');
-					}
-				});
+				//=====================================================================			
 				$('#btnVcceImport').click(function() {
 					var t_ordeno = $('#txtOrdeno').val();
 					var t_custno = $('#txtCustno').val();
@@ -385,11 +376,6 @@
 				});
 				if ($('#txtDatea').val().length == 0 || !q_cd($('#txtDatea').val())) {
 					alert(q_getMsg('lblDatea') + '錯誤。');
-					Unlock(1);
-					return;
-				}
-				if ($('#txtDatea').val().substring(0, 3) != r_accy) {
-					alert('年度異常錯誤，請切換到【' + $('#txtDatea').val().substring(0, 3) + '】年度再作業。');
 					Unlock(1);
 					return;
 				}

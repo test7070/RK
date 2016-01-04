@@ -487,11 +487,6 @@
 					Unlock(1);
 					return;
 				}
-				if ($('#txtOdate').val().substring(0, 3) != r_accy) {
-					alert('年度異常錯誤，請切換到【' + $('#txtOdate').val().substring(0, 3) + '】年度再作業。');
-					Unlock(1);
-					return;
-				}
 				if (q_cur == 1)
 					$('#txtWorker').val(r_name);
 				else
