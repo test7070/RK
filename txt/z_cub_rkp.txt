@@ -156,7 +156,7 @@ z_cub_rkp11:--z_cub_rkp11	在製品單位成本表－現價
 		pvc nvarchar(20),
 		makeno nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(20),
+		cust nvarchar(50),
 		spec nvarchar(20),
 		peno1 nvarchar(20),--保護膜1
 		pe1 nvarchar(20),
@@ -399,7 +399,7 @@ z_cub_rkp09:--z_cub_rkp09
 		pvc nvarchar(20),
 		makeno nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(20),
+		cust nvarchar(50),
 		spec nvarchar(20),
 		peno1 nvarchar(20),--保護膜1
 		pe1 nvarchar(20),
@@ -1480,7 +1480,7 @@ z_cub_rkp01:--z_cub_rkp01
 		gno nvarchar(10),
 		makeno nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(20),
+		cust nvarchar(50),
 		dime float,
 		radius float,
 		width float,
@@ -1701,7 +1701,7 @@ z_cub_rkp02:--z_cub_rkp02
 		pvc nvarchar(20),
 		makeno nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(20),
+		cust nvarchar(50),
 		spec nvarchar(20),
 		peno1 nvarchar(20),--保護膜1
 		pe1 nvarchar(20),
