@@ -13,8 +13,6 @@
 		<script src="css/jquery/ui/jquery.ui.core.js"></script>
 		<script src="css/jquery/ui/jquery.ui.widget.js"></script>
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
-		
-		<!--<script src="http://59.125.143.170/jquery/js/jquery.mask.js" type="text/javascript"></script>-->
 		<script type="text/javascript">
 		
 			this.errorHandler = null;
@@ -424,12 +422,16 @@
                         $('#txtScolor_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
+                            if(!(q_cur==1 || q_cur==2))
+								return;
                             var n = $(this).attr('id').replace('txtScolor_', '');
                             $('#btnScolor_'+n).click();
                         });
                         $('#txtZinc_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
+                            if(!(q_cur==1 || q_cur==2))
+								return;
                             var n = $(this).attr('id').replace('txtZinc_', '');
                             $('#btnZinc_'+n).click();
                         });
@@ -455,12 +457,16 @@
                     	$('#txtProductno__' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
+                            if(!(q_cur==1 || q_cur==2))
+								return;
                             var n = $(this).attr('id').replace('txtProductno__', '');
                             $('#btnProduct__'+n).click();
                         });
                         $('#txtUno__' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
+                            if(!(q_cur==1 || q_cur==2))
+								return;
                             var n = $(this).attr('id').replace('txtUno__', '');
                             $('#btnUno__'+n).click();
                         });
