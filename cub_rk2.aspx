@@ -97,6 +97,7 @@
 				bbmMask = [['txtDatea', r_picd]];
 				q_mask(bbmMask);
 				q_cmbParse("cmbProcess", '日、高溫,午,晚');
+				q_cmbParse("cmbKind", '1@皮膜,2@保護膜','t');
 				
 				$('#dbbt').mousedown(function(e) {
 					if(e.button==2){			   		
@@ -216,7 +217,9 @@
 				$('#txtDatea').focus();
 				InsertBbs();
 				$('#rbNum_0').prop('checked',true);
-				$('#rbNum_'+i).click();
+				$('#rbNum_0').click();
+				//$('#rbNum_0').prop('checked',true);
+				//$('#rbNum_'+i).click();
 			}
 
 			function btnModi() {
@@ -226,7 +229,9 @@
 				$('#txtDatea').focus();
 				InsertBbs();
 				$('#rbNum_0').prop('checked',true);
-				$('#rbNum_'+i).click();
+				$('#rbNum_0').click();
+				//$('#rbNum_0').prop('checked',true);
+				//$('#rbNum_'+i).click();
 			}
 			function InsertBbs(){
 				//固定6筆
@@ -362,7 +367,8 @@
 	                var n = $('input:radio:checked[name="rbNum"]').attr('id').replace(/^(.*)_(\d+)$/,'$2');
 	                var t_noq = $('#txtNoq_'+n).val();
 	                for(var i=0;i<q_bbtCount;i++){
-	                	if($('#txtProductno__'+i).val().length==0
+	                	if($('#txtUno__'+i).val().length==0
+	                		&& $('#txtProductno__'+i).val().length==0
 	                		&& $('#txtProduct__'+i).val().length==0
 	                		&& $('#txtMemo__'+i).val().length==0
 	                		&& q_float('txtMount__'+i)==0
@@ -887,6 +893,7 @@
 						<input id="btnPlut" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
 						</td>
 						<td style="width:20px;"><input type="button" value="關閉" onclick="$('#dbbt').hide();"/></td>
+						<td style="width:80px; text-align: center;">類型</td>
 						<td style="width:200px; text-align: center;">批號</td>
 						<td style="width:200px; text-align: center;">品名</td>
 						<td style="width:100px; text-align: center;">用量M</td>
@@ -900,6 +907,7 @@
 							<input class="txt" id="txtNor..*" type="text" style="display: none;"/>
 						</td>
 						<td><a id="lblNo..*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+						<td><select id="cmbKind..*" style="width:95%;"> </select></td>
 						<td>
 							<input class="txt" id="txtUno..*" type="text" style="width:95%;" />
 							<input id="btnUno..*" type="button" style="display:none;" />

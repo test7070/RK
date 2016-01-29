@@ -204,7 +204,7 @@
 					</td>
 					<td align="center" style="width:15px;"></td>
 					<td align="center" style="width:250px;">批號</td>
-					<td align="center" style="width:300px;">品名</td>
+					<td align="center" style="width:600px;">品名</td>
 					<td align="center" style="width:100px;">重量</td>
 					<td align="center" style="width:200px;">備註</td>
 					
@@ -220,8 +220,8 @@
 						<input type="button" id="btnUcolor.*" style="display:none;"/>
 					</td>
 					<td>
-						<input type="text" id="txtProductno.*" class="txt" style="width:45%;"/>
-						<input type="text" id="txtProduct.*" class="txt" style="width:45%;"/>
+						<input type="text" id="txtProductno.*" class="txt" style="width:30%;"/>
+						<input type="text" id="txtProduct.*" class="txt" style="width:65%;"/>
 						<input type="button" id="btnProduct.*" style="display:none;"/>
 					</td>
 					<td><input type="text" id="txtWeight.*" class="txt c1 num"/></td>
