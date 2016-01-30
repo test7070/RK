@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 	<head>
 		<title></title>
 		<script src="../script/jquery.min.js" type="text/javascript"></script>
@@ -15,7 +15,6 @@
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script type="text/javascript">
 		
-			this.errorHandler = null;
 			q_tables = 't';
 			var toIns = true;
 			var q_name = "cub";
@@ -42,8 +41,7 @@
 				,['txtProductno__', 'btnProduct__', 'bcc', 'noa,product', 'txtProductno__,txtProduct__', 'bcc_b.aspx']
 				,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtProcess_', 'ucc_b.aspx']
             	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtFlower_', 'ucc_b.aspx']
-            	,['txtUno__', 'btnUno__', 'view_uccc2', 'uno,productno,product,eweight', '0txtUno__,txtProductno__,txtProduct__,txtWeight__', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']);
-			
+            	,['txtUno__', 'btnUno__', 'view_uccc2', 'uno,productno,product', '0txtUno__,txtProductno__,txtProduct__', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']);
 			
 			$(document).ready(function() {
 				bbmKey = ['noa'];
@@ -99,6 +97,7 @@
 				bbmMask = [['txtDatea', r_picd]];
 				q_mask(bbmMask);
 				q_cmbParse("cmbProcess", '日、高溫,午,晚');
+				q_cmbParse("cmbKind", '1@皮膜,2@保護膜','t');
 				
 				$('#dbbt').mousedown(function(e) {
 					if(e.button==2){			   		
@@ -121,6 +120,11 @@
 					var t_noa = $('#txtNoa').val();
                 	var t_where ='';
                 	q_box("orde_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,page:'cub_rk'}), "orde_cub", "100%", "100%", '');
+				});
+				
+				$('#btnCubu_rk').click(function() {
+					var t_where = "noa='" + trim($('#txtNoa').val()) + "'";
+						q_box("cubu_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where + ";"+r_accy, 'cubu', "95%", "95%", q_getMsg('popCubu'));
 				});
 			}
 
@@ -213,7 +217,9 @@
 				$('#txtDatea').focus();
 				InsertBbs();
 				$('#rbNum_0').prop('checked',true);
-				$('#rbNum_'+i).click();
+				$('#rbNum_0').click();
+				//$('#rbNum_0').prop('checked',true);
+				//$('#rbNum_'+i).click();
 			}
 
 			function btnModi() {
@@ -223,7 +229,9 @@
 				$('#txtDatea').focus();
 				InsertBbs();
 				$('#rbNum_0').prop('checked',true);
-				$('#rbNum_'+i).click();
+				$('#rbNum_0').click();
+				//$('#rbNum_0').prop('checked',true);
+				//$('#rbNum_'+i).click();
 			}
 			function InsertBbs(){
 				//固定6筆
@@ -336,6 +344,10 @@
                     $('#cmbProcess').removeAttr('disabled');
                     $('#btnOrde').removeAttr('disabled');
                 }
+                if ((q_cur == 1 || q_cur == 2) && trim($('#txtNoa').val()) != '')
+					$('#btnCubu_rk').attr('disabled', 'disabled');
+				else
+					$('#btnCubu_rk').removeAttr('disabled');
 			}
 			
 			function getPosition(element) {
@@ -355,7 +367,8 @@
 	                var n = $('input:radio:checked[name="rbNum"]').attr('id').replace(/^(.*)_(\d+)$/,'$2');
 	                var t_noq = $('#txtNoq_'+n).val();
 	                for(var i=0;i<q_bbtCount;i++){
-	                	if($('#txtProductno__'+i).val().length==0
+	                	if($('#txtUno__'+i).val().length==0
+	                		&& $('#txtProductno__'+i).val().length==0
 	                		&& $('#txtProduct__'+i).val().length==0
 	                		&& $('#txtMemo__'+i).val().length==0
 	                		&& q_float('txtMount__'+i)==0
@@ -663,7 +676,7 @@
 				font-size: medium;
 			}
 			.dbbs {
-				width: 2900px;
+				width: 2000px;
 			}
 			.dbbs .tbbs {
 				margin: 0;
@@ -773,8 +786,13 @@
 						<td> </td>
 						<td><input type="button" id="btnOrde" value="訂單匯入" /></td>
 					</tr>
-					<tr></tr>
-					<tr></tr>
+					<tr>
+						<td> </td>
+						<td> </td>
+						<td> </td>
+						<td><input type="button" id="btnCubu_rk" value="物料" /></td>
+					</tr>
+					<tr> </tr>
 				</table>
 			</div>
 			<div class='dbbs'>
@@ -790,22 +808,7 @@
 						<td style="width:200px;" align="center">鋼捲編號</td>
 						<td style="width:100px;" align="center">COIL<BR>規格<BR>尺寸(厚X寬)</td>
 						<td style="width:100px;" align="center">COIL<BR>重量(KG)</td>
-							
-						<!--<td style="width:100px;" align="center">前處理液<BR>總用量(KG)</td>
-						<td style="width:100px;" align="center">接著劑<BR>型號<BR>規格</td>
-						<td style="width:100px;" align="center">接著劑總用量 (kg)</td>
-						<td style="width:100px;" align="center">稀釋液<BR>用量/清洗(KG)</td>
-						<td style="width:100px;" align="center">背漆<BR>型號規格<BR>重量(KG)</td>
-						<td style="width:100px;" align="center">背漆稀釋液<BR>總用量(KG)</td>-->
-						<td style="width:150px;" align="center">PVC皮批號</td>	
-						<td style="width:100px;" align="center">PVC皮<BR>型號<BR>規格</td>
-						<td style="width:100px;" align="center">PVC皮<BR>用量M<BR>KG</td>
-						<td style="width:150px;" align="center">保護膜批號(一)</td>	
-						<td style="width:100px;" align="center">保護膜(一)<br>編號<BR>名稱</td>
-						<td style="width:100px;" align="center">保護膜(一)<BR>用量M<BR>KG</td>
-						<td style="width:150px;" align="center">保護膜批號(二)</td>	
-						<td style="width:100px;" align="center">保護膜(二)<br>編號<BR>名稱</td>
-						<td style="width:100px;" align="center">保護膜(二)<BR>用量M<BR>KG</td>
+						<td style="width:100px;" align="center">PVC皮規格</td>
 						<td style="width:200px;" align="center">RECOIL編號</td>
 						<td style="width:100px;" align="center">RECOIL<BR>M<BR>重量(KG)</td>
 						<td style="width:100px;" align="center">廢料重量(KG)</td>
@@ -849,51 +852,9 @@
 							<input id="txtWidth.*" type="text" class="num" style="float:left;width:45%;"/>
 						</td>
 						<td><input id="txtWeight.*" type="text" class="num" style="float:left;width:95%;"/></td>
-						<!--<td title="前處理液總用量(KG)"><input id="txtBdime.*" type="text" class="num" style="float:left;width:95%;"/></td>
-						<td title="接著劑型號規格">
-							<input id="txtProductno2.*" type="text" style="width:95%;"/>
-							<input id="txtProduct2.*" type="text" style="width:95%;"/>
-							<input id="btnProduct2.*" type="button" style="display:none;"/>
-						</td>
-						<td title="接著劑總用量 (kg)"><input id="txtNeed.*" type="text" maxlength="20" style="float:left;width:95%;"/></td>
-						<td title="稀釋液用量/清洗(KG)"><input id="txtEdime.*" type="text" class="num" style="float:left;width:95%;"/></td>
-						<td title="背漆型號規格重量(KG)">
-							<input id="txtBspec.*" type="text" style="float:left;width:95%;"/>
-							<input id="txtHmount.*" type="text" class="num" style="float:left;width:95%;"/>
-						</td>
-						<td title="背漆稀釋液總用量(KG)">
-							<input id="txtWmount.*" type="text" class="num" style="float:left;width:95%;"/>
-						</td>-->
-						<td><input id="txtUno2.*" type="text" style="float:left;width:95%;"/></td>
-						<td title="PVC皮型號規格">
-							<input id="txtSpec.*" type="text" style="float:left;width:95%;"/>
+						<td title="PVC皮規格">
 							<input id="txtRadius.*" type="text" class="num" style="float:left;width:45%;"/>
 							<input id="txtLengthb.*" type="text" class="num" style="float:left;width:45%;"/>
-						</td>
-						<td title="PVC皮用量M/KG">
-							<input id="txtHard.*" type="text" class="num" style="float:left;width:95%;"/>
-							<input id="txtLengthb2.*" type="text" class="num" style="float:left;width:95%;"/>
-						</td>
-						<td><input id="txtUno3.*" type="text" style="float:left;width:95%;"/></td>
-						<td>
-							<input id="txtScolor.*" type="text" style="width:95%"/>
-							<input id="txtProcess.*" type="text" style="width:95%"/>
-							<input id="btnScolor.*" type="button" style="display:none;"/>
-						</td>
-						<td title="保護膜用量M/KG">
-							<input id="txtSource.*" type="text" style="float:left;width:95%;display:none;"/>
-							<input id="txtLengthc.*" type="text" class="num" style="float:left;width:95%;"/>
-							<input id="txtW06.*" type="text" class="num" style="float:left;width:95%;"/>
-						</td>
-						<td><input id="txtUno4.*" type="text" style="float:left;width:95%;"/></td>
-						<td>
-							<input id="txtZinc.*" type="text" style="width:95%"/>
-							<input id="txtFlower.*" type="text" style="width:95%"/>
-							<input id="btnZinc.*" type="button" style="display:none;"/>
-						</td>
-						<td title="保護膜用量M/KG">
-							<input id="txtW07.*" type="text" class="num" style="float:left;width:95%;"/>
-							<input id="txtW08.*" type="text" class="num" style="float:left;width:95%;"/>
 						</td>
 						<td title="RECOIL編號">
 							<input id="txtOth.*" type="text" style="float:left;width:95%;"/>
@@ -932,10 +893,11 @@
 						<input id="btnPlut" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
 						</td>
 						<td style="width:20px;"><input type="button" value="關閉" onclick="$('#dbbt').hide();"/></td>
+						<td style="width:80px; text-align: center;">類型</td>
 						<td style="width:200px; text-align: center;">批號</td>
 						<td style="width:200px; text-align: center;">品名</td>
-						<!--<td style="width:100px; text-align: center;">數量</td>-->
-						<td style="width:100px; text-align: center;">重量</td>
+						<td style="width:100px; text-align: center;">用量M</td>
+						<td style="width:100px; text-align: center;">重量KG</td>
 						<td style="width:200px; text-align: center;">備註</td>
 					</tr>
 					<tr>
@@ -945,6 +907,7 @@
 							<input class="txt" id="txtNor..*" type="text" style="display: none;"/>
 						</td>
 						<td><a id="lblNo..*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+						<td><select id="cmbKind..*" style="width:95%;"> </select></td>
 						<td>
 							<input class="txt" id="txtUno..*" type="text" style="width:95%;" />
 							<input id="btnUno..*" type="button" style="display:none;" />
@@ -954,7 +917,7 @@
 							<input class="txt" id="txtProduct..*" type="text" style="width:45%;float:left;"/>
 							<input id="btnProduct..*" type="button" style="display:none;">
 						</td>
-						<!--<td><input class="txt" id="txtMount..*" type="text" style="width:95%;text-align: right;"/></td>-->
+						<td><input class="txt" id="txtMount..*" type="text" style="width:95%;text-align: right;"/></td>
 						<td>
 							<input class="txt" id="txtWeight..*" type="text" style="width:95%;text-align: right;"/>
 							<input class="txt" id="txtGweight..*" type="text" style="display:none;"/>

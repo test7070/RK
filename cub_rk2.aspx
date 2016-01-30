@@ -122,7 +122,7 @@
                 	q_box("orde_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,page:'cub_rk'}), "orde_cub", "100%", "100%", '');
 				});
 				
-				$('#btnCubu').click(function() {
+				$('#btnCubu_rk').click(function() {
 					var t_where = "noa='" + trim($('#txtNoa').val()) + "'";
 						q_box("cubu_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where + ";"+r_accy, 'cubu', "95%", "95%", q_getMsg('popCubu'));
 				});
@@ -345,9 +345,9 @@
                     $('#btnOrde').removeAttr('disabled');
                 }
                 if ((q_cur == 1 || q_cur == 2) && trim($('#txtNoa').val()) != '')
-					$('#btnCubu').attr('disabled', 'disabled');
+					$('#btnCubu_rk').attr('disabled', 'disabled');
 				else
-					$('#btnCubu').removeAttr('disabled');
+					$('#btnCubu_rk').removeAttr('disabled');
 			}
 			
 			function getPosition(element) {
@@ -790,9 +790,9 @@
 						<td> </td>
 						<td> </td>
 						<td> </td>
-						<td><input type="button" id="btnCubu" value="物料" /></td>
+						<td><input type="button" id="btnCubu_rk" value="物料" /></td>
 					</tr>
-					<tr></tr>
+					<tr> </tr>
 				</table>
 			</div>
 			<div class='dbbs'>
