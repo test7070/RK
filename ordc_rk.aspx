@@ -115,7 +115,12 @@
 					t_prices = q_float('txtPrice_' + j);
 					t_mounts = q_float('txtMount_' + j);
 					
-					t_moneys = q_mul(t_prices, t_weights);
+					if(t_unit.toUpperCase()=='KG' || t_unit.length==0 || t_unit=='公斤'){
+						t_moneys = q_mul(t_prices, t_weights);
+					}else{
+						t_moneys = q_mul(t_prices, t_mounts);
+					}
+					
 
 					t_moneys = round(t_moneys, 0);
 					t_weight = q_add(t_weight, t_weights);
