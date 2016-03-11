@@ -97,8 +97,8 @@
                 	case 'txtCustno':
                 	//選擇客戶後自動帶入客戶代表人、聯絡人、電話、傳真
 						if ($('#txtCustno').val().length>0) {
-							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
-							q_gt('cust', t_where, 0, 0, 0, "getCustdata");
+						//	var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+						//	q_gt('cust', t_where, 0, 0, 0, "getCustdata");
 							
 							
 							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
