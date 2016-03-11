@@ -95,7 +95,12 @@
             function q_popPost(s1) {
                 switch(s1) {
                 	case 'txtCustno':
+                	//選擇客戶後自動帶入客戶代表人、聯絡人、電話、傳真
 						if ($('#txtCustno').val().length>0) {
+							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+							q_gt('cust', t_where, 0, 0, 0, "getCustdata");
+							
+							
 							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
 							q_gt('custaddr', t_where, 0, 0, 0, "");
 						}else{
@@ -124,6 +129,16 @@
 
             function q_gtPost(t_name) {
                 switch (t_name) {
+            		case 'getCustdata':
+            			/*var as = _q_appendData("cust", "", true);
+            			if (as[0] != undefined) {
+							for ( i = 0; i < as.length; i++) {
+								t_item = t_item + (t_item.length > 0 ? ',' : '') + as[i].post + '@' + as[i].addr;
+							}
+						}*/
+						
+						
+            			break;
                 	case 'flors_coin':
 						var as = _q_appendData("flors", "", true);
 						var z_coin='';
