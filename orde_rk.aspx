@@ -33,7 +33,8 @@
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
             	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtSource_', 'ucc_b.aspx']
-            	,['txtHard_', 'btnHard_', 'ucc', 'noa,product', 'txtHard_,txtUno_', 'ucc_b.aspx']);
+            	,['txtHard_', 'btnHard_', 'ucc', 'noa,product', 'txtHard_,txtUno_', 'ucc_b.aspx']
+            	,['txtSalesno', 'lblSales', 'sss', 'noa,namea', 'txtSalesno,txtSales', 'sss_b.aspx']);
            	t_spec='',t_adpro='';
             $(document).ready(function() {
                 bbmKey = ['noa'];
@@ -713,6 +714,11 @@
 					<tr>
 						<td><span> </span><a id="lblFax" class="lbl"></a></td>
 						<td colspan="2"><input id="txtFax"  type="text" class="txt c1" maxlength="20"/></td>
+						<td><span> </span><a id="lblSales" class="lbl btn">業務</a></td>
+						<td colspan="5">
+							<input id="txtSalesno"  type="text" class="txt" style="width:45%;"/>
+							<input id="txtSales"  type="text" class="txt" style="width:45%;"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblAddr" class="lbl"></a></td>
@@ -839,7 +845,7 @@
 					<td><input id="txtPrice.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td><input id="txtTotal.*" type="text" class="txt c1 num"/></td>
-					<td><textarea id="txtMemo.*" rows="2" class="txt c1"></textarea></td>
+					<td><textarea id="txtMemo.*" rows="2" class="txt c1"> </textarea></td>
 				</tr>
 			</table>
 		</div>
