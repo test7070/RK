@@ -42,6 +42,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,addr nvarchar(50)
 		,post2 nvarchar(20)
 		,addr2 nvarchar(50)
+		,conn nvarchar(20)
 		
 		,[money] float
 		,tax float
@@ -68,19 +69,20 @@ z_ordc_rkp01:--z_ordc_rkp01
 	---------------------------------------------------------------------------------------------
 	insert into @tmp(gno,pno,accy,noa,noq,cno,acomp,odate,paytype,trantype
 		,salesno,sales
-		,tggno,tgg,tel,fax,post,addr,post2,addr2
+		,tggno,tgg,tel,fax,post,addr,post2,addr2,conn
 		,[money],tax,total
 		, productno,product,dime,width,lengthb,radius,sizea,spec
 		,unit,mount,[weight],price,totals,rdate,memo
 	)
 	select '1',1,a.accy,a.noa,b.no2,a.cno,a.acomp,a.odate,a.paytype,a.trantype
 		,a.salesno,a.sales
-		,a.tggno,a.tgg,a.tel,a.fax,a.post,a.addr,a.post2,a.addr2
+		,a.tggno,a.tgg,a.tel,a.fax,a.post,a.addr,a.post2,a.addr2,c.namea
 		,a.[money],a.tax,a.total
 		,b.productno,b.product,b.dime,b.width,b.lengthb,b.radius,b.sizea,b.spec
 		,b.unit,b.mount,b.[weight],b.price,b.total,b.rdate,b.memo
 	from view_ordc a
 	left join view_ordcs b on a.accy=b.accy and a.noa=b.noa
+	outer apply(select top 1 * from conn where noa=a.tggno and len(ISNULL(namea,''))>0)c
 	where a.noa=@t_noa
 	
 	update @tmp set sizea = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
@@ -120,12 +122,11 @@ z_ordc_rkp01:--z_ordc_rkp01
 	declare @rdate nvarchar(20)='' --交貨日期以最小日期為主
 	select @rdate = MIN(rdate) from @tmp where len(ISNULL(rdate,''))>0
 	set @rdate = ISNULL(@rdate,'')
-	
 	update @tmp set xrdate=@rdate
 	
 	update @tmp set accy=b.accy,noa=b.noa,cno=b.cno,acomp=b.acomp,odate=b.odate,paytype=b.paytype,trantype=b.trantype
 		,salesno=b.salesno,sales=b.sales
-		,tggno=b.tggno,tgg=b.tgg,tel=b.tel,fax=b.fax,post=b.post,addr=b.addr,post2=b.post2,addr2=b.addr2
+		,tggno=b.tggno,tgg=b.tgg,tel=b.tel,fax=b.fax,post=b.post,addr=b.addr,post2=b.post2,addr2=b.addr2,conn=b.conn
 		,[money]=b.[money],tax=b.tax,total=b.total
 	from @tmp a
 	left join (select * from @tmp where sel=1) b on 1=1
@@ -143,6 +144,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,paytype a08
 		,trantype a09
 		,sales a10
+		,conn a11
 		
 		,productno b01
 		,product b02
