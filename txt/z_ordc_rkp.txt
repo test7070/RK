@@ -83,6 +83,15 @@ z_ordc_rkp01:--z_ordc_rkp01
 	left join view_ordcs b on a.accy=b.accy and a.noa=b.noa
 	where a.noa=@t_noa
 	
+	update @tmp set sizea = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
+		+case when ISNULL(a.dime,0)=0 or ISNULL(a.width,0)=0 then '' else '*' end
+		+case when ISNULL(a.width,0)=0 then '' else CAST(a.width as nvarchar) end
+		+case when ISNULL(a.width,0)=0 or ISNULL(a.lengthb,0)=0  then '' else '*' end
+		+case when ISNULL(a.lengthb,0)=0 then '' else CAST(a.lengthb as nvarchar) end
+		+case when Upper(ISNULL(a.spec,''))='MM' then 'mm' else '' end
+	from @tmp a
+	where len(ISNULL(sizea,''))=0
+	
 	-- 頁尾要保留7行
 	insert into @tmp(gno,pno)values('4',4)
 	insert into @tmp(gno,pno)values('5',5)
