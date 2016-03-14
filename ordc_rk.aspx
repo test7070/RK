@@ -742,6 +742,9 @@
 
 			function q_popPost(s1) {
 				switch (s1) {
+					case 'txtCustno':
+					
+						break;
 					case 'txtProductno_':
 						var t_productno = $.trim($('#txtProductno_'+b_seq).val());
 	                	var t_style = $.trim($('#txtStyle_'+b_seq).val());
