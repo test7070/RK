@@ -201,6 +201,7 @@
 				q_cmbParse("cmbCoin", t_coin);
 				//if(abbm[q_recno]) $('#cmbCoin').val(abbm[q_recno].coin);
 				q_cmbParse("cmbSpec", t_spec,'s');
+				//----------------------------------------------------------------
 				
 				$("#combPaytype").change(function(e) {
 					if (q_cur == 1 || q_cur == 2)
@@ -303,17 +304,7 @@
 			var t_uccArray = new Array;
 			function q_gtPost(t_name) {
 				switch (t_name) {
-					case 'custaddr':
-						var as = _q_appendData("custaddr", "", true);
-						var t_item = " @ ";
-						if (as[0] != undefined) {
-							for ( i = 0; i < as.length; i++) {
-								t_item = t_item + (t_item.length > 0 ? ',' : '') + as[i].post + '@' + as[i].addr;
-							}
-						}
-						document.all.combAddr.options.length = 0;
-						q_cmbParse("combAddr", t_item);
-						break;
+					
 					case 'refreshEnd2':
                         var as = _q_appendData("ordc", "", true);
                         var obj = $('.control_noa');
@@ -928,7 +919,7 @@
 			}
 			.dview {
 				float: left;
-				width: 300px;
+				width: 400px;
 				border-width: 0px;
 			}
 			.tview {
@@ -1065,7 +1056,7 @@
 						<td align="center" style="width:20px; color:black;"><a id="vewChk"> </a></td>
 						<td align="center" style="width:80px; color:black;"><a id="vewOdate"> </a></td>
 						<td align="center" style="width:100px; color:black;"><a id="vewNoa"> </a></td>
-						<td align="center" style="width:80px; color:black;"><a id="vewNick"> </a></td>
+						<td align="center" style="width:180px; color:black;"><a id="vewNick"> </a></td>
 						<td align="center" style="width:20px; color:black;display:none;"><a id="vewEnd2"> </a></td>
 					</tr>
 					<tr>
@@ -1155,9 +1146,7 @@
 						<td><span> </span><a id='lblAddr2' class="lbl"> </a></td>
 						<td colspan="4" >
 							<input id="txtPost2"  type="text" style="float:left; width:20%;"/>
-							<input id="txtAddr2"  type="text" style="float:left; width:75%;"/>
-							
-							<select id="combAddr" style="width: 20px" onchange='combAddr_chg()'></select>
+							<input id="txtAddr2"  type="text" style="float:left; width:80%;"/>
 						</td>
 						<td><span> </span><a id='lblTrantype' class="lbl"> </a></td>
 						<td><select id="cmbTrantype" class="txt" style="float:left; width:100%;"> </select></td>

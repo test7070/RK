@@ -166,6 +166,21 @@
 				q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
 				q_cmbParse("cmbKind", q_getPara('sys.stktype'));
 				//=======================================================
+				$('#combAddr').click(function(e){
+					if($.trim($("#txtCustno").val()).length==0){
+						document.all.combAddr.options.length = 0;
+					}else{
+						if($.trim($("#txtCustno").val())!=$(this).data('curCustno')){
+							$(this).data('curCustno',$.trim($("#txtCustno").val()));
+							var t_where = "where=^^ noa='"+$(this).data('curCustno')+"' ^^";
+							q_gt('custaddr', t_where, 0, 0, 0, "");	
+						}else if(document.all.combAddr.options.length>1){
+							$('#txtAddr2').val($('#combAddr').find("option:selected").text());
+							$('#txtPost2').val($('#combAddr').find("option:selected").val());
+						}
+					}
+				});
+				
 				//限制帳款月份的輸入 只有在備註的第一個字為*才能手動輸入
 				$('#txtMemo').change(function() {
 					if ($('#txtMemo').val().substr(0, 1) == '*')
@@ -331,6 +346,17 @@
 
 			function q_gtPost(t_name) {/// 資料下載後 ...
 				switch (t_name) {
+					case 'custaddr':
+						var as = _q_appendData("custaddr", "", true);
+						var t_item = " @ ";
+						if (as[0] != undefined) {
+							for ( i = 0; i < as.length; i++) {
+								t_item = t_item + (t_item.length > 0 ? ',' : '') + as[i].post + '@' + as[i].addr;
+							}
+						}
+						document.all.combAddr.options.length = 0;
+						q_cmbParse("combAddr", t_item);
+						break;
 					case "getAcomp":
 						var as = _q_appendData("acomp", "", true);
                 		if (as[0] != undefined) {
@@ -517,6 +543,15 @@
 
 			function readonly(t_para, empty) {
 				_readonly(t_para, empty);
+				if(t_para){
+					$('#txtDatea').datepicker('destroy');
+					$('#combAddr').attr('disabled','disabled');
+					$('#combPaytype').attr('disabled','disabled');
+				}else{
+					$('#txtDatea').datepicker();
+					$('#combAddr').removeAttr('disabled');
+					$('#combPaytype').removeAttr('disabled');
+				}
 			}
 
 			function btnMinus(id) {
@@ -573,6 +608,8 @@
 			function btnCancel() {
 				_btnCancel();
 			}
+			
+			
 		</script>
 		<style type="text/css">
 			#dmain {
@@ -779,7 +816,8 @@
 						<td><span> </span><a id='lblAddr2' class="lbl"> </a></td>
 						<td colspan="4" >
 							<input id="txtPost2" type="text" style="float:left; width:15%;"/>
-							<input id="txtAddr2" type="text" style="float:left; width:85%;"/>
+							<input id="txtAddr2" type="text" style="float:left; width:80%;"/>
+							<select id="combAddr" style="float:left; width:5%;" > </select>
 						</td>
 						<td><span> </span><a id='lblPaytype' class="lbl"> </a></td>
 						<td colspan="2">
