@@ -120,8 +120,6 @@
 					}else{
 						t_moneys = q_mul(t_prices, t_mounts);
 					}
-					
-
 					t_moneys = round(t_moneys, 0);
 					t_weight = q_add(t_weight, t_weights);
 					t_mount = q_add(t_mount, t_mounts);
