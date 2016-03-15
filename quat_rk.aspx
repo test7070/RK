@@ -28,7 +28,7 @@
             brwNowPage = 0;
             brwKey = 'Datea';
             brwCount2 = 15;
-            aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial', 'txtCustno,txtComp,txtNick,txtSerial', 'cust_b.aspx']
+            aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial,tel,fax,boss', 'txtCustno,txtComp,txtNick,txtSerial,txtTel,txtFax,txtBoss', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
             	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtSource_', 'ucc_b.aspx']
@@ -66,10 +66,18 @@
                 q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
                 q_cmbParse("cmbSpec", t_spec,'s');
                 
+                $('#txtPaytype').change(function(e){
+                	if($('#txtPaytype').val().indexOf('月結')>=0){
+                		if($('#txtMemo2').val().length==0){
+                			$('#txtMemo2').val('每月25日以後出的貨,視同當月之貨款並計算請款,依出貨實際數量計價');
+                		}
+                	}
+                });
                 $("#combPaytype").change(function(e) {
 					if (q_cur == 1 || q_cur == 2){
 						$('#txtPaytype').val($('#combPaytype').find(":selected").text());
 						$(this)[0].selectedIndex=0;
+						$('#txtPaytype').change();
 					}
 				});
                 $("#txtPaytype").focus(function(e) {
@@ -89,22 +97,24 @@
 				});
 				$('#combAddr').change(function (e){
 					$('#txtAddr').val($('#combAddr').find("option:selected").text());
+					
 				});
             }
 
             function q_popPost(s1) {
                 switch(s1) {
                 	case 'txtCustno':
-                	//選擇客戶後自動帶入客戶代表人、聯絡人、電話、傳真
+                	
 						if ($('#txtCustno').val().length>0) {
-						//	var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
-						//	q_gt('cust', t_where, 0, 0, 0, "getCustdata");
-							
-							
 							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
 							q_gt('custaddr', t_where, 0, 0, 0, "");
 						}else{
 							document.all.combAddr.options.length = 0;
+						}
+						//選擇客戶後自動帶入客戶代表人、聯絡人、電話、傳真
+						if ($('#txtCustno').val().length>0) {
+							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+							q_gt('conn', t_where, 0, 0, 0, "getConn");
 						}
 						break;
                     case 'txtMechno':
@@ -129,16 +139,12 @@
 
             function q_gtPost(t_name) {
                 switch (t_name) {
-            		case 'getCustdata':
-            			/*var as = _q_appendData("cust", "", true);
-            			if (as[0] != undefined) {
-							for ( i = 0; i < as.length; i++) {
-								t_item = t_item + (t_item.length > 0 ? ',' : '') + as[i].post + '@' + as[i].addr;
-							}
-						}*/
-						
-						
-            			break;
+            		case 'getConn':
+            			var as = _q_appendData("conn", "", true);
+						if (as[0] != undefined) {
+							$('#txtConn').val(as[0].namea);
+						}
+						break;
                 	case 'flors_coin':
 						var as = _q_appendData("flors", "", true);
 						var z_coin='';
