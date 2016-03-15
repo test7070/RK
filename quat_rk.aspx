@@ -553,8 +553,10 @@
 						<td class="tdZ"></td>
 					</tr>
 					<tr>
-						<td><span> </span><a class="lbl">合約編號</a></td>
+						<td><span> </span><a class="lbl">報價單號</a></td>
 						<td><input id="txtNoa"  type="text" class="txt c1" maxlength="20"/></td>
+						<td><span> </span><a class="lbl">合約編號</a></td>
+						<td><input id="txtQuatno"  type="text" class="txt c1" maxlength="20"/></td>
 						<td><span> </span><a class="lbl">日期</a></td>
 						<td><input id="txtDatea"  type="text" class="txt c1"/></td>
 				

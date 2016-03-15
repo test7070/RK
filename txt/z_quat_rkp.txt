@@ -68,7 +68,11 @@ z_quat_rkp02:--z_quat_rkp02
 		cc nvarchar(max),
 		dd nvarchar(max),	
 		recno int,
-		productno nvarchar(20),
+		[to] nvarchar(50),
+		[attn] nvarchar(50),
+		[subject] nvarchar(20),
+		quatno nvarchar(20),
+		productno nvarchar(50),
 		product nvarchar(50),
 		dime float,
 		radius float,
@@ -148,7 +152,7 @@ z_quat_rkp02:--z_quat_rkp02
 		close cursor_table2
 		deallocate cursor_table2
 		---------------------------------------------------------
-		insert into @tmp(gno)values('5')
+		insert into @tmp(gno,noa)values('5',@noa)
 		insert into @tmp(gno,noa,aa,bb)values('1',@noa,'交&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'貨&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'期：',@odate)
 		insert into @tmp(gno,noa,aa,bb)values('1',@noa,'付款方式：',@paytype+@memo2)
 		insert into @tmp(gno,noa,aa,bb)values('1',@noa,'包裝方式：',@packtype)
@@ -211,7 +215,14 @@ z_quat_rkp02:--z_quat_rkp02
 	close cursor_table
 	deallocate cursor_table
 	
+	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno
+	from @tmp a
+	left join view_quat b on a.noa=b.noa
+
 	select gno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa+'</a>' aa

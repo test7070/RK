@@ -42,6 +42,7 @@
 				var t_bdate = $.trim($('#txtBdate').val());
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
+				var t_quatno = $.trim($('#txtQuatno').val());
 				var t_custno = $.trim($('#txtCustno').val());
 				var t_cust = $.trim($('#txtCust').val());
 
@@ -51,6 +52,8 @@
 					+ q_sqlPara2("custno", t_custno);
 				if(t_cust.length>0)
 					t_where += " and charindex('"+t_cust+"',comp)>0";
+				if(t_quatno.length>0)
+					t_where += " and charindex('"+t_quatno+"',quatno)>0";
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -86,8 +89,12 @@
 					</td>
 				</tr>
 				<tr class='seek_tr'>
-					<td class='seek' style="width:90px;"><a id='lblNoa'>合約編號</a></td>
+					<td class='seek' style="width:90px;"><a id='lblNoa'>報價單號</a></td>
 					<td><input class="txt" id="txtNoa" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblQuatno'>合約編號</a></td>
+					<td><input class="txt" id="txtQuatno" type="text" style="width:220px;" /></td>
 				</tr>
 				<tr class='seek_tr'>
 					<td><a id='lblCustno'>客戶編號</a></td>
