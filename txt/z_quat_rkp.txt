@@ -44,6 +44,7 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @lengthb float
 	declare @spec nvarchar(20)
 	declare @scolor nvarchar(30)
+	declare @ucolor nvarchar(30)
 	declare @uno nvarchar(30)
 	declare @classa nvarchar(20)
 	declare @style nvarchar(20)
@@ -80,6 +81,7 @@ z_quat_rkp02:--z_quat_rkp02
 		lengthb float,
 		spec nvarchar(20),
 		scolor nvarchar(30),
+		ucolor nvarchar(30),
 		classa nvarchar(20),
 		style nvarchar(20),
 		[source] nvarchar(20),
@@ -117,36 +119,36 @@ z_quat_rkp02:--z_quat_rkp02
 		---- BBS
 		set @n = 1
 		declare cursor_table2 cursor for
-		select productno,product,dime,radius,width,lengthb,spec,scolor,uno,class
+		select productno,product,dime,radius,width,lengthb,spec,scolor,ucolor,uno,class
 			,style,[source],mount,[weight],unit,unit2,price,po,pn
 		from view_quats
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
-		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@uno,@classa
+		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@ucolor,@uno,@classa
 			,@style,@source,@mount,@weight,@unit,@unit2,@price,@po,@pn
 		while(@@FETCH_STATUS <> -1)
 		begin
 		
-			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
+			insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,ucolor,classa
 				,style,[source],mount,weight,unit,unit2,price,po,pn,coin)
 			values(case when len(@uno)=0 then '2' else '3' end
-				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
+				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@ucolor,@classa
 				,@style,@source,@mount,@weight
 				,@unit,@unit2,@price,@po,@pn,@coin)
 			
 			if len(@uno)>0
 			begin
-				insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,classa
+				insert into @tmp(gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,scolor,ucolor,classa
 					,style,[source],mount,weight,unit,unit2,price,po,pn,coin)
-				values('4',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@classa
+				values('4',@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@ucolor,@classa
 					,@style,@source,@mount,@weight
 					,@unit,@unit2,@price,@po,@pn,@coin)
 			end
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
-			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@uno,@classa
+			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@ucolor,@uno,@classa
 			,@style,@source,@mount,@weight,@unit,@unit2,@price,@po,@pn
 		end
 		close cursor_table2
@@ -241,7 +243,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+style+'</a>' style
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+' '+unit2+'</a>' mount
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
