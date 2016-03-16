@@ -20,7 +20,7 @@
 			var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
 			var q_readonlys = ['txtTotal'];
 			var bbmNum = [['txtCartrips', 10, 0, 1]];
-			var bbsNum = [['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtMweight', 10, 2, 1], ['txtLengthc', 10, 0, 1], ['txtPrice', 15, 3, 1]];
+			var bbsNum = [['txtTotal', 10, 0, 1],['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1], ['txtMweight', 10, 2, 1], ['txtLengthc', 10, 0, 1], ['txtPrice', 15, 3, 1]];
 			var bbmMask = [];
 			var bbsMask = [];
 			q_sqlCount = 6;
@@ -81,26 +81,29 @@
 						$('#txtUnit_' + j).val(t_unit);
 					}
 					t_weights = q_float('txtWeight_' + j);
-					t_prices = q_float('txtPrice_' + j);
-					t_count = (t_unit=='KG' || t_unit=='公斤'|| t_unit=='噸'|| t_unit.length==0)?q_float('txtWeight_'+j):q_float('txtMount_'+j);
-					t_moneys = round(q_mul(q_float('txtPrice_'+j),t_count),0);
-					
-					if (t_float == 0) {
-						t_moneys = round(t_moneys, 0);
-					} else {
-						t_moneyus = q_add(t_moneyus, round(t_moneys, 2));
-						t_moneys = round(q_mul(t_moneys, t_float), 0);
+					if($('#chkAprice_'+j).prop('checked')){
+						t_moneys = q_float('txtTotal_' + j);
+					}
+					else{
+						t_prices = q_float('txtPrice_' + j);
+						t_count = (t_unit=='KG' || t_unit=='公斤'|| t_unit=='噸'|| t_unit.length==0)?q_float('txtWeight_'+j):q_float('txtMount_'+j);
+						t_moneys = round(q_mul(q_float('txtPrice_'+j),t_count),0);
+						
+						if (t_float == 0) {
+							t_moneys = round(t_moneys, 0);
+						} else {
+							t_moneyus = q_add(t_moneyus, round(t_moneys, 2));
+							t_moneys = round(q_mul(t_moneys, t_float), 0);
+						}
+						$('#txtTotal_' + j).val(t_moneys);
 					}
 					var t_styles = $.trim($('#txtStyle_' + j).val());
 					var t_unos = $.trim($('#txtUno_' + j).val());
 					var t_dimes = $.trim($('#txtDime_' + j).val());
-					
 					//判斷需不需要加到重量總計,有時候只是打備註用,可以忽略
 					if (!(t_styles == '' && t_unos == '' && t_dimes == 0))
 						t_weight = q_add(t_weight, t_weights);
-
 					t_money = q_add(t_money, t_moneys);
-					$('#txtTotal_' + j).val(t_moneys);
 				}
 				t_total = t_money;
 				t_tax = 0;
@@ -440,6 +443,7 @@
 				for (var i = 0; i < q_bbsCount; i++) {
 					$('#lblNo_' + i).text(i + 1);
 					if (!$('#btnMinus_' + i).hasClass('isAssign')) {
+						$('#chkAprice_'+i).click(function(e){refreshBbs();});
 						$('#txtUnit_' + i).change(function() {
 								sum();
 						});
@@ -464,6 +468,7 @@
 					}
 				}
 				_bbsAssign();
+				refreshBbs();
 			}
 
 			function btnIns() {
@@ -552,8 +557,22 @@
 					$('#combAddr').removeAttr('disabled');
 					$('#combPaytype').removeAttr('disabled');
 				}
+				refreshBbs();
 			}
-
+			
+			function refreshBbs(){
+				//金額小計自訂
+				for(var i=0;i<q_bbsCount;i++){
+					$('#txtTotal_'+i).attr('readonly','readonly');
+					if($('#chkAprice_'+i).prop('checked')){
+						$('#txtTotal_'+i).css('color','black').css('background-color','white');
+						if(q_cur==1 || q_cur==2)
+							$('#txtTotal_'+i).removeAttr('readonly');
+					}else{
+						$('#txtTotal_'+i).css('color','green').css('background-color','rgb(237,237,237)');
+					}
+				}
+			}
 			function btnMinus(id) {
 				_btnMinus(id);
 				sum();
@@ -910,6 +929,7 @@
 					<td style="width:80px;">毛重</td>
 					<td style="width:80px;">單價</td>
 					<td style="width:80px;">金額</td>
+					<td align="center" style="width:20px;">自訂<br>金額</td>
 					<td style="width:200px;">備註</td>
 					<td style="width:200px;">訂單編號</td>
 				</tr>
@@ -948,6 +968,7 @@
 					<td><input id="txtMweight.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtPrice.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtTotal.*" type="text" class="txt c1 num"/></td>
+					<td><input id="chkAprice.*" type="checkbox"/></td>
 					<td><input id="txtMemo.*" type="text" class="txt c1"/></td>
 					<td>
 						<input id="txtOrdeno.*" type="text" style="float:left;width:72%;"/>
