@@ -1010,7 +1010,7 @@
 						<input id="txtMemo" type="text" class="txt c1"/>
 						</td>
 					</tr>
-					<tr>
+					<tr style="display:none;">
 						<td class="trX"><span> </span><a id='lblOrdgweight' class="lbl"> </a></td>
 						<td class="trX"><input id="txtOrdgweight" type="text" class="txt c1 num" /></td>
 						<td class="trX"><span> </span><a id='lblOrdeweight' class="lbl"> </a></td>
