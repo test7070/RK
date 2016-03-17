@@ -153,7 +153,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,dbo.getComma(mount,-1) b05
 		,dbo.getComma([weight],-1) b06
 		,dbo.getComma([price],-1) b07
-		,dbo.getComma([total],-1) b08
+		,dbo.getComma([totals],-1) b08
 		,memo b09
 		
 		,dbo.getComma([money],-1) c01

@@ -184,8 +184,8 @@
 					case 'orde_cub':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtComp,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtUnit,txtSize,txtSpec,txtScolor,txtProcess,txtZinc,txtFlower'
-                        	, as.length, as, 'noa,no2,custno,comp,productno,product,dime,radius,width,lengthb,unit,size,spec,zinc,source,hard,uno', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtComp,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtUnit,txtSize,txtSpec,txtScolor,txtProcess,txtZinc,txtFlower,txtWeight'
+                        	, as.length, as, 'noa,no2,custno,comp,productno,product,dime,radius,width,lengthb,unit,size,spec,zinc,source,hard,uno,tweight', '','');             	
                         }else{
                         	Unlock(1);
                         }

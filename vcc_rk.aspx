@@ -37,6 +37,7 @@
             	,['txtSpec_', 'btnSpec_', 'spec', 'noa,product', 'txtSpec_,txtClass_', 'spec_b.aspx']
             	,['txtCardealno', 'lblCardeal', 'cardeal', 'noa,comp', 'txtCardealno,txtCardeal', 'cardeal_b.aspx']
 				,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,mount,weight,productno,product,dime,radius,width,lengthb,spec,class', '0txtUno_,txtMount_,txtWeight_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '60%']
+				,['txtStoreno2_', 'btnStoreno2_', 'store', 'noa,store', 'txtStoreno2_,txtStore2_', 'store_b.aspx']
 			);
 			brwCount2 = 12;
 			$(document).ready(function() {
@@ -721,7 +722,7 @@
 				margin: -1px;
 			}
 			.dbbs {
-				width: 1700px;
+				width: 2050px;
 			}
 			.tbbs a {
 				font-size: medium;
@@ -912,6 +913,7 @@
 						<input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
 					</td>
 					<td style="width:20px;"></td>
+					<td align="center" style="width:40px;">出貨<br>群組</td>
 					<td style="width:200px;">批號</td>
 					<td style="width:200px;">品名</td>
 					<td style="width:60px;">厚</td>
@@ -921,6 +923,7 @@
 					<td style="width:160px;">皮膜</td>
 					<td style="width:60px;">背面<BR>處理</td>
 					<td style="width:100px;">保護膜</td>
+					<td style="width:150px;">規格</td>
 					<td style="width:60px;">單位</td>
 					<td style="width:100px;">包裝內容</td>
 					<td style="width:80px;">件數</td>
@@ -930,6 +933,8 @@
 					<td style="width:80px;">單價</td>
 					<td style="width:80px;">金額</td>
 					<td align="center" style="width:20px;">自訂<br>金額</td>
+					<td align="center" style="width:60px;">寄Y<BR>代Z</td>
+					<td align="center" style="width:80px;"><a id='lblStore2_st'> </a></td>
 					<td style="width:200px;">備註</td>
 					<td style="width:200px;">訂單編號</td>
 				</tr>
@@ -939,6 +944,7 @@
 						<input id="txtNoq.*" type="text" style="display: none;"/>
 					</td>
 					<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+					<td><input id="txtItemno.*" type="text" class="txt" style="width:95%"/></td>
 					<td>
 						<input id="txtUno.*" type="text" class="txt c1"/>
 						<input id="btnUno.*" type="button" style="display:none;"/>
@@ -960,6 +966,7 @@
 					</td>
 					<td><input id="txtUcolor.*" type="text" class="txt c1"/></td>
 					<td><input id="txtRackno.*" type="text" class="txt c1"/></td>
+					<td><input id="txtSize.*" type="text" class="txt c1"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td><input id="txtChecker.*" type="text" class="txt c1"/></td>
 					<td><input id="txtLengthc.*" type="text" class="txt c1 num"/></td>
@@ -969,6 +976,12 @@
 					<td><input id="txtPrice.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtTotal.*" type="text" class="txt c1 num"/></td>
 					<td><input id="chkAprice.*" type="checkbox"/></td>
+					<td style=""><input class="txt" id="txtUsecoil.*" type="text" style="text-align:center;width:95%;"/></td>
+					<td style="">
+						<input class="btn" id="btnStoreno2.*" type="button" value='.' style=" font-weight: bold;width:1%;float:left;display:none;" />
+						<input id="txtStoreno2.*" type="text" style="width:95%;" />
+						<input id="txtStore2.*" type="text" style='width: 95%;'/>
+					</td>
 					<td><input id="txtMemo.*" type="text" class="txt c1"/></td>
 					<td>
 						<input id="txtOrdeno.*" type="text" style="float:left;width:72%;"/>

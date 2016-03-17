@@ -327,6 +327,9 @@
 						if (as[0] != undefined) {
 							$('#txtCno').val(as[0].noa);
 							$('#txtAcomp').val(as[0].nick);
+							//不給加欄位,只能這樣
+							$('#txtPost2').val(as[0].addr.substring(0,5));
+							$('#txtAddr2').val(as[0].addr.substring(5,as[0].addr.length));
 						}
 						Unlock(1);
 						$('#chkIsproj').attr('checked', true);
