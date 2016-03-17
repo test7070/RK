@@ -86,7 +86,7 @@
 					}
 					else{
 						t_prices = q_float('txtPrice_' + j);
-						t_count = (t_unit=='KG' || t_unit=='公斤'|| t_unit=='噸'|| t_unit.length==0)?q_float('txtWeight_'+j):q_float('txtMount_'+j);
+						t_count = (t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓')?q_float('txtWeight_'+j):q_float('txtMount_'+j);
 						t_moneys = round(q_mul(q_float('txtPrice_'+j),t_count),0);
 						
 						if (t_float == 0) {

@@ -57,7 +57,7 @@
 				var t_money = 0,t_tax=0,t_total=0;
 				for(var i=0;i<q_bbsCount;i++){
 					t_unit = $.trim($('#txtUnit_'+i).val()).toUpperCase();
-					t_count = (t_unit=='KG' || t_unit=='公斤'|| t_unit=='噸'|| t_unit.length==0)?q_float('txtWeight_'+i):q_float('txtMount_'+i);
+					t_count = (t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓')?q_float('txtWeight_'+i):q_float('txtMount_'+i);
 					t_moneys = round(q_mul(q_float('txtPrice_'+i),t_count),0);
 					q_tr('txtTotal_'+i,t_moneys,0);
 					t_money = q_add(t_money,t_moneys);
