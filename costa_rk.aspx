@@ -18,10 +18,10 @@
             q_desc = 1;
             q_tables = 's';
             var q_name = "costa";
-            var q_readonly = ['txtNoa','txtMoney'];
+            var q_readonly = ['txtNoa','txtWages','txtMakeless','txtMoney'];
             var q_readonlys = [];
             var bbmNum = [['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney',15,0,1]];
-            var bbsNum = [['txtMount', 15, 2, 1],['txtPrice', 15, 2, 1],['txtMoney', 15, 0, 1]];
+            var bbsNum = [['txtMount', 15, 2, 1],['txtPrice', 15, 2, 1],['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney', 15, 0, 1]];
             var bbmMask = [];
             var bbsMask = [];
             q_sqlCount = 6;
@@ -34,11 +34,15 @@
 				['txtProductno_', 'btnProduct_', 'chgitem', 'noa,item', 'txtProductno_,txtProduct_', 'chgitem_b.aspx']);
 			var t_mech = '';
 			function sum() {
-				var t_money=0;
+				var t_money=0,t_wages=0,t_makeless=0;
             	for(var i=0;i<q_bbsCount;i++){
             		t_money = q_add(t_money,q_float('txtMoney_'+i));
+            		t_wages = q_add(t_wages,q_float('txtWages_'+i));
+            		t_makeless = q_add(t_makeless,q_float('txtMakeless_'+i));
             	}    
             	$('#txtMoney').val(t_money);
+            	$('#txtWages').val(t_wages);
+            	$('#txtMakeless').val(t_makeless);
             }
             
             $(document).ready(function() {
@@ -78,7 +82,7 @@
                 switch (t_name) {
                     case 'mech':
                         var as = _q_appendData("mech", "", true);
-                        t_mech = '';
+                        t_mech = ' @ ';
                         if(as[0]!=undefined){
                         	for(var i=0;i<as.length;i++){
                         		t_mech += (t_mech.length>0?',':'') + as[i].noa+'@'+as[i].mech;
@@ -106,7 +110,7 @@
             function _btnSeek() {
                 if (q_cur > 0 && q_cur < 4)// 1-3
                     return;
-                q_box('costa_s.aspx', q_name + '_s', "500px", "300px", q_getMsg("popSeek"));
+                q_box('costa_s.aspx', q_name + '_s', "500px", "400px", q_getMsg("popSeek"));
             }
 
             function bbsAssign() {
@@ -119,7 +123,8 @@
                             var n = $(this).attr('id').replace('txtProductno_', '');
                             $('#btnProduct_'+n).click();
                         });
-                       
+                       	$('#txtWages_'+i).change(function(e){sum();});
+                        $('#txtMakeless_'+i).change(function(e){sum();});
                         $('#txtMoney_'+i).change(function(e){sum();});
 					}
 				}
@@ -416,6 +421,9 @@
 						<td style="width:150px;" align="center">製造批號</td>
 						<td style="width:80px;" align="center">工時比率</td>
 						<td style="width:200px;" align="center">品名</td>
+						<td style="width:100px;" align="center">工作站</td>
+						<td style="width:100px;" align="center">直接人工</td>
+						<td style="width:100px;" align="center">製造費用</td>
 						<td style="width:100px;" align="center">變動成本</td>
 					</tr>
 					<tr style='background:#cad3ff;'>
@@ -431,6 +439,9 @@
 							<input id="txtProduct.*" type="text" style="float:left;width:50%;"/>
 							<input id="btnProduct.*" type="button" style="display:none;"/>
 						</td>
+						<td><select id='cmbMechno.*' style="float:left;width:95%;"> </select></td>
+						<td><input id="txtWages.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td><input id="txtMakeless.*" type="text" class="num" style="float:left;width:95%;"/> </td>
 						<td><input id="txtMoney.*" type="text" class="num" style="float:left;width:95%;"/> </td>
 					</tr>
 				</table>
