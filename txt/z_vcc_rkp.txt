@@ -1,0 +1,416 @@
+z_vcc_rkp03:--z_vcc_rkp03	
+	SET QUOTED_IDENTIFIER OFF 
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
+	------------------------------------------------------------------------------------------------	
+	IF OBJECT_ID('tempdb..#z_vcc_rkp03')is not null
+	BEGIN
+		drop table #z_vcc_rkp03
+	END
+	
+	create table #z_vcc_rkp03(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,noa nvarchar(20)
+		,datea nvarchar(10)
+		
+		,bknoa nvarchar(20)
+		,bkdate nvarchar(10)
+		
+		,uno nvarchar(30)
+		
+		,product01 nvarchar(50)
+		,size01 nvarchar(50)
+		,mount01 float
+		,bkmount01 float
+		,memo01 nvarchar(max)
+
+		,product02 nvarchar(50)
+		,size02 nvarchar(50)
+		,mount02 float
+		,bkmount02 float
+		,memo02 nvarchar(max)
+		
+		,uno03 nvarchar(30)
+		,product03 nvarchar(50)
+		,size03 nvarchar(50)
+		,mount03 float
+		,bkmount03 float
+		,memo03 nvarchar(max)
+	)
+	declare @n int
+	declare @datea nvarchar(10)
+	declare @bkdate nvarchar(10)
+	declare @noa nvarchar(20)
+	declare @bknoa nvarchar(20)
+	declare @custno nvarchar(20)
+	declare @cust nvarchar(50)
+	
+	declare @uno nvarchar(30)
+	declare @bkmount float
+	declare @memo nvarchar(max)
+	
+	declare @product nvarchar(50)
+	declare @size nvarchar(50)
+	declare @mount float
+	
+	--只能印3筆
+	declare cursor_table cursor for
+	select top 3 row_number()over(order by a.noq),b.datea,a.noa
+		,a.uno,a.mount,a.memo
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	where a.noa=@t_noa
+	and ISNULL(b.typea,'1')='2'--退貨
+	order by a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		if LEN(ISNULL(@uno,''))>0
+		begin
+			select @product='',@size='',@mount=0
+				,@datea='',@noa='',@custno='',@cust=''
+			select @product=a.product
+				,@size= case when len(ISNULL(a.size,''))>0 then a.size
+					else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+ case when a.lengthb=0 then 'C' else CAST(a.lengthb as nvarchar) end
+					end
+				,@mount=a.mount
+				,@datea=b.datea,@noa=a.noa,@custno=b.custno,@cust=b.comp
+			from view_vccs a
+			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+			where ISNULL(b.typea,'1')='1'
+			and b.datea<=@bkdate
+			and a.uno=@uno
+			
+			if not exists(select * from #z_vcc_rkp03)
+			begin
+				insert into #z_vcc_rkp03(gno,noa,bknoa,custno,cust,datea,bkdate)values('1',@noa,@bknoa,@custno,@cust,@datea,@bkdate)
+			end
+			set @cmd = "update #z_vcc_rkp03 set uno=@uno
+				,product0"+CAST(@n as nvarchar)+"=@product
+				,size0"+CAST(@n as nvarchar)+"=@size
+				,mount0"+CAST(@n as nvarchar)+"=@mount
+				,bkmount0"+CAST(@n as nvarchar)+"=@bkmount
+				,memo0"+CAST(@n as nvarchar)+"=@memo"
+			execute sp_executesql @cmd,N'@uno nvarchar(30),@product nvarchar(50),@size nvarchar(50),@mount float,@bkmount float,@memo nvarchar(max)'
+				,@uno=@uno,@product=@product,@size=@size,@mount=@mount,@bkmount=@bkmount,@memo=@memo
+		end
+		fetch next from cursor_table
+		into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,cust a01
+		,'' a02
+		,'' a03
+		,bknoa a04
+		,datea a05
+		,bkdate a06
+		,product01 b01
+		,size01 c01
+		,dbo.getComma(mount01,-1) d01
+		,dbo.getComma(bkmount01,-1) e01
+		,memo01 f01
+		
+		,product02 b02
+		,size02 c02
+		,dbo.getComma(mount02,-1) d02
+		,dbo.getComma(bkmount02,-1) e02
+		,memo02 f02
+		
+		,product03 b03
+		,size03 c03
+		,dbo.getComma(mount03,-1) d03
+		,dbo.getComma(bkmount03,-1) e03
+		,memo03 f03
+		
+	from #z_vcc_rkp03
+	
+	drop table #z_vcc_rkp03;
+
+z_vcc_rkp02:--z_vcc_rkp02 
+	SET QUOTED_IDENTIFIER OFF 
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
+	declare @t_showprice nvarchar(20) = case when '#non' = [4] then '0' else [4] end
+	------------------------------------------------------------------------------------------------	
+	declare @tmp table(
+		gno nvarchar(10),
+		pno nvarchar(10),
+		recno int,
+		page nvarchar(20),
+		
+		accy nvarchar(10),
+		noa nvarchar(20),
+		datea nvarchar(10),
+		custno nvarchar(20),
+		cust nvarchar(50),
+		addr nvarchar(50),
+		cno nvarchar(20),
+		acomp nvarchar(50),
+		
+		productno nvarchar(20),
+		product nvarchar(50),
+		unit nvarchar(20),
+		price float,
+		lengthb float,
+		mount float,
+		[weight] float,
+		[money] float,
+		memo nvarchar(max)
+	)
+	
+	insert into @tmp(gno,pno,recno,accy,noa,datea,custno,cust,addr
+		,cno,acomp
+		,productno,product,unit,price,lengthb,mount,[weight],[money],memo)
+	select '1','1',ROW_NUMBER()over(partition by a.noa order by b.noq)
+		,a.accy,a.noa,a.datea,a.custno,a.custno,a.addr2
+		,a.cno,a.acomp
+		,b.productno,replace(b.product,'~#$',char(39)),b.unit,b.price,b.lengthb,b.mount,b.[weight],b.total,b.memo
+	from view_vcc a
+	left join view_vccs b on a.noa=b.noa
+	where (len(@t_noa)=0 or @t_noa=a.noa)
+	
+------------------------------------------------------
+	insert into @tmp (gno,pno,noa,datea,custno,cust,addr,cno,acomp,mount,[weight],[money])
+	select '3','3',noa,datea,custno,cust,addr,cno,acomp,sum(isnull(mount,'')),sum(isnull([weight],'')),sum(isnull([money],''))
+	from @tmp
+	group by noa,datea,custno,cust,addr,cno,acomp
+	---------------------------------------------------------------
+	declare @t_pageline int = 15 --一頁幾行
+	declare @noa nvarchar(20)
+	declare @datea nvarchar(20)
+	declare @custno nvarchar(20)
+	declare @cust nvarchar(50)
+	declare @addr nvarchar(100)
+	declare @cno nvarchar(20)
+	declare @acomp nvarchar(50)
+	declare @n int
+	declare @recno int
+	
+	declare cursor_table cursor for
+	select noa,datea,custno,cust,addr,cno,acomp
+		,count(1),max(recno) from @tmp group by noa,datea,custno,cust,addr,cno,acomp
+	open cursor_table
+	fetch next from cursor_table
+	into @noa,@datea,@custno,@cust,@addr,@cno,@acomp,@n,@recno
+	while(@@FETCH_STATUS <> -1)
+	begin		
+		while @n%@t_pageline !=0
+		begin
+			set @recno = @recno + 1
+			insert into @tmp(gno,pno,noa,datea,custno,cust,addr,cno,acomp,recno)
+			values('2','2',@noa,@datea,@custno,@cust,@addr,@cno,@acomp,@recno)
+			set @n=@n+1
+		end
+		
+		fetch next from cursor_table
+		into @noa,@datea,@custno,@cust,@addr,@cno,@acomp,@n,@recno
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	------------------------------------------------------------------
+	update @tmp set page = CAST(ceiling(cast(a.recno as float)/cast(@t_pageline as float)) as nvarchar)+'/'+CAST(ceiling(cast(b.recno as float)/cast(@t_pageline as float)) as nvarchar)
+	from @tmp a
+	left join (select noa,MAX(recno) recno from @tmp group by noa) b on a.noa=b.noa
+	
+	if(@t_showprice!='1')
+	begin
+		update @tmp set price=null,money=null
+	end
+	select a.recno rr
+		,a.productno a01
+		,a.product a02
+		,a.unit a03
+		,a.mount a04
+		,a.[weight] a05
+		,a.price a06
+		,a.[money] a07
+		,a.noa b01
+		,a.cust b02
+		,a.addr b03
+		,a.* 
+		,a.acomp xxxx
+	from @tmp a
+	order by a.noa,a.pno,a.recno;
+	
+z_vcc_rkp01:--z_vcc_rkp01 
+	SET QUOTED_IDENTIFIER OFF 
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
+	------------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1),
+		recno int,
+		pno nvarchar(10),
+		gno nvarchar(10),
+		accy nvarchar(20),
+		noa nvarchar(20),
+		noq nvarchar(10),
+		datea nvarchar(10),
+		custno nvarchar(20),
+		comp nvarchar(50),
+		nick nvarchar(20),
+		tel nvarchar(50),
+		fax nvarchar(50),
+		addr nvarchar(max),
+		conn nvarchar(20),
+		
+		ordeno nvarchar(20),
+		no2 nvarchar(10),
+		productno nvarchar(20),
+		product nvarchar(50),
+		spec nvarchar(20),
+		class nvarchar(20),
+		dime float,
+		radius float,
+		width float,
+		lengthb float,
+		size nvarchar(max),
+		checker nvarchar(50),--包裝內容
+		lengthc float,--件數
+		mount float,
+		[weight] float,
+		itemno nvarchar(20),
+		memo nvarchar(max)
+	)
+
+	insert into @tmp(pno,gno,accy,noa,noq,datea
+		,custno,comp,nick,tel,fax,conn
+		,ordeno,no2,productno,product,spec,class
+		,dime,radius,width,lengthb,size
+		,checker,itemno,memo
+		,lengthc,mount,[weight])	
+	select '1','1',a.accy,a.noa,'',b.datea
+		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
+		,a.ordeno,a.no2,a.productno,a.product,a.spec,a.class
+		,a.dime,a.radius,a.width,a.lengthb,a.size
+		,a.checker,a.itemno,a.memo
+		,sum(isnull(a.lengthc,0)),sum(isnull(a.mount,0)),sum(isnull(a.[weight],0))
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa 
+	left join view_ordes c on a.ordeno=b.noa and a.no2=c.no2
+	left join view_orde d on a.ordeno=d.noa
+	left join view_quat e on d.quatno=e.noa
+	where b.noa is not null
+	and (len(@t_noa)=0 or a.noa=@t_noa)
+	and charindex('運費',a.product)=0
+	and charindex('包裝',a.product)=0
+	group by  a.accy,a.noa,b.datea
+		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
+		,a.ordeno,a.no2,a.productno,a.product,a.spec,a.class
+		,a.dime,a.radius,a.width,a.lengthb,a.size
+		,a.checker,a.itemno,a.memo
+	
+	update @tmp set addr = case when len(isnull(b.addr2,''))>0 then b.addr2 else b.addr end
+	from @tmp a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	
+	update @tmp set size=case when len(size)>0 then size
+			else dbo.getComma(dime,-1)
+			+case when ISNULL(radius,0)!=0 then '+'+cast(radius as nvarchar) else '' end
+			+case when ISNULL(width,0)!=0 then '*'+cast(width as nvarchar) else '' end
+			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '' end end
+	
+	insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
+	select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
+	from @tmp
+	where gno='1'
+	group by productno,spec,size
+	
+	insert into @tmp(pno,gno,lengthc,mount,[weight])
+	select '3','3',SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
+	from @tmp
+	where gno='1'
+	------------------------------------------------------------------------------------
+	declare @noa nvarchar(20) = ''
+	declare @custno nvarchar(20) = ''
+	declare @comp nvarchar(50) = ''
+	declare @nick nvarchar(20) = ''
+	declare @datea nvarchar(20) = ''
+	declare @tel nvarchar(50) = ''
+	declare @addr nvarchar(max) = ''
+	declare @conn nvarchar(20) = ''
+	declare @fax nvarchar(50) = ''
+	
+	select @noa=noa,@custno=custno,@comp=comp,@nick=nick
+		,@datea=datea,@tel=tel,@addr=addr,@conn=conn,@fax=fax 
+	from @tmp where sel=1
+	
+	declare @pagecount int = 20
+	declare @n int
+	
+	declare cursor_table cursor for
+	select count(1) from @tmp
+	open cursor_table
+	fetch next from cursor_table
+	into @n
+	while(@@FETCH_STATUS <> -1)
+	begin
+		while @n%@pagecount !=0
+		begin
+			insert into @tmp(pno,gno)
+			values('4','4')
+			set @n = @n +1
+		end
+		fetch next from cursor_table
+		into @n
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update @tmp set recno=b.recno,noa=@noa,custno=@custno,comp=@comp,nick=@nick
+		,datea=@datea,tel=@tel,addr=@addr,conn=@conn,fax=@fax 
+	from @tmp a
+	left join (select ROW_NUMBER()over(order by case pno when '3' then 1 when '4' then 2 else 0 end,productno,spec,size,pno)recno,sel from @tmp) b on a.sel=b.sel
+	----------------------------------------------------------------------------------
+	declare @reportno nvarchar(max) = '表單編號：LC-16-00-08-02'
+	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
+	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
+	declare @c1 nvarchar(max) = @sign2+N'A.我方拖運'
+	declare @c2 nvarchar(max) = @sign2+N'B.客戶自運'
+	declare @c3 nvarchar(max) = N'1.貨物及重量如有錯誤或須退回請於一星期內告知，逾期視同無誤。'
+	declare @c4 nvarchar(max) = N'2.出貨應加蓋雨帆，如淋雨或損毀由承運者負責賠償。'
+	declare @c5 nvarchar(max) = N'3.出貨前確認事項：'+@sign2+N'煙燻章'+@sign2+N'外觀包裝 <a style="font-weight:bolder">確認者：</a>'
+
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">No&nbsp'+char(59)+'&nbsp'+char(59)+noa +'</a>' b00
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+custno +'</a>' b01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+nick +'</a>' b02
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+datea +'</a>' b03
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+tel +'</a>' b04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+addr +'</a>' b05
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+conn +'</a>' b06
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax +'</a>' b07
+		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(recno as nvarchar) +'</a>' rr
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ordeno+'-'+no2 +'</a>' a01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product +'</a>' a02
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec +'</a>' a03
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+' '+size +'</a>' a04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+checker +'</a>' a05
+		,case when lengthc=0 then '' else  dbo.getComma(lengthc,0) end a06
+		,dbo.getComma(mount,0) a07
+		,dbo.getComma([weight],-1) a08
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' a09
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c1+'</a>' c01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c2+'</a>' c02
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c3+'</a>' c03
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c4+'</a>' c04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c5+'</a>' c05
+	from @tmp
+	order by case when recno is null then 'z' else '' end,recno;
