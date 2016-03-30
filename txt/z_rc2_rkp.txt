@@ -1,3 +1,142 @@
+z_rc2_rkp02:--z_rc2_rkp02   退貨  ref.z_vcc_rkp03
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_stktype nvarchar(max) = '[3]'
+	declare @t_noa nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	------------------------------------------------------------------------------------------------	
+	IF OBJECT_ID('tempdb..#z_rc2_rkp02')is not null
+	BEGIN
+		drop table #z_rc2_rkp02
+	END
+	
+	create table #z_rc2_rkp02(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,noa nvarchar(20)
+		,datea nvarchar(10)
+		
+		,bknoa nvarchar(20)
+		,bkdate nvarchar(10)
+		
+		,uno nvarchar(30)
+		
+		,product01 nvarchar(50)
+		,size01 nvarchar(50)
+		,mount01 float
+		,bkmount01 float
+		,memo01 nvarchar(max)
+
+		,product02 nvarchar(50)
+		,size02 nvarchar(50)
+		,mount02 float
+		,bkmount02 float
+		,memo02 nvarchar(max)
+		
+		,uno03 nvarchar(30)
+		,product03 nvarchar(50)
+		,size03 nvarchar(50)
+		,mount03 float
+		,bkmount03 float
+		,memo03 nvarchar(max)
+	)
+	declare @n int
+	declare @datea nvarchar(10)
+	declare @bkdate nvarchar(10)
+	declare @noa nvarchar(20)
+	declare @bknoa nvarchar(20)
+	declare @custno nvarchar(20)
+	declare @cust nvarchar(50)
+	
+	declare @uno nvarchar(30)
+	declare @bkmount float
+	declare @memo nvarchar(max)
+	
+	declare @product nvarchar(50)
+	declare @size nvarchar(50)
+	declare @mount float
+	
+	--只能印3筆
+	declare cursor_table cursor for
+	select top 3 row_number()over(order by a.noq),b.datea,a.noa
+		,a.uno,a.mount,a.memo
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	where a.noa=@t_noa
+	and ISNULL(b.typea,'1')='2'--退貨
+	order by a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		if LEN(ISNULL(@uno,''))>0
+		begin
+			select @product='',@size='',@mount=0
+				,@datea='',@noa='',@custno='',@cust=''
+			select @product=a.product
+				,@size= case when len(ISNULL(a.size,''))>0 then a.size
+					else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+ case when a.lengthb=0 then 'C' else CAST(a.lengthb as nvarchar) end
+					end
+				,@mount=a.mount
+				,@datea=b.datea,@noa=a.noa,@custno=b.custno,@cust=b.comp
+			from view_vccs a
+			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+			where ISNULL(b.typea,'1')='1'
+			and b.datea<=@bkdate
+			and a.uno=@uno
+			
+			if not exists(select * from #z_vcc_rkp03)
+			begin
+				insert into #z_vcc_rkp03(gno,noa,bknoa,custno,cust,datea,bkdate)values('1',@noa,@bknoa,@custno,@cust,@datea,@bkdate)
+			end
+			set @cmd = "update #z_vcc_rkp03 set uno=@uno
+				,product0"+CAST(@n as nvarchar)+"=@product
+				,size0"+CAST(@n as nvarchar)+"=@size
+				,mount0"+CAST(@n as nvarchar)+"=@mount
+				,bkmount0"+CAST(@n as nvarchar)+"=@bkmount
+				,memo0"+CAST(@n as nvarchar)+"=@memo"
+			execute sp_executesql @cmd,N'@uno nvarchar(30),@product nvarchar(50),@size nvarchar(50),@mount float,@bkmount float,@memo nvarchar(max)'
+				,@uno=@uno,@product=@product,@size=@size,@mount=@mount,@bkmount=@bkmount,@memo=@memo
+		end
+		fetch next from cursor_table
+		into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,cust a01
+		,'' a02
+		,'' a03
+		,bknoa a04
+		,datea a05
+		,bkdate a06
+		,product01 b01
+		,size01 c01
+		,dbo.getComma(mount01,-1) d01
+		,dbo.getComma(bkmount01,-1) e01
+		,memo01 f01
+		
+		,product02 b02
+		,size02 c02
+		,dbo.getComma(mount02,-1) d02
+		,dbo.getComma(bkmount02,-1) e02
+		,memo02 f02
+		
+		,product03 b03
+		,size03 c03
+		,dbo.getComma(mount03,-1) d03
+		,dbo.getComma(bkmount03,-1) e03
+		,memo03 f03
+		
+	from #z_rc2_rkp02
+	
+	drop table #z_rc2_rkp02;
+	
 z_rc2_rkp01:--z_rc2_rkp01
 	SET QUOTED_IDENTIFIER OFF
 	declare @t_path nvarchar(max) = '[1]'

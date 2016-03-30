@@ -913,7 +913,7 @@
 						<input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
 					</td>
 					<td style="width:20px;"></td>
-					<td align="center" style="width:40px;">出貨<br>群組</td>
+					<td align="center" style="width:40px;">棧板<br>編號</td>
 					<td style="width:200px;">批號</td>
 					<td style="width:200px;">品名</td>
 					<td style="width:60px;">厚</td>
@@ -925,7 +925,7 @@
 					<td style="width:100px;">保護膜</td>
 					<td style="width:150px;">規格</td>
 					<td style="width:60px;">單位</td>
-					<td style="width:100px;">包裝內容</td>
+					<td style="display:none;">包裝內容</td>
 					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
@@ -968,7 +968,7 @@
 					<td><input id="txtRackno.*" type="text" class="txt c1"/></td>
 					<td><input id="txtSize.*" type="text" class="txt c1"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
-					<td><input id="txtChecker.*" type="text" class="txt c1"/></td>
+					<td style="display:none;"><input id="txtChecker.*" type="text" class="txt c1"/></td>
 					<td><input id="txtLengthc.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>
