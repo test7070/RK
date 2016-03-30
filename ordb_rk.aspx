@@ -1051,7 +1051,7 @@
 					<td align="center" style="width:100px;"><a id='lblTotals'> </a><br><a id='lblTheorys' class="st"> </a></td>
 					<td align="center" style="width:80px;"><a id='lblC1s'> </a><br><a id='lblNotvs'> </a></td>
 					<td align="center" style="width:180px;"><a id='lblMemos_st'> </a><br><a id='lblOrdenos_st'> </a></td>
-					<td align="center" style="width:60px;"><a>鋼廠</a></td>
+					<td align="center" style="width:60px;"><a>製造商</a></td>
 					<td align="center" style="width:250px;"><a id='lblUno_st'> </a></td>
 					<td align="center" style="width:40px;"><a>採購<BR>記錄</a></td>
 					<td align="center" style="width:40px;"><a>詢價<BR>記錄</a></td>	
