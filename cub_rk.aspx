@@ -165,6 +165,17 @@
 		                			alert('找不到訂單【'+t_para.ordeno+'-'+t_para.no2+'】');
 		                		}
                     			sum();
+                    		}else if(t_para.action == 'getDensity'){
+                    			try{
+                					var t_density = 0,t_mount = q_float('txtMount__'+t_para.n);
+                    				var as = _q_appendData("ucc", "", true);
+			                		if (as[0] != undefined) {
+		                				t_density = parseFloat(as[0].density);
+			                		}
+			                		$('#txtWeight__'+t_para.n).val(round(q_mul(t_density,t_mount),0));
+		                		}catch(e){
+		                			$('#txtWeight__'+t_para.n).val(0);
+		                		}
                     		}
                     		
                     	}catch(e){
@@ -186,7 +197,7 @@
                         if (b_ret != null) {
                         	as = b_ret;
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtComp,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtUnit,txtSize,txtSpec,txtScolor,txtProcess,txtZinc,txtFlower,txtWeight'
-                        	, as.length, as, 'noa,no2,custno,comp,productno,product,dime,radius,width,lengthb,unit,size,spec,zinc,source,hard,uno,tweight', '','');             	
+                        	, as.length, as, 'noa,no2,custno,comp,productno,product,dime,radius,width,lengthb,unit,size,spec,zinc,source,hard,uno,tweight', 'txtOrdeno','');             	
                         }else{
                         	Unlock(1);
                         }
@@ -281,6 +292,10 @@
                     $('#txtWorker').val(r_name);
                 else
                     $('#txtWorker2').val(r_name);
+                //COIL 重量(KG) = 耗料重
+               	for(var i=0;i<q_bbsCount;i++){
+               		$('#txtGweight_'+i).val($('#txtWeight_'+i).val());
+               	}
                 
                 //製造批號
             	var t_manufactureno = $.trim($('#txtVcceno').val());
@@ -484,6 +499,13 @@
                             var n = $(this).attr('id').replace('txtUno__', '');
                             $('#btnUno__'+n).click();
                         });
+                        $('#txtMount__' + i).bind('change', function(e) {
+                            var n = $(this).attr('id').replace('txtMount__', '');
+                    		if($('#txtProductno__'+n).val().length>0){
+                    			t_where = "where=^^ noa='" + trim($('#txtProductno__'+n).val()) + "' ^^";
+                    			q_gt('ucc', t_where, 0, 0, 0, JSON.stringify({action:"getDensity",n:n}), r_accy);
+                    		}
+                    	});
                     }
                 }
                 _bbtAssign();
@@ -736,13 +758,13 @@
 				<table class="tview" id="tview" >
 					<tr>
 						<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
-						<td style="width:80px; color:black;"><a id='vewNoa'> </a></td>
+						<td style="width:80px; color:black;"><a>製造批號</a></td>
 						<td style="width:100px; color:black;"><a id='vewDatea'> </a></td>
 						<td style="width:100px; color:black;">班、線別</td>
 					</tr>
 					<tr>
 						<td><input id="chkBrow.*" type="checkbox" style=''/></td>
-						<td id='noa' style="text-align: center;">~noa</td>
+						<td id='vcceno' style="text-align: center;">~vcceno</td>
 						<td id='datea' style="text-align: center;">~datea</td>
 						<td id='process' style="text-align: center;">~process</td>
 					</tr>
@@ -810,14 +832,15 @@
 						<td style="width:100px;" align="center">COIL<BR>規格<BR>尺寸(厚X寬)</td>
 						<td style="width:100px;" align="center">COIL<BR>重量(KG)</td>
 						<td style="width:100px;" align="center">PVC皮規格</td>
-						<td style="width:200px;" align="center">RECOIL編號</td>
+						<td style="display:none;" align="center">RECOIL編號</td>
 						<td style="width:100px;" align="center">RECOIL<BR>M<BR>重量(KG)</td>
 						<td style="width:100px;" align="center">廢料重量(KG)</td>
 						<td style="width:100px;" align="center">包裝數量<BR>/LOT</td>
-						<td style="width:100px;" align="center">開始時間</td>
-						<td style="width:100px;" align="center">結束時間</td>	
+						<td style="display:none;" align="center">開始時間</td>
+						<td style="display:none;" align="center">結束時間</td>	
 						<td style="width:80px;" align="center">施工工時(分)</td>
-						<td style="width:100px;" align="center">耗料重</td>
+						<!-- COIL 重量(KG) = 耗料重-->
+						<td style="display:none;" align="center">耗料重</td>
 						<!-- 樣品重、報廢重.. 改到CUC輸入-->
 						<td style="display:none;" align="center">不良損耗</td>
 						<td style="display:none;" align="center">尺寸損耗</td>
@@ -857,7 +880,7 @@
 							<input id="txtRadius.*" type="text" class="num" style="float:left;width:45%;"/>
 							<input id="txtLengthb.*" type="text" class="num" style="float:left;width:45%;"/>
 						</td>
-						<td title="RECOIL編號">
+						<td title="RECOIL編號" style="display:none;">
 							<input id="txtOth.*" type="text" style="float:left;width:95%;"/>
 						</td>
 						<td title="RECOIL重量(KG)">
@@ -871,10 +894,11 @@
 						<td title="包裝數量/LOT">
 							<input id="txtMount.*" type="text" class="num" style="float:left;width:95%;"/>
 						</td>
-						<td><input id="txtBtime.*" type="text" style="float:left;width:95%;"/></td>
-						<td><input id="txtEtime.*" type="text" style="float:left;width:95%;"/></td>
+						<td style="display:none;"><input id="txtBtime.*" type="text" style="float:left;width:95%;"/></td>
+						<td style="display:none;"><input id="txtEtime.*" type="text" style="float:left;width:95%;"/></td>
 						<td><input id="txtMins.*" type="text" class="num" style="float:left;width:95%;"/></td>
-						<td><input id="txtGweight.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<!-- COIL 重量(KG) = 耗料重-->
+						<td style="display:none;"><input id="txtGweight.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<!-- 樣品重、報廢重.. 改到CUC輸入-->
 						<td style="display:none;"><input id="txtW01.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td style="display:none;"><input id="txtW02.*" type="text" class="num" style="float:left;width:95%;"/></td>
