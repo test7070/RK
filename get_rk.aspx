@@ -78,7 +78,7 @@
 				document.title = '領料組合作業';
 				bbmMask = [['txtDatea', r_picd], ['txtCucdate', r_picd]];
 				q_mask(bbmMask);
-				q_cmbParse("cmbTypea", '領料單,退料單');
+				q_cmbParse("cmbTypea", '領料單,退料單,加寄庫出貨');
 				
 			}
 			
