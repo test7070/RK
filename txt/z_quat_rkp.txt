@@ -73,7 +73,8 @@ z_quat_rkp03:--z_quat_rkp03
 		recno int, 
 		[to] nvarchar(50), 
 		[attn] nvarchar(50), 
-		[subject] nvarchar(20), 
+		[subject] nvarchar(20),
+		fax nvarchar(50), 
 		quatno nvarchar(20), 
 		productno nvarchar(50), 
 		product nvarchar(50), 
@@ -222,7 +223,7 @@ z_quat_rkp03:--z_quat_rkp03
 	close cursor_table 
 	deallocate cursor_table 
 
-	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno 
+	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno ,fax=b.fax
 	from @tmp a 
 	left join view_quat b on a.noa=b.noa 
 	
@@ -230,6 +231,7 @@ z_quat_rkp03:--z_quat_rkp03
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa+'</a>' aa
@@ -333,6 +335,7 @@ z_quat_rkp02:--z_quat_rkp02
 		[to] nvarchar(50),
 		[attn] nvarchar(50),
 		[subject] nvarchar(20),
+		fax nvarchar(50),
 		quatno nvarchar(20),
 		productno nvarchar(50),
 		product nvarchar(50),
@@ -478,7 +481,7 @@ z_quat_rkp02:--z_quat_rkp02
 	close cursor_table
 	deallocate cursor_table
 	
-	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno
+	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno,fax=b.fax
 	from @tmp a
 	left join view_quat b on a.noa=b.noa
 
@@ -486,6 +489,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa+'</a>' aa
