@@ -28,6 +28,7 @@
             brwNowPage = 0;
             brwKey = 'Datea';
             brwCount2 = 15;
+            q_copy = 1;
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial,tel,fax,boss', 'txtCustno,txtComp,txtNick,txtSerial,txtTel,txtFax,txtBoss', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
@@ -651,6 +652,10 @@
 						<td><input id="txtWorker" type="text" class="txt c1" maxlength="20"/></td>
 						<td><span> </span><a id="lblWorker2" class="lbl"></a></td>
 						<td><input id="txtWorker2" type="text" class="txt c1" maxlength="20"/></td>
+						<td>
+							<input id="chkIsproj" type="checkbox"/>
+							<span> </span><a id='lblIsproj'> </a>
+						</td>
 					</tr>
 				</table>
 			</div>
