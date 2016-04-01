@@ -637,7 +637,7 @@
 			}
 			.dview {
 				float: left;
-				width: 300px;
+				width: 350px;
 				border-width: 0px;
 			}
 			.tview {
@@ -746,18 +746,20 @@
 		<div style="overflow: auto;display:block;">
 			<!--#include file="../inc/toolbar.inc"-->
 		</div>
-		<div style="overflow: auto;display:block;width:1280px;">
+		<div style="overflow: auto;display:block;width:1350px;">
 			<div class="dview" id="dview">
 				<table class="tview" id="tview"	>
 					<tr>
 						<td align="center" style="width:20px; color:black;"><a id='vewChk'> </a></td>
 						<td align="center" style="width:80px; color:black;"><a id='vewDatea'> </a></td>
+						<td align="center" style="width:60px; color:black;"><a id='vewTypea'>單別</a></td>
 						<td align="center" style="width:100px; color:black;"><a id='vewNoa'> </a></td>
 						<td align="center" style="width:80px; color:black;"><a id='vewNick'> </a></td>
 					</tr>
 					<tr>
 						<td><input id="chkBrow.*" type="checkbox" style=''/></td>
 						<td align="center" id='datea'>~datea</td>
+						<td id='typea=cmbTypea' style="text-align: center;">~typea=cmbTypea</td>
 						<td align="center" id='noa'>~noa</td>
 						<td align="center" id='nick'>~nick</td>
 					</tr>
