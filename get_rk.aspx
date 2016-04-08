@@ -21,7 +21,7 @@
 
 			q_tables = 's';
 			var q_name = "get";
-			var q_readonly = ['txtNoa', 'txtWorker','txtComp','txtStore','txtWorker2'];
+			var q_readonly = ['txtNoa', 'txtWorker','txtComp','txtStore','txtWorker2','txtWeight'];
 			var q_readonlys = [];
 			var bbmNum = [];
 			var bbsNum = [];
