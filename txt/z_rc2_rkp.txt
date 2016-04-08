@@ -1,5 +1,6 @@
-z_rc2_rkp02:--z_rc2_rkp02   退貨  ref.z_vcc_rkp03
+z_rc2_rkp02:--z_rc2_rkp02	
 	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
 	declare @t_db nvarchar(max) = '[2]'
 	declare @t_stktype nvarchar(max) = '[3]'
@@ -13,8 +14,8 @@ z_rc2_rkp02:--z_rc2_rkp02   退貨  ref.z_vcc_rkp03
 	create table #z_rc2_rkp02(
 		sel int identity(1,1)
 		,gno nvarchar(10)
-		,custno nvarchar(20)
-		,cust nvarchar(50)
+		,tggno nvarchar(20)
+		,tgg nvarchar(50)
 		,noa nvarchar(20)
 		,datea nvarchar(10)
 		
@@ -47,8 +48,8 @@ z_rc2_rkp02:--z_rc2_rkp02   退貨  ref.z_vcc_rkp03
 	declare @bkdate nvarchar(10)
 	declare @noa nvarchar(20)
 	declare @bknoa nvarchar(20)
-	declare @custno nvarchar(20)
-	declare @cust nvarchar(50)
+	declare @tggno nvarchar(20)
+	declare @tgg nvarchar(50)
 	
 	declare @uno nvarchar(30)
 	declare @bkmount float
@@ -62,8 +63,8 @@ z_rc2_rkp02:--z_rc2_rkp02   退貨  ref.z_vcc_rkp03
 	declare cursor_table cursor for
 	select top 3 row_number()over(order by a.noq),b.datea,a.noa
 		,a.uno,a.mount,a.memo
-	from view_vccs a
-	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
 	where a.noa=@t_noa
 	and ISNULL(b.typea,'1')='2'--退貨
 	order by a.noq
@@ -75,24 +76,23 @@ z_rc2_rkp02:--z_rc2_rkp02   退貨  ref.z_vcc_rkp03
 		if LEN(ISNULL(@uno,''))>0
 		begin
 			select @product='',@size='',@mount=0
-				,@datea='',@noa='',@custno='',@cust=''
+				,@datea='',@noa='',@tggno='',@tgg=''
 			select @product=a.product
 				,@size= case when len(ISNULL(a.size,''))>0 then a.size
 					else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+ case when a.lengthb=0 then 'C' else CAST(a.lengthb as nvarchar) end
 					end
 				,@mount=a.mount
-				,@datea=b.datea,@noa=a.noa,@custno=b.custno,@cust=b.comp
-			from view_vccs a
-			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
-			where ISNULL(b.typea,'1')='1'
-			and b.datea<=@bkdate
+				,@datea=b.datea,@noa=a.noa,@tggno=b.tggno,@tgg=b.tgg
+			from view_rc2s a
+			left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+			where a.noa=@t_noa
 			and a.uno=@uno
-			
-			if not exists(select * from #z_vcc_rkp03)
+
+			if not exists(select * from #z_rc2_rkp02)
 			begin
-				insert into #z_vcc_rkp03(gno,noa,bknoa,custno,cust,datea,bkdate)values('1',@noa,@bknoa,@custno,@cust,@datea,@bkdate)
+				insert into #z_rc2_rkp02(gno,noa,bknoa,tggno,tgg,datea,bkdate)values('1',@noa,@bknoa,@tggno,@tgg,@datea,@bkdate)
 			end
-			set @cmd = "update #z_vcc_rkp03 set uno=@uno
+			set @cmd = "update #z_rc2_rkp02 set uno=@uno
 				,product0"+CAST(@n as nvarchar)+"=@product
 				,size0"+CAST(@n as nvarchar)+"=@size
 				,mount0"+CAST(@n as nvarchar)+"=@mount
@@ -109,7 +109,7 @@ z_rc2_rkp02:--z_rc2_rkp02   退貨  ref.z_vcc_rkp03
 
 	select gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
-		,cust a01
+		,tgg a01
 		,'' a02
 		,'' a03
 		,bknoa a04
