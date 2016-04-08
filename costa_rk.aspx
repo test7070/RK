@@ -20,7 +20,7 @@
             var q_name = "costa";
             var q_readonly = ['txtNoa','txtWages','txtMakeless','txtMoney'];
             var q_readonlys = [];
-            var bbmNum = [['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney',15,0,1]];
+            var bbmNum = [['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney',15,0,1],['txtPrice1',15,2,1],['txtPrice2',15,2,1],['txtPrice3',15,2,1]];
             var bbsNum = [['txtMount', 15, 2, 1],['txtPrice', 15, 2, 1],['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney', 15, 0, 1]];
             var bbmMask = [];
             var bbsMask = [];
@@ -400,14 +400,20 @@
 				<tr>
 					<td><span> </span><a id="lblWages" class="lbl">直接人工</a></td>
 					<td><input id="txtWages" type="text" class="txt num c1"/> </td>
+					<td><span> </span><a id="lblPrice1" class="lbl">水(度/元)</a></td>
+					<td><input id="txtPrice1" type="text" class="txt num c1"/> </td>
 				</tr>
 				<tr>
 					<td><span> </span><a id="lblMakeless" class="lbl">製造費用</a></td>
 					<td><input id="txtMakeless" type="text" class="txt num c1"/> </td>
+					<td><span> </span><a id="lblPrice2" class="lbl">電(度/元)</a></td>
+					<td><input id="txtPrice2" type="text" class="txt num c1"/> </td>
 				</tr>
 				<tr>
 					<td><span> </span><a id="lblMoney" class="lbl">變動成本</a></td>
 					<td><input id="txtMoney" type="text" class="txt num c1"/> </td>
+					<td><span> </span><a id="lblPrice3" class="lbl">瓦斯(KG/元)</a></td>
+					<td><input id="txtPrice3" type="text" class="txt num c1"/> </td>
 				</tr>
 			</table>
 		</div>	
@@ -418,9 +424,9 @@
 							<input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
 						</td>
 						<td style="width:20px;"> </td>
-						<td style="width:150px;" align="center">製造批號</td>
-						<td style="width:80px;" align="center">工時比率</td>
-						<td style="width:200px;" align="center">品名</td>
+						<td style="width:150px;display:none;" align="center">製造批號</td>
+						<td style="width:80px;display:none;" align="center">工時比率</td>
+						<td style="width:200px;display:none;" align="center">品名</td>
 						<td style="width:100px;" align="center">工作站</td>
 						<td style="width:100px;" align="center">直接人工</td>
 						<td style="width:100px;" align="center">製造費用</td>
@@ -432,9 +438,9 @@
 							<input id="txtNoq.*" type="text" style="display:none;"/>
 						</td>
 						<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
-						<td><input id="txtMakeno.*" type="text" style="float:left;width:95%;"/> </td>
-						<td><input id="txtMount.*" type="text" class="num" style="float:left;width:95%;"/> </td>
-						<td>
+						<td style="display:none;"><input id="txtMakeno.*" type="text" style="float:left;width:95%;"/> </td>
+						<td style="display:none;"><input id="txtMount.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="display:none;">
 							<input id="txtProductno.*" type="text" style="float:left;width:40%;"/> 
 							<input id="txtProduct.*" type="text" style="float:left;width:50%;"/>
 							<input id="btnProduct.*" type="button" style="display:none;"/>
