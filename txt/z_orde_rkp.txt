@@ -380,7 +380,6 @@ z_orde_rkp01:--z_orde_rkp01
 	declare @hard nvarchar(20)
 	declare @custpro nvarchar(20)
 	
-	
 	declare @string nvarchar(max)
 	declare @n int
 	
@@ -414,7 +413,8 @@ z_orde_rkp01:--z_orde_rkp01
 		pn nvarchar(50),
 		zinc nvarchar(20),
 		hard nvarchar(20),
-		coin nvarchar(20)
+		coin nvarchar(20),
+		tfax nvarchar(50)
 	)
 	select @t_quatno=quatno from view_orde where noa=@t_noa
 
@@ -466,15 +466,15 @@ z_orde_rkp01:--z_orde_rkp01
 			end
 			
 			insert into @tmp(gno,recno,noa,custpro,productno,product,dime,radius,width,lengthb,spec,scolor,class
-				,ucolor,[source],uno,mount,[weight],unit,unit2,price,po,pn,zinc,hard,coin)
+				,ucolor,[source],uno,mount,[weight],unit,unit2,price,po,pn,zinc,hard,coin,tfax)
 			values('2',@n,@noa,@custpro,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source,@uno,@mount,@weight
-				,@unit,@unit2,@price,@po,@pn,@zinc,@hard,@coin)
+				,@unit,@unit2,@price,@po,@pn,@zinc,@hard,@coin,@fax)
 			insert into @tmp(gno,recno,noa,custpro,productno,product,dime,radius,width,lengthb,spec,scolor,class
-				,ucolor,[source],uno,mount,[weight],unit,unit2,price,po,pn,zinc,hard,coin)
+				,ucolor,[source],uno,mount,[weight],unit,unit2,price,po,pn,zinc,hard,coin,tfax)
 			values('3',@n,@noa,@custpro,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@scolor,@class
 				,@ucolor,@source,@uno,@mount,@weight
-				,@unit,@unit2,@price,@po,@pn,@zinc,@hard,@coin)
+				,@unit,@unit2,@price,@po,@pn,@zinc,@hard,@coin,@fax)
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
@@ -566,6 +566,7 @@ z_orde_rkp01:--z_orde_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+bb+'</a>' bb
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cc+'</a>' cc
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dd+'</a>' dd
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+tfax+'</a>' tfax
 		,recno rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
