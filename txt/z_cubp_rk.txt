@@ -112,17 +112,33 @@ z_cubp_rk01:--z_cubp_rk01
 	Hard PE膜型號
 	Lengthb2 PE膜用量M
 	*/
-	declare @t_spec nvarchar(max)
-	declare @t_radius float
-	declare @t_lengthb float
-	declare @t_hard float
-	declare @t_lengthb2 float
-	
 	--總重, 分攤 物料用
 	declare @x_weight float = 0
 	select @x_weight = SUM(isnull([weight],0))
 	from view_cubs a
 	where noa = @t_noa
+	
+	--A01	接著劑
+	--A02	接著劑稀釋液
+	--A03	背漆
+	--A04	背漆稀釋液
+	--A05	面漆
+	declare @t_a01 float = 0
+	declare @t_a02 float = 0
+	declare @t_a03 float = 0
+	declare @t_a04 float = 0
+	declare @t_a05 float = 0
+	declare @t_pe nvarchar(20)
+	
+	select @t_a01=sum(case b.groupano when 'A01' then isnull(a.weight,0) else 0 end)
+		,@t_a02=sum(case b.groupano when 'A02' then isnull(a.weight,0) else 0 end)
+		,@t_a03=sum(case b.groupano when 'A03' then isnull(a.weight,0) else 0 end)
+		,@t_a04=sum(case b.groupano when 'A04' then isnull(a.weight,0) else 0 end)
+		,@t_a05=sum(case b.groupano when 'A05' then isnull(a.weight,0) else 0 end)
+	from view_cubu a
+	left join ucc b on a.productno=b.noa
+	left join uccga c on b.groupano=c.noa		
+	where a.noa=@t_noa
 	
 	set @n = 0
 	declare cursor_table cursor for
@@ -170,21 +186,10 @@ z_cubp_rk01:--z_cubp_rk01
 		where a.noa=@t_noa
 		and b.groupano='A01'
 		
-		select @t_need=sum(isnull(a.weight,0))
-		from view_cubu a
-		left join ucc b on a.productno=b.noa
-		left join uccga c on b.groupano=c.noa		
-		where a.noa=@t_noa
-		and b.groupano='A01'
-		
+		select @t_need = case when @x_weight!=0 then round(@t_a01 * @weight / @x_weight,2) else 0 end	
 		--A02	接著劑稀釋液
 		--edime 稀釋液用量/清洗(KG)
-		select @t_edime=sum(isnull(a.weight,0))
-		from view_cubu a
-		left join ucc b on a.productno=b.noa
-		left join uccga c on b.groupano=c.noa		
-		where a.noa=@t_noa
-		and b.groupano='A02'
+		select @t_edime = case when @x_weight!=0 then round(@t_a02 * @weight / @x_weight,2) else 0 end	
 		--A03	背漆
 		--bspec 背漆型號規格
 		--hmount 背漆重量
@@ -195,67 +200,44 @@ z_cubp_rk01:--z_cubp_rk01
 		where a.noa=@t_noa
 		and b.groupano='A03'
 		
-		select @t_hmount=sum(isnull(a.weight,0))
-		from view_cubu a
-		left join ucc b on a.productno=b.noa
-		left join uccga c on b.groupano=c.noa		
-		where a.noa=@t_noa
-		and b.groupano='A03'
+		select @t_hmount = case when @x_weight!=0 then round(@t_a03 * @weight / @x_weight,2) else 0 end	
 		--A04	背漆稀釋液
 		--wmount 背漆稀釋液總用量(KG)
-		select @t_wmount=sum(isnull(a.weight,0))
-		from view_cubu a
-		left join ucc b on a.productno=b.noa
-		left join uccga c on b.groupano=c.noa		
-		where a.noa=@t_noa
-		and b.groupano='A04'
+		select @t_wmount = case when @x_weight!=0 then round(@t_a04 * @weight / @x_weight,2) else 0 end	
 		--A05	面漆
 		--面漆 or PVC
-		select @t_spec='',@t_radius=0,@t_lengthb=0,@t_hard='',@t_lengthb2=0
-		if exists(select top 1 *
-			from view_cubu a
-			left join ucc b on a.productno=b.noa
-			left join uccga c on b.groupano=c.noa		
-			where a.noa=@t_noa
-			and b.groupano='A05')
-		begin
-			select top 1 @t_spec=a.product
-			from view_cubu a
-			left join ucc b on a.productno=b.noa
-			left join uccga c on b.groupano=c.noa		
-			where a.noa=@t_noa
-			and b.groupano='A05'
-		
-			select @t_hard=sum(isnull(a.weight,0))
-			from view_cubu a
-			left join ucc b on a.productno=b.noa
-			left join uccga c on b.groupano=c.noa		
-			where a.noa=@t_noa
-			and b.groupano='A05'
-		end
-		else
-		begin
-			select @t_spec=@spec,@t_radius=@radius,@t_lengthb=@lengthb,@t_hard=@hard,@t_lengthb2=@lengthb2
-		end
+		--select top 1 @spec=a.product
+		--from view_cubu a
+		--left join ucc b on a.productno=b.noa
+		--left join uccga c on b.groupano=c.noa		
+		--where a.noa=@t_noa
+		--and b.groupano='A05'
+	
+		select @hard = case when @x_weight!=0 then round(@t_a05 * @weight / @x_weight,2) else 0 end	
 		---------------------------------------------------------------------------------------------
 		--PVC 皮
-		select top 1 @t_spec = a.productno
+		select top 1 @spec = a.productno
 		from view_cubt a
-		where a.noa=@t_noa 
+		where a.noa=@noa and a.nor=@noq
 		and a.kind = '1'
 		
 		select @hard = SUM(ISNULL(a.mount,0)),@lengthb2=SUM(ISNULL(a.[weight],0))
 		from view_cubt a
-		where a.noa=@t_noa
+		where a.noa=@noa and a.nor=@noq
 		and a.kind = '1'
 		
 		--保護膜
-		select @t_pe_mount = SUM(ISNULL(a.mount,0)),@t_pe_weight=SUM(ISNULL(a.[weight],0))
+		select top 1 @t_pe = a.productno
 		from view_cubt a
-		where a.noa=@t_noa
+		where a.noa=@noa and a.nor=@noq
 		and a.kind = '2'
 		
-	
+		select @t_pe_mount = SUM(ISNULL(a.mount,0)),@t_pe_weight=SUM(ISNULL(a.[weight],0))
+		from view_cubt a
+		where a.noa=@noa and a.nor=@noq
+		and a.kind = '2'
+		
+
 		set @n = @n + 1
 		set @key = RIGHT('00'+CAST(@n as nvarchar),2)
 		set @cmd = "update #z_cubp_rk01 set a"+@key+"=@ordeno+'-'+@no2
@@ -264,7 +246,7 @@ z_cubp_rk01:--z_cubp_rk01
 			,d"+@key+"=@size
 			,e"+@key+"=cast(@dime as nvarchar)+'X'+cast(@width as nvarchar)
 			,f"+@key+"=dbo.getComma(@weight,0)
-			,g"+@key+"=dbo.getComma(@bdime,0)
+			,g"+@key+"=@t_pe
 			,h"+@key+"=@productno2,i"+@key+"=@product2
 			,j"+@key+"=dbo.getComma(@edime,0)
 			,k"+@key+"=@bspec,l"+@key+"=dbo.getComma(@hmount,0)
@@ -293,18 +275,18 @@ z_cubp_rk01:--z_cubp_rk01
 			,@zinc nvarchar(30),@flower nvarchar(30),@w07 float,@w08 float
 			,@hweight float,@uno nvarchar(max)
 			,@oth nvarchar(max),@price float,@mount float,@btime nvarchar(max),@etime nvarchar(max)
-			,@need nvarchar(max),@t_pe_mount float,@t_pe_weight float'
+			,@need nvarchar(max),@t_pe_mount float,@t_pe_weight float,@t_pe nvarchar(20)'
 			,@ordeno=@ordeno,@no2=@no2,@comp=@comp
 			,@n=@n,@size=@size,@dime=@dime,@width=@width,@weight=@weight,@bdime=@t_bdime
 			,@productno2=@t_productno2,@product2=@t_product2,@edime=@t_edime
-			,@bspec=@t_bspec,@hmount=@t_hmount,@wmount=@t_wmount,@spec=@t_spec
-			,@radius=@t_radius,@lengthb=@t_lengthb,@hard=@t_hard,@lengthb2=@t_lengthb2,@source=@source
+			,@bspec=@t_bspec,@hmount=@t_hmount,@wmount=@t_wmount,@spec=@spec
+			,@radius=@radius,@lengthb=@lengthb,@hard=@hard,@lengthb2=@lengthb2,@source=@source
 			,@scolor=@scolor,@process=@process,@lengthc=@lengthc,@w06=@w06
 			,@zinc=@zinc,@flower=@flower,@w07=@w07,@w08=@w08
 			,@hweight=@hweight,@uno=@uno
 			,@oth=@oth,@price=@price,@mount=@mount,@btime=@btime,@etime=@etime,@need=@t_need
-			,@t_pe_mount=@t_pe_mount,@t_pe_weight=@t_pe_weight
-			
+			,@t_pe_mount=@t_pe_mount,@t_pe_weight=@t_pe_weight,@t_pe=@t_pe
+
 		fetch next from cursor_table
 		into @noa,@noq,@ordeno,@no2,@custno,@comp
 		,@size,@dime,@radius,@width,@lengthb,@weight,@bdime
@@ -317,6 +299,7 @@ z_cubp_rk01:--z_cubp_rk01
 	close cursor_table
 	deallocate cursor_table
 	---------------------------------------------------------------------------------------
+	
 	declare @reportno nvarchar(max) = '表單編號：LC-11-00-02-05'
 	select '0' gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
