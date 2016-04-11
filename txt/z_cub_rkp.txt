@@ -1475,10 +1475,13 @@ z_cub_rkp01:--z_cub_rkp01
 	--[6]
 	declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
 	--------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
-		gno nvarchar(10),
-		makeno nvarchar(20),
+		gno nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20),
 		custno nvarchar(20),
 		cust nvarchar(50),
 		dime float,
@@ -1551,56 +1554,157 @@ z_cub_rkp01:--z_cub_rkp01
 		
 		memo nvarchar(max)
 	)
-	insert into @tmp(gno,makeno,custno,cust,dime,radius,width,lengthb,pvc
-		,uno01,weight01,uno02,mount02,weight02
-		,uno03,productno03,mount03,weight03
-		,uno04,productno04,mount04,weight04)
-	select '1',a.makeno,a.custno,a.comp,a.dime,a.radius,a.width,a.lengthb,a.spec
+	insert into @tmp(noa,noq,gno,makeno,custno,cust,dime,radius,width,lengthb,pvc
+		,uno01,weight01)
+	select a.noa,a.noq,'1',a.makeno,a.custno,a.comp,a.dime,a.radius,a.width,a.lengthb,a.spec
 		,a.uno,a.[weight]
-		,a.uno2,a.hard,a.lengthb2
-		,a.uno3,a.scolor,a.lengthc,a.w06
-		,a.uno4,a.zinc,a.w07,a.w08
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_datea
 	
-	update @tmp set dime03=b.dime,width03=b.width,lengthb03=b.lengthb
+	update @tmp set price01 =ISNULL(b.sprice,0)
 	from @tmp a
-	left join view_uccb b on a.uno03=b.uno
-	update @tmp set dime04=b.dime,width04=b.width,lengthb04=b.lengthb
-	from @tmp a
-	left join view_uccb b on a.uno04=b.uno
-	--製造成本
-	IF OBJECT_ID('tempdb..#z_cub_rkp01')is not null
-	BEGIN
-		drop table #z_cub_rkp01
-	END
-	select * into #z_cub_rkp01 from dbo.makeno2(@t_datea,1)
+	left join view_uccb b on a.uno01=b.uno
+	update @tmp set [money01] = ROUND(isnull([weight01],0)*isnull(price01,0),0)
+	-------------------------------------------------------------------------------------------
+	--皮膜
+	declare @tmpa table(
+		sel int identity(1,1)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,mount float
+		,[weight] float
+		,price float
+		,[money] float
+	)
+	insert into @tmpa(noa,noq,uno,productno,product,mount,[weight])
+	select a.noa,a.noq,c.uno,c.productno,c.product,c.mount,c.[weight]
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_cubt c on a.accy=c.accy and a.noa=c.noa and a.noq=c.nor
+	where b.datea<=@t_datea
+	and c.kind = '1'
 	
-	update @tmp set price01 =b.price1,money01=ISNULL(b.money1,0)--coil
-		,price02=b.price2,money02=ISNULL(b.money2,0)
-		,price03=b.price3,money03=ISNULL(b.money3,0)
-		,price04=b.price4,money04=ISNULL(b.money4,0)
-		,weight05=b.wwa01,money05=b.mma01,price05=case when b.wwa01=0 then 0 else ROUND(b.mma01/b.wwa01,2) end--A01 接著劑
-		,weight06=b.wwa02,money06=b.mma02,price06=case when b.wwa02=0 then 0 else ROUND(b.mma02/b.wwa02,2) end--A02 接著劑稀釋劑	
-		,weight07=b.wwa03,money07=b.mma03,price07=case when b.wwa03=0 then 0 else ROUND(b.mma03/b.wwa03,2) end--A03 背漆
-		,weight08=b.wwa04,money08=b.mma04,price08=case when b.wwa04=0 then 0 else ROUND(b.mma04/b.wwa04,2) end--A04 背漆稀釋液
-		,weight09=b.wwa05,money09=b.mma05,price09=case when b.wwa05=0 then 0 else ROUND(b.mma05/b.wwa05,2) end--A05 面漆
+	update @tmpa set price =ISNULL(b.sprice,0),dime=b.dime,width=b.width,lengthb=b.lengthb
+	from @tmpa a
+	left join view_uccb b on a.uno=b.uno
+	update @tmpa set [money] = ROUND(isnull([weight],0)*isnull(price,0),0)
+	--保護膜
+	declare @tmpb table(
+		sel int identity(1,1)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,mount float
+		,[weight] float
+		,price float
+		,[money] float
+		
+	)
+	insert into @tmpb(noa,noq,uno,productno,product,mount,[weight])
+	select a.noa,a.noq,c.uno,c.productno,c.product,c.mount,c.[weight]
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_cubt c on a.accy=c.accy and a.noa=c.noa and a.noq=c.nor
+	where b.datea<=@t_datea
+	and c.kind = '2'
+	
+	update @tmpb set price =ISNULL(b.sprice,0),dime=b.dime,width=b.width,lengthb=b.lengthb
+	from @tmpb a
+	left join view_uccb b on a.uno=b.uno
+	update @tmpb set [money] = ROUND(isnull([weight],0)*isnull(price,0),0)
+	---------------------------------------------
+	update @tmp set mount02 = ISNULL(b.mount,0),weight02 = ISNULL(b.[weight],0),money02=ISNULL(b.[money],0)
+	from @tmp a
+	left join (select noa,noq,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([money],0)) [money] from @tmpa group by noa,noq) b 
+		on a.noa=b.noa and a.noq=b.noq
+	
+	update @tmp set mount03 = ISNULL(b.mount,0),weight03 = ISNULL(b.[weight],0),money03=ISNULL(b.[money],0)
+	from @tmp a
+	left join (select noa,noq,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([money],0)) [money] from @tmpb group by noa,noq) b 
+		on a.noa=b.noa and a.noq=b.noq
+	
+	update @tmp set price02 = case when weight02!=0 then ROUND(money02/weight02,2) else 0 end
+		,price03 = case when weight03!=0 then ROUND(money03/weight03,2) else 0 end
+
+	--物料  (依重量平均分攤)
+	declare @tmpc table(
+		sel int identity(1,1)
+		,noa nvarchar(20)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(20)
+		,typea nvarchar(20)
+		,mount float
+		,[weight] float
+		,price float
+		,[money] float
+	)
+	insert into @tmpc(noa,uno,productno,product,typea,mount,[weight])
+	select a.noa,a.uno,a.productno,a.product,c.groupano,a.mount,a.[weight]
+	from view_cubt a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join ucc c on a.productno=c.noa
+	where b.datea<=@t_datea
+	
+	update @tmpc set price =ISNULL(b.sprice,0)
+	from @tmpc a
+	left join view_uccb b on a.uno=b.uno
+	update @tmpc set [money] = ROUND(isnull([weight],0)*isnull(price,0),0)
+	
+	update @tmp set weight05= case when b.[weight]!=0 then round(weight01*a01/b.[weight],2) else 0 end
+		,weight06= case when b.[weight]!=0 then round(weight01*a02/b.[weight],2) else 0 end
+		,weight07= case when b.[weight]!=0 then round(weight01*a03/b.[weight],2) else 0 end
+		,weight08= case when b.[weight]!=0 then round(weight01*a04/b.[weight],2) else 0 end
+		,weight09= case when b.[weight]!=0 then round(weight01*a05/b.[weight],2) else 0 end
+		
+		,money05= case when b.[weight]!=0 then round(weight01*m01/b.[weight],2) else 0 end
+		,money06= case when b.[weight]!=0 then round(weight01*m02/b.[weight],2) else 0 end
+		,money07= case when b.[weight]!=0 then round(weight01*m03/b.[weight],2) else 0 end
+		,money08= case when b.[weight]!=0 then round(weight01*m04/b.[weight],2) else 0 end
+		,money09= case when b.[weight]!=0 then round(weight01*m05/b.[weight],2) else 0 end
+	from @tmp a
+	left join (select noa,SUM(ISNULL([weight01],0)) [weight] from @tmp group by noa) b on a.noa=b.noa
+	left join (select noa
+		,SUM(case typea when 'A01' then isnull([weight],0) else 0 end) a01
+		,SUM(case typea when 'A02' then isnull([weight],0) else 0 end) a02
+		,SUM(case typea when 'A03' then isnull([weight],0) else 0 end) a03
+		,SUM(case typea when 'A04' then isnull([weight],0) else 0 end) a04
+		,SUM(case typea when 'A05' then isnull([weight],0) else 0 end) a05
+		
+		,SUM(case typea when 'A01' then isnull([money],0) else 0 end) m01
+		,SUM(case typea when 'A02' then isnull([money],0) else 0 end) m02
+		,SUM(case typea when 'A03' then isnull([money],0) else 0 end) m03
+		,SUM(case typea when 'A04' then isnull([money],0) else 0 end) m04
+		,SUM(case typea when 'A05' then isnull([money],0) else 0 end) m05 
+		from @tmpc group by noa) c on a.noa=c.noa
+	update @tmp set price05 = case when weight05!=0 then ROUND(money05/weight05,2) else 0 end
+		,price06 = case when weight06!=0 then ROUND(money06/weight05,2) else 0 end
+		,price07 = case when weight07!=0 then ROUND(money07/weight05,2) else 0 end
+		,price08 = case when weight08!=0 then ROUND(money08/weight05,2) else 0 end
+		,price09 = case when weight09!=0 then ROUND(money09/weight05,2) else 0 end
+	
 		--投入重量
-		,weight10=ISNULL(b.weight1,0)+ISNULL(b.weight2,0)+ISNULL(b.weight3,0)+ISNULL(b.weight4,0)
-			+isnull(b.wwa01,0)+isnull(b.wwa02,0)+isnull(b.wwa03,0)+isnull(b.wwa04,0)+isnull(b.wwa05,0)
-		,money10=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)
-			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)+ISNULL(b.money4,0)--半成品金額
-		--,weight11=b.weight02--完工重量
-		---,money11=ISNULL(b.wages01,0)+ISNULL(b.wages02,0)+ISNULL(b.wages03,0)+ISNULL(b.wages04,0)+ISNULL(b.wages05,0)+ISNULL(b.wages06,0)+ISNULL(b.wages07,0)--直接人工
-		--,money12=ISNULL(b.makeless01,0)+ISNULL(b.makeless02,0)+ISNULL(b.makeless03,0)+ISNULL(b.makeless04,0)+ISNULL(b.makeless05,0)+ISNULL(b.makeless06,0)+ISNULL(b.makeless07,0)--製造費用
-		--,weight12=b.weight03--成品重量
-	from @tmp a
-	left join #z_cub_rkp01 b on a.makeno=b.makeno
+		update @tmp set weight10 = ISNULL(weight01,0)+ISNULL(weight02,0)+ISNULL(weight03,0)
+			+ISNULL(weight05,0)+ISNULL(weight06,0)+ISNULL(weight07,0)+ISNULL(weight08,0)+ISNULL(weight09,0)
+			,money10 = ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
+			+ISNULL(money05,0)+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
+		
 	
-	update @tmp set weight12 = isnull(b.[weight],0)
-	from @tmp a
-	left join (select cname makeno,SUM(ISNULL([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.makeno
+	--update @tmp set weight12 = isnull(b.[weight],0)
+	--from @tmp a
+	--left join (select cname makeno,SUM(ISNULL([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.makeno
 	
 	update @tmp set money13=ISNULL(money10,0)+ISNULL(money11,0)+ISNULL(money12,0)
 	--合計
@@ -1684,8 +1788,7 @@ z_cub_rkp01:--z_cub_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price10,-1)+'</a>' a53
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a54
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a55
-	from @tmp
-	drop table #z_cub_rkp01;
+	from @tmp;
 	
 z_cub_rkp02:--z_cub_rkp02	
 	SET QUOTED_IDENTIFIER OFF
