@@ -19,7 +19,7 @@
 			var toIns = true;
 			var q_name = "cub";
 			var q_readonly = ['txtNoa','txtWorker','txtWorker2'];
-			var q_readonlys = ['txtCustno','txtComp','txtNoq','txtMakeno'];
+			var q_readonlys = ['txtNoq','txtMakeno'];
 			var q_readonlyt = ['txtNoq'];
 			var bbmNum = [];
 			var bbsNum = [];
@@ -36,9 +36,9 @@
 			brwCount2 = 5;
 			aPop = new Array(
 				['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', '0txtProductno_,txtProduct_', 'ucc_b.aspx']
-				,['txtCustno_', 'btnCustno_', 'cust', 'noa,nick', 'txtCustno_', 'cust_b.aspx']
+				,['txtCustno_', 'btnCust_', 'cust', 'noa,nick', 'txtCustno_,txtComp_', 'cust_b.aspx']
 				,['txtSpec_', 'btnSpec_', 'spec', 'noa,product', 'txtSpec_', 'spec_b.aspx']
-				,['txtProductno__', 'btnProduct__', 'bcc', 'noa,product', 'txtProductno__,txtProduct__', 'bcc_b.aspx']
+				,['txtProductno__', 'btnProduct__', 'ucc', 'noa,product', 'txtProductno__,txtProduct__', 'ucc_b.aspx']
 				,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtProcess_', 'ucc_b.aspx']
             	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtFlower_', 'ucc_b.aspx']
             	,['txtUno__', 'btnUno__', 'view_uccc2', 'uno,productno,product', '0txtUno__,txtProductno__,txtProduct__', 'uccc_seek_b2.aspx?;;;1=0', '95%', '95%']
@@ -170,7 +170,11 @@
                 					var t_density = 0,t_mount = q_float('txtMount__'+t_para.n);
                     				var as = _q_appendData("ucc", "", true);
 			                		if (as[0] != undefined) {
-		                				t_density = parseFloat(as[0].density);
+		                				try{
+		                					t_density = parseFloat(as[0].density);
+			                			}catch(e){
+			                				t_density = 0;
+			                			}
 			                		}
 			                		$('#txtWeight__'+t_para.n).val(round(q_mul(t_density,t_mount),0));
 		                		}catch(e){
@@ -464,7 +468,14 @@
                             var n = $(this).attr('id').replace('txtZinc_', '');
                             $('#btnZinc_'+n).click();
                         });
-                        
+                        $('#txtCustno_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            if(!(q_cur==1 || q_cur==2))
+								return;
+                            var n = $(this).attr('id').replace('txtCustno_', '');
+                            $('#btnCust_'+n).click();
+                        });
 					}
 				}
 				_bbsAssign();
