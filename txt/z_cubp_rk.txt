@@ -168,14 +168,14 @@ z_cubp_rk01:--z_cubp_rk01
 		left join ucc b on a.productno=b.noa
 		left join uccga c on b.groupano=c.noa		
 		where a.noa=@t_noa
-		and c.namea='接著劑'
+		and b.groupano='A01'
 		
 		select @t_need=sum(isnull(a.weight,0))
 		from view_cubu a
 		left join ucc b on a.productno=b.noa
 		left join uccga c on b.groupano=c.noa		
 		where a.noa=@t_noa
-		and c.namea='接著劑'
+		and b.groupano='A01'
 		
 		--A02	接著劑稀釋液
 		--edime 稀釋液用量/清洗(KG)
@@ -184,7 +184,7 @@ z_cubp_rk01:--z_cubp_rk01
 		left join ucc b on a.productno=b.noa
 		left join uccga c on b.groupano=c.noa		
 		where a.noa=@t_noa
-		and c.namea='接著劑稀釋液'
+		and b.groupano='A02'
 		--A03	背漆
 		--bspec 背漆型號規格
 		--hmount 背漆重量
@@ -193,14 +193,14 @@ z_cubp_rk01:--z_cubp_rk01
 		left join ucc b on a.productno=b.noa
 		left join uccga c on b.groupano=c.noa		
 		where a.noa=@t_noa
-		and c.namea='背漆'
+		and b.groupano='A03'
 		
 		select @t_hmount=sum(isnull(a.weight,0))
 		from view_cubu a
 		left join ucc b on a.productno=b.noa
 		left join uccga c on b.groupano=c.noa		
 		where a.noa=@t_noa
-		and c.namea='背漆'
+		and b.groupano='A03'
 		--A04	背漆稀釋液
 		--wmount 背漆稀釋液總用量(KG)
 		select @t_wmount=sum(isnull(a.weight,0))
@@ -208,7 +208,7 @@ z_cubp_rk01:--z_cubp_rk01
 		left join ucc b on a.productno=b.noa
 		left join uccga c on b.groupano=c.noa		
 		where a.noa=@t_noa
-		and c.namea='背漆稀釋液'
+		and b.groupano='A04'
 		--A05	面漆
 		--面漆 or PVC
 		select @t_spec='',@t_radius=0,@t_lengthb=0,@t_hard='',@t_lengthb2=0
@@ -217,21 +217,21 @@ z_cubp_rk01:--z_cubp_rk01
 			left join ucc b on a.productno=b.noa
 			left join uccga c on b.groupano=c.noa		
 			where a.noa=@t_noa
-			and c.namea='面漆')
+			and b.groupano='A05')
 		begin
 			select top 1 @t_spec=a.product
 			from view_cubu a
 			left join ucc b on a.productno=b.noa
 			left join uccga c on b.groupano=c.noa		
 			where a.noa=@t_noa
-			and c.namea='面漆'
+			and b.groupano='A05'
 		
 			select @t_hard=sum(isnull(a.weight,0))
 			from view_cubu a
 			left join ucc b on a.productno=b.noa
 			left join uccga c on b.groupano=c.noa		
 			where a.noa=@t_noa
-			and c.namea='面漆'
+			and b.groupano='A05'
 		end
 		else
 		begin
