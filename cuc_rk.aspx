@@ -29,7 +29,7 @@
             brwKey = 'Noa';
             brwCount2 = 4;
             aPop = new Array(['txtMechno', 'lblMechno', 'mech', 'noa,mech', 'txtMechno,txtMech', 'mech_b.aspx']
-            , ['txtCustno', 'btnCustno', 'cust', 'noa,comp', 'txtCustno,txtCust', 'cust_b.aspx']);
+            , ['txtCustno_', 'btnCust_', 'cust', 'noa,nick', 'txtCustno_,txtCust_', 'cust_b.aspx']);
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'noq'];
@@ -110,8 +110,8 @@
                 	case 'orde_cuc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtSpec,txtClass,txtSize,txtCubno'
-                        	, as.length, as, 'noa,no2,spec,class,size,makeno', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtCust,txtSpec,txtClass,txtSize,txtCubno'
+                        	, as.length, as, 'noa,no2,custno,nick,spec,class,size,makeno', '','');             	
                         }else{
                         	Unlock(1);
                         }
@@ -262,6 +262,14 @@
 							var t_noa = $('#txtNoa').val();
 		                	var t_where ='';
 		                	q_box("cng_cub_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cucno:t_noa,n:n,page:'cuc_rk'}), "cng_cuc_"+n, "95%", "95%", '');
+                        });
+                        $('#txtCustno_'+i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace('txtCustno_', '');
+							if(!(q_cur==1 || q_cur==2))
+								return;
+							$('#btnCust_'+n).click();
                         });
                     }
                 }
@@ -571,6 +579,7 @@
 					<td style="width:20px;"></td>
 					<td style="width:20px;"></td>
 					<td style="width:200px;"></td>
+					<td style="width:100px;"></td>
 					<td style="width:60px;"></td>
 					<td style="width:150px;"></td>
 					<td style="width:80px;"></td>
@@ -602,6 +611,7 @@
 					<td rowspan="2"><input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/></td>
 					<td rowspan="2">項<BR>次</td>
 					<td>訂單號碼</td>
+					<td rowspan="2">客戶</td>
 					<td rowspan="2">皮膜<BR>編號</td>
 					<td rowspan="2">COIL編號</td>
 					<td rowspan="2">半成品<BR>進料<BR>重量(KG)</td>
@@ -645,6 +655,7 @@
 					<td style="width:20px;"></td>
 					<td style="width:20px;"></td>
 					<td style="width:200px;"></td>
+					<td style="width:100px;"></td>
 					<td style="width:60px;"></td>
 					<td style="width:150px;"></td>
 					<td style="width:80px;"></td>
@@ -682,6 +693,11 @@
 						<input id="txtOrdeno.*" type="text" style="float:left;width:72%;"/>
 						<input id="txtNo2.*" type="text" style="float:left;width:20%;"/>
 						<input id="txtCubno.*" type="text" style="float:left;width:95%;"/>
+					</td>
+					<td>
+						<input id="txtCustno.*" type="text" style="float:left;width:95%;"/>
+						<input id="txtCust.*" type="text" style="float:left;width:95%;"/>
+						<input id="btnCust.*" type="button" style="display:none;"/>
 					</td>
 					<td><input id="txtSpec.*" type="text" style="float:left;width:95%;"/></td>
 					<td><input id="txtUno.*" type="text" style="float:left;width:95%;"/></td>
