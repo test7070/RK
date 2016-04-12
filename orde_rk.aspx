@@ -829,8 +829,8 @@
 					<td><input id="txtLengthb.*" type="text" class="txt c1 num"/></td>
 					<td><select id='cmbSpec.*' style="width:95%;" class="txt c1"> </select></td>
 					<td>
-						<input id="txtScolor.*" type="text" style="width:45%"/>
-						<input id="txtClass.*" type="text" style="width:45%"/>
+						<input id="txtScolor.*" type="text" style="width:95%"/>
+						<input id="txtClass.*" type="text" style="width:95%"/>
 						<input id="btnScolor.*" type="button" style="display:none;"/>
 					</td>
 					<td><input id="txtUcolor.*" type="text" class="txt c1"/></td>

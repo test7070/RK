@@ -97,8 +97,8 @@
 					<td align="center" style="width:5%;">單位</td>
 					<td align="center" style="width:10%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
-					<td align="center" style="width:5%;">保護膜(一)</td>
-					<td align="center" style="width:5%;">保護膜(二)</td>
+					<td align="center" style="width:10%;">保護膜</td>
+					<!--<td align="center" style="width:5%;">保護膜(二)</td>-->
 					<td align="center" style="width:5%;">數量</td>
 					<td align="center" style="width:5%;">重量</td>
 					<td align="center" style="width:5%;">單價</td>
@@ -120,8 +120,8 @@
 					<td align="center" style="width:5%;">單位</td>
 					<td align="center" style="width:10%;">皮膜</td>
 					<td align="center" style="width:5%;">背面<br>處理</td>
-					<td align="center" style="width:5%;">保護膜(一)</td>
-					<td align="center" style="width:5%;">保護膜(二)</td>
+					<td align="center" style="width:10%;">保護膜</td>
+					<!--<td align="center" style="width:5%;">保護膜(二)</td>-->
 					<td align="center" style="width:5%;">數量</td>
 					<td align="center" style="width:5%;">重量</td>
 					<td align="center" style="width:5%;">單價</td>
@@ -146,18 +146,18 @@
 					<td style="width:5%;"><input id="txtLengthb.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtUnit.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:10%;">
-						<input id="txtSpec.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
-						<input id="txtClass.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
+						<input id="txtPvcno.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
+						<input id="txtPvc.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;">
-						<input id="txtScolor.*" type="text" style="display:none;"  readonly="readonly" />
-						<input id="txtProcess.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
+						<input id="txtPeno.*" type="text" style="display:none;"  readonly="readonly" />
+						<input id="txtPe.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
 					</td>
-					<td style="width:5%;">
+					<!--<td style="width:5%;">
 						<input id="txtZinc.*" type="text" style="display:none;"  readonly="readonly" />
 						<input id="txtFlower.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
-					</td>
+					</td>-->
 					<td style="width:5%;"><input id="txtMount.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtWeight.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtPrice.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
