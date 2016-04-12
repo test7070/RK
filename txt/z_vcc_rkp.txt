@@ -73,8 +73,8 @@ z_vcc_rkp03:--z_vcc_rkp03
 	into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
 	while(@@FETCH_STATUS <> -1)
 	begin	
-		if LEN(ISNULL(@uno,''))>0
-		begin
+		--if LEN(ISNULL(@uno,''))>0
+		--begin
 			select @product='',@size='',@mount=0
 				,@datea='',@noa='',@custno='',@cust=''
 			select @product=a.product
@@ -100,7 +100,7 @@ z_vcc_rkp03:--z_vcc_rkp03
 				,memo0"+CAST(@n as nvarchar)+"=@memo"
 			execute sp_executesql @cmd,N'@uno nvarchar(30),@product nvarchar(50),@size nvarchar(50),@mount float,@bkmount float,@memo nvarchar(max)'
 				,@uno=@uno,@product=@product,@size=@size,@mount=@mount,@bkmount=@bkmount,@memo=@memo
-		end
+		--end
 		fetch next from cursor_table
 		into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
 	end

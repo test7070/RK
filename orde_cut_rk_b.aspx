@@ -135,7 +135,7 @@
 						<input id="txtNoa.*" type="text" style="display:none;"  readonly="readonly" />
 						<input id="txtNo2.*" type="text" style="display:none;"  readonly="readonly" />
 					</td>
-					<td style="width:5%;"><input id="txtNick.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:5%;"><input id="txtComp.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:10%;">
 						<input id="txtProductno.*" type="text" style="float:left;width:25%;"  readonly="readonly" />
 						<input id="txtProduct.*" type="text" style="float:left;width:60%;"  readonly="readonly" />
@@ -150,7 +150,7 @@
 						<input id="txtPvc.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 					</td>
 					<td style="width:5%;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:5%;">
+					<td style="width:10%;">
 						<input id="txtPeno.*" type="text" style="display:none;"  readonly="readonly" />
 						<input id="txtPe.*" type="text" style="float:left;width:100%;"  readonly="readonly" />
 					</td>
