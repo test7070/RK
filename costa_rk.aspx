@@ -159,21 +159,22 @@
             function bbsSave(as) {
             	var chkNum = false;
             	try{
-            		var t_mount = $.trim(as['mount']);
-            		var t_price = $.trim(as['price']);
-            		t_mount = t_mount.replace(',','');
-            		t_price = t_price.replace(',','');
-            		t_mount = t_mount.length==0?0:parseFloat(t_mount);
-            		t_price = t_price.length==0?0:parseFloat(t_price);
+            		var t_wages = $.trim(as['wages']);
+            		var t_makeless = $.trim(as['makeless']);
+            		var t_money = $.trim(as['money']);
+            		t_wages = t_wages.replace(',','');
+            		t_makeless = t_makeless.replace(',','');
+            		t_money = t_money.replace(',','');
             		
-            		//console.log(t_mount+'_'+t_price);
-            		//console.log(as['mount']+'_'+as['price']);
-            		if(t_mount!=0 || t_price!=0)
+            		t_wages = t_wages.length==0?0:parseFloat(t_wages);
+            		t_makeless = t_makeless.length==0?0:parseFloat(t_makeless);
+            		t_money = t_money.length==0?0:parseFloat(t_money);
+            		
+            		if(t_wages!=0 || t_makeless!=0 || t_money!=0)
             			chkNum = true;
             	}catch(e){}
-            	
-            	
-                if (!as['productno'] && !as['product'] && !as['acc1'] && !as['acc2'] && !chkNum) {
+            	           	
+                if (!chkNum) {
                     as[bbsKey[1]] = '';
                     return;
                 }

@@ -662,11 +662,13 @@
 					<tr>
 						<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
 						<td style="width:100px; color:black;"><a id='vewDatea'> </a></td>
-						<td style="width:200px; color:black;"><a id='vewComp'> </a></td>
+						<td style="width:100px; color:black;"><a id='vewNoa'> </a></td>
+						<td style="width:100px; color:black;"><a id='vewComp'> </a></td>
 					</tr>
 					<tr>
 						<td><input id="chkBrow.*" type="checkbox" style=' '/></td>
 						<td align="center" id='datea'>~datea</td>
+						<td align="center" id='noa'>~noa</td>
 						<td align="center" id='nick'>~nick</td>
 					</tr>
 				</table>
