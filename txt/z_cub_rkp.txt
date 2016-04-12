@@ -1796,20 +1796,20 @@ z_cub_rkp02:--z_cub_rkp02
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
+		cubno nvarchar(20),
+		cubnoq nvarchar(10),
 		gno nvarchar(10),
 		dime float,
 		radius float,
 		width float,
 		lengthb float,
-		pvc nvarchar(20),
 		makeno nvarchar(20),
 		custno nvarchar(20),
 		cust nvarchar(50),
-		spec nvarchar(20),
-		peno1 nvarchar(20),--保護膜1
-		pe1 nvarchar(20),
-		peno2 nvarchar(20),--保護膜2
-		pe2 nvarchar(20),
+		pvcno nvarchar(20),--皮膜
+		pvc nvarchar(20),
+		peno nvarchar(20),--保護膜
+		pe nvarchar(20),
 		timea float,
 		weight01 float,--投入重量
 		weight02 float,--完工重量
@@ -1825,25 +1825,34 @@ z_cub_rkp02:--z_cub_rkp02
 		
 		memo nvarchar(max)
 	)
-	insert into @tmp(gno,dime,radius,width,lengthb,pvc,makeno,custno,cust,spec,peno1,pe1,peno2,pe2,timea,weight02)
-	select '1',a.dime,a.radius,a.width,a.lengthb,a.spec,a.makeno,a.custno,a.comp,c.spec
-		,a.scolor,a.process,a.zinc,a.flower,a.mins,a.hweight
+	insert into @tmp(cubno,cubnoq,gno,dime,radius,width,lengthb
+		,makeno,custno,cust,timea,weight02)
+	select a.noa,a.noq, '1',a.dime,a.radius,a.width,a.lengthb
+		,a.makeno,a.custno,a.comp
+		,a.mins,a.hweight
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<=@t_datea
+	
+	--皮膜、保護膜
+	update @tmp set pvcno=ISNULL(b.productno,''),pvc=ISNULL(b.product,'')
+	from @tmp a
+	outer apply (select top 1 productno,product from view_cubt where noa=a.cubno and nor=a.cubnoq and kind='1' order by noq) b
+	update @tmp set peno=ISNULL(b.productno,''),pe=ISNULL(b.product,'')
+	from @tmp a
+	outer apply (select top 1 productno,product from view_cubt where noa=a.cubno and nor=a.cubnoq and kind='2' order by noq) b
+	
 	--製造成本
 	IF OBJECT_ID('tempdb..#z_cub_rkp02')is not null
 	BEGIN
 		drop table #z_cub_rkp02
 	END
-	select * into #z_cub_rkp02 from dbo.makeno2(@t_datea,1)
+	select * into #z_cub_rkp02 from dbo.makeno(@t_datea,1)
 	
-	update @tmp set weight01=ISNULL(b.weight1,0)+ISNULL(b.weight2,0)+ISNULL(b.weight3,0)+ISNULL(b.weight4,0)
-			+isnull(b.wwa01,0)+isnull(b.wwa02,0)+isnull(b.wwa03,0)+isnull(b.wwa04,0)+isnull(b.wwa05,0)--投入重量
-
-		,money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)
-			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)+ISNULL(b.money4,0)--半成品金額
+	update @tmp set weight01=b.totweight1
+		,weight02=b.totweight2
+		,money01=b.totmoney1
 		,money02=ISNULL(b.wages01,0)--直接人工金額
 		,money03=ISNULL(b.makeless01,0)--製造費用金額
 	from @tmp a
@@ -1861,33 +1870,32 @@ z_cub_rkp02:--z_cub_rkp02
 		,rate03 = case when money04=0 then 0 else ROUND(money03/money04*100,2) end
 		,price01 = case when weight02=0 then 0 else ROUND((isnull(money02,0)+isnull(money03,0))/weight02,2) end
 		,price02 = case when weight02=0 then 0 else ROUND(money04/weight02,2) end
-	
+
 	select gno
+		,row_number()over(order by gno,makeno) rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar)+'</a>' rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(dime as nvarchar)+'</a>' a01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(radius as nvarchar)+'</a>' a02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(width as nvarchar)+'</a>' a03
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(lengthb as nvarchar)+'</a>' a04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' a05
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a06
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a07
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' a08
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+peno1+'</a>' a09
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pe1+'</a>' a10
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+peno2+'</a>' a11
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pe2+'</a>' a12
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(timea as nvarchar)+'</a>' a13
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,-1)+'</a>' a14
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight02,-1)+'</a>' a15
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money01,0)+'</a>' a16
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a17
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money02,0)+'</a>' a18
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate02,-1)+'</a>' a19
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money03,0)+'</a>' a20
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate03,-1)+'</a>' a21
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money04,0)+'</a>' a22
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price01,-1)+'</a>' a23
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a24
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a05
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a06
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' a07
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' a08
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+peno+'</a>' a09
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pe+'</a>' a10
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(timea as nvarchar)+'</a>' a11
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,-1)+'</a>' a12
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight02,-1)+'</a>' a13
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money01,0)+'</a>' a14
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a15
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money02,0)+'</a>' a16
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate02,-1)+'</a>' a17
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money03,0)+'</a>' a18
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate03,-1)+'</a>' a19
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money04,0)+'</a>' a20
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price01,-1)+'</a>' a21
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a22
 	from @tmp
 	order by gno,makeno
 	drop table #z_cub_rkp02;
