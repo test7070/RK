@@ -1936,34 +1936,64 @@ z_cub_rkp05:--z_cub_rkp05
 		price02 float,--製成品單位成本
 		memo nvarchar(max)
 	)
-	insert into @tmp(gno,makeno,dime,size,spec,custno,cust,weight01,weight02)
+	insert into @tmp(gno,makeno,dime,size,custno,cust,weight01,weight02)
 	select '1',a.cname,a.dime
 		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when ISNULL(a.lengthb,0)=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
-		,a.spec,a.custno,REPLACE(a.comp,'~#$',"'")
-		,a.[weight],c.hweight
+		,c.custno,REPLACE(c.comp,'~#$',"'")
+		,sum(isnull(a.[weight],0)),sum(isnull(c.price,0))
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_cubs c on a.cname=c.makeno
-	left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
 	where b.datea<=@t_datea
+	group by a.cname,a.dime
+		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when ISNULL(a.lengthb,0)=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
+		,c.custno,REPLACE(c.comp,'~#$',"'")
+	
+	--皮膜、保護膜
+	update @tmp set spec=ISNULL(b.productno,'')--+ISNULL(b.product,'')
+	from @tmp a
+	outer apply (select top 1 y.productno,y.product 
+		from view_cubs x
+		left join view_cubt y on x.noa=y.noa and x.noq=y.nor
+		where a.makeno=x.makeno and y.kind='1' order by y.noq) b
+
 	--製造成本
 	IF OBJECT_ID('tempdb..#z_cub_rkp05')is not null
 	BEGIN
 		drop table #z_cub_rkp05
 	END
-	select * into #z_cub_rkp05 from dbo.makeno2(@t_datea,1)
+	select * into #z_cub_rkp05 from dbo.makeno(@t_datea,1)
 	
 	update @tmp set rate01= case when ISNULL(weight02,0)=0 then 0 else round((weight02-weight01)/weight02*100,2) end
 	
-	update @tmp set status01=case when c.typea='分條作業' then 1 else 0 end
-		,status02=case when c.typea='二呎裁切' then 1 else 0 end
-		,status03=case when c.typea='三呎裁切' then 1 else 0 end
-		,status06=case when c.typea='四呎裁切' then 1 else 0 end
+	update @tmp set status01=1 
 	from @tmp a
 	left join view_cucs b on a.makeno=b.cubno
 	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
 	where b.noa is not null
+	and c.typea='分條作業'
 	
+	update @tmp set status02=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='二呎裁切'
+	
+	update @tmp set status03=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='三呎裁切'
+	
+	update @tmp set status06=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='四呎裁切'
+
 	update @tmp set status04=1
 	from @tmp a
 	left join view_cubs b on a.makeno=b.memo
@@ -1971,23 +2001,23 @@ z_cub_rkp05:--z_cub_rkp05
 	--成本金額
 	update @tmp set
 		--在製品
-		money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)
-			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)+ISNULL(b.money4,0)
-			+ISNULL(b.wages01,0)+ISNULL(b.makeless01,0)
+		money01=case when c.weight01!=0 then round(ISNULL(b.totmoney1,0)*a.weight01/c.weight01,0) else 0 end
 		--分條
-		,money02=ISNULL(b.wages03,0)+ISNULL(b.makeless03,0)
+		,money02=case when c.weight01!=0 then round((ISNULL(b.wages03,0)+ISNULL(b.makeless03,0))*a.weight01/c.weight01,0) else 0 end
 		--2呎
-		,money03=ISNULL(b.wages04,0)+ISNULL(b.makeless04,0)
+		,money03=case when c.weight01!=0 then round((ISNULL(b.wages04,0)+ISNULL(b.makeless04,0))*a.weight01/c.weight01,0) else 0 end
 		--3呎
-		,money04=ISNULL(b.wages05,0)+ISNULL(b.makeless05,0)
+		,money04=case when c.weight01!=0 then round((ISNULL(b.wages05,0)+ISNULL(b.makeless05,0))*a.weight01/c.weight01,0) else 0 end
 		--4呎
-		,money07=ISNULL(b.wages06,0)+ISNULL(b.makeless06,0)
+		,money07=case when c.weight01!=0 then round((ISNULL(b.wages06,0)+ISNULL(b.makeless06,0))*a.weight01/c.weight01,0) else 0 end
 		--烘板
-		,money05=ISNULL(b.wages02,0)+ISNULL(b.makeless02,0)
+		,money05=case when c.weight01!=0 then round((ISNULL(b.wages02,0)+ISNULL(b.makeless02,0))*a.weight01/c.weight01,0) else 0 end
 		--10呎
-		,money08=ISNULL(b.wages07,0)+ISNULL(b.makeless07,0)
+		,money08=case when c.weight01!=0 then round((ISNULL(b.wages07,0)+ISNULL(b.makeless07,0))*a.weight01/c.weight01,0) else 0 end
 	from @tmp a
 	left join #z_cub_rkp05 b on a.makeno=b.makeno
+	left join (select makeno,SUM(ISNULL(weight01,0)) weight01 from @tmp group by makeno) c on a.makeno=c.makeno
+	
 	--加工成本合計
 	update @tmp set money09 = ISNULL(money02,0)+ISNULL(money03,0)+ISNULL(money04,0)+ISNULL(money05,0)
 		+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
