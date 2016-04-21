@@ -32,7 +32,7 @@
 						value : q_db
 					},{
 						type : '0', //[3]
-						name : 'db',
+						name : 'kind',
 						value : q_getPara('sys.stktype')
 					},{
 						type : '6', //[4]
