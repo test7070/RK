@@ -54,7 +54,16 @@
 	            $('<input id="btnOk2" type="button" value="查詢" style="font-size: 16px; font-weight: bold; color: blue; cursor: pointer;"/>').insertBefore('#btnOk');
             	$('#btnOk').hide();
             	$('#btnOk2').click(function(e){
-            		$('#btnOk').click();
+            		switch($('#q_report').data('info').radioIndex) {
+                        case 2:
+                        	window.open("./pdf_rklabel01.aspx?noa="+$('#txtNoa').val()+"&noq=&stktype="+q_getPara('sys.stktype')+"&db="+q_db);
+                        	
+                           // pdf_rklabel01(q_getPara('sys.stktype'),$('#txtNoa').val(),'');
+                            break;
+                        default:
+                           	$('#btnOk').click();
+                            break;
+                    }
             	});
             }
 
@@ -67,41 +76,21 @@
             
 			function q_gtPost(s2) {}
 			
-			function pdf_rc2_label(stype,cust,so,containerno,ordeno,bdate,edate){
+			function pdf_rklabel01(stktype,noa,noq){
+				console.log(JSON.stringify({stype:stktype,noa:noa,noq:noq}));
+				
 				$.ajax({
-					stype:stype,
-					cust:cust,
-					so:so,
-					containerno:containerno,
-					ordeno:ordeno,
-					bdate:bdate,
-					edate:edate,
-					totCount : 0,
-                    url: 'tranvcce_at_getcount.aspx',
+                    url: 'pdf_rklabel01.aspx',
                     headers: { 'database': q_db },
                     type: 'POST',
-                    data: JSON.stringify({stype:stype,cust:cust,so:so,containerno:containerno,ordeno:ordeno,bdate:bdate,edate:edate}),
+                    data: JSON.stringify({stktype:stktype,noa:noa,noq:noq}),
                     dataType: 'text',
                     timeout: 10000,
                     success: function(data){
-                    	try{
-                    		tmp = JSON.parse(data);
-                    		this.totCount = tmp.count;
-                    		console.log('tranvcce_at_getcount');
-                        	console.log(tmp.version);
-                    	}catch(e){
-                    	}
+                		console.log('pdf_rklabel01');
+                		window.location = 'pdf_rklabel01.aspx';
                     },
                     complete: function(){
-                    	var totPage = _pageCount>0?Math.floor((this.totCount-1)/_pageCount)+1:0;
-                    	$('#txtTotpage').val(totPage);
-                    	curPage = parseInt($('#txtCurpage').val());
-						curPage = isNaN(curPage)?1:curPage;
-						curPage = curPage<=0 || curPage>totPage ?1:curPage;
-						$('#txtCurpage').val(curPage);
-						var nstr = (curPage-1) * _pageCount + 1;
-						var nend = curPage * _pageCount;
-                    	loadData(nstr,nend,this.stype,this.cust,this.so,this.containerno,this.ordeno,this.bdate,this.edate);                  
                     },
                     error: function(jqXHR, exception) {
                         var errmsg = this.url+'資料讀取異常。\n';
