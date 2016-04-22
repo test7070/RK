@@ -50,6 +50,19 @@
 	            }else{
 	            	$('#txtNoa').val(t_para.noa);
 	            }
+	            
+	            $('<input id="btnOk2" type="button" value="查詢" style="font-size: 16px; font-weight: bold; color: blue; cursor: pointer;"/>').insertBefore('#btnOk');
+            	$('#btnOk').hide();
+            	$('#btnOk2').click(function(e){
+            		switch($('#q_report').data('info').radioIndex) {
+                        case 2:
+                        	window.open("./pdf_rklabel02.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
+                            break;
+                        default:
+                           	$('#btnOk').click();
+                            break;
+                    }
+            	});
             }
 
 			function q_funcPost(t_func, result) {

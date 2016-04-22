@@ -1,5 +1,6 @@
 <%@ Page Language="C#" Debug="true"%>
     <script language="c#" runat="server">     
+        //進貨標籤
         //LC-14-00-02-01
         public class ParaIn
         {

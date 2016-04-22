@@ -915,7 +915,7 @@
 						<input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
 					</td>
 					<td style="width:20px;"></td>
-					<td align="center" style="width:40px;">棧板<br>編號</td>
+					<td align="center" style="width:50px;">棧板<br>編號</td>
 					<td style="width:200px;">批號</td>
 					<td style="width:200px;">品名</td>
 					<td style="width:60px;">厚</td>
