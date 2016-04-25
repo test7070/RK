@@ -1551,7 +1551,6 @@
 					<td>
 					<input class="txt c1" id="txtSource.*" type="text"  />
 					</td>
-
 					<td>
 					<input class="txt num c1 RK_hide" id="txtInmount.*" type="text"  />
 					<input class="txt num c1" id="txtMount.*" type="text"  />
