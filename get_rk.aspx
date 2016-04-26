@@ -21,7 +21,7 @@
 
 			q_tables = 's';
 			var q_name = "get";
-			var q_readonly = ['txtNoa', 'txtWorker','txtComp','txtStore','txtWorker2','txtWeight'];
+			var q_readonly = ['txtNoa', 'txtWorker','txtComp','txtStore','txtWorker2'];
 			var q_readonlys = [];
 			var bbmNum = [];
 			var bbsNum = [];
@@ -47,16 +47,9 @@
 				var t_n = $('#cmbTypea').val()=='退料單' ? -1 : 1; 
 				var t_weight = 0;
 				for(var i=0;i<q_bbsCount;i++){
-					$('#txtEweight_'+i).val(Math.abs(q_float('txtEweight_'+i)));
-					$('#txtMweight_'+i).val(Math.abs(q_float('txtMweight_'+i)));
-					
-					t_weight = q_add(t_weight,q_float('txtMweight_'+i));
-					
-					$('#txtGmount_'+i).val(t_n*q_float('txtEweight_'+i));
-					$('#txtGweight_'+i).val(t_n*q_float('txtMweight_'+i));	
+					$('#txtGmount_'+i).val(t_n*q_float('txtMount_'+i));
+					$('#txtGweight_'+i).val(t_n*q_float('txtWeight_'+i));
 				}
-				if($('#txtIdno').val().length>0)
-					$('#txtWeight').val(t_weight);
 			}
 			$(document).ready(function() {
 				bbmKey = ['noa'];
@@ -203,18 +196,19 @@
 						$('#txtProductno_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtProductno_', '');
+                            var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
                             $('#btnProduct_'+n).click();
                         });
 						$('#txtMount_' + j).change(function() {
 							sum();
 						});
-						
 						$('#txtWeight_' + j).change(function() {
 							sum();
-						});
-						$('#txtMweight_' + j).change(function() {
-							sum();
+							var t_weight = 0;
+							for(var i=0;i<q_bbsCount;i++){
+								t_weight = q_add(t_weight,q_float('txtWeight_'+i));
+							}
+							$('#txtWeight').val(t_weight);
 						});
 						$('#txtPrice_' + j).change(function() {
 							sum();
@@ -226,7 +220,7 @@
 
 			function btnIns() {
 				_btnIns();
-				$('#txt' + bbmKey[0].substr(0, 1).toUpperCase() + bbmKey[0].substr(1)).val('AUTO');
+				$('#txtNoa').val('AUTO');
 				$('#txtDatea').val(q_date());
 				$('#txtDatea').focus();
 				$('#cmbTypea').val('領料');
@@ -261,10 +255,10 @@
 
 			function refresh(recno) {
 				_refresh(recno);
-				for(var i=0;i<q_bbsCount;i++){
+				/*for(var i=0;i<q_bbsCount;i++){
 					$('#txtEweight_'+i).val(Math.abs(q_float('txtGmount_'+i)));
 					$('#txtMweight_'+i).val(Math.abs(q_float('txtGweight_'+i)));
-				}
+				}*/
 			}
 
 			function readonly(t_para, empty) {
@@ -478,7 +472,7 @@
                         <td> </td>
                         <td> </td>
                         <td> </td>
-                        <td class="tdZ"></td>
+                        <td class="tdZ"> </td>
                     </tr>
 					<tr>
 						<td><span> </span><a id="lblType" class="lbl"> </a></td>
@@ -532,8 +526,8 @@
 					<td align="center" style="width:150px;">品名</td>
 					<td align="center" style="width:200px;">規格</td>
 					<td align="center" style="width:50px;">單位</td>
-					<td align="center" style="width:80px;">領/退料<BR>數量<BR>重量</td>
-					<td align="center" style="width:80px;">實際<BR>數量<BR>重量</td>
+					<td align="center" style="width:80px;">數量<BR>重量</td>
+					<td align="center" style="display:none;">實際<BR>數量<BR>重量</td>
 					<td align="center" style="width:200px;">備註</td>
 					
 				</tr>
@@ -554,12 +548,12 @@
 					<td>
 						<input class="txt num" id="txtMount.*" type="text" style="width:95%;"/>
 						<input class="txt num" id="txtWeight.*" type="text" style="width:95%;"/>
-					</td>
-					<td>
-						<input class="txt num" id="txtEweight.*" type="text" style="width:95%;"/>
-						<input class="txt num" id="txtMweight.*" type="text" style="width:95%;"/>
 						<input id="txtGmount.*" type="text" style="display:none;"/>
 						<input id="txtGweight.*" type="text" style="display:none;"/>
+					</td>
+					<td style="display:none;">
+						<input class="txt num" id="txtEweight.*" type="text" style="width:95%;"/>
+						<input class="txt num" id="txtMweight.*" type="text" style="width:95%;"/>
 					</td>
 					<td>
 						<input class="txt" id="txtMemo.*" type="text" style="width:95%;"/>
