@@ -41,7 +41,46 @@ post:--post  get_rk
 				,@weight=a.[weight],@memo=a.memo,@storeno=a.stationno,@store=a.station
 			from view_get a
 			where noa=@t_noa
-			and len(ISNULL(a.idno,''))>0
+			and (len(ISNULL(a.idno,''))>0 or (len(a.productno)>0 and a.[weight]!=0))
+			
+			--有產品編號、重量的就產生批號
+			if LEN(@uno)=0 and LEN(@productno)>0 and @weight!=0
+			begin
+				declare @maxuno1 nvarchar(30)=''
+				declare @maxuno2 nvarchar(30)=''
+				
+				declare @sign nvarchar(max) = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+				declare @key nvarchar(20) = ''
+				declare @num nvarchar(20) = ''
+				declare @n int
+				declare @m int
+				
+				declare @xdate datetime
+				set @xdate = dbo.ChineseEraName2AD(@datea)
+				set @key =  right('00'+cast(year(@xdate) as nvarchar),2) + substring(@sign,month(@xdate)+1,1)
+		
+				--找出最大批號
+				-- 16101-01
+				select top 1 @maxuno1=uno from view_uccb where uno like ''+@key+'[0-9,A-Z][0-9,A-C]-[0-9,A-Z][0-9]' order by substring(uno,1,len(@key)+2) desc
+				-- C16101-01
+				select top 1 @maxuno2=uno from view_uccb where uno like '[A-Z]'+@key+'[0-9,A-Z][0-9,A-C]-[0-9,A-Z][0-9]' order by substring(uno,2,1+len(@key)+2) desc
+				
+				if SUBSTRING(isnull(@maxuno1,''),4,2)>=SUBSTRING(isnull(@maxuno2,''),5,2)
+					set @num = SUBSTRING(@maxuno1,4,2)
+				else 
+					set @num = SUBSTRING(@maxuno2,5,2)
+				if len(isnull(@num,''))=0
+					set @num = '00'
+				
+				set @n = (charindex(LEFT(@num,1),@sign)-1)*10 + CAST(RIGHT(@num,1) as int) + 1
+				set @num = SUBSTRING(@sign,floor(@n/10)+1,1)+SUBSTRING(@sign,(@n%10)+1,1)
+				set @m = 1	
+				set @uno=@key+@num+'-'+SUBSTRING(@sign,floor(@m/10)+1,1)+SUBSTRING(@sign,(@m%10)+1,1)		
+				
+				set @cmd = "update get"+@t_accy+" set idno=@uno where noa=@t_noa"
+				execute sp_executesql @cmd,N'@t_noa nvarchar(20),@uno nvarchar(30)',@t_noa=@t_noa,@uno=@uno
+				IF @@Error <> 0 BEGIN SET @chk = 1 END
+			end
 				
 			begin try
 				select @price= dbo.getsprice_rk(a.idno)
