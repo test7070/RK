@@ -766,7 +766,6 @@
                     return;
                 _btnModi();
                 $('#txtProduct').focus();
-
             }
 
             function btnPrint() {
@@ -1113,27 +1112,27 @@
 			<div class='dbbm' style="width: 80%;float:left">
 				<table class="tbbm"  id="tbbm"   border="0" cellpadding='2'  cellspacing='0'>
 					<tr class="tr1">
-						<td class='td1'><span> </span><a id="lblEntryno" class="lbl" > </a></td>
-						<td class="td2" colspan="3">
+						<td><span> </span><a id="lblEntryno" class="lbl" > </a></td>
+						<td colspan="3">
 						<input id="txtEntryno" type="text" class="txt c1"/>
 						</td>
-						<td class='td5'><span> </span><a id="lblDatea" class="lbl"> </a></td>
-						<td class="td6">
+						<td><span> </span><a id="lblDatea" class="lbl"> </a></td>
+						<td>
 						<input id="txtDatea" type="text" class="txt c1"/>
 						</td>
-						<td class='td7'><span> </span><a id="lblNoa" class="lbl" > </a></td>
-						<td class="td8">
+						<td><span> </span><a id="lblNoa" class="lbl" > </a></td>
+						<td>
 						<input id="txtNoa" type="text" class="txt c1"/>
 						</td>
 					</tr>
 					<tr class="tr2">
-						<td class="td1"><span> </span><a id="lblCno" class="lbl btn" > </a></td>
-						<td class="td2" colspan="3">
+						<td><span> </span><a id="lblCno" class="lbl btn" > </a></td>
+						<td colspan="3">
 						<input id="txtCno"  type="text"  class="txt c2"/>
 						<input id="txtAcomp"  type="text" class="txt c3"/>
 						</td>
-						<td class='td1'><span> </span><a id="lblTgg" class="lbl btn"> </a></td>
-						<td class="td2" colspan="3">
+						<td><span> </span><a id="lblTgg" class="lbl btn"> </a></td>
+						<td colspan="3">
 						<input id="txtTggno" type="text"  class="txt c2"/>
 						<input id="txtComp" type="text"  class="txt c3"/>
 						<input id="txtNick" type="text"  style="display:none;"/>
@@ -1141,89 +1140,73 @@
 					</tr>
 
 					<tr class="tr3 delivery">
-						<td class="td1"><span> </span><a id="lblDeliveryno" class="lbl" > </a></td>
-						<td class="td2" colspan="3">
+						<td><span> </span><a id="lblDeliveryno" class="lbl" > </a></td>
+						<td colspan="3">
 						<input id="txtDeliveryno"  type="text"  class="txt c1"/>
 						</td>
-						<td class='td5'><span> </span><a id="lblDeliverydate" class="lbl"> </a></td>
-						<td class="td6">
-						<input id="txtDeliverydate" type="text"  class="txt c1"/>
-						</td>
-						<td class='td7'><span> </span><a id="lblArrivedate" class="lbl"> </a></td>
-						<td class="td8">
-						<input id="txtArrivedate" type="text"  class="txt c1"/>
-						</td>
+						<td><span> </span><a id="lblDeliverydate" class="lbl"> </a></td>
+						<td><input id="txtDeliverydate" type="text"  class="txt c1"/></td>
+						<td><span> </span><a id="lblArrivedate" class="lbl"> </a></td>
+						<td><input id="txtArrivedate" type="text"  class="txt c1"/></td>
 					</tr>
 					<tr class="tr4 delivery">
-						<td class="td1"><span> </span><a id="lblTranno" class="lbl btn" > </a></td>
-						<td class="td2" colspan="3">
+						<td><span> </span><a id="lblTranno" class="lbl btn" > </a></td>
+						<td colspan="3">
 						<input id="txtTranno"  type="text"  class="txt c2"/>
 						<input id="txtTrancomp"  type="text" class="txt c3"/>
 						</td>
-						<td class='td5'><span> </span><a id="lblEtd" class="lbl"> </a></td>
-						<td class="td6">
+						<td><span> </span><a id="lblEtd" class="lbl"> </a></td>
+						<td>
 						<input id="txtEtd" type="text"  class="txt c1"/>
 						</td>
-						<td class='td7'><span> </span><a id="lblEta" class="lbl"> </a></td>
-						<td class="td8">
+						<td><span> </span><a id="lblEta" class="lbl"> </a></td>
+						<td>
 						<input id="txtEta" type="text"  class="txt c1"/>
 						</td>
 					</tr>
 					<tr class="tr5 delivery">
-						<td class="td1"><span> </span><a id="lblCaseyard" class="lbl" > </a></td>
-						<td class="td2" colspan="3">
+						<td><span> </span><a id="lblCaseyard" class="lbl" > </a></td>
+						<td colspan="3">
 						<input id="txtCaseyard"  type="text"  class="txt c1"/>
 						</td>
-						<td class='td5'><span> </span><a id="lblWarehousedate" class="lbl"> </a></td>
-						<td class="td6">
+						<td><span> </span><a id="lblWarehousedate" class="lbl"> </a></td>
+						<td>
 						<input id="txtWarehousedate" type="text"  class="txt c1"/>
 						</td>
-						<td class='td7'></td>
-						<td class="td8"></td>
+						<td></td>
+						<td></td>
 					</tr>
 
 					<tr class="tr6 retire">
-						<td class="td1"><span> </span><a id="lblBcompno" class="lbl btn" > </a></td>
-						<td class="td2" colspan="3">
+						<td><span> </span><a id="lblBcompno" class="lbl btn" > </a></td>
+						<td colspan="3">
 						<input id="txtBcompno"  type="text"  class="txt c2"/>
 						<input id="txtBcomp"  type="text" class="txt c3"/>
 						</td>
-						<td class="td5"><span> </span><a id="lblPaytype" class="lbl" > </a></td>
-						<td class="td6" colspan="3">
+						<td><span> </span><a id="lblPaytype" class="lbl" > </a></td>
+						<td colspan="3">
 						<input id="txtPaytype"  type="text"  class="txt c1"/>
 						</td>
 					</tr>
 					<tr class="tr7 retire">
-						<td class="td1"><span> </span><a id="lblBoatname" class="lbl" > </a></td>
-						<td class="td2">
-						<input id="txtBoatname"  type="text"  class="txt c1"/>
-						</td>
-						<td class="td3"><span> </span><a id="lblShip" class="lbl" > </a></td>
-						<td class="td4">
-						<input id="txtShip"  type="text"  class="txt c1"/>
-						</td>
-						<td class="td5"><span> </span><a id="lblSino" class="lbl btn" > </a></td>
-						<td class="td6">
-						<input id="txtSino"  type="text"  class="txt c1"/>
-						</td>
-						<td class='td7'></td>
-						<td class="td8"></td>
+						<td><span> </span><a id="lblBoatname" class="lbl" > </a></td>
+						<td><input id="txtBoatname"  type="text"  class="txt c1"/></td>
+						<td><span> </span><a id="lblShip" class="lbl" > </a></td>
+						<td><input id="txtShip"  type="text"  class="txt c1"/></td>
+						<td><span> </span><a id="lblSino" class="lbl btn" > </a></td>
+						<td><input id="txtSino"  type="text"  class="txt c1"/></td>
+						<td></td>
+						<td></td>
 					</tr>
 					<tr class="tr8 retire">
-						<td class="td1"><span> </span><a id="lblNegotiatingdate" class="lbl" > </a></td>
-						<td class="td2">
-						<input id="txtNegotiatingdate"  type="text"  class="txt c1"/>
-						</td>
-						<td class="td3"><span> </span><a id="lblCoin" class="lbl"> </a></td>
-						<td class="td4">
-						<input id="txtCoin" type="text"  class="txt num c1"/>
-						</td>
-						<td class="td5"><span> </span><a id="lblFloata" class="lbl"> </a></td>
-						<td class="td6">
-						<input id="txtFloata" type="text"  class="txt num c1"/>
-						</td>
-						<td class="td7"></td>
-						<td class="td8"></td>
+						<td><span> </span><a id="lblNegotiatingdate" class="lbl" > </a></td>
+						<td><input id="txtNegotiatingdate"  type="text"  class="txt c1"/></td>
+						<td><span> </span><a id="lblCoin" class="lbl"> </a></td>
+						<td><input id="txtCoin" type="text"  class="txt num c1"/></td>
+						<td><span> </span><a id="lblFloata" class="lbl"> </a></td>
+						<td><input id="txtFloata" type="text"  class="txt num c1"/></td>
+						<td></td>
+						<td></td>
 					</tr>
 					<!--<tr class="tr9 retire">
 					<td class="td7"><span> </span><a id="lblForwarddate" class="lbl"> </a></td>
