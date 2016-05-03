@@ -19,7 +19,7 @@
             var q_name = "deli";
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2', 'txtCoinretiremoney', 'txtCointotal', 'txtCointariff', 'txtRetiremoney', 'txtTotal', 'txtTariff', 'txtTrade', 'txtCommoditytax', 'txtVatbase', 'txtVat', 'txtRc2no', 'txtPaybno', 'txtLctotal'];
             //傑期採購單號可以自己輸入
-            var q_readonlys = ['txtLcmoney', 'txtCost', 'textSprice', 'txtOthfee'];
+            var q_readonlys = ['txtLcmoney', 'txtCost', 'textSprice', 'txtOthfee','txtMoney'];
             var bbmNum = [['txtFloata', 15, 4, 1], ['txtVatrate', 15, 2, 1], ['txtVatbase', 15, 0, 1], ['txtVat', 15, 0, 1], ['txtTranmoney', 15, 3, 1], ['txtInsurance', 15, 3, 1], ['txtModification', 15, 3, 1], ['txtCoinretiremoney', 15, 2, 1], ['txtCointotal', 15, 2, 1], ['txtCointariff', 15, 2, 1], ['txtRetiremoney', 15, 0, 1], ['txtTotal', 15, 0, 1], ['txtTariff', 15, 0, 1], ['txtTrade', 15, 0, 1], ['txtCommoditytax', 15, 0, 1], ['txtLctotal', 15, 0, 1], ['txtOthfee', 15, 0, 1]];
             var bbsNum = [['txtMount', 15, 0, 1], ['txtInmount', 15, 0, 1], ['txtPrice', 10, 2, 1], ['txtPrice2', 10, 2, 1], ['txtMoney', 15, 2, 1], ['txtCointotal', 15, 2, 1], ['txtTotal', 15, 0, 1], ['txtTariffrate', 5, 4, 1], ['txtCointariff', 15, 2, 1], ['txtTariff', 15, 0, 1], ['txtTraderate', 10, 4, 1], ['txtTrade', 15, 0, 1], ['txtCommodityrate', 5, 4, 1], ['txtCommoditytax', 15, 0, 1], ['txtVatbase', 15, 0, 1], ['txtVat', 15, 0, 1], ['txtCasemount', 15, 0, 1], ['txtMweight', 15, 2, 1], ['txtCuft', 15, 2, 1], ['txtWeight', 15, 2, 1], ['txtInweight', 15, 2, 1], ['txtDime', 15, 3, 1], ['txtWidth', 15, 2, 1], ['txtLengthb', 15, 2, 1], ['txtDime2', 15, 3, 1], ['txtLengthc', 15, 2, 1], ['txtLengthd', 15, 2, 1], ['txtLcmoney', 15, 0, 1], ['txtCost', 15, 0, 1], ['txtOthfee', 15, 0, 1]];
 
@@ -118,7 +118,12 @@
             }
 
             function bbs_sum() {
+            	if(q_float('txtFloata')==0)
+            		$('#txtFloata').val(1);
                 for (var j = 0; j < q_bbsCount; j++) {
+                	
+                	$('#txtMoney_'+j).val(round(q_mul(q_float('txtWeight_'+j),q_float('txtPrice_'+j)),0));
+                	
                     var t_cointotaldiv = 0,
                         t_mount = 0;
                     t_unit = $.trim($('#txtUnit_' + j).val()).toUpperCase();
@@ -293,6 +298,7 @@
                             var t_where = "where=^^ ordeno in(" + inStr + ") ^^";
                             q_gt('rc2s', t_where, 0, 0, 0, "", r_accy);
                         }
+                        bbs_sum();
                     }
                     break;
                 case q_name + '_s':
@@ -587,18 +593,18 @@
                         });
                         //RK 一律用重量
                         $('#txtMount_'+j).change(function(e){
-                        	var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
-                        	$('#txtMoney_'+n).val(round(q_mul(q_float('txtWeight_'+n),q_float('txtPrice_'+n)),0));
+                        	//var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
+                        	//$('#txtMoney_'+n).val(round(q_mul(q_float('txtWeight_'+n),q_float('txtPrice_'+n)),0));
                         	bbs_sum();
                         });
                         $('#txtWeight_'+j).change(function(e){
-                        	var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
-                        	$('#txtMoney_'+n).val(round(q_mul(q_float('txtWeight_'+n),q_float('txtPrice_'+n)),0));
+                        	//var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
+                        	//$('#txtMoney_'+n).val(round(q_mul(q_float('txtWeight_'+n),q_float('txtPrice_'+n)),0));
                         	bbs_sum();
                         });
                         $('#txtPrice_'+j).change(function(e){
-                        	var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
-                        	$('#txtMoney_'+n).val(round(q_mul(q_float('txtWeight_'+n),q_float('txtPrice_'+n)),0));
+                        	//var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
+                        	//$('#txtMoney_'+n).val(round(q_mul(q_float('txtWeight_'+n),q_float('txtPrice_'+n)),0));
                         	bbs_sum();
                         });
                         
