@@ -488,6 +488,7 @@
             function q_funcPost(t_func, result) {
                 switch(t_func) {
             	case 'qtxt.query.genUno':
+            		q_func('rc2_post.post', r_accy + ',' + $('#txtRc2no').val() + ',1');
             		break;
                 case 'rc2_post.post.a1':
                     q_func('qtxt.query.post0', 'deli.txt,post,' + encodeURI(r_accy) + ';' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
@@ -512,10 +513,10 @@
 
                         //rc2.post內容
                         if (!emp($('#txtRc2no').val())) {
-                            q_func('rc2_post.post', r_accy + ',' + $('#txtRc2no').val() + ',1');
+                        	//進貨單批號產生  ref: rc2st.aspx
+                        	q_func('qtxt.query.genUno', 'uno.txt,genUno,' + as[0].rc2no + ';rc2'); 
                         }
-                        //進貨單批號產生  ref: rc2st.aspx
-                        q_func('qtxt.query.genUno', 'uno.txt,genUno,' + as[0].rc2no + ';rc2'); 
+                        
                     }
                     if (q_cur == 2)
                         alert('已更新進貨單!!');
