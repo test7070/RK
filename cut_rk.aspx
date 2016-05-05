@@ -19,7 +19,7 @@
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
             var q_readonlys = [];
             var bbmNum = [];
-            var bbsNum = [['txtHours', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 0, 1]];
+            var bbsNum = [['txtHours', 10, 0, 1], ['txtHweight', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 0, 1]];
             var bbmMask = [];
             var bbsMask = [];
             q_sqlCount = 6;
@@ -625,6 +625,7 @@
 					<td style="width:200px;">Coil編號</td>
 					<td style="width:100px;">品名</td>
 					<td style="width:400px;">皮膜<BR>規格</td>
+					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
 					<td style="width:200px;">客戶</td>
@@ -662,6 +663,7 @@
 						<input id="txtWidth.*" type="text" class="txt num" style="float:left;width:22%;"/>
 						<input id="txtLengthb.*" type="text" class="txt num" style="float:left;width:22%;"/>
 					</td>
+					<td><input id="txtHweight.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtMount.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td>
