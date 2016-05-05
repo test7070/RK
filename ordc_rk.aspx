@@ -1222,7 +1222,7 @@
 					<br>
 					<a id='lblOrdenos_st'> </a></td>
 					<td align="center" style="width:250px;"><a id='lblUno_st'> </a></td>
-					<td align="center" style="width:60px;"><a>鋼廠</a></td>
+					<td align="center" style="width:60px;"><a>製造商</a></td>
 					<td align="center" style="width:30px;"><a id='lblEnda_st'> </a></td>
 					<td align="center" style="width:40px;"><a id='lblOrdcrecord'> </a></td>
 					<td align="center" style="width:100px;"><a>預計交期</a></td>

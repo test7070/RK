@@ -49,7 +49,7 @@ z_rc2_rk01:--z_rc2_rk01
 		   (case when ltrim(rtrim(isnull(b.size,'')))='' then dbo.csize(a.kind,b.dime,b.width,b.lengthb,b.radius) else b.size end),'rc2st'+b.accy
 		   ,b.spec,b.source,b.uno
 		   ,b.price
-		   ,b.sprice
+		   ,b.counta
 		   ,a.coin,a.floata
 	from view_rc2s b
 	left join view_rc2 a on a.noa = b.noa
