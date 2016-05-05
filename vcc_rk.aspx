@@ -98,11 +98,11 @@
 						}
 						$('#txtTotal_' + j).val(t_moneys);
 					}
-					var t_styles = $.trim($('#txtStyle_' + j).val());
+					
 					var t_unos = $.trim($('#txtUno_' + j).val());
 					var t_dimes = $.trim($('#txtDime_' + j).val());
 					//判斷需不需要加到重量總計,有時候只是打備註用,可以忽略
-					if (!(t_styles == '' && t_unos == '' && t_dimes == 0))
+					if (!(t_unos == '' && t_dimes == 0))
 						t_weight = q_add(t_weight, t_weights);
 					t_money = q_add(t_money, t_moneys);
 				}
@@ -320,8 +320,8 @@
                     case 'cut_vcc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtUno,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice,txtLengthc,txtMount,txtWeight,txtItemno'
-                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,unit,price,lengthc,mount,weight,special', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtUno,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtSize,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice,txtLengthc,txtMount,txtWeight,txtItemno'
+                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,size,class,ucolor,source,unit,price,lengthc,mount,weight,special', '','');             	
                         	//訂單資料
                         	var t_ordeno = $('#txtOrdeno_0').length>0?$('#txtOrdeno_0').val():'';
                     		q_gt('view_orde', "where=^^ noa='"+t_ordeno+"' ^^", 0, 0, 0, JSON.stringify({action:'importOrde'}));
@@ -918,6 +918,7 @@
 					<td align="center" style="width:50px;">棧板<br>編號</td>
 					<td style="width:200px;">批號</td>
 					<td style="width:200px;">品名</td>
+					<td style="width:120px;">底材</td>
 					<td style="width:60px;">厚</td>
 					<td style="width:60px;">皮膜厚</td>
 					<td style="width:60px;">寬</td>
@@ -956,6 +957,7 @@
 						<input id="txtProduct.*" type="text" style="width:45%"/>
 						<input id="btnProduct.*" type="button" style="display:none;"/>
 					</td>
+					<td><input id="txtStyle.*" type="text" class="txt c1"/></td>
 					<td><input id="txtDime.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtRadius.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWidth.*" type="text" class="txt c1 num"/></td>
