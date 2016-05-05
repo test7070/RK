@@ -320,8 +320,8 @@
                     case 'cut_vcc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtUno,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice,txtMount,txtWeight'
-                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,unit,price,mount,weight', '','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtUno,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice,txtMount,txtWeight,txtItemno'
+                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,unit,price,mount,weight,special', '','');             	
                         	//訂單資料
                         	var t_ordeno = $('#txtOrdeno_0').length>0?$('#txtOrdeno_0').val():'';
                     		q_gt('view_orde', "where=^^ noa='"+t_ordeno+"' ^^", 0, 0, 0, JSON.stringify({action:'importOrde'}));
