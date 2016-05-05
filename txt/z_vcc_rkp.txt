@@ -272,6 +272,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 		no2 nvarchar(10),
 		productno nvarchar(20),
 		product nvarchar(50),
+		style nvarchar(20),
 		spec nvarchar(20),
 		class nvarchar(20),
 		dime float,
@@ -289,13 +290,13 @@ z_vcc_rkp01:--z_vcc_rkp01
 
 	insert into @tmp(pno,gno,accy,noa,noq,datea
 		,custno,comp,nick,tel,fax,conn
-		,ordeno,no2,productno,product,spec,class
+		,ordeno,no2,productno,product,style,spec,class
 		,dime,radius,width,lengthb,size
 		,checker,itemno,memo
 		,lengthc,mount,[weight])	
 	select '1','1',a.accy,a.noa,'',b.datea
 		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
-		,a.ordeno,a.no2,a.productno,a.product,a.spec,a.class
+		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
 		,a.checker,a.itemno,a.memo
 		,sum(isnull(a.lengthc,0)),sum(isnull(a.mount,0)),sum(isnull(a.[weight],0))
@@ -310,19 +311,20 @@ z_vcc_rkp01:--z_vcc_rkp01
 	and charindex('包裝',a.product)=0
 	group by  a.accy,a.noa,b.datea
 		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
-		,a.ordeno,a.no2,a.productno,a.product,a.spec,a.class
+		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
 		,a.checker,a.itemno,a.memo
+	
 	
 	update @tmp set addr = case when len(isnull(b.addr2,''))>0 then b.addr2 else b.addr end
 	from @tmp a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	
-	update @tmp set size=case when len(size)>0 then size
-			else dbo.getComma(dime,-1)
+	update @tmp set size=case when len(isnull(style,''))>0 then style+' ' else '' end
+			+dbo.getComma(dime,-1)
 			+case when ISNULL(radius,0)!=0 then '+'+cast(radius as nvarchar) else '' end
 			+case when ISNULL(width,0)!=0 then '*'+cast(width as nvarchar) else '' end
-			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '' end end
+			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '*COIL' end 
 	
 	insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
 	select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
