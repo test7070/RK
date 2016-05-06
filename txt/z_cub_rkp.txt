@@ -274,7 +274,7 @@ z_cub_rkp10:--z_cub_rkp10
 		,total float
 		,rate float
 	)
-	insert into @tmp(gno,datea,vccno,custno,[weight],m01,m02)
+	insert into @tmp(gno,datea,vccno,custno,[weight],m01,m07)
 	select '1',a.datea,a.noa,a.custno,a.[weight],a.cartrips,a.tranmoney
 	from view_vcc a
 	where isnull(a.datea,'') between @t_bdate and @t_edate
