@@ -16,52 +16,29 @@
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script type="text/javascript">
 
-			var t_style = '',t_ucc='',t_spec='';
 			$(document).ready(function() {
 				_q_boxClose();
 				q_getId();
-				q_gf('', 'z_uccc_rk');
+				q_gf('', 'z_ucc_rk');
 			});
 			function q_gfPost() {
-				q_gt('style', '', 0, 0, 0, "");
+				loadFinish();
 			}
 
 			function q_gtPost(t_name) {
 				switch (t_name) {
-					case 'style':
-						t_style = '';
-						var as = _q_appendData("style", "", true);
-						for ( i = 0; i < as.length; i++) {
-							t_style += (t_style.length > 0 ? ',' : '') + as[i].noa + '@' + as[i].noa + '.' + as[i].product;
-						}
-						q_gt('ucc', '', 0, 0, 0, "");
-						break;
-					case 'ucc':
-                        t_ucc = ' @';
-                        var as = _q_appendData("ucc", "", true);
-                        for ( i = 0; i < as.length; i++) {
-                            t_ucc += (t_ucc.length > 0 ? ',' : '') + as[i].noa + '@' + as[i].noa;
-                        }
-                        q_gt('spec', '', 0, 0, 0, "");
-                        break;
-                    case 'spec':
-						t_spec = ' @全部';
-						var as = _q_appendData("spec", "", true);
-						for ( i = 0; i < as.length; i++) {
-							t_spec += (t_spec.length > 0 ? ',' : '') + as[i].noa + '@' + as[i].product;
-						}
-						loadFinish();
+					default:
 						break;
 				}
 			}
 
 			function loadFinish() {
 				$('#q_report').q_report({
-					fileName : 'z_uccc_rk',
+					fileName : 'z_ucc_rk',
 					options : [{
 						type : '0', //[1]
 						name : 'path',
-						value : location.protocol + '//' +location.hostname + location.pathname.toLowerCase().replace('z_uccc_rk.aspx','')
+						value : location.protocol + '//' +location.hostname + location.pathname.toLowerCase().replace('z_ucc_rk.aspx','')
 					},{
 						type : '0', //[2]
 						name : 'db',
@@ -97,21 +74,6 @@
 				q_popAssign();
 				q_getFormat();
 				q_langShow();
-				
-				$('#Xdate').css('width', '350px');
-				$('#Xstktype').css('width', '250px');
-				$('#txtXdate1').mask('999/99/99');
-				$('#txtXdate1').datepicker();
-				$('#txtXdate2').mask('999/99/99');
-				$('#txtXdate2').datepicker();
-				$('#Xitype .label').css('width', '5px');
-				$('#Xstktype .label').css('width', '5px');
-				$('#Xitype').css('width', '120px');
-				$('#Xstktype').css('width', '120px');
-				
-				$('#Xbproduct select').change(function(e){
-					$('#Xeproduct select').val($('#Xbproduct select').val());
-				});
 			}
 
 			function q_boxClose(s2) {

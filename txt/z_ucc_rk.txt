@@ -1,4 +1,4 @@
-z_uccc_rk01:--z_uccc_rk01 
+z_ucc_rk01:--z_ucc_rk01 
 	SET QUOTED_IDENTIFIER OFF 
 	declare @t_cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
@@ -6,7 +6,7 @@ z_uccc_rk01:--z_uccc_rk01
 	declare @t_stktype nvarchar(max)='[3]'
 	declare @t_kind nvarchar(max)= case when '#non'=[4] then '' else [4] end 
 	declare @t_bproductno nvarchar(30) = case when '#non'=[5] then '' else [5] end 
-	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then '' else [6] end 
+	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then char(255) else [6] end 
 	
 	declare @t_bradius float = 0
 	declare @t_eradius float = 999999
@@ -75,6 +75,7 @@ z_uccc_rk01:--z_uccc_rk01
 	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n
 	left join spec d on b.spec=d.noa
 	where len(ISNULL(a.uno,''))>0 
+	and isnull(b.productno,'') between @t_bproductno and @t_eproductno
 	and ISNULL(b.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(b.dime,0) between @t_bdime and @t_edime
 	and ISNULL(b.width,0) between @t_bwidth and @t_ewidth
