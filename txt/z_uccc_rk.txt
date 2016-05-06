@@ -1,0 +1,113 @@
+z_uccc_rk01:--z_uccc_rk01 
+	SET QUOTED_IDENTIFIER OFF 
+	declare @t_cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_stktype nvarchar(max)='[3]'
+	declare @t_kind nvarchar(max)= case when '#non'=[4] then '' else [4] end 
+	declare @t_bproductno nvarchar(30) = case when '#non'=[5] then '' else [5] end 
+	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then '' else [6] end 
+	
+	declare @t_bradius float = 0
+	declare @t_eradius float = 999999
+	declare @t_bdime float = 0
+	declare @t_edime float = 999999
+	declare @t_bwidth float = 0
+	declare @t_ewidth float = 999999
+	declare @t_blengthb float = 0
+	declare @t_elengthb float = 999999
+	begin try
+		set @t_bradius = case when '#non'=[7] then 0 else cast([7] as float) end 
+		set @t_eradius = case when '#non'=[8] then 99999 else cast([8] as float) end 
+		set @t_bdime = case when '#non'=[9] then 0 else cast([9] as float) end 
+		set @t_edime = case when '#non'=[10] then 99999 else cast([10] as float) end 
+		set @t_bwidth = case when '#non'=[11] then 0 else cast([11] as float) end 
+		set @t_ewidth = case when '#non'=[12] then 99999 else cast([12] as float) end 
+		set @t_blengthb = case when '#non'=[13] then 0 else cast([13] as float) end 
+		set @t_elengthb = case when '#non'=[14] then 99999 else cast([14] as float) end 
+	end try
+	begin catch
+		set @t_bradius = 0
+		set @t_eradius = 999999
+		set @t_bdime = 0
+		set @t_edime = 999999
+		set @t_bwidth = 0
+		set @t_ewidth = 999999
+		set @t_blengthb = 0
+		set @t_elengthb = 999999
+	end catch
+	------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,kind nvarchar(20)
+		,ckind nvarchar(20)
+		,datea nvarchar(20)
+		,uno nvarchar(30)
+		,makeno nvarchar(30)
+		,productno nvarchar(30)
+		,product nvarchar(50)
+		,spec nvarchar(50)
+		,cspec nvarchar(50)
+		,size nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,mount float
+		,[weight] float
+		,price float
+		,uno2 nvarchar(30)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(20)
+		,[contract] nvarchar(max)--合約編號
+		,custno nvarchar(20)--客戶名稱
+		,cust nvarchar(30)
+	)
+	insert into @tmp(gno,kind,ckind,datea,uno,productno,product
+		,spec,cspec,size,dime,width,lengthb,radius
+		,mount,[weight],price,uno2)
+	select '1',b.kind,c.item,b.datea,a.uno,b.productno,b.product
+		,b.spec,d.product,b.size,b.dime,b.width,b.lengthb,b.radius
+		,a.emount,a.[eweight],b.sprice,b.uno2
+	from uccy a
+	left join view_uccb b on a.uno=b.uno
+	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n
+	left join spec d on b.spec=d.noa
+	where len(ISNULL(a.uno,''))>0 
+	and ISNULL(b.radius,0) between @t_bradius and @t_eradius
+	and ISNULL(b.dime,0) between @t_bdime and @t_edime
+	and ISNULL(b.width,0) between @t_bwidth and @t_ewidth
+	and ISNULL(b.lengthb,0) between @t_blengthb and @t_elengthb
+	and (len(@t_kind)=0 or b.kind=@t_kind)
+	and ISNULL(a.eweight,0)>0
+	
+	update @tmp set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
+	from @tmp a
+	left join view_cuts b on b.bno=a.uno
+	where b.noa is not null
+	
+	update @tmp set [contract]=replace(b.memo,'chr(10)',' '),custno=c.custno,cust=c.nick
+	from @tmp a
+	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
+	left join view_orde c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	
+	update @tmp set size=case kind when 'A1' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
+			when 'A4' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
+			when 'A5' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
+			when 'A7' then CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
+			else '' end
+	update @tmp set product=b.product
+	from @tmp a
+	left join ucc b on a.productno=b.noa
+	where len(ISNULL(a.product,''))=0
+	
+	insert into @tmp(gno,mount,[weight])select '2',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp
+	
+	select row_number()over(order by gno,kind,dime,radius,width,lengthb,spec,uno) rr
+		,* 
+		,dbo.getComma(mount,-1) cmount
+		,dbo.getComma([weight],-1) cweight
+	from @tmp 
+	order by gno,kind,dime,radius,width,lengthb,spec,uno;
