@@ -538,7 +538,7 @@
 					<tr>
 						<td><input id="chkBrow.*" type="checkbox" style=' '/></td>
 						<td align="center" id='datea'>~datea</td>
-						<td align="center" id='comp'>~comp</td>
+						<td align="center" id='nick'>~nick</td>
 					</tr>
 				</table>
 			</div>
@@ -622,7 +622,7 @@
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl">交貨公差</a></td>
-						<td><input id="txtTolerance"  type="text" class="txt c1 num"/></td>
+						<td><input id="txtTolerance"  type="text" class="txt c1"/></td>
 						<td><span> </span><a id='lblFloata' class="lbl"> </a></td>
 						<td><input id="txtFloata" type="text" class="txt num c1" /></td>
 						<td>
