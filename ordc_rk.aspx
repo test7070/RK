@@ -240,14 +240,12 @@
 				});
 				
 				$('#lblOrdb').click(function() {
-					if (!(q_cur == 1 || q_cur == 2))
+					if(!(q_cur==1 || q_cur==2))
 						return;
-					var t_tggno = trim($('#txtTggno').val());
-					var t_ordbno = trim($('#txtOrdbno').val());
-					var t_where = "enda=0 and notv >0 ";
-					t_where += (t_tggno.length > 0 ? q_sqlPara2("tggno", t_tggno) : " and len(isnull(tggno,''))=0") + " && kind='" + $('#cmbKind').val() + "'";
-					
-					q_box('ordbsst_b.aspx', 'ordbs;' + t_where, "95%", "650px", q_getMsg('popOrdbs'));
+					var t_ordcno = $('#txtNoa').val();
+					var t_tggno = $('#txtTggno').val();
+                	var t_where ='';
+                	q_box("ordb_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({ordcno:t_ordcno,tggno:t_tggno,page:'ordc_rk'}), "ordb_ordc", "95%", "95%", '');
 				});
 				
 				
@@ -269,8 +267,18 @@
 				var
 				ret;
 				switch (b_pop) {
+					case 'ordb_ordc':
+                        if (b_ret != null) {
+                        	as = b_ret;
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdbno,txtNo3,txtProductno,txtProduct,cmbSpec,txtUnit,txtDime,txtWidth,txtLengthb,txtPrice,txtMount,txtWeight'
+                        	, as.length, as, 'noa,no3,productno,product,spec,unit,dime,width,lengthb,price,emount,eweight', '','');
+                        	sum();
+                        }else{
+                        	Unlock(1);
+                        }
+                        break;
 					case 'ordbs':
-						if (q_cur > 0 && q_cur < 4) {
+						/*if (q_cur > 0 && q_cur < 4) {
 							ordbsArray = getb_ret();
 							if (!ordbsArray || ordbsArray.length == 0) {
 								return;
@@ -288,7 +296,7 @@
 								var t_where = "where=^^ ordbno in(" + inStr + ") ^^";
 								q_gt('ordcs', t_where, 0, 0, 0, '', r_accy);
 							}
-						}
+						}*/
 						break;
 					case q_name + '_s':
 						q_boxClose2(s2);
