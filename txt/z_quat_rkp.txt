@@ -328,8 +328,9 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @pve2 nvarchar(30)
 	
 	declare @string nvarchar(max)
-	declare @n int
-	declare @pagecount int = 39 --一頁全部幾行
+	declare @n int,@m int
+	declare @curcount int
+	declare @pagecount int = 40 -- 一頁全部幾行   要偶數行(HEAD DETAIL都2個)
 	
 	declare @tmp table(
 		sel int identity(1,1),
@@ -373,8 +374,7 @@ z_quat_rkp02:--z_quat_rkp02
 		pn nvarchar(50),
 		coin nvarchar(20)
 	)
-	
-	
+
 	
 	declare cursor_table cursor for
 	select noa,datea,custno,comp,serial,boss,conn,tel,fax,odate
@@ -393,13 +393,15 @@ z_quat_rkp02:--z_quat_rkp02
 		,@chkb1,@chkb2,@chkb3,@chkb4,@memo,@coin
 	while(@@FETCH_STATUS <> -1)
 	begin
-		--insert into @tmp(gno,aa,bb)values('1','合約編號：',@noa)
-		--insert into @tmp(gno,aa,bb,cc)values('2','茲為雙方合意前提下，訂立本買賣合約，議定各項條件如下：','日期：'+@datea,'頁數： 1 / 1')
-		--insert into @tmp(gno)values('3')
-		---- BBS
-		insert into @tmp(pno,gno,noa)values(1,'8',@noa)
-		insert into @tmp(pno,gno,noa)values(1,'9',@noa)
-			
+		set @curcount = 0
+		if @curcount%@pagecount=0
+		begin
+			---- 欄位名稱
+			insert into @tmp(pno,gno,noa)values(1,'8',@noa)
+			insert into @tmp(pno,gno,noa)values(1,'9',@noa)
+			set @curcount = @curcount + 2
+		end
+
 		set @n = 1
 		declare cursor_table2 cursor for
 		select productno,product,dime,radius,width,lengthb,spec,ucolor
@@ -414,7 +416,13 @@ z_quat_rkp02:--z_quat_rkp02
 			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn
 		while(@@FETCH_STATUS <> -1)
 		begin
-			
+			if @curcount%@pagecount=0
+			begin
+				---- 欄位名稱
+				insert into @tmp(pno,gno,noa)values(1,'8',@noa)
+				insert into @tmp(pno,gno,noa)values(1,'9',@noa)
+				set @curcount = @curcount + 2
+			end
 	
 			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
 				,pvcno,pvc,pveno,pve,pveno2,pve2
@@ -424,8 +432,6 @@ z_quat_rkp02:--z_quat_rkp02
 				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
 				,@style,@mount,@weight
 				,@unit,@unit2,@price,@po,@pn,@coin)
-			
-
 			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
 				,pvcno,pvc,pveno,pve,pveno2,pve2
 				,style,mount,weight,unit,unit2,price,po,pn,coin)
@@ -434,7 +440,7 @@ z_quat_rkp02:--z_quat_rkp02
 				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
 				,@style,@mount,@weight
 				,@unit,@unit2,@price,@po,@pn,@coin)
-
+			set @curcount = @curcount + 2
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
@@ -444,21 +450,14 @@ z_quat_rkp02:--z_quat_rkp02
 		end
 		close cursor_table2
 		deallocate cursor_table2
-		--補空白行
-		--全部頁數 - 已插入的頁數
-		select @n = @pagecount - count(1) from @tmp where pno='1'
-		while @n >0
-		begin
-			insert into @tmp(pno,gno)values(1,'5')
-			set @n = @n - 1
-		end
 		
+		--備註
 		---------------------------------------------------------
 		insert into @tmp(pno,gno,noa)values(2,'5',@noa)
 		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'交&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'貨&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'期：',@odate)
 		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'付款方式：',@paytype+@memo2)
 		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'包裝方式：',@packtype)
-
+		
 		set @string = 
 			case when @chka1=1 then @sign1 else @sign2 end + '賣方運送&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
 			+case when @chka2=1 then @sign1 else @sign2 end + '買方自運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
@@ -491,20 +490,25 @@ z_quat_rkp02:--z_quat_rkp02
 			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'註：' else '' end,@string)
 		end
 		---------------------------------------------------------
-		--補空白行
-		--全部頁數 - 已插入的頁數 - 頁尾
-		select @n = @pagecount - count(1) -5 from @tmp where pno='1'
-		while @n >0
-		begin
-			insert into @tmp(pno,gno)values(2,'5')
-			set @n = @n - 1
-		end
-		---------------------------------------------------------
+		insert into @tmp(pno,gno)values(2,'5')
+		insert into @tmp(pno,gno)values(2,'5')
 		insert into @tmp(pno,gno)values(2,'5')
 		insert into @tmp(pno,gno,aa)values(2,'6','聯琦金屬股份有限公司')
 		insert into @tmp(pno,gno)values(2,'5')
 		insert into @tmp(pno,gno)values(2,'5')
 		insert into @tmp(pno,gno)values(2,'7')
+		---------------------------------------------------------
+		--假如備註不能印在同一頁,那就換到下一頁印
+		select @n = count(1) from @tmp where pno='1'
+		select @m = count(1) from @tmp where pno='2'
+		set @n = @n%@pagecount
+		if(@pagecount - @n - @m)<0
+		select @n = @pagecount - count(1) from @tmp where pno='1'
+		while @n >0
+		begin
+			insert into @tmp(pno,gno)values(1,'5')
+			set @n = @n - 1
+		end
 		
 		fetch next from cursor_table
 		into @noa,@datea,@custno,@comp,@serial,@boss,@conn,@tel,@fax,@odate
@@ -523,7 +527,6 @@ z_quat_rkp02:--z_quat_rkp02
 	update @tmp set cspec=ISNULL(b.product,'')
 	from @tmp a
 	left join spec b on a.spec=b.noa
-
 
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
@@ -561,7 +564,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
-	from @tmp;
+	from @tmp order by pno,sel;
 
 z_quat_rkp01:--z_quat_rkp01
 	SET QUOTED_IDENTIFIER OFF

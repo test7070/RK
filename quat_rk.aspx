@@ -29,7 +29,7 @@
             brwKey = 'Datea';
             brwCount2 = 15;
             q_copy = 1;
-            aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial,tel,fax,boss', 'txtCustno,txtComp,txtNick,txtSerial,txtTel,txtFax,txtBoss', 'cust_b.aspx']
+            aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,serial,tel,fax,boss,paytype', 'txtCustno,txtComp,txtNick,txtSerial,txtTel,txtFax,txtBoss,txtPaytype', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']
             	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtSource_', 'ucc_b.aspx']
@@ -464,7 +464,7 @@
                 font-size: medium;
             }
             .dbbs {
-                width: 1350px;
+                width: 1450px;
             }
             .dbbs .tbbs {
                 margin: 0;
@@ -684,6 +684,7 @@
 					<td style="width:60px;">計價<BR>單位</td>
 					<td style="width:120px;display:none;">P/O</td>
 					<td style="width:120px;display:none;">P/N</td>
+					<td style="width:100px;">備註</td>
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
@@ -722,6 +723,7 @@
 					<td><input id="txtUnit2.*" type="text" class="txt c1"/></td>
 					<td><input id="txtPrice.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
+					<td><input id="txtMemo.*" type="text" class="txt c1"/></td>
 					<td style="display:none;"><input id="txtPo.*" type="text" class="txt c1"/></td>
 					<td style="display:none;"><input id="txtPn.*" type="text" class="txt c1"/></td>
 				</tr>
