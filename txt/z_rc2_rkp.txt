@@ -224,6 +224,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 		,tgg nvarchar(50)
 		,nick nvarchar(20)
 		
+		,kind nvarchar(20)
 		,typea nvarchar(20)
 		,productno nvarchar(20)
 		,product nvarchar(50)
@@ -241,15 +242,15 @@ z_rc2_rkp01:--z_rc2_rkp01
 	)	
 	
 	insert into @tmp(gno,pno,datea,rc2no,ordcno,tggno,tgg,nick
-		,typea,productno,product,uno,size,[weight],unit,memo
+		,kind,typea,productno,product,uno,size,[weight],unit,memo
 		,dime,width,lengthb,radius,spec,cspec)
 	select '1','1',a.datea,a.noa,a.ordcno,a.tggno,a.tgg,a.nick
-		,d.item,b.productno,c.product,b.uno,b.size,b.[weight],b.unit,b.memo
+		,a.kind,d.item,b.productno,c.product,b.uno,b.size,b.[weight],b.unit,b.memo
 		,b.dime,b.width,b.lengthb,b.radius,b.spec,ISNULL(e.product,'')
 	from view_rc2 a
 	left join view_rc2s b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on b.productno=c.noa
-	left join dbo.fnSplit(@t_stktype) d on c.typea = d.n
+	left join dbo.fnSplit(@t_stktype) d on a.kind = d.n
 	left join spec e on b.spec=e.noa
 	where a.noa=@t_noa
 	
@@ -258,10 +259,11 @@ z_rc2_rkp01:--z_rc2_rkp01
 		+case when ISNULL(a.width,0)=0 then '' else CAST(a.width as nvarchar) end
 		+case when ISNULL(a.width,0)=0 or ISNULL(a.lengthb,0)=0  then '' else '*' end
 		+case when ISNULL(a.lengthb,0)=0 then '' else CAST(a.lengthb as nvarchar) end
-		+case when Upper(ISNULL(a.spec,''))='MM' then 'mm' else '' end
+		+case when Upper(ISNULL(a.spec,''))='MM' or a.kind='A1' or a.kind='A4' or a.kind='A5' then 'mm' else '' end
+		+case when len(cspec)>0 then ' '+cspec else '' end
 	from @tmp a
-	where len(ISNULL(size,''))=0
-	
+	--where len(ISNULL(size,''))=0
+
 	insert into @tmp(gno,pno,datea,rc2no,ordcno,tggno,tgg,nick
 		,b.[weight],b.unit)
 	select '2','2',a.datea,a.noa,a.ordcno,a.tggno,a.tgg,a.nick
@@ -283,11 +285,6 @@ z_rc2_rkp01:--z_rc2_rkp01
 		
 		set @n = @n + 1
 	end
-	
-	update @tmp set size=case when dime!=0 then CAST(dime as nvarchar) else '' end
-		+case when width!=0 then '*'+CAST(width as nvarchar) else '' end
-		+case when lengthb!=0 then '*'+CAST(lengthb as nvarchar) else '' end
-		+case when len(cspec)>0 then ' '+cspec else '' end
 		
 	select gno 
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo 

@@ -919,7 +919,7 @@
 					<tr>
 						<td><span> </span><a id='lblOdate' class="lbl"> </a></td>
 						<td><input id="txtOdate" type="text" class="txt c1"/></td>
-						<td><span> </span><a id='lblDatea' class="lbl"> </a></td>
+						<td><span> </span><a id='lblDateax' class="lbl">交期</a></td>
 						<td><input id="txtDatea" type="text" class="txt c1"/></td>
 						<td><span> </span><a id='lblKind' class="lbl"> </a></td>
 						<td><select id="cmbKind" class="txt c1" > </select></td>
