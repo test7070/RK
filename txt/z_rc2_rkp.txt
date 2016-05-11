@@ -229,7 +229,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 		,productno nvarchar(20)
 		,product nvarchar(50)
 		,uno nvarchar(30)
-		,size nvarchar(20)
+		,size nvarchar(max)
 		,dime float
 		,width float
 		,lengthb float

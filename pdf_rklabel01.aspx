@@ -83,7 +83,7 @@
 	
 	insert into @tmp(accy,noa,noq,typea,productno,product,size,mount,unit,datea,tggno,tgg,hard,uno,shelflife
 		,dime,width,lengthb,specno,spec)
-	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.mount,a.unit,b.datea,b.tggno,b.nick,a.hard,a.uno,c.shelflife
+	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.mount,a.unit,b.datea,b.tggno,b.nick,a.hard,a.uno,a.errmemo
 		,a.dime,a.width,a.lengthb,a.spec,e.product
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
