@@ -503,11 +503,13 @@ z_quat_rkp02:--z_quat_rkp02
 		select @m = count(1) from @tmp where pno='2'
 		set @n = @n%@pagecount
 		if(@pagecount - @n - @m)<0
-		select @n = @pagecount - count(1) from @tmp where pno='1'
-		while @n >0
 		begin
-			insert into @tmp(pno,gno)values(1,'5')
-			set @n = @n - 1
+			select @n = @pagecount - count(1) from @tmp where pno='1'
+			while @n >0
+			begin
+				insert into @tmp(pno,gno)values(1,'5')
+				set @n = @n - 1
+			end
 		end
 		
 		fetch next from cursor_table
@@ -540,7 +542,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(cc,"~#$","'")+'</a>' cc
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
 		,recno rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
 			+CAST(dime as nvarchar)
@@ -810,11 +812,13 @@ z_quat_rkp01:--z_quat_rkp01
 		select @m = count(1) from @tmp where pno='2'
 		set @n = @n%@pagecount
 		if(@pagecount - @n - @m)<0
-		select @n = @pagecount - count(1) from @tmp where pno='1'
-		while @n >0
 		begin
-			insert into @tmp(pno,gno)values(1,'5')
-			set @n = @n - 1
+			select @n = @pagecount - count(1) from @tmp where pno='1'
+			while @n >0
+			begin
+				insert into @tmp(pno,gno)values(1,'5')
+				set @n = @n - 1
+			end
 		end
 		
 		fetch next from cursor_table
@@ -834,6 +838,21 @@ z_quat_rkp01:--z_quat_rkp01
 	update @tmp set cspec=ISNULL(b.product,'')
 	from @tmp a
 	left join spec b on a.spec=b.noa
+	
+	update @tmp set product=b.engpro
+	from @tmp a
+	left join ucc b on a.productno=b.noa
+	where len(isnull(b.engpro,''))>0
+	
+	update @tmp set pvc=b.engpro
+	from @tmp a
+	left join ucc b on a.pvcno=b.noa
+	where len(isnull(b.engpro,''))>0
+	
+	update @tmp set pve=b.engpro
+	from @tmp a
+	left join ucc b on a.pveno=b.noa
+	where len(isnull(b.engpro,''))>0
 
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
@@ -847,7 +866,7 @@ z_quat_rkp01:--z_quat_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(cc,"~#$","'")+'</a>' cc
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
 		,recno rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
 			+CAST(dime as nvarchar)
