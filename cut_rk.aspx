@@ -220,19 +220,6 @@
 			}
 			function q_funcPost(t_func, result) {
 				switch(t_func) {
-					default:
-						
-							if(t_func.substring(0,18)=='qtxt.query.getuno_'){
-								var n = t_func.replace('qtxt.query.getuno_','');
-								var as = _q_appendData("tmp0", "", true, true);
-								if (as[0] != undefined) {
-									$('#txtBno_'+n).val(as[0].uno);
-									console.log(as[0].uno);
-								}
-								getUno(n-1);
-							}
-						break;
-					
 					case 'qtxt.query.getuno':
 						var as = _q_appendData("tmp0", "", true, true);
 						if (as[0] != undefined) {
@@ -240,8 +227,8 @@
 								alert('批號取得異常。');
 							} else {
 								for (var i = 0; i < q_bbsCount; i++) {
-									if ($('#txtUno_' + i).val().length == 0) {
-										$('#txtUno_' + i).val(as[i].uno);
+									if ($('#txtBno_' + i).val().length == 0) {
+										$('#txtBno_' + i).val(as[i].uno);
 									}
 								}
 							}
@@ -257,6 +244,17 @@
 							q_gtnoa(q_name, replaceAll(q_getPara('sys.key_rc2') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
 						else
 							wrServer(t_noa);
+						break;
+					default:
+						if(t_func.substring(0,18)=='qtxt.query.getuno_'){
+								var n = t_func.replace('qtxt.query.getuno_','');
+								var as = _q_appendData("tmp0", "", true, true);
+								if (as[0] != undefined) {
+									$('#txtBno_'+n).val(as[0].uno);
+									console.log(as[0].uno);
+								}
+								getUno(n-1);
+							}
 						break;
 				}
 			}
