@@ -111,7 +111,7 @@
                         if (b_ret != null) {
                         	as = b_ret;
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtCust,txtSpec,txtClass,txtSize,txtCubno'
-                        	, as.length, as, 'noa,no2,custno,nick,spec,class,size,makeno', '','');             	
+                        	, as.length, as, 'noa,no2,custno,nick,spec,class,size,makeno', 'txtOrdeno','');             	
                         }else{
                         	Unlock(1);
                         }
