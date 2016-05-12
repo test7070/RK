@@ -36,7 +36,7 @@
 			aPop = new Array(
 				//['txtPost', 'lblPost', 'addr', 'post,addr', 'txtPost', 'addr_b.aspx'],
 				['txtStationno', 'lblStore', 'store', 'noa,store', '0txtStationno,txtStation', 'store_b.aspx'],
-				['txtUno_', 'btnUno_', 'view_uccc', 'uno,productno,product,size,unit', '0txtUno_,txtProductno_,txtProduct_,txtSize_,txtUnit_', 'uccc_seek_b.aspx?;;;1=0', '95%', '60%'],
+				['txtUno_', 'btnUno_', 'view_uccc', 'uno,productno,product,spec,unit', '0txtUno_,txtProductno_,txtProduct_,cmbSpec_,txtUnit_', 'uccc_seek_b.aspx?;;;1=0', '95%', '60%'],
 				['txtProductno_', 'btnProductno_', 'ucaucc', 'noa,product,unit', '0txtProductno_,txtProduct_,txtUnit_', 'ucaucc_b.aspx'],
 				['txtProductno', 'lblProduct', 'ucaucc', 'noa,product', 'txtProductno,txtProduct', 'ucaucc_b.aspx'],
 				['txtRackno', 'lblRackno', 'rack', 'noa,rack,storeno,store', '0txtRackno', 'rack_b.aspx']
@@ -51,11 +51,14 @@
 					$('#txtGweight_'+i).val(t_n*q_float('txtWeight_'+i));
 				}
 			}
+			
+			var t_spec = '';
+			
 			$(document).ready(function() {
 				bbmKey = ['noa'];
 				bbsKey = ['noa', 'noq'];
 				q_brwCount();
-				q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
+				q_gt('spec', '', 0, 0, 0, '');
 			});
 
 			function main() {
@@ -72,7 +75,7 @@
 				bbmMask = [['txtDatea', r_picd], ['txtCucdate', r_picd]];
 				q_mask(bbmMask);
 				q_cmbParse("cmbTypea", '領料單,退料單,加寄庫出貨');
-				
+				q_cmbParse("cmbSpec", t_spec,'s');
 			}
 			
 			function q_popPost(s1) {
@@ -126,6 +129,15 @@
 			}
 			function q_gtPost(t_name) {
 				switch (t_name) {
+					case 'spec':
+						var as = _q_appendData("spec", "", true);
+						t_spec='';
+						for ( i = 0; i < as.length; i++) {
+							t_spec+=','+as[i].noa+'@'+as[i].product;
+						}
+						if(t_spec.length==0) t_spec=' ';
+						q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
+						break;
 					case 'isexist_ina':
 						var t_noa = $('#txtNoa').val();
 						var as = _q_appendData("view_ina", "", true);
@@ -543,7 +555,7 @@
 						<input id="txtProduct.*" type="text" style="width:45%"/>
 						<input id="btnProduct.*" type="button" style="display:none;"/>
 					</td>
-					<td><input id="txtSize.*" type="text" style="width:95%" maxlength="20"/></td>
+					<td><select id="cmbSpec.*" style="width:95%;"> </select></td>
 					<td><input class="txt" id="txtUnit.*" type="text"  style="width:95%;"/></td>
 					<td>
 						<input class="txt num" id="txtMount.*" type="text" style="width:95%;"/>

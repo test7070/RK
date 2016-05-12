@@ -28,7 +28,7 @@ z_get_rkp01:--z_get_rkp01
 		,productno,product,size,unit,mount,[weight],eweight,mweight,memo)	
 	select ROW_NUMBER()over(order by a.noa,a.noq),'1'
 		,b.datea,b.typea,a.accy,a.noa,a.noq
-		,a.productno,a.product,a.size,a.unit
+		,a.productno,a.product,a.spec,a.unit
 		,a.mount,a.[weight],a.eweight,a.mweight,a.memo
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
