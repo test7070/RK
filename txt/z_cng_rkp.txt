@@ -35,14 +35,14 @@ z_cng_rkp01:--z_cng_rkp01
 		,memo nvarchar(max)
 	)
 	insert into @tmp(recno,gno,datea,typea,accy,noa,noq
-		,storeno,store,storeinno,storein
+		,storeno,storeinno
 		,productno,product,size,unit,mount,[weight]--,eweight,mweight
 		,memo
 		,dime,width,lengthb,radius,spec)	
 	select ROW_NUMBER()over(order by a.noa,a.noq),'1'
 		
 		,b.datea,b.typea,a.accy,a.noa,a.noq
-		,b.storeno,b.store,b.storeinno,b.storein
+		,a.storeno,a.storeinno
 		,a.productno,a.product,a.size,a.unit
 		,a.mount,a.[weight]--,a.eweight,a.mweight
 		,a.memo
@@ -51,6 +51,14 @@ z_cng_rkp01:--z_cng_rkp01
 	left join view_cng b on a.accy=b.accy and a.noa=b.noa
 	where b.noa is not null
 	and a.noa = @t_noa
+	
+	update @tmp set store=isnull(b.store,'')
+	from @tmp a
+	left join store b on a.storeno=b.noa
+	
+	update @tmp set storein=isnull(b.store,'')
+	from @tmp a
+	left join store b on a.storeinno=b.noa
 	
 	update @tmp set size = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
 		+case when ISNULL(a.dime,0)=0 or ISNULL(a.width,0)=0 then '' else '*' end
