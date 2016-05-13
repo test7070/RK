@@ -763,27 +763,28 @@ z_quat_rkp01:--z_quat_rkp01
 		--備註
 		---------------------------------------------------------
 		insert into @tmp(pno,gno,noa)values(2,'5',@noa)
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'交&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'貨&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'期：',@odate)
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'付款方式：',@paytype+@memo2)
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'包裝方式：',@packtype)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Delivery Date：',@odate)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Payment:',@paytype+@memo2)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Packing:',@packtype)
 		
-		set @string = 
-			case when @chka1=1 then @sign1 else @sign2 end + '賣方運送&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
-			+case when @chka2=1 then @sign1 else @sign2 end + '買方自運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
-			+case when @chka3=1 then @sign1 else @sign2 end + '可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
-			+case when @chka4=1 then @sign1 else @sign2 end + '不可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
-			+case when @chka5=1 then @sign1 else @sign2 end + '出貨數量若不足五噸，另需負擔運費。' 
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'交貨方式：',@string)
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'交貨地點：',@addr)
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'交貨公差：',@tolerance)
+		set @string = ''
+		--set @string = 
+		--	case when @chka1=1 then @sign1 else @sign2 end + '賣方運送&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka2=1 then @sign1 else @sign2 end + '買方自運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka3=1 then @sign1 else @sign2 end + '可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka4=1 then @sign1 else @sign2 end + '不可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka5=1 then @sign1 else @sign2 end + '出貨數量若不足五噸，另需負擔運費。' 
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Delivery Term:',@string)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Loading Port:',@addr)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,"Q'ty Tolerance:",@tolerance)
 		
 		set @string = '<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">A.</span>'+case when @chkb1=1 then @sign1 else @sign2 end + '一般流通品'
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'材料類別：',@string)
+		--insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'材料類別：',@string)
 		set @string = '<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">B.</span>'+case when @chkb2=1 then @sign1 else @sign2 end + '買方專用材料'
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'',@string)
-		set @string = '<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">&nbsp'+CHAR(59)+'</span>'+case when @chkb3=1 then @sign1 else @sign2 end + '特製皮膜'
+		--insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'',@string)
+		/*set @string = '<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">&nbsp'+CHAR(59)+'</span>'+case when @chkb3=1 then @sign1 else @sign2 end + '特製皮膜'
 			+case when @chkb4=1 then @sign1 else @sign2 end + '特殊規格鋼捲，於合約完成後半年內未出貨完畢，買方需購回剩餘原材料。'
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'',@string)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'',@string)*/
 		--MEMO
 		set @n = 0
 		set @string = @memo
