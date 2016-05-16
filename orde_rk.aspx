@@ -29,6 +29,7 @@
             brwNowPage = 0;
             brwKey = 'Datea';
             brwCount2 = 8;
+            q_desc = 1;
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,addr_fact,tel,fax', 'txtCustno,txtComp,txtNick,txtAddr,txtTel,txtFax', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
             	,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtClass_', 'ucc_b.aspx']

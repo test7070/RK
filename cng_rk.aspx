@@ -248,6 +248,8 @@
 				}
 				q_nowf();
 				as['date'] = abbm2['date'];
+				//as['storeno'] = abbm2['storeno'];
+				//as['storeinno'] = abbm2['storeinno'];
 				return true;
 			}
 
