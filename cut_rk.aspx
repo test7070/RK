@@ -29,7 +29,9 @@
             brwKey = 'Noa';
             brwCount2 = 4;
             aPop = new Array(['txtMechno', 'lblMechno', 'mech', 'noa,mech', 'txtMechno,txtMech', 'mech_b.aspx']
-            , ['txtCustno', 'btnCustno', 'cust', 'noa,comp', 'txtCustno,txtCust', 'cust_b.aspx']);
+            , ['txtCustno', 'btnCustno', 'cust', 'noa,comp', 'txtCustno,txtCust', 'cust_b.aspx']
+            , ['txtStoreno_', 'btnStore_', 'store', 'noa,store', 'txtStoreno_,txtStore_', 'store_b.aspx']
+            );
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'noq'];
@@ -275,6 +277,12 @@
 						$('#txtEtime_'+i).focusout(function(e){
 							sum();							
 						});
+						$('#txtStoreno_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
+                            $('#btnStore_'+n).click();
+                        });
                     	$('#txtOrdeno_'+i).change(function(e){
 							var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
 							n = parseInt(n);
@@ -498,7 +506,7 @@
                 font-size: medium;
             }
             .dbbs {
-                width: 1700px;
+                width: 1900px;
             }
             .dbbs .tbbs {
                 margin: 0;
@@ -631,6 +639,8 @@
 					<td style="width:200px;">棧板序號</td>
 					<td style="width:200px;">備註</td>
 					<td style="width:100px;">轉入庫日期</td>
+					<td style="width:100px;">倉庫</td>
+					<td style="width:100px;">儲位</td>
 					<td align="center" style="width:100px;">開始時間</td>
 					<td align="center" style="width:100px;">結束時間</td>	
 					<td align="center" style="width:80px;">施工工時(分)</td>
@@ -673,6 +683,12 @@
 					<td><input id="txtSpecial.*" type="text" style="float:left;width:95%;"/></td>
 					<td><input id="txtMemo.*" type="text" style="float:left;width:95%;"/></td>
 					<td><input id="txtDatea.*" type="text" style="float:left;width:95%;"/></td>
+					<td>
+						<input id="txtStoreno.*" type="text" style="float:left;width:95%;"/>
+						<input id="txtStore.*" type="text" style="float:left;width:95%;"/>
+						<input id="btnStore.*" type="button" style="display:none;" />
+					</td>
+					<td><input id="txtPlace.*" type="text" style="float:left;width:95%;"/></td>
 					<td><input id="txtBtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtEtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
