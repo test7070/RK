@@ -352,7 +352,7 @@
             }
             .dbbm {
                 float: left;
-                width: 1000px;
+                width: 800px;
                 /*margin: -1px;
                  border: 1px black solid;*/
                 border-radius: 5px;
@@ -562,8 +562,9 @@
 					<td align="center" style="width: 45px;"><a id='lblUnit_st'> </a></td>
 					<td align="center" style="width: 100px;"><a id='lblMount_st'> </a></td>
 					<td align="center" style="width: 100px;"><a id='lblWeight_st'> </a></td>
-					<td align="center" style="width:100px;">調出倉</td>
+					<td align="center" style="width:100px;display:none;">調出倉</td>
 					<td align="center" style="width:100px;">調入倉</td>
+					<td align="center" style="width:100px;">儲位</td>
 					<td align="center" ><a id='lblMemo_st'> </a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -582,13 +583,14 @@
 					<td><input class="txt c1" id="txtUnit.*" type="text" /></td>
 					<td><input class="txt num c1" id="txtMount.*" type="text"/></td>
 					<td><input class="txt num c1" id="txtWeight.*" type="text" /></td>
-					<td><select id='cmbStoreno.*' style="width:95%;"> </select></td>
+					<td style="display:none;"><select id='cmbStoreno.*' style="width:95%;"> </select></td>
 					<td><select id='cmbStoreinno.*' style="width:95%;"> </select></td>
 					<td>
 						<input class="txt c1" id="txtMemo.*" type="text"/>
 						<input id="txtNoq.*" type="hidden" />
 						<input id="recno.*" type="hidden" />
 					</td>
+					<td><input id="txtPlace.*" type="text" class="txt c1"/></td>
 				</tr>
 			</table>
 		</div>

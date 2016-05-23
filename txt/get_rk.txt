@@ -36,9 +36,11 @@ post:--post  get_rk
 			declare @memo nvarchar(max)=''
 			declare @storeno nvarchar(20) = ''
 			declare @store nvarchar(20) = ''
+			declare @place nvarchar(20) = ''
 			
 			select @t_accy=a.accy,@datea=a.datea,@uno=a.idno,@productno=a.productno,@product=a.product
 				,@weight=a.[weight],@memo=a.memo,@storeno=a.stationno,@store=a.station
+				,@place=a.rackno
 			from view_get a
 			where noa=@t_noa
 			and (len(ISNULL(a.idno,''))>0 or (len(a.productno)>0 and a.[weight]!=0))
@@ -101,10 +103,10 @@ post:--post  get_rk
 				execute sp_executesql @cmd,N'@datea nvarchar(20),@t_noa nvarchar(20),@storeno nvarchar(20),@store nvarchar(20)'
 					,@datea=@datea,@t_noa=@t_noa,@storeno=@storeno,@store=@store
 				IF @@Error <> 0 BEGIN SET @chk = 1 END
-				set @cmd = "insert into inas"+@t_accy+"(noa,noq,uno,productno,product,mount,[weight],price,total,storeno,store,dime,width,lengthb,radius,memo)
-					values(@t_noa,'001',@uno,@productno,@product,@mount,@weight,@price,@money,@storeno,@store,0,0,0,0,@memo)"
-				execute sp_executesql @cmd,N'@t_noa nvarchar(20),@uno nvarchar(30),@productno nvarchar(50),@product nvarchar(100),@mount float,@weight float,@price float,@money float,@memo nvarchar(max),@storeno nvarchar(20),@store nvarchar(20)'
-					,@t_noa=@t_noa,@uno=@uno,@productno=@productno,@product=@product,@mount=@mount,@weight=@weight,@price=@price,@money=@money,@memo=@memo,@storeno=@storeno,@store=@store
+				set @cmd = "insert into inas"+@t_accy+"(noa,noq,uno,productno,product,mount,[weight],price,total,storeno,store,place,dime,width,lengthb,radius,memo)
+					values(@t_noa,'001',@uno,@productno,@product,@mount,@weight,@price,@money,@storeno,@store,@place,0,0,0,0,@memo)"
+				execute sp_executesql @cmd,N'@t_noa nvarchar(20),@uno nvarchar(30),@productno nvarchar(50),@product nvarchar(100),@mount float,@weight float,@price float,@money float,@memo nvarchar(max),@storeno nvarchar(20),@store nvarchar(20),@place nvarchar(20)'
+					,@t_noa=@t_noa,@uno=@uno,@productno=@productno,@product=@product,@mount=@mount,@weight=@weight,@price=@price,@money=@money,@memo=@memo,@storeno=@storeno,@store=@store,@place=@place
 				IF @@Error <> 0 BEGIN SET @chk = 1 END
 				--寫入UCCY
 				if not exists(select * from uccy where uno=@uno)

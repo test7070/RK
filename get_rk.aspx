@@ -38,8 +38,7 @@
 				['txtStationno', 'lblStore', 'store', 'noa,store', '0txtStationno,txtStation', 'store_b.aspx'],
 				['txtUno_', 'btnUno_', 'view_uccc', 'uno,productno,product,spec,unit', '0txtUno_,txtProductno_,txtProduct_,cmbSpec_,txtUnit_', 'uccc_seek_b.aspx?;;;1=0', '95%', '60%'],
 				['txtProductno_', 'btnProductno_', 'ucaucc', 'noa,product,unit', '0txtProductno_,txtProduct_,txtUnit_', 'ucaucc_b.aspx'],
-				['txtProductno', 'lblProduct', 'ucaucc', 'noa,product', 'txtProductno,txtProduct', 'ucaucc_b.aspx'],
-				['txtRackno', 'lblRackno', 'rack', 'noa,rack,storeno,store', '0txtRackno', 'rack_b.aspx']
+				['txtProductno', 'lblProduct', 'ucaucc', 'noa,product', 'txtProductno,txtProduct', 'ucaucc_b.aspx']
 			);
 			function sum(){
 				if(!(q_cur==1 || q_cur==2))
@@ -496,12 +495,15 @@
 					</tr>
 					<tr>
 						<td><span> </span><a class="lbl" >入庫批號</a></td>
-						<td colspan="2"><input id="txtIdno" type="text" class="txt c1"/></td>
-						<td> </td>
-						<td><span> </span><a id="lblStore" class="lbl" >倉庫</a></td>
-						<td>
-							<input id="txtStationno" type="text" class="txt" style="float:left;width:50%;"/>
-							<input id="txtStation" type="text" class="txt" style="float:left;width:50%;"/>
+						<td colspan="5">
+							<input id="txtIdno" type="text" class="txt" style="float:left;width:35%;"/>
+							<span style="float:left;width:3%;"> </span>
+							<a id="lblStore" class="lbl" style="float:left;width:5%;">倉庫</a>
+							<input id="txtStationno" type="text" class="txt" style="float:left;width:15%;"/>
+							<input id="txtStation" type="text" class="txt" style="float:left;width:15%;"/>
+							<span style="float:left;width:3%;"> </span>
+							<a id="lblPlace" class="lbl" style="float:left;width:5%;">儲位</a>
+							<input id="txtRackno" type="text" class="txt" style="float:left;width:17%;"/>
 						</td>
 					</tr>
 					<tr>
