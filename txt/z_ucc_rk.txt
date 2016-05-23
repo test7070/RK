@@ -1,3 +1,285 @@
+z_ucc_rk02:--z_ucc_rk02
+	SET QUOTED_IDENTIFIER OFF 
+	declare @t_cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_stktype nvarchar(max)='[3]'
+	declare @t_kind nvarchar(max)= case when '#non'=[4] then '' else [4] end 
+	declare @t_bproductno nvarchar(30) = case when '#non'=[5] then '' else [5] end 
+	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then char(255) else [6] end 
+	
+	declare @t_bradius float = 0
+	declare @t_eradius float = 999999
+	declare @t_bdime float = 0
+	declare @t_edime float = 999999
+	declare @t_bwidth float = 0
+	declare @t_ewidth float = 999999
+	declare @t_blengthb float = 0
+	declare @t_elengthb float = 999999
+	begin try
+		set @t_bradius = case when '#non'=[7] then 0 else cast([7] as float) end 
+		set @t_eradius = case when '#non'=[8] then 99999 else cast([8] as float) end 
+		set @t_bdime = case when '#non'=[9] then 0 else cast([9] as float) end 
+		set @t_edime = case when '#non'=[10] then 99999 else cast([10] as float) end 
+		set @t_bwidth = case when '#non'=[11] then 0 else cast([11] as float) end 
+		set @t_ewidth = case when '#non'=[12] then 99999 else cast([12] as float) end 
+		set @t_blengthb = case when '#non'=[13] then 0 else cast([13] as float) end 
+		set @t_elengthb = case when '#non'=[14] then 99999 else cast([14] as float) end 
+	end try
+	begin catch
+		set @t_bradius = 0
+		set @t_eradius = 999999
+		set @t_bdime = 0
+		set @t_edime = 999999
+		set @t_bwidth = 0
+		set @t_ewidth = 999999
+		set @t_blengthb = 0
+		set @t_elengthb = 999999
+	end catch
+	
+	declare @t_edate nvarchar(10) = case when '#non'=[15] then '' else [15] end 
+	------------------------------------------------------------------------
+	--  一個批號只會有一個倉庫一個儲位
+	declare @tmp table(
+		sel int identity(1,1)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		
+		,mount float
+		,[weight] float
+		
+		,storeno nvarchar(20)
+		,place nvarchar(20)
+		
+		,tt nvarchar(10)
+		,tablea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,datea nvarchar(20)
+		
+		,emount float
+		,eweight float
+		,isLast int
+	)
+	--進貨(退貨不算)
+	insert into @tmp(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
+	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0)
+		,case when ISNULL(b.typea,2)=2 then null else isnull(a.storeno,'') end
+		,case when ISNULL(b.typea,2)=2 then null else isnull(a.place,'') end
+		,case when ISNULL(b.typea,2)=2 then '21' else '01' end,'rc2'
+		,a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	where case when len(isnull(a.datea,''))>0 then a.datea else b.datea end <=@t_edate
+	and len(ISNULL(a.uno,''))>0
+	--入庫
+	insert into @tmp(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
+	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0),isnull(a.storeno,''),isnull(a.place,'')
+		,'02','ina',a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	where case when len(isnull(a.datea,''))>0 then a.datea else b.datea end <=@t_edate
+	and len(ISNULL(a.uno,''))>0
+	--CUTS  成品進倉
+	insert into @tmp(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
+	select a.bno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0),isnull(a.storeno,''),isnull(a.place,'')
+		,'03','cut',a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where case when len(isnull(a.datea,''))>0 then a.datea else b.datea end <=@t_edate
+	and len(ISNULL(a.bno,''))>0
+	------------------------------------------------------------------------------------------------------
+	--調撥
+	insert into @tmp(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
+	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0)
+		,isnull(a.storeinno,''),isnull(a.place,'')
+		,'11','cng',a.accy,a.noa,a.noq,b.datea
+	from view_cngs a
+	left join view_cng b on a.accy=b.accy and a.noa=b.noa
+	where b.datea <=@t_edate
+	and len(ISNULL(a.uno,''))>0
+	
+	------------------------------------------------------------------------------------------------------
+	--出貨
+	insert into @tmp(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
+	select a.uno,isnull(a.productno,'')
+		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
+		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		,null,null
+		,case when ISNULL(b.typea,2)=2 then '04' else '22' end,'vcc',a.accy,a.noa,a.noq,b.datea
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	where b.datea <=@t_edate
+	and len(ISNULL(a.uno,''))>0
+	--領料
+	insert into @tmp(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
+	select a.uno,isnull(a.productno,'')
+		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
+		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		,null,null
+		,'23','get',a.accy,a.noa,a.noq,b.datea
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	where b.datea <=@t_edate
+	and len(ISNULL(a.uno,''))>0
+	-----------------------------------------------------------------
+	-- update 倉庫、儲位
+	declare @sel int
+	declare @uno nvarchar(30)
+	declare @tt nvarchar(20)
+	declare @datea nvarchar(20)
+	declare @storeno nvarchar(20)
+	declare @place nvarchar(20)
+
+	declare cursor_table cursor for
+	select sel,uno,tt,datea
+	from @tmp 
+	where tt='04' or tt='21' or tt='22' or tt='23'
+	order by datea,tt,accy,noa,noq
+	open cursor_table
+	fetch next from cursor_table
+	into @sel,@uno,@tt,@datea
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		select @storeno = '',@place=''
+		select top 1 @storeno = storeno,@place=place
+		from @tmp 
+		where uno=@uno and datea<=@datea and storeno is not null
+		order by datea desc,tt desc
+		
+		update @tmp set storeno=@storeno,place=@place where sel=@sel
+		
+		fetch next from cursor_table
+		into @sel,@uno,@tt,@datea
+	end
+	close cursor_table
+	deallocate cursor_table
+	-----------------------------------------------------------------
+	declare @mount float
+	declare @weight float
+	declare @emount float
+	declare @eweight float
+	declare @isLast int
+	
+	declare cursor_table cursor for
+	select uno from @tmp group by uno
+	open cursor_table
+	fetch next from cursor_table
+	into @uno
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		select @emount=0,@eweight=0,@isLast=0
+		declare cursor_table2 cursor for
+		select sel,tt,mount,[weight] from @tmp where uno=@uno order by datea,tt,accy,noa,noq
+		open cursor_table2
+		fetch next from cursor_table2
+		into @sel,@tt,@mount,@weight
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			if LEFT(@tt,1)='0' 
+			begin
+				set @emount = @emount + @mount
+				set @eweight = @eweight + @weight
+			end
+			else if LEFT(@tt,1)='2' 
+			begin
+				set @emount = @emount - @mount
+				set @eweight = @eweight - @weight
+			end
+			set @isLast=@sel
+			
+			update @tmp set emount=@emount,eweight=@eweight where sel=@sel
+			fetch next from cursor_table2
+			into @sel,@tt,@mount,@weight
+		end
+		close cursor_table2
+		deallocate cursor_table2
+		
+		update @tmp set isLast=1 where sel=@sel
+		
+		fetch next from cursor_table
+		into @uno
+	end
+	close cursor_table
+	deallocate cursor_table
+	------------------------------------------------------
+	declare @tmpa table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,kind nvarchar(20)
+		,ckind nvarchar(20)
+		,datea nvarchar(20)
+		,uno nvarchar(30)
+		,makeno nvarchar(30)
+		,productno nvarchar(30)
+		,product nvarchar(50)
+		,spec nvarchar(50)
+		,cspec nvarchar(50)
+		,size nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,mount float
+		,[weight] float
+		,price float
+		,uno2 nvarchar(30)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(20)
+		,[contract] nvarchar(max)--合約編號
+		,custno nvarchar(20)--客戶名稱
+		,cust nvarchar(30)
+	)
+	insert into @tmpa(gno,kind,ckind,datea,uno,productno,product 
+	,spec,cspec,size,dime,width,lengthb,radius 
+	,mount,[weight],price,uno2) 
+	select '1',b.kind,c.item,b.datea,a.uno,b.productno,b.product 
+	,b.spec,d.product,b.size,b.dime,b.width,b.lengthb,b.radius 
+	,a.emount,a.[eweight],b.sprice,b.uno2 
+	from @tmp a
+	left join view_uccb b on a.uno=b.uno 
+	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n 
+	left join spec d on b.spec=d.noa 
+	where a.isLast=1
+	and isnull(b.productno,'') between @t_bproductno and @t_eproductno 
+	and ISNULL(b.radius,0) between @t_bradius and @t_eradius 
+	and ISNULL(b.dime,0) between @t_bdime and @t_edime 
+	and ISNULL(b.width,0) between @t_bwidth and @t_ewidth 
+	and ISNULL(b.lengthb,0) between @t_blengthb and @t_elengthb 
+	and (len(@t_kind)=0 or b.kind=@t_kind) 
+	and ISNULL(a.eweight,0)>0 
+	
+	update @tmpa set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
+	from @tmpa a
+	left join view_cuts b on b.bno=a.uno
+	where b.noa is not null
+	
+	update @tmpa set [contract]=replace(b.memo,'chr(10)',' '),custno=c.custno,cust=c.nick
+	from @tmpa a
+	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
+	left join view_orde c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	
+	update @tmpa set size=case kind when 'A1' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
+			when 'A4' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
+			when 'A5' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
+			when 'A7' then CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
+			else '' end
+	update @tmpa set product=b.product
+	from @tmpa a
+	left join ucc b on a.productno=b.noa
+	where len(ISNULL(a.product,''))=0
+	
+	insert into @tmpa(gno,mount,[weight])select '2',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp
+	
+	select row_number()over(order by gno,kind,dime,radius,width,lengthb,spec,uno) rr
+		,* 
+		,dbo.getComma(mount,-1) cmount
+		,dbo.getComma([weight],-1) cweight
+	from @tmpa 
+	order by gno,kind,dime,radius,width,lengthb,spec,uno;
+
 z_ucc_rk01:--z_ucc_rk01 
 	SET QUOTED_IDENTIFIER OFF 
 	declare @t_cmd nvarchar(max)
@@ -64,24 +346,24 @@ z_ucc_rk01:--z_ucc_rk01
 		,custno nvarchar(20)--客戶名稱
 		,cust nvarchar(30)
 	)
-	insert into @tmp(gno,recno,uno,style,productno,product,size,dime,width,lengthb,radius,[weight],mount,price,eweight,emount)
-	select '1'
-		,ROW_NUMBER()over(order by a.style,a.productno,a.dime,a.width,a.uno)
-		,a.uno,a.style,a.productno,a.product,a.size,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount,a.sprice,0,0
-	from view_uccb a
-	where ISNULL(a.datea,'') between @t_bdate and @t_edate
-	and ISNULL(a.dime,0) between @t_bdime and @t_edime
-	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
-	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
-	and ISNULL(a.custno,'') between @t_bcustno and @t_ecustno
-	and (len(@t_kind)=0 or ISNULL(a.kind,'')=@t_kind)
-	and (len(@t_itype)=0 or ISNULL(a.itype,'')=@t_itype)
-	and (len(@t_style)=0 or charindex(','+a.style+',',','+@t_style+',')>0)
-	and (len(@t_waste)=0 or upper(a.waste) = @t_waste)
-	and (len(@t_spec)=0 or isnull(a.class,'') = @t_spec)
-	and (len(@t_source)=0 or isnull(a.[source],'') = @t_source)
-	and ISNULL(a.productno,'') between @t_bproductno3 and @t_eproductno3
+	insert into @tmp(gno,kind,ckind,datea,uno,productno,product 
+	,spec,cspec,size,dime,width,lengthb,radius 
+	,mount,[weight],price,uno2) 
+	select '1',b.kind,c.item,b.datea,a.uno,b.productno,b.product 
+	,b.spec,d.product,b.size,b.dime,b.width,b.lengthb,b.radius 
+	,a.emount,a.[eweight],b.sprice,b.uno2 
+	from uccy a 
+	left join view_uccb b on a.uno=b.uno 
+	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n 
+	left join spec d on b.spec=d.noa 
+	where len(ISNULL(a.uno,''))>0 
+	and isnull(b.productno,'') between @t_bproductno and @t_eproductno 
+	and ISNULL(b.radius,0) between @t_bradius and @t_eradius 
+	and ISNULL(b.dime,0) between @t_bdime and @t_edime 
+	and ISNULL(b.width,0) between @t_bwidth and @t_ewidth 
+	and ISNULL(b.lengthb,0) between @t_blengthb and @t_elengthb 
+	and (len(@t_kind)=0 or b.kind=@t_kind) 
+	and ISNULL(a.eweight,0)>0 
 	
 	update @tmp set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
 	from @tmp a

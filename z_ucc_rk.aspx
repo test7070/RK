@@ -22,17 +22,6 @@
 				q_gf('', 'z_ucc_rk');
 			});
 			function q_gfPost() {
-				loadFinish();
-			}
-
-			function q_gtPost(t_name) {
-				switch (t_name) {
-					default:
-						break;
-				}
-			}
-
-			function loadFinish() {
 				$('#q_report').q_report({
 					fileName : 'z_ucc_rk',
 					options : [{
@@ -69,11 +58,25 @@
 					}, {
 						type : '1', //[13][14] 6
 						name : 'xlengthb'
+					}, {
+						type : '6', //[15] 7
+						name : 'edate'
 					}]
 				});
 				q_popAssign();
 				q_getFormat();
 				q_langShow();
+				
+				$('#txtEdate').mask('999/99/99');
+				$('#txtEdate').datepicker();
+				$('#txtEdate').val(q_date());
+			}
+
+			function q_gtPost(t_name) {
+				switch (t_name) {
+					default:
+						break;
+				}
 			}
 
 			function q_boxClose(s2) {
