@@ -221,7 +221,7 @@ z_cubp_rk01:--z_cubp_rk01
 		where a.noa=@noa and a.nor=@noq
 		and a.kind = '1'
 		
-		select @hard = SUM(ISNULL(a.mount,0)),@lengthb2=SUM(ISNULL(a.[weight],0))
+		select @hard = SUM(ISNULL(a.[weight],0)),@lengthb2=SUM(ISNULL(a.[wweight],0))
 		from view_cubt a
 		where a.noa=@noa and a.nor=@noq
 		and a.kind = '1'
@@ -232,7 +232,7 @@ z_cubp_rk01:--z_cubp_rk01
 		where a.noa=@noa and a.nor=@noq
 		and a.kind = '2'
 		
-		select @t_pe_mount = SUM(ISNULL(a.mount,0)),@t_pe_weight=SUM(ISNULL(a.[weight],0))
+		select @t_pe_mount = SUM(ISNULL(a.[weight],0)),@t_pe_weight=SUM(ISNULL(a.[wweight],0))
 		from view_cubt a
 		where a.noa=@noa and a.nor=@noq
 		and a.kind = '2'

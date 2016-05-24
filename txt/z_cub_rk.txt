@@ -193,7 +193,7 @@ z_cub_rk02:--z_cub_rk02
 		declare cursor_table2 cursor for
 		
 		select row_number()over(order by a.noq) 
-			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.mount,b.[weight]
+			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
 		from @tmp a
 		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
 		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
@@ -236,7 +236,7 @@ z_cub_rk02:--z_cub_rk02
 		declare cursor_table2 cursor for
 		
 		select row_number()over(order by a.noq) 
-			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.mount,b.[weight]
+			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
 		from @tmp a
 		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
 		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
@@ -1098,7 +1098,7 @@ z_cub_rk01:--z_cub_rk01
 		declare cursor_table2 cursor for
 		
 		select row_number()over(order by a.noq) 
-			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.mount,b.[weight]
+			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
 		from @tmp a
 		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
 		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
@@ -1141,7 +1141,7 @@ z_cub_rk01:--z_cub_rk01
 		declare cursor_table2 cursor for
 		
 		select row_number()over(order by a.noq) 
-			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.mount,b.[weight]
+			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
 		from @tmp a
 		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
 		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq

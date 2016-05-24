@@ -167,7 +167,7 @@
                     			sum();
                     		}else if(t_para.action == 'getDensity'){
                     			try{
-                					var t_density = 0,t_mount = q_float('txtMount__'+t_para.n);
+                					var t_density = 0,t_mount = q_float('txtWeight__'+t_para.n);
                     				var as = _q_appendData("ucc", "", true);
 			                		if (as[0] != undefined) {
 		                				try{
@@ -176,9 +176,9 @@
 			                				t_density = 0;
 			                			}
 			                		}
-			                		$('#txtWeight__'+t_para.n).val(round(q_mul(t_density,t_mount),0));
+			                		$('#txtWweight__'+t_para.n).val(round(q_mul(t_density,t_mount),0));
 		                		}catch(e){
-		                			$('#txtWeight__'+t_para.n).val(0);
+		                			$('#txtWweight__'+t_para.n).val(0);
 		                		}
                     		}
                     		
@@ -500,7 +500,7 @@
                             e.preventDefault();
                             if(!(q_cur==1 || q_cur==2))
 								return;
-                            var n = $(this).attr('id').replace('txtProductno__', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct__'+n).click();
                         });
                         $('#txtUno__' + i).bind('contextmenu', function(e) {
@@ -508,11 +508,11 @@
                             e.preventDefault();
                             if(!(q_cur==1 || q_cur==2))
 								return;
-                            var n = $(this).attr('id').replace('txtUno__', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnUno__'+n).click();
                         });
-                        $('#txtMount__' + i).bind('change', function(e) {
-                            var n = $(this).attr('id').replace('txtMount__', '');
+                        $('#txtWeight__' + i).bind('change', function(e) {
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                     		if($('#txtProductno__'+n).val().length>0){
                     			t_where = "where=^^ noa='" + trim($('#txtProductno__'+n).val()) + "' ^^";
                     			q_gt('ucc', t_where, 0, 0, 0, JSON.stringify({action:"getDensity",n:n}), r_accy);
@@ -953,12 +953,13 @@
 							<input id="btnProduct..*" type="button" style="display:none;">
 						</td>
 						<td>
-							<input class="txt" id="txtMount..*" type="text" style="width:95%;text-align: right;"/>
+							<input class="txt" id="txtMount..*" type="text" style="display:none;"/>
 							<input class="txt" id="txtGmount..*" type="text" style="display:none;"/>
-						</td>
-						<td>
 							<input class="txt" id="txtWeight..*" type="text" style="width:95%;text-align: right;"/>
 							<input class="txt" id="txtGweight..*" type="text" style="display:none;"/>
+						</td>
+						<td>
+							<input class="txt" id="txtWweight..*" type="text" style="width:95%;text-align: right;"/>
 						</td>
 						<td><input class="txt" id="txtMemo..*" type="text" style="width:95%;" /></td>
 					</tr>
