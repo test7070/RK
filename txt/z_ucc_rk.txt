@@ -133,7 +133,7 @@ z_ucc_rk02:--z_ucc_rk02
 		,null,null
 		,'24','cubt',a.accy,a.noa,a.noq,b.datea
 	from view_cubt a
-	left join view_cubt b on a.accy=b.accy and a.noa=b.noa
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea <=@t_edate
 	and len(ISNULL(a.uno,''))>0
 	
