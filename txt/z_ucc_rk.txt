@@ -38,6 +38,8 @@ z_ucc_rk02:--z_ucc_rk02
 	end catch
 	
 	declare @t_edate nvarchar(10) = case when '#non'=[15] then '' else [15] end 
+	declare @t_store nvarchar(max) = case when '#non'=[16] then '' else [16] end 
+	------------------------------------------------------------------------
 	------------------------------------------------------------------------
 	--  一個批號只會有一個倉庫一個儲位
 	declare @tmp table(
@@ -123,6 +125,18 @@ z_ucc_rk02:--z_ucc_rk02
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	where b.datea <=@t_edate
 	and len(ISNULL(a.uno,''))>0
+	--CUBT
+	insert into @tmp(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
+	select a.uno,isnull(a.productno,'')
+		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
+		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		,null,null
+		,'24','cubt',a.accy,a.noa,a.noq,b.datea
+	from view_cubt a
+	left join view_cubt b on a.accy=b.accy and a.noa=b.noa
+	where b.datea <=@t_edate
+	and len(ISNULL(a.uno,''))>0
+	
 	-----------------------------------------------------------------
 	-- update 倉庫、儲位
 	declare @sel int
@@ -254,7 +268,8 @@ z_ucc_rk02:--z_ucc_rk02
 	and ISNULL(b.width,0) between @t_bwidth and @t_ewidth 
 	and ISNULL(b.lengthb,0) between @t_blengthb and @t_elengthb 
 	and (len(@t_kind)=0 or b.kind=@t_kind) 
-	and ISNULL(a.eweight,0)>0 
+	and (ISNULL(a.emount,0)>0 or ISNULL(a.eweight,0)>0 )
+	and (len(@t_store)=0 or charindex(','+a.storeno+',',','+@t_store+',')>0)
 	
 	update @tmpa set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
 	from @tmpa a
@@ -277,7 +292,7 @@ z_ucc_rk02:--z_ucc_rk02
 	left join ucc b on a.productno=b.noa
 	where len(ISNULL(a.product,''))=0
 	
-	insert into @tmpa(gno,mount,[weight])select '2',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp
+	insert into @tmpa(gno,mount,[weight])select '2',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmpa
 	
 	select row_number()over(order by gno,kind,dime,radius,width,lengthb,spec,uno) rr
 		,* 
@@ -324,6 +339,9 @@ z_ucc_rk01:--z_ucc_rk01
 		set @t_blengthb = 0
 		set @t_elengthb = 999999
 	end catch
+	
+	declare @t_edate nvarchar(10) = case when '#non'=[15] then '' else [15] end 
+	declare @t_store nvarchar(max) = case when '#non'=[16] then '' else [16] end 
 	------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -351,17 +369,22 @@ z_ucc_rk01:--z_ucc_rk01
 		,[contract] nvarchar(max)--合約編號
 		,custno nvarchar(20)--客戶名稱
 		,cust nvarchar(30)
+		,storeno nvarchar(20)
+		,store nvarchar(20)
+		,place nvarchar(20)
 	)
 	insert into @tmp(gno,kind,ckind,datea,uno,productno,product 
 	,spec,cspec,size,dime,width,lengthb,radius 
-	,mount,[weight],price,uno2) 
+	,mount,[weight],price,uno2,storeno,store,place) 
 	select '1',b.kind,c.item,b.datea,a.uno,b.productno,b.product 
 	,b.spec,d.product,b.size,b.dime,b.width,b.lengthb,b.radius 
-	,a.emount,a.[eweight],b.sprice,b.uno2 
+	,a.emount,a.[eweight],b.sprice,b.uno2
+	,b.storeno,e.store,b.place
 	from uccy a 
 	left join view_uccb b on a.uno=b.uno 
 	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n 
 	left join spec d on b.spec=d.noa 
+	left join store e on b.storeno=e.noa
 	where len(ISNULL(a.uno,''))>0 
 	and isnull(b.productno,'') between @t_bproductno and @t_eproductno 
 	and ISNULL(b.radius,0) between @t_bradius and @t_eradius 
@@ -369,7 +392,8 @@ z_ucc_rk01:--z_ucc_rk01
 	and ISNULL(b.width,0) between @t_bwidth and @t_ewidth 
 	and ISNULL(b.lengthb,0) between @t_blengthb and @t_elengthb 
 	and (len(@t_kind)=0 or b.kind=@t_kind) 
-	and ISNULL(a.eweight,0)>0 
+	and (ISNULL(a.emount,0)>0 or ISNULL(a.eweight,0)>0 )
+	and (len(@t_store)=0 or charindex(','+b.storeno+',',','+@t_store+',')>0)
 	
 	update @tmp set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
 	from @tmp a

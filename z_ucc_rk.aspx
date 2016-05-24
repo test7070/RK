@@ -15,12 +15,26 @@
 		<script src="css/jquery/ui/jquery.ui.widget.js"></script>
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script type="text/javascript">
-
+			var t_store = '';
 			$(document).ready(function() {
 				_q_boxClose();
 				q_getId();
-				q_gf('', 'z_ucc_rk');
+				q_gt('store', '', 0, 0, 0, "store", r_accy );
+				
 			});
+			function q_gtPost(t_name) {
+				switch (t_name) {
+                    case 'store':
+                        t_store = '';
+                        var as = _q_appendData("store", "", true);
+                        for ( i = 0; i < as.length; i++) {
+                            t_store += (t_store.length > 0 ? ',' : '') + as[i].noa + '@' + as[i].store;
+                        }
+                        q_gf('', 'z_ucc_rk');
+                        break;
+                }
+			}
+			
 			function q_gfPost() {
 				$('#q_report').q_report({
 					fileName : 'z_ucc_rk',
@@ -61,7 +75,11 @@
 					}, {
 						type : '6', //[15] 7
 						name : 'edate'
-					}]
+					}, {
+                        type : '8',//[16] 8
+                        name : 'xstore',
+                        value : t_store.split(',')
+                    }]
 				});
 				q_popAssign();
 				q_getFormat();
@@ -70,13 +88,6 @@
 				$('#txtEdate').mask('999/99/99');
 				$('#txtEdate').datepicker();
 				$('#txtEdate').val(q_date());
-			}
-
-			function q_gtPost(t_name) {
-				switch (t_name) {
-					default:
-						break;
-				}
 			}
 
 			function q_boxClose(s2) {
