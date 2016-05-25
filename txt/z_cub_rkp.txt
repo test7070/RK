@@ -1613,7 +1613,7 @@ z_cub_rkp01:--z_cub_rkp01
 		
 	)
 	insert into @tmpb(noa,noq,uno,productno,product,mount,[weight])
-	select a.noa,a.noq,c.uno,c.productno,c.product,[weight],c.[wweight]
+	select a.noa,a.noq,c.uno,c.productno,c.product,c.[weight],c.[wweight]
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_cubt c on a.accy=c.accy and a.noa=c.noa and a.noq=c.nor
