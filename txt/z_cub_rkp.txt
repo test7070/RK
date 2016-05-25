@@ -245,7 +245,7 @@ z_cub_rkp11:--z_cub_rkp11	在製品單位成本表－現價
 
 z_cub_rkp10:--z_cub_rkp10
 	SET QUOTED_IDENTIFIER OFF
-	declare @t_bdate nvarchar(max) = case when '#non' = [7] then '' else [7] end
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end
 	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
 	declare @t_bcustno nvarchar(20) =case when '#non' = [9] then '' else [9] end
 	declare @t_ecustno nvarchar(20) = case when '#non' = [10] then char(255) else [10] end
@@ -3212,10 +3212,12 @@ z_cub_rkp03_old:--z_cub_rkp03
 	from @tmp 
 	order by gno,sel;
 
-z_cub_rkp04xxx:--z_cub_rkp04
+z_cub_rkp04:--z_cub_rkp04
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
-	declare @t_date nvarchar(20) = case when '#non' = [6] then char(255) else [6] end
+	--成品進倉 cut 的日期
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end
+	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
 	--------------------------------------------------------------------------------------------------
 	declare @table nvarchar(20)
 	declare @tables nvarchar(20)
@@ -3234,7 +3236,7 @@ z_cub_rkp04xxx:--z_cub_rkp04
 		from "+@tables+" a
 		left join "+@table+" b on a.noa=b.noa
 		where b.datea<=@t_date"
-		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_date
+		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_edate
 		
 		fetch next from cursor_table
 		into @table,@tables
@@ -3256,10 +3258,156 @@ z_cub_rkp04xxx:--z_cub_rkp04
 		from "+@tables+" a
 		left join "+@table+" b on a.noa=b.noa
 		where b.datea<=@t_date"
-		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_date
+		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_edate
 		
 		fetch next from cursor_table
 		into @table,@tables
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	--------------------------------------------------------------------------------------------------
+	--CUTS
+	declare @sel int
+	declare @makeno nvarchar(20)
+	declare @accy nvarchar(10)
+	declare @noa nvarchar(20)
+	declare @noq nvarchar(10)
+	declare @money float
+	declare @uno nvarchar(30)
+	declare @weight float
+	
+	IF OBJECT_ID('tempdb..#z_cub_rkp04')is not null
+	BEGIN
+		drop table #z_cub_rkp04
+	END
+	create table #z_cub_rkp04 (
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
+		,makeno nvarchar(20)
+		,[weight] float
+		,[money] float
+		,price float
+	)
+	/*
+	以製造批號 算出成本單價
+	若多次入庫,則用重量分攤
+	聯琦 cut left(noa,3)='105' 是期初匯入的,排除!
+	*/
+	insert into #z_cub_rkp04(accy,noa,noq,uno,makeno,[weight])
+	select a.accy,a.noa,a.noq,a.bno,a.cname,a.[weight]
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @t_bdate and @t_edate
+	and left(a.noa,3)!='105'
+	and len(isnull(a.cname,''))>0
+	------------------------------------------------------------------------------------
+	--生產成本   CUB
+	declare @tmpa table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,[weight] float
+		,[money] float --鋼捲+皮膜+保護膜
+		,money2 float --鋼捲+皮膜+保護膜+物料
+	)
+	insert into @tmpa(accy,noa,noq)
+	select a.accy,a.noa,a.noq
+	from(
+		select a.accy,a.noa,a.noq
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		left join (select makeno from #z_cub_rkp04 group by makeno) c on a.makeno=c.makeno
+		where c.makeno is not null) a
+	group by a.accy,a.noa,a.noq
+	
+	update @tmpa set makeno=b.makeno
+		,[weight]=b.hweight-- 鋼捲+皮膜+保護膜 重, 分攤物料金額用
+	from @tmpa a
+	left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+	
+	declare cursor_table cursor for
+	select accy,noa from @tmpa group by accy,noa
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		declare cursor_table2 cursor for
+		select noq,uno,[weight] from view_cubs where accy=@accy and noa=@noa
+		open cursor_table2
+		fetch next from cursor_table2
+		into @noq,@uno,@weight
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			select @money = 0
+			--鋼捲成本
+			select @money = ROUND(ISNULL(@weight*sprice,0),0) from view_uccb where uno=@uno
+			--皮膜、保護膜成本
+			select @money=isnull(@money,0)+sum(round(isnull(a.[weight]*b.sprice,0),0))
+			from view_cubt a
+			left join view_uccb b on a.uno=b.uno
+			where a.accy=@accy
+			and a.noa=@noa
+			and a.nor=@noq
+			
+			update @tmpa set [money]=isnull(@money,0) where accy=@accy and noa=@noa and noq=@noq
+			
+			fetch next from cursor_table2
+			into @noq,@uno,@weight
+		end
+		close cursor_table2
+		deallocate cursor_table2
+		
+		--物料總金額
+		set @money = 0
+		select @money=sum(round(isnull(a.[weight]*b.sprice,0),0))
+		from view_cubu a
+		left join view_uccb b on a.ucolor=b.uno
+		where a.accy=@accy 
+		and a.noa=@noa
+		set @money=ISNULL(@money,0)
+		
+		update @tmpa set [money2]=isnull(a.[money],0)+ case when b.[weight]=0 then 0 else round(@money*a.[weight]/b.[weight],4) end
+		from @tmpa a
+		outer apply(select SUM(ISNULL([weight],0)) [weight] from @tmpa where accy=a.accy and noa=a.noa)b
+		where @accy=a.accy and @noa=a.noa
+		
+		fetch next from cursor_table
+		into @accy,@noa
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update #z_cub_rkp04 set [money]=case when isnull(c.[weight],0)=0 then 0 else round(b.money2 * a.[weight] / c.[weight],4) end
+	from #z_cub_rkp04 a
+	left join @tmpa b on a.makeno=b.makeno
+	outer apply(select SUM(ISNULL([weight],0)) [weight] from #z_cub_rkp04 where makeno=a.makeno) c
+	
+	update #z_cub_rkp04 set price = case when isnull([weight],0)=0 then 0 else round([money]/[weight],4) end
+	---------------------------------------------------------------------
+	-- UPDATE DATA
+	declare cursor_table cursor for
+	select accy from #z_cub_rkp04 group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		set @cmd=
+		"update cuts"+@accy+" set sprice=isnull(b.price,0),sprice2=isnull(b.price,0)
+		from cuts"+@accy+" a
+		left join #z_cub_rkp04 b on b.accy=@accy and a.noa=b.noa and a.noq=b.noq
+		where b.sel is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10)',@accy=@accy
+		
+		fetch next from cursor_table
+		into @accy
 	end
 	close cursor_table
 	deallocate cursor_table
