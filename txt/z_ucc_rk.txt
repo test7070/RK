@@ -37,9 +37,8 @@ z_ucc_rk02:--z_ucc_rk02
 		set @t_elengthb = 999999
 	end catch
 	
-	declare @t_edate nvarchar(10) = case when '#non'=[15] then '' else [15] end 
+	declare @t_edate nvarchar(10) = case when '#non'=[15] then char(255) else [15] end 
 	declare @t_store nvarchar(max) = case when '#non'=[16] then '' else [16] end 
-	------------------------------------------------------------------------
 	------------------------------------------------------------------------
 	--  一個批號只會有一個倉庫一個儲位
 	declare @tmp table(
@@ -220,6 +219,7 @@ z_ucc_rk02:--z_ucc_rk02
 	------------------------------------------------------
 	declare @tmpa table(
 		sel int identity(1,1)
+		,pno int
 		,gno nvarchar(10)
 		,kind nvarchar(20)
 		,ckind nvarchar(20)
@@ -248,11 +248,11 @@ z_ucc_rk02:--z_ucc_rk02
 		,store nvarchar(20)
 		,place nvarchar(20)
 	)
-	insert into @tmpa(gno,kind,ckind,datea,uno,productno,product 
+	insert into @tmpa(pno,gno,kind,ckind,datea,uno,productno,product 
 	,spec,cspec,size,dime,width,lengthb,radius 
 	,mount,[weight],price,uno2
 	,storeno,store,place) 
-	select '1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
+	select 1,'1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
 	,b.spec,d.product,isnull(b.size,''),b.dime,b.width,b.lengthb,b.radius 
 	,a.emount,a.[eweight],b.sprice,b.uno2 
 	,a.storeno,e.store,a.place
@@ -292,14 +292,18 @@ z_ucc_rk02:--z_ucc_rk02
 	left join ucc b on a.productno=b.noa
 	where len(ISNULL(a.product,''))=0
 	
-	insert into @tmpa(gno,mount,[weight])select '2',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmpa
+	insert into @tmpa(pno,gno,productno,size,mount,[weight])
+	select 1,'2',productno,size,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmpa group by productno,size
+	
+	insert into @tmpa(pno,gno,mount,[weight])
+	select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmpa
 	
 	select row_number()over(order by gno,productno,size,datea,uno) rr
 		,* 
 		,dbo.getComma(mount,-1) cmount
 		,dbo.getComma([weight],-1) cweight
 	from @tmpa 
-	order by gno,productno,size,datea,uno;
+	order by pno,productno,size,gno,datea,uno;
 
 z_ucc_rk01:--z_ucc_rk01 
 	SET QUOTED_IDENTIFIER OFF 
@@ -345,6 +349,7 @@ z_ucc_rk01:--z_ucc_rk01
 	------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
+		,pno int
 		,gno nvarchar(10)
 		,kind nvarchar(20)
 		,ckind nvarchar(20)
@@ -373,11 +378,11 @@ z_ucc_rk01:--z_ucc_rk01
 		,store nvarchar(20)
 		,place nvarchar(20)
 	)
-	insert into @tmp(gno,kind,ckind,datea,uno,productno,product 
+	insert into @tmp(pno,gno,kind,ckind,datea,uno,productno,product 
 	,spec,cspec,size,dime,width,lengthb,radius 
 	,mount,[weight],price,uno2,storeno,store,place) 
-	select '1',b.kind,c.item,b.datea,a.uno,b.productno,b.product 
-	,b.spec,d.product,b.size,b.dime,b.width,b.lengthb,b.radius 
+	select 1,'1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
+	,b.spec,d.product,isnull(b.size,''),b.dime,b.width,b.lengthb,b.radius 
 	,a.emount,a.[eweight],b.sprice,b.uno2
 	,b.storeno,e.store,b.place
 	from uccy a 
@@ -416,11 +421,14 @@ z_ucc_rk01:--z_ucc_rk01
 	left join ucc b on a.productno=b.noa
 	where len(ISNULL(a.product,''))=0
 	
-	insert into @tmp(gno,mount,[weight])select '2',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp
+	insert into @tmp(pno,gno,productno,size,mount,[weight])
+	select 1,'2',productno,size,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp group by productno,size
+	
+	insert into @tmp(pno,gno,mount,[weight])select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp
 	
 	select row_number()over(order by gno,productno,size,datea,uno) rr
 		,* 
 		,dbo.getComma(mount,-1) cmount
 		,dbo.getComma([weight],-1) cweight
 	from @tmp 
-	order by gno,productno,size,datea,uno;
+	order by pno,productno,size,gno,datea,uno;
