@@ -170,6 +170,9 @@
 				q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
 				q_cmbParse("cmbKind", q_getPara('sys.stktype'));
 				//=======================================================
+				$('#lblAccno').hide();
+				$('#txtAccno').hide();
+				
 				$('#combAddr').click(function(e){
 					if($.trim($("#txtCustno").val()).length==0){
 						document.all.combAddr.options.length = 0;

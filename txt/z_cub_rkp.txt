@@ -1465,6 +1465,7 @@ z_cub_rkp03:--z_cub_rkp03
 		,dbo.getComma(money07,-1) a28
 	from @tmp;
 	
+
 z_cub_rkp01:--z_cub_rkp01	
 	SET QUOTED_IDENTIFIER OFF
 	--[1]
@@ -1474,7 +1475,6 @@ z_cub_rkp01:--z_cub_rkp01
 	--[5]
 	--[6]
 	declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
-	--------------------------------------------------------------------------------
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -1584,7 +1584,7 @@ z_cub_rkp01:--z_cub_rkp01
 		,[money] float
 	)
 	insert into @tmpa(noa,noq,uno,productno,product,mount,[weight])
-	select a.noa,a.noq,c.uno,c.productno,c.product,c.mount,c.[weight]
+	select a.noa,a.noq,c.uno,c.productno,c.product,c.[weight],c.[wweight]
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_cubt c on a.accy=c.accy and a.noa=c.noa and a.noq=c.nor
@@ -1613,7 +1613,7 @@ z_cub_rkp01:--z_cub_rkp01
 		
 	)
 	insert into @tmpb(noa,noq,uno,productno,product,mount,[weight])
-	select a.noa,a.noq,c.uno,c.productno,c.product,c.mount,c.[weight]
+	select a.noa,a.noq,c.uno,c.productno,c.product,[weight],c.[wweight]
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_cubt c on a.accy=c.accy and a.noa=c.noa and a.noq=c.nor
@@ -1652,7 +1652,7 @@ z_cub_rkp01:--z_cub_rkp01
 		,[money] float
 	)
 	insert into @tmpc(noa,uno,productno,product,typea,mount,[weight])
-	select a.noa,a.uno,a.productno,a.product,c.groupano,a.mount,a.[weight]
+	select a.noa,a.uno,a.productno,a.product,c.groupano,a.[weight],a.[wweight]
 	from view_cubt a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on a.productno=c.noa
@@ -3212,7 +3212,7 @@ z_cub_rkp03_old:--z_cub_rkp03
 	from @tmp 
 	order by gno,sel;
 
-z_cub_rkp04:--z_cub_rkp04
+z_cub_rkp04xxx:--z_cub_rkp04
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
 	declare @t_date nvarchar(20) = case when '#non' = [6] then char(255) else [6] end
