@@ -13,6 +13,7 @@ z_cub_rkp12:--z_cub_rkp12  現價
 		cust nvarchar(30),
 		weight01 float,--進倉重
 		weight02 float,--在製品耗料
+		weight03 float,--已完工、未進倉
 		rate01 float,--損耗率
 		status01 int,--分條
 		status02 int,--2呎
@@ -34,34 +35,73 @@ z_cub_rkp12:--z_cub_rkp12  現價
 		price02 float,--製成品單位成本
 		memo nvarchar(max)
 	)
-	insert into @tmp(gno,makeno,dime,size,spec,custno,cust,weight01,weight02)
+	insert into @tmp(gno,makeno,dime,size,custno,cust,weight01,weight02)
 	select '1',a.cname,a.dime
 		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when ISNULL(a.lengthb,0)=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
-		,a.spec,a.custno,REPLACE(a.comp,'~#$',"'")
-		,a.[weight],c.hweight
+		,c.custno,REPLACE(c.comp,'~#$',"'")
+		,sum(isnull(a.[weight],0)),sum(isnull(c.price,0))
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_cubs c on a.cname=c.makeno
-	left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
 	where b.datea<=@t_datea
+	group by a.cname,a.dime
+		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when ISNULL(a.lengthb,0)=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
+		,c.custno,REPLACE(c.comp,'~#$',"'")
+	
+	update @tmp set cust=b.nick
+	from @tmp a
+	left join cust b on a.custno=b.noa
+	where b.noa is not null
+	
+	--update @tmp set weight03=isnull(b.hweight,0)
+	--from @tmp a
+	--left join view_cubs b on a.makeno=b.makeno
+	
+	--皮膜、保護膜
+	update @tmp set spec=ISNULL(b.productno,'')
+	from @tmp a
+	outer apply (select top 1 y.productno,y.product 
+		from view_cubs x
+		left join view_cubt y on x.noa=y.noa and x.noq=y.nor
+		where a.makeno=x.makeno and y.kind='1' order by y.noq) b
+
 	--製造成本
 	IF OBJECT_ID('tempdb..#z_cub_rkp12')is not null
 	BEGIN
 		drop table #z_cub_rkp12
 	END
-	select * into #z_cub_rkp12 from dbo.makeno2(@t_datea,1)
+	select * into #z_cub_rkp12 from dbo.makeno(@t_datea,1)
 	
 	update @tmp set rate01= case when ISNULL(weight02,0)=0 then 0 else round((weight02-weight01)/weight02*100,2) end
 	
-	update @tmp set status01=case when c.typea='分條作業' then 1 else 0 end
-		,status02=case when c.typea='二呎裁切' then 1 else 0 end
-		,status03=case when c.typea='三呎裁切' then 1 else 0 end
-		,status06=case when c.typea='四呎裁切' then 1 else 0 end
+	update @tmp set status01=1 
 	from @tmp a
 	left join view_cucs b on a.makeno=b.cubno
 	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
 	where b.noa is not null
+	and c.typea='分條作業'
 	
+	update @tmp set status02=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='二呎裁切'
+	
+	update @tmp set status03=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='三呎裁切'
+	
+	update @tmp set status06=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='四呎裁切'
+
 	update @tmp set status04=1
 	from @tmp a
 	left join view_cubs b on a.makeno=b.memo
@@ -69,22 +109,23 @@ z_cub_rkp12:--z_cub_rkp12  現價
 	--成本金額
 	update @tmp set
 		--在製品
-		money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)
-			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)+ISNULL(b.money4,0)
+		money01=case when c.weight01!=0 then round(ISNULL(b.totmoney1,0)*a.weight01/c.weight01,0) else 0 end
 		--分條
-		,money02=ISNULL(b.wages03,0)+ISNULL(b.makeless03,0)
+		,money02=case when c.weight01!=0 then round((ISNULL(b.wages03,0)+ISNULL(b.makeless03,0))*a.weight01/c.weight01,0) else 0 end
 		--2呎
-		,money03=ISNULL(b.wages04,0)+ISNULL(b.makeless04,0)
+		,money03=case when c.weight01!=0 then round((ISNULL(b.wages04,0)+ISNULL(b.makeless04,0))*a.weight01/c.weight01,0) else 0 end
 		--3呎
-		,money04=ISNULL(b.wages05,0)+ISNULL(b.makeless05,0)
+		,money04=case when c.weight01!=0 then round((ISNULL(b.wages05,0)+ISNULL(b.makeless05,0))*a.weight01/c.weight01,0) else 0 end
 		--4呎
-		,money07=ISNULL(b.wages06,0)+ISNULL(b.makeless06,0)
+		,money07=case when c.weight01!=0 then round((ISNULL(b.wages06,0)+ISNULL(b.makeless06,0))*a.weight01/c.weight01,0) else 0 end
 		--烘板
-		,money05=ISNULL(b.wages02,0)+ISNULL(b.makeless02,0)
+		,money05=case when c.weight01!=0 then round((ISNULL(b.wages02,0)+ISNULL(b.makeless02,0))*a.weight01/c.weight01,0) else 0 end
 		--10呎
-		,money08=ISNULL(b.wages07,0)+ISNULL(b.makeless07,0)
+		,money08=case when c.weight01!=0 then round((ISNULL(b.wages07,0)+ISNULL(b.makeless07,0))*a.weight01/c.weight01,0) else 0 end
 	from @tmp a
 	left join #z_cub_rkp12 b on a.makeno=b.makeno
+	left join (select makeno,SUM(ISNULL(weight01,0)) weight01 from @tmp group by makeno) c on a.makeno=c.makeno
+	
 	--加工成本合計
 	update @tmp set money09 = ISNULL(money02,0)+ISNULL(money03,0)+ISNULL(money04,0)+ISNULL(money05,0)
 		+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
@@ -96,8 +137,8 @@ z_cub_rkp12:--z_cub_rkp12  現價
 	update @tmp set price02 = case when weight01=0 then 0 else round(money10/weight01,2) end
 
 	--合計
-	insert into @tmp(gno,weight01,weight02,money01,money02,money03,money04,money05,money06,money07,money08,money09,money10)
-	select '2', sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0))
+	insert into @tmp(gno,weight01,weight02,weight03,money01,money02,money03,money04,money05,money06,money07,money08,money09,money10)
+	select '2', sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(weight03,0)),sum(isnull(money01,0)),sum(isnull(money02,0))
 		,sum(isnull(money03,0)),sum(isnull(money04,0)),sum(isnull(money05,0)),sum(isnull(money06,0))
 		,sum(isnull(money07,0)),sum(isnull(money08,0)),sum(isnull(money09,0)),sum(isnull(money10,0))
 	from @tmp
@@ -116,8 +157,8 @@ z_cub_rkp12:--z_cub_rkp12  現價
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a04
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,0)+'</a>' a06
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+''+'</a>' a07
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,0)+'</a>' a08
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight03,0)+'</a>' a07
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(isnull(weight01,0)+isnull(weight03,0),0)+'</a>' a08
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight02,0)+'</a>' a09
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a10
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when status01=1 then 'V' else '' end+'</a>' a11
@@ -539,8 +580,9 @@ z_cub_rkp08:--z_cub_rkp08
 	--[3]
 	--[4]
 	--[5]
-	--[6]
-	declare @t_mon nvarchar(max) = case when '#non' = [7] then '' else [7] end	
+	--[6]	
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end	
+	declare @t_edate nvarchar(10) = case when '#non' = [8] then char(255) else [8] end	
 	-------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -599,11 +641,12 @@ z_cub_rkp08:--z_cub_rkp08
 	insert into @tmp(gno,makeno,uno,dime,radius,width,lengthb,spec,datea
 		,wwa01,wwb01)
 	select '1',a.cname,a.bno,a.dime,a.radius,a.width,a.lengthb,a.spec,b.datea
-		,case when left(b.datea,6)<@t_mon then a.[weight] else 0 end
-		,case when left(b.datea,6)=@t_mon then a.[weight] else 0 end 
+		,case when b.datea<@t_bdate then a.[weight] else 0 end
+		,case when b.datea between @t_bdate and @t_edate then a.[weight] else 0 end 
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa 
-	and LEFT(b.datea,6)<=@t_mon
+	where b.datea<=@t_edate
+	and len(ISNULL(a.cname,''))>0 
 	------------------------------------------------------------------------
 	declare @uno nvarchar(30)
 	declare @datea nvarchar(10)
@@ -625,13 +668,13 @@ z_cub_rkp08:--z_cub_rkp08
 			from view_gets a
 			left join view_get b on a.accy=b.accy and a.noa=b.noa
 			where uno=@uno
-			and LEFT(b.datea,6)<=@t_mon
+			and @datea<=@t_edate
 		open cursor_table2
 		fetch next from cursor_table2
 		into @datea,@weight
 		while(@@FETCH_STATUS <> -1)
 		begin
-			if LEFT(@datea,6)<@t_mon
+			if @datea<@t_bdate
 			begin
 				update @tmp set wwa02 = ISNULL(wwa02,0)+ISNULL(@weight,0) where uno=@uno
 			end
@@ -653,13 +696,13 @@ z_cub_rkp08:--z_cub_rkp08
 			from view_vccs a
 			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 			where a.uno=@uno
-			and LEFT(b.datea,6)<=@t_mon
+			and @datea<=@t_edate
 		open cursor_table2
 		fetch next from cursor_table2
 		into @typea,@datea,@weight,@total
 		while(@@FETCH_STATUS <> -1)
 		begin
-			if LEFT(@datea,6)<@t_mon
+			if @datea<@t_bdate
 			begin
 				if @typea='1'
 				begin
@@ -701,70 +744,117 @@ z_cub_rkp08:--z_cub_rkp08
 	end
 	close cursor_table
 	deallocate cursor_table
+---------------------------------------------------------------------------------------------
+	declare @tmpa table(
+		sel int identity(1,1),
+		gno nvarchar(10),
+		makeno nvarchar(30),
+		uno nvarchar(30),
+		dime float,
+		radius float,
+		width float,
+		lengthb float,
+		spec nvarchar(50),
+		datea nvarchar(10),
+		--前期
+		wwa01 float,--cuts
+		ppa01 float,
+		mma01 float,
+		wwa02 float,--gets
+		ppa02 float,
+		mma02 float,
+		wwa03 float,--vccs
+		ppa03 float,--成本單價
+		mma03 float,
+		ppa04 float,--出貨單價
+		mma04 float,--出貨金額
+		wwa05 float,--退貨重量
+		ppa05 float,--退貨單價
+		mma05 float,--退貨金額
+		
+		profita float,-- mma04 - mma03
+		wwa00 float,--重量小計
+		ppa00 float,--單價
+		mma00 float,--金額小計
+		--本期
+		wwb01 float,--cuts
+		ppb01 float,
+		mmb01 float,
+		wwb02 float,--gets
+		ppb02 float,
+		mmb02 float,
+		wwb03 float,--vccs
+		ppb03 float,
+		mmb03 float,
+		ppb04 float,--出貨單價
+		mmb04 float,--出貨金額
+		wwb05 float,--退貨重量
+		ppb05 float,--退貨單價
+		mmb05 float,--退貨金額
+		
+		profitb float,-- mmb04 - mmb03
+		wwb00 float,--重量小計
+		ppb00 float,--單價
+		mmb00 float,--金額小計
+		memo nvarchar(max)
+	)
+	insert into @tmpa(gno,makeno,wwa01,wwb01)	
+	select '1',makeno,SUM(ISNULL(wwa01,0)),SUM(ISNULL(wwb01,0))
+	from @tmp 
+	group by makeno
+	
+	update @tmpa set dime=b.dime,radius=b.radius,width=b.width,lengthb=b.lengthb,spec=b.spec,datea=b.datea
+	from @tmpa a
+	outer apply(select top 1 * from @tmp where makeno=a.makeno order by sel) b
 	
 	--------------------------------------------------------------------------------
-	--現貢不算加工成本
-	declare @mon nvarchar(10)
-
-	declare cursor_table cursor for
-	select left(c.datea,6)
-	from @tmp a
-	left join view_cubs b on a.makeno=b.makeno
-	left join view_cub c on b.accy=c.accy and b.noa=c.noa 
-	group by left(c.datea,6)
-	open cursor_table
-	fetch next from cursor_table
-	into @mon
-	while(@@FETCH_STATUS <> -1)
-	begin
-		update @tmp set ppa01= case when isnull(b.weight03,0)=0 then 0
-			else round((ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
-			+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
-			--+ISNULL(b.wages01,0)+ISNULL(b.makeless01,0)
-			--+ISNULL(b.wages02,0)+ISNULL(b.makeless02,0)
-			--+ISNULL(b.wages03,0)+ISNULL(b.makeless03,0)
-			--+ISNULL(b.wages04,0)+ISNULL(b.makeless04,0)
-			--+ISNULL(b.wages05,0)+ISNULL(b.makeless05,0)
-			--+ISNULL(b.wages06,0)+ISNULL(b.makeless06,0)
-			--+ISNULL(b.wages07,0)+ISNULL(b.makeless07,0)
-			)/b.weight03,2) end
-		from @tmp a
-		left join dbo.makeno(@mon) b on a.makeno=b.makeno
-		where b.makeno is not null
-		
-		fetch next from cursor_table
-		into @mon
-	end
-	close cursor_table
-	deallocate cursor_table
+	IF OBJECT_ID('tempdb..#z_cub_rkp08')is not null
+	BEGIN
+		drop table #z_cub_rkp08
+	END
+	select * into #z_cub_rkp08 from dbo.makeno(@t_edate,1)
 	
-	update @tmp set ppa02=ppa01,ppb01=ppa01,ppb02=ppa01
+	update @tmpa set ppa01= case when isnull(b.weight3,0)=0 then 0
+			else round((ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
+			+ISNULL(b.mma05,0)
+			+ISNULL(b.wages01,0)+ISNULL(b.makeless01,0)
+			+ISNULL(b.wages02,0)+ISNULL(b.makeless02,0)
+			+ISNULL(b.wages03,0)+ISNULL(b.makeless03,0)
+			+ISNULL(b.wages04,0)+ISNULL(b.makeless04,0)
+			+ISNULL(b.wages05,0)+ISNULL(b.makeless05,0)
+			+ISNULL(b.wages06,0)+ISNULL(b.makeless06,0)
+			+ISNULL(b.wages07,0)+ISNULL(b.makeless07,0))/b.weight3,2) end
+		from @tmpa a
+		left join #z_cub_rkp08 b on a.makeno=b.makeno
+		where b.makeno is not null
+
+	update @tmpa set ppa02=ppa01,ppb01=ppa01,ppb02=ppa01
 		,ppa03=ppa01,ppb03=ppa01
 		,ppa04=case when ISNULL(wwa03,0)=0 then 0 else ROUND(mma04/wwa03,2) end
 		,ppb04=case when ISNULL(wwb03,0)=0 then 0 else ROUND(mmb04/wwb03,2) end
 		,ppa05=case when ISNULL(wwa05,0)=0 then 0 else ROUND(mma05/wwa05,2) end
 		,ppb05=case when ISNULL(wwb05,0)=0 then 0 else ROUND(mmb05/wwb05,2) end
-	update @tmp set mma01 = round(ISNULL(ppa01,0)*ISNULL(wwa01,0),0)
+	update @tmpa set mma01 = round(ISNULL(ppa01,0)*ISNULL(wwa01,0),0)
 		,mma02 = round(ISNULL(ppa02,0)*ISNULL(wwa02,0),0)
 		,mma03 = round(ISNULL(ppa03,0)*ISNULL(wwa03,0),0)
 		,mmb01 = round(ISNULL(ppb01,0)*ISNULL(wwb01,0),0)
 		,mmb02 = round(ISNULL(ppb02,0)*ISNULL(wwb02,0),0)
 		,mmb03 = round(ISNULL(ppb03,0)*ISNULL(wwb03,0),0)
-	update @tmp set profita = isnull(mma04,0)-isnull(mma03,0)
+	update @tmpa set profita = isnull(mma04,0)-isnull(mma03,0)
 		,profitb = isnull(mmb04,0)-isnull(mmb03,0)
 		,wwa00 = isnull(wwa01,0)-isnull(wwa02,0)-isnull(wwa03,0)+isnull(wwa05,0)
 		,mma00 = isnull(mma01,0)-isnull(mma02,0)-isnull(mma03,0)+isnull(mma05,0)
-	update @tmp set wwb00 = isnull(wwa00,0)+isnull(wwb01,0)-isnull(wwb02,0)-isnull(wwb03,0)+isnull(wwb05,0)
+	update @tmpa set wwb00 = isnull(wwa00,0)+isnull(wwb01,0)-isnull(wwb02,0)-isnull(wwb03,0)+isnull(wwb05,0)
 		,mmb00 = isnull(mma00,0)+isnull(mmb01,0)-isnull(mmb02,0)-isnull(mmb03,0)+isnull(mmb05,0)
-	update @tmp set ppa00=case when ISNULL(wwa00,0)=0 then 0 else ROUND(mma00/wwa00,2) end
+	update @tmpa set ppa00=case when ISNULL(wwa00,0)=0 then 0 else ROUND(mma00/wwa00,2) end
 		,ppb00=case when ISNULL(wwb00,0)=0 then 0 else ROUND(mmb00/wwb00,2) end
 	--刪除 無庫存、本月
-	delete @tmp
+	delete @tmpa
 	where isnull(wwa00,0)=0
 	and (isnull(wwb01,0)=0 and isnull(wwb02,0)=0 and isnull(wwb03,0)=0 and isnull(wwb05,0)=0 ) 
 
 	--小計
-	insert into @tmp(gno,wwa01,mma01,wwa02,mma02,wwa03,mma03,mma04,wwa05,mma05,wwa00,mma00
+	insert into @tmpa(gno,wwa01,mma01,wwa02,mma02,wwa03,mma03,mma04,wwa05,mma05,wwa00,mma00
 		,wwb01,mmb01,wwb02,mmb02,wwb03,mmb03,mmb04,wwb05,mmb05,wwb00,mmb00,profita,profitb)
 	select '2',sum(isnull(wwa01,0)),sum(isnull(mma01,0)),sum(isnull(wwa02,0)),sum(isnull(mma02,0))
 		,sum(isnull(wwa03,0)),sum(isnull(mma03,0)),sum(isnull(mma04,0)),sum(isnull(wwa05,0)),sum(isnull(mma05,0))
@@ -772,7 +862,7 @@ z_cub_rkp08:--z_cub_rkp08
 		,sum(isnull(wwb02,0)),sum(isnull(mmb02,0)),sum(isnull(wwb03,0)),sum(isnull(mmb03,0))
 		,sum(isnull(mmb04,0)),sum(isnull(wwb05,0)),sum(isnull(mmb05,0)),sum(isnull(wwb00,0)),sum(isnull(mmb00,0))
 		,sum(isnull(profita,0)),sum(isnull(profitb,0))
-	from @tmp where gno='1'
+	from @tmpa where gno='1'
 	
 	select gno,ROW_NUMBER()over(partition by gno order by a.makeno,a.datea,a.uno) rr
 		,'' a01
@@ -825,7 +915,7 @@ z_cub_rkp08:--z_cub_rkp08
 		,dbo.getComma(a.wwb00,-1) a37
 		,dbo.getComma(a.ppb00,-1) a38
 		,dbo.getComma(a.mmb00,-1) a39
-	from @tmp a
+	from @tmpa a
 	left join view_cubs b on a.makeno=b.makeno
 	order by gno,a.makeno,a.datea,a.uno;
 	
@@ -844,6 +934,7 @@ z_cub_rkp07:--z_cub_rkp07   現貢
 		cust nvarchar(30),
 		weight01 float,--進倉重
 		weight02 float,--在製品耗料
+		weight03 float,--已完工、未進倉
 		rate01 float,--損耗率
 		status01 int,--分條
 		status02 int,--2呎
@@ -865,63 +956,103 @@ z_cub_rkp07:--z_cub_rkp07   現貢
 		price02 float,--製成品單位成本
 		memo nvarchar(max)
 	)
-	insert into @tmp(gno,makeno,dime,size,spec,custno,cust,weight01,weight02)
+	insert into @tmp(gno,makeno,dime,size,custno,cust,weight01,weight02)
 	select '1',a.cname,a.dime
 		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when ISNULL(a.lengthb,0)=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
-		,a.spec,a.custno,REPLACE(a.comp,'~#$',"'")
-		,a.[weight],c.hweight
+		,c.custno,REPLACE(c.comp,'~#$',"'")
+		,sum(isnull(a.[weight],0)),sum(isnull(c.price,0))
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_cubs c on a.cname=c.makeno
-	left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
 	where b.datea<=@t_datea
+	group by a.cname,a.dime
+		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when ISNULL(a.lengthb,0)=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
+		,c.custno,REPLACE(c.comp,'~#$',"'")
 	
+	update @tmp set cust=b.nick
+	from @tmp a
+	left join cust b on a.custno=b.noa
+	where b.noa is not null
+	
+	--update @tmp set weight03=isnull(b.hweight,0)
+	--from @tmp a
+	--left join view_cubs b on a.makeno=b.makeno
+	
+	--皮膜、保護膜
+	update @tmp set spec=ISNULL(b.productno,'')
+	from @tmp a
+	outer apply (select top 1 y.productno,y.product 
+		from view_cubs x
+		left join view_cubt y on x.noa=y.noa and x.noq=y.nor
+		where a.makeno=x.makeno and y.kind='1' order by y.noq) b
+
 	--製造成本
 	IF OBJECT_ID('tempdb..#z_cub_rkp07')is not null
 	BEGIN
 		drop table #z_cub_rkp07
 	END
-	select * into #z_cub_rkp07 from dbo.makeno2(@t_datea,0)
+	select * into #z_cub_rkp07 from dbo.makeno(@t_datea,0)
 	
 	update @tmp set rate01= case when ISNULL(weight02,0)=0 then 0 else round((weight02-weight01)/weight02*100,2) end
 	
-	update @tmp set status01=case when c.typea='分條作業' then 1 else 0 end
-		,status02=case when c.typea='二呎裁切' then 1 else 0 end
-		,status03=case when c.typea='三呎裁切' then 1 else 0 end
-		,status06=case when c.typea='四呎裁切' then 1 else 0 end
+	update @tmp set status01=1 
 	from @tmp a
 	left join view_cucs b on a.makeno=b.cubno
 	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
 	where b.noa is not null
+	and c.typea='分條作業'
 	
+	update @tmp set status02=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='二呎裁切'
+	
+	update @tmp set status03=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='三呎裁切'
+	
+	update @tmp set status06=1 
+	from @tmp a
+	left join view_cucs b on a.makeno=b.cubno
+	left join view_cuc c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	and c.typea='四呎裁切'
+
 	update @tmp set status04=1
 	from @tmp a
 	left join view_cubs b on a.makeno=b.memo
 	where b.noa is not null
 	--現貢不算加工成本
-	----成本金額
+	--成本金額
 	update @tmp set
 		--在製品
 		money01=ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)+ISNULL(b.mma05,0)
-			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)+ISNULL(b.money4,0)
-		--+ISNULL(b.wages01,0)+ISNULL(b.makeless01,0)
-		------分條
-		----,money02=ISNULL(b.wages03,0)+ISNULL(b.makeless03,0)
-		------2呎
-		----,money03=ISNULL(b.wages04,0)+ISNULL(b.makeless04,0)
-		------3呎
-		----,money04=ISNULL(b.wages05,0)+ISNULL(b.makeless05,0)
-		------4呎
-		----,money07=ISNULL(b.wages06,0)+ISNULL(b.makeless06,0)
-		------烘板
-		----,money05=ISNULL(b.wages02,0)+ISNULL(b.makeless02,0)
-		------10呎
-		----,money08=ISNULL(b.wages07,0)+ISNULL(b.makeless07,0)
+			+ISNULL(b.money1,0)+ISNULL(b.money2,0)+ISNULL(b.money3,0)
+		--money01=case when c.weight01!=0 then round(ISNULL(b.totmoney1,0)*a.weight01/c.weight01,0) else 0 end
+		----分條
+		--,money02=case when c.weight01!=0 then round((ISNULL(b.wages03,0)+ISNULL(b.makeless03,0))*a.weight01/c.weight01,0) else 0 end
+		----2呎
+		--,money03=case when c.weight01!=0 then round((ISNULL(b.wages04,0)+ISNULL(b.makeless04,0))*a.weight01/c.weight01,0) else 0 end
+		----3呎
+		--,money04=case when c.weight01!=0 then round((ISNULL(b.wages05,0)+ISNULL(b.makeless05,0))*a.weight01/c.weight01,0) else 0 end
+		----4呎
+		--,money07=case when c.weight01!=0 then round((ISNULL(b.wages06,0)+ISNULL(b.makeless06,0))*a.weight01/c.weight01,0) else 0 end
+		----烘板
+		--,money05=case when c.weight01!=0 then round((ISNULL(b.wages02,0)+ISNULL(b.makeless02,0))*a.weight01/c.weight01,0) else 0 end
+		----10呎
+		--,money08=case when c.weight01!=0 then round((ISNULL(b.wages07,0)+ISNULL(b.makeless07,0))*a.weight01/c.weight01,0) else 0 end
 	from @tmp a
 	left join #z_cub_rkp07 b on a.makeno=b.makeno
-	----加工成本合計
-	--update @tmp set money09 = ISNULL(money02,0)+ISNULL(money03,0)+ISNULL(money04,0)+ISNULL(money05,0)
-	--	+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
+	left join (select makeno,SUM(ISNULL(weight01,0)) weight01 from @tmp group by makeno) c on a.makeno=c.makeno
+	
+	--加工成本合計
+	update @tmp set money09 = ISNULL(money02,0)+ISNULL(money03,0)+ISNULL(money04,0)+ISNULL(money05,0)
+		+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
 	--加工單位成本
 	update @tmp set price01 = case when weight01=0 then 0 else round(money09/weight01,2) end
 	--製成品 成本金額
@@ -930,8 +1061,8 @@ z_cub_rkp07:--z_cub_rkp07   現貢
 	update @tmp set price02 = case when weight01=0 then 0 else round(money10/weight01,2) end
 
 	--合計
-	insert into @tmp(gno,weight01,weight02,money01,money02,money03,money04,money05,money06,money07,money08,money09,money10)
-	select '2', sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0))
+	insert into @tmp(gno,weight01,weight02,weight03,money01,money02,money03,money04,money05,money06,money07,money08,money09,money10)
+	select '2', sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(weight03,0)),sum(isnull(money01,0)),sum(isnull(money02,0))
 		,sum(isnull(money03,0)),sum(isnull(money04,0)),sum(isnull(money05,0)),sum(isnull(money06,0))
 		,sum(isnull(money07,0)),sum(isnull(money08,0)),sum(isnull(money09,0)),sum(isnull(money10,0))
 	from @tmp
@@ -941,7 +1072,7 @@ z_cub_rkp07:--z_cub_rkp07   現貢
 		,price01 = case when weight01=0 then 0 else round(money09/weight01,2) end
 		,price02 = case when weight01=0 then 0 else round(money10/weight01,2) end
 	where gno = '2'
-
+	
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar)+'</a>' rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(dime as nvarchar)+'</a>' a01
@@ -950,8 +1081,8 @@ z_cub_rkp07:--z_cub_rkp07   現貢
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a04
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,0)+'</a>' a06
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+''+'</a>' a07
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,0)+'</a>' a08
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight03,0)+'</a>' a07
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(isnull(weight01,0)+isnull(weight03,0),0)+'</a>' a08
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight02,0)+'</a>' a09
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a10
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when status01=1 then 'V' else '' end+'</a>' a11
@@ -983,8 +1114,9 @@ z_cub_rkp06:--z_cub_rkp06
 	--[3]
 	--[4]
 	--[5]
-	--[6]
-	declare @t_mon nvarchar(max) = case when '#non' = [7] then '' else [7] end	
+	--[6]	
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end	
+	declare @t_edate nvarchar(10) = case when '#non' = [8] then char(255) else [8] end	
 	-------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -1043,11 +1175,12 @@ z_cub_rkp06:--z_cub_rkp06
 	insert into @tmp(gno,makeno,uno,dime,radius,width,lengthb,spec,datea
 		,wwa01,wwb01)
 	select '1',a.cname,a.bno,a.dime,a.radius,a.width,a.lengthb,a.spec,b.datea
-		,case when left(b.datea,6)<@t_mon then a.[weight] else 0 end
-		,case when left(b.datea,6)=@t_mon then a.[weight] else 0 end 
+		,case when b.datea<@t_bdate then a.[weight] else 0 end
+		,case when b.datea between @t_bdate and @t_edate then a.[weight] else 0 end 
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa 
-	and LEFT(b.datea,6)<=@t_mon
+	where b.datea<=@t_edate
+	and len(ISNULL(a.cname,''))>0 
 	------------------------------------------------------------------------
 	declare @uno nvarchar(30)
 	declare @datea nvarchar(10)
@@ -1069,13 +1202,13 @@ z_cub_rkp06:--z_cub_rkp06
 			from view_gets a
 			left join view_get b on a.accy=b.accy and a.noa=b.noa
 			where uno=@uno
-			and LEFT(b.datea,6)<=@t_mon
+			and @datea<=@t_edate
 		open cursor_table2
 		fetch next from cursor_table2
 		into @datea,@weight
 		while(@@FETCH_STATUS <> -1)
 		begin
-			if LEFT(@datea,6)<@t_mon
+			if @datea<@t_bdate
 			begin
 				update @tmp set wwa02 = ISNULL(wwa02,0)+ISNULL(@weight,0) where uno=@uno
 			end
@@ -1097,13 +1230,13 @@ z_cub_rkp06:--z_cub_rkp06
 			from view_vccs a
 			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 			where a.uno=@uno
-			and LEFT(b.datea,6)<=@t_mon
+			and @datea<=@t_edate
 		open cursor_table2
 		fetch next from cursor_table2
 		into @typea,@datea,@weight,@total
 		while(@@FETCH_STATUS <> -1)
 		begin
-			if LEFT(@datea,6)<@t_mon
+			if @datea<@t_bdate
 			begin
 				if @typea='1'
 				begin
@@ -1145,68 +1278,117 @@ z_cub_rkp06:--z_cub_rkp06
 	end
 	close cursor_table
 	deallocate cursor_table
+---------------------------------------------------------------------------------------------
+	declare @tmpa table(
+		sel int identity(1,1),
+		gno nvarchar(10),
+		makeno nvarchar(30),
+		uno nvarchar(30),
+		dime float,
+		radius float,
+		width float,
+		lengthb float,
+		spec nvarchar(50),
+		datea nvarchar(10),
+		--前期
+		wwa01 float,--cuts
+		ppa01 float,
+		mma01 float,
+		wwa02 float,--gets
+		ppa02 float,
+		mma02 float,
+		wwa03 float,--vccs
+		ppa03 float,--成本單價
+		mma03 float,
+		ppa04 float,--出貨單價
+		mma04 float,--出貨金額
+		wwa05 float,--退貨重量
+		ppa05 float,--退貨單價
+		mma05 float,--退貨金額
+		
+		profita float,-- mma04 - mma03
+		wwa00 float,--重量小計
+		ppa00 float,--單價
+		mma00 float,--金額小計
+		--本期
+		wwb01 float,--cuts
+		ppb01 float,
+		mmb01 float,
+		wwb02 float,--gets
+		ppb02 float,
+		mmb02 float,
+		wwb03 float,--vccs
+		ppb03 float,
+		mmb03 float,
+		ppb04 float,--出貨單價
+		mmb04 float,--出貨金額
+		wwb05 float,--退貨重量
+		ppb05 float,--退貨單價
+		mmb05 float,--退貨金額
+		
+		profitb float,-- mmb04 - mmb03
+		wwb00 float,--重量小計
+		ppb00 float,--單價
+		mmb00 float,--金額小計
+		memo nvarchar(max)
+	)
+	insert into @tmpa(gno,makeno,wwa01,wwb01)	
+	select '1',makeno,SUM(ISNULL(wwa01,0)),SUM(ISNULL(wwb01,0))
+	from @tmp 
+	group by makeno
+	
+	update @tmpa set dime=b.dime,radius=b.radius,width=b.width,lengthb=b.lengthb,spec=b.spec,datea=b.datea
+	from @tmpa a
+	outer apply(select top 1 * from @tmp where makeno=a.makeno order by sel) b
 	
 	--------------------------------------------------------------------------------
-	declare @mon nvarchar(10)
-
-	declare cursor_table cursor for
-	select left(c.datea,6)
-	from @tmp a
-	left join view_cubs b on a.makeno=b.makeno
-	left join view_cub c on b.accy=c.accy and b.noa=c.noa 
-	group by left(c.datea,6)
-	open cursor_table
-	fetch next from cursor_table
-	into @mon
-	while(@@FETCH_STATUS <> -1)
-	begin
-		update @tmp set ppa01= case when isnull(b.weight03,0)=0 then 0
+	IF OBJECT_ID('tempdb..#z_cub_rkp06')is not null
+	BEGIN
+		drop table #z_cub_rkp06
+	END
+	select * into #z_cub_rkp06 from dbo.makeno(@t_edate,0)
+	
+	update @tmpa set ppa01= case when isnull(b.weight3,0)=0 then 0
 			else round((ISNULL(b.mma01,0)+ISNULL(b.mma02,0)+ISNULL(b.mma03,0)+ISNULL(b.mma04,0)
-			+ISNULL(b.mma05,0)+ISNULL(b.mma06,0)+ISNULL(b.mma07,0)+ISNULL(b.mma08,0)+ISNULL(b.mma09,0)
+			+ISNULL(b.mma05,0)
 			+ISNULL(b.wages01,0)+ISNULL(b.makeless01,0)
 			+ISNULL(b.wages02,0)+ISNULL(b.makeless02,0)
 			+ISNULL(b.wages03,0)+ISNULL(b.makeless03,0)
 			+ISNULL(b.wages04,0)+ISNULL(b.makeless04,0)
 			+ISNULL(b.wages05,0)+ISNULL(b.makeless05,0)
 			+ISNULL(b.wages06,0)+ISNULL(b.makeless06,0)
-			+ISNULL(b.wages07,0)+ISNULL(b.makeless07,0))/b.weight03,2) end
-		from @tmp a
-		left join dbo.makeno(@mon) b on a.makeno=b.makeno
+			+ISNULL(b.wages07,0)+ISNULL(b.makeless07,0))/b.weight3,2) end
+		from @tmpa a
+		left join #z_cub_rkp06 b on a.makeno=b.makeno
 		where b.makeno is not null
-		
-		fetch next from cursor_table
-		into @mon
-	end
-	close cursor_table
-	deallocate cursor_table
-	
-	update @tmp set ppa02=ppa01,ppb01=ppa01,ppb02=ppa01
+
+	update @tmpa set ppa02=ppa01,ppb01=ppa01,ppb02=ppa01
 		,ppa03=ppa01,ppb03=ppa01
 		,ppa04=case when ISNULL(wwa03,0)=0 then 0 else ROUND(mma04/wwa03,2) end
 		,ppb04=case when ISNULL(wwb03,0)=0 then 0 else ROUND(mmb04/wwb03,2) end
 		,ppa05=case when ISNULL(wwa05,0)=0 then 0 else ROUND(mma05/wwa05,2) end
 		,ppb05=case when ISNULL(wwb05,0)=0 then 0 else ROUND(mmb05/wwb05,2) end
-	update @tmp set mma01 = round(ISNULL(ppa01,0)*ISNULL(wwa01,0),0)
+	update @tmpa set mma01 = round(ISNULL(ppa01,0)*ISNULL(wwa01,0),0)
 		,mma02 = round(ISNULL(ppa02,0)*ISNULL(wwa02,0),0)
 		,mma03 = round(ISNULL(ppa03,0)*ISNULL(wwa03,0),0)
 		,mmb01 = round(ISNULL(ppb01,0)*ISNULL(wwb01,0),0)
 		,mmb02 = round(ISNULL(ppb02,0)*ISNULL(wwb02,0),0)
 		,mmb03 = round(ISNULL(ppb03,0)*ISNULL(wwb03,0),0)
-	update @tmp set profita = isnull(mma04,0)-isnull(mma03,0)
+	update @tmpa set profita = isnull(mma04,0)-isnull(mma03,0)
 		,profitb = isnull(mmb04,0)-isnull(mmb03,0)
 		,wwa00 = isnull(wwa01,0)-isnull(wwa02,0)-isnull(wwa03,0)+isnull(wwa05,0)
 		,mma00 = isnull(mma01,0)-isnull(mma02,0)-isnull(mma03,0)+isnull(mma05,0)
-	update @tmp set wwb00 = isnull(wwa00,0)+isnull(wwb01,0)-isnull(wwb02,0)-isnull(wwb03,0)+isnull(wwb05,0)
+	update @tmpa set wwb00 = isnull(wwa00,0)+isnull(wwb01,0)-isnull(wwb02,0)-isnull(wwb03,0)+isnull(wwb05,0)
 		,mmb00 = isnull(mma00,0)+isnull(mmb01,0)-isnull(mmb02,0)-isnull(mmb03,0)+isnull(mmb05,0)
-	update @tmp set ppa00=case when ISNULL(wwa00,0)=0 then 0 else ROUND(mma00/wwa00,2) end
+	update @tmpa set ppa00=case when ISNULL(wwa00,0)=0 then 0 else ROUND(mma00/wwa00,2) end
 		,ppb00=case when ISNULL(wwb00,0)=0 then 0 else ROUND(mmb00/wwb00,2) end
 	--刪除 無庫存、本月
-	delete @tmp
+	delete @tmpa
 	where isnull(wwa00,0)=0
 	and (isnull(wwb01,0)=0 and isnull(wwb02,0)=0 and isnull(wwb03,0)=0 and isnull(wwb05,0)=0 ) 
 
 	--小計
-	insert into @tmp(gno,wwa01,mma01,wwa02,mma02,wwa03,mma03,mma04,wwa05,mma05,wwa00,mma00
+	insert into @tmpa(gno,wwa01,mma01,wwa02,mma02,wwa03,mma03,mma04,wwa05,mma05,wwa00,mma00
 		,wwb01,mmb01,wwb02,mmb02,wwb03,mmb03,mmb04,wwb05,mmb05,wwb00,mmb00,profita,profitb)
 	select '2',sum(isnull(wwa01,0)),sum(isnull(mma01,0)),sum(isnull(wwa02,0)),sum(isnull(mma02,0))
 		,sum(isnull(wwa03,0)),sum(isnull(mma03,0)),sum(isnull(mma04,0)),sum(isnull(wwa05,0)),sum(isnull(mma05,0))
@@ -1214,7 +1396,7 @@ z_cub_rkp06:--z_cub_rkp06
 		,sum(isnull(wwb02,0)),sum(isnull(mmb02,0)),sum(isnull(wwb03,0)),sum(isnull(mmb03,0))
 		,sum(isnull(mmb04,0)),sum(isnull(wwb05,0)),sum(isnull(mmb05,0)),sum(isnull(wwb00,0)),sum(isnull(mmb00,0))
 		,sum(isnull(profita,0)),sum(isnull(profitb,0))
-	from @tmp where gno='1'
+	from @tmpa where gno='1'
 	
 	select gno,ROW_NUMBER()over(partition by gno order by a.makeno,a.datea,a.uno) rr
 		,'' a01
@@ -1267,7 +1449,7 @@ z_cub_rkp06:--z_cub_rkp06
 		,dbo.getComma(a.wwb00,-1) a37
 		,dbo.getComma(a.ppb00,-1) a38
 		,dbo.getComma(a.mmb00,-1) a39
-	from @tmp a
+	from @tmpa a
 	left join view_cubs b on a.makeno=b.makeno
 	order by gno,a.makeno,a.datea,a.uno;
 
@@ -2120,7 +2302,7 @@ z_cub_rkp05:--z_cub_rkp05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,0)+'</a>' a06
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight03,0)+'</a>' a07
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01+weight03,0)+'</a>' a08
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(isnull(weight01,0)+isnull(weight03,0),0)+'</a>' a08
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight02,0)+'</a>' a09
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a10
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when status01=1 then 'V' else '' end+'</a>' a11
