@@ -49,7 +49,7 @@ z_cub_rkp12:--z_cub_rkp12  現價
 	BEGIN
 		drop table #z_cub_rkp12
 	END
-	select * into #z_cub_rkp12 from dbo.makeno2(@t_datea,0)
+	select * into #z_cub_rkp12 from dbo.makeno2(@t_datea,1)
 	
 	update @tmp set rate01= case when ISNULL(weight02,0)=0 then 0 else round((weight02-weight01)/weight02*100,2) end
 	
@@ -1975,6 +1975,7 @@ z_cub_rkp05:--z_cub_rkp05
 		cust nvarchar(30),
 		weight01 float,--進倉重
 		weight02 float,--在製品耗料
+		weight03 float,--已完工、未進倉
 		rate01 float,--損耗率
 		status01 int,--分條
 		status02 int,--2呎
@@ -2009,8 +2010,17 @@ z_cub_rkp05:--z_cub_rkp05
 		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when ISNULL(a.lengthb,0)=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
 		,c.custno,REPLACE(c.comp,'~#$',"'")
 	
+	update @tmp set cust=b.nick
+	from @tmp a
+	left join cust b on a.custno=b.noa
+	where b.noa is not null
+	
+	--update @tmp set weight03=isnull(b.hweight,0)
+	--from @tmp a
+	--left join view_cubs b on a.makeno=b.makeno
+	
 	--皮膜、保護膜
-	update @tmp set spec=ISNULL(b.productno,'')--+ISNULL(b.product,'')
+	update @tmp set spec=ISNULL(b.productno,'')
 	from @tmp a
 	outer apply (select top 1 y.productno,y.product 
 		from view_cubs x
@@ -2022,7 +2032,7 @@ z_cub_rkp05:--z_cub_rkp05
 	BEGIN
 		drop table #z_cub_rkp05
 	END
-	select * into #z_cub_rkp05 from dbo.makeno(@t_datea,1)
+	select * into #z_cub_rkp05 from dbo.makeno(@t_datea,0)
 	
 	update @tmp set rate01= case when ISNULL(weight02,0)=0 then 0 else round((weight02-weight01)/weight02*100,2) end
 	
@@ -2089,8 +2099,8 @@ z_cub_rkp05:--z_cub_rkp05
 	update @tmp set price02 = case when weight01=0 then 0 else round(money10/weight01,2) end
 
 	--合計
-	insert into @tmp(gno,weight01,weight02,money01,money02,money03,money04,money05,money06,money07,money08,money09,money10)
-	select '2', sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0))
+	insert into @tmp(gno,weight01,weight02,weight03,money01,money02,money03,money04,money05,money06,money07,money08,money09,money10)
+	select '2', sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(weight03,0)),sum(isnull(money01,0)),sum(isnull(money02,0))
 		,sum(isnull(money03,0)),sum(isnull(money04,0)),sum(isnull(money05,0)),sum(isnull(money06,0))
 		,sum(isnull(money07,0)),sum(isnull(money08,0)),sum(isnull(money09,0)),sum(isnull(money10,0))
 	from @tmp
@@ -2109,8 +2119,8 @@ z_cub_rkp05:--z_cub_rkp05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a04
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,0)+'</a>' a06
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+''+'</a>' a07
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,0)+'</a>' a08
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight03,0)+'</a>' a07
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01+weight03,0)+'</a>' a08
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight02,0)+'</a>' a09
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a10
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when status01=1 then 'V' else '' end+'</a>' a11
