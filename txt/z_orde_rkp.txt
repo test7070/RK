@@ -413,6 +413,7 @@ z_orde_rkp01:--z_orde_rkp01
 		width float,
 		lengthb float,
 		spec nvarchar(20),
+		cspec nvarchar(20),
 		pvcno nvarchar(20),--scolor
 		pvc nvarchar(30),--class
 		pveno nvarchar(20),--zinc
@@ -600,6 +601,10 @@ z_orde_rkp01:--z_orde_rkp01
 	from @tmp a
 	left join adpro b on a.custpro=b.noa
 
+	update @tmp set cspec=ISNULL(b.product,a.spec)
+	from @tmp a
+	left join spec b on a.spec=b.noa
+	
 	select gno,pno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
@@ -618,7 +623,7 @@ z_orde_rkp01:--z_orde_rkp01
 			+'*'+CAST(width as nvarchar)
 			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end
 			+'</a>' size
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' spec
 		
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' pvc
