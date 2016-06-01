@@ -28,7 +28,7 @@
             brwList = [];
             brwNowPage = 0;
             brwKey = 'Datea';
-            brwCount2 = 8;
+            brwCount2 = 10;
             q_desc = 1;
             aPop = new Array(['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,addr_comp,tel,fax', 'txtCustno,txtComp,txtNick,txtAddr,txtTel,txtFax', 'cust_b.aspx']
             	,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
@@ -345,13 +345,13 @@
                     	$('#txtProductno_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtProductno_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct_'+n).click();
                         });
                         $('#txtScolor_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtScolor_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnScolor_'+n).click();
                         });
                     	$('#txtMount_'+i).change(function(e){
@@ -369,13 +369,13 @@
                     	$('#txtZinc_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtZinc_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnZinc_'+n).click();
                         });
                         $('#txtHard_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtHard_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnHard_'+n).click();
                         });
                     }
@@ -662,13 +662,13 @@
 				<table class="tview" id="tview"  >
 					<tr>
 						<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
-						<td style="width:100px; color:black;"><a id='vewDatea'> </a></td>
+						<td style="width:100px; color:black;"><a id='vewOdate'> </a></td>
 						<td style="width:100px; color:black;"><a id='vewNoa'> </a></td>
 						<td style="width:100px; color:black;"><a id='vewComp'> </a></td>
 					</tr>
 					<tr>
 						<td><input id="chkBrow.*" type="checkbox" style=' '/></td>
-						<td align="center" id='datea'>~datea</td>
+						<td align="center" id='odate'>~odate</td>
 						<td align="center" id='noa'>~noa</td>
 						<td align="center" id='nick'>~nick</td>
 					</tr>
