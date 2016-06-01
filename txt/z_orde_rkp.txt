@@ -404,6 +404,10 @@ z_orde_rkp01:--z_orde_rkp01
 	
 	declare @tmp table(
 		sel int identity(1,1),
+		xx int,
+		yy int,
+		zz int,
+		
 		pno int,
 		gno nvarchar(10),
 		noa nvarchar(20),
@@ -586,6 +590,7 @@ z_orde_rkp01:--z_orde_rkp01
 		select @n = count(1) from @tmp where pno='1'
 		select @m = count(1) from @tmp where pno='2'
 		set @n = @n%@pagecount
+		
 		if(@pagecount - @n - @m)<0
 		begin
 			select @n = @pagecount - count(1) from @tmp where pno='1'
@@ -595,7 +600,6 @@ z_orde_rkp01:--z_orde_rkp01
 				set @n = @n - 1
 			end
 		end
-		
 		fetch next from cursor_table
 		into @noa,@datea,@custno,@comp,@serial,@boss,@conn,@tel,@fax,@odate
 		,@paytype,@memo2,@packtype
@@ -614,9 +618,17 @@ z_orde_rkp01:--z_orde_rkp01
 	from @tmp a
 	left join spec b on a.spec=b.noa
 	
+	update @tmp set xx=b.recno
+	from @tmp a
+	left join (select sel,ROW_NUMBER()over(order by pno,sel) recno from @tmp ) b on a.sel=b.sel
+	
+	select @n = CEILING( MAX(xx)/@pagecount)+1 from @tmp
+	update @tmp set yy=(xx/@pagecount)+1,zz=@n
+
 	select gno,pno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(yy as nvarchar)+' / '+CAST(zz as nvarchar)+'</a>' ppage
 		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@t_noa+'</a>' xxxx
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa+'</a>' aa
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+bb+'</a>' bb
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cc+'</a>' cc
