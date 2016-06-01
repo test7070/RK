@@ -513,7 +513,7 @@
 							<input id="txtProductno" type="text" class="txt" style="float:left;width:35%;"/>
 							<input id="txtProduct" type="text" class="txt" style="float:left;width:65%;"/>
 						</td>
-						<td><span> </span><a id="lblWeight" class="lbl">重量</a></td>
+						<td><span> </span><a id="lblWeight" class="lbl">重量/M</a></td>
 						<td><input id="txtWeight" type="text" class="txt c1 num"/></td>
 					</tr>
 					<tr>
@@ -542,7 +542,7 @@
 					<td align="center" style="width:200px;">規格</td>
 					<td align="center" style="width:50px;">單位</td>
 					<td align="center" style="width:80px;">數量<BR>重量</td>
-					<td align="center" style="display:none;">實際<BR>數量<BR>重量</td>
+					<td align="center" style="display:none;">實際<BR>數量<BR>重量/M</td>
 					<td align="center" style="width:200px;">備註</td>
 					
 				</tr>
