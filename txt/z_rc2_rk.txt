@@ -14,18 +14,20 @@ z_rc2_rk01:--z_rc2_rk01
 	declare @t_eproductno nvarchar(20) = case when '#non' = [11] then char(255) else [11] end
 	declare @t_kind nvarchar(max) = case when '#non' = [12] then '' else [12] end
 	----------------------------------------------------------------------------------------------
-		declare @tmp table(
-		gno nvarchar(1),
-		noa nvarchar(20),
-		noq nvarchar(20),
-		type nvarchar(20),
-		datea nvarchar(10),
-		mon nvarchar(10),
-		tggno nvarchar(20),
-		comp nvarchar(max),
-		nick nvarchar(20),
-		productno nvarchar(max),
-		xproduct nvarchar(max)
+	declare @tmp table(
+		sel int identity(1,1)
+		,recno int
+		,gno nvarchar(1)
+		,noa nvarchar(20)
+		,noq nvarchar(20)
+		,type nvarchar(20)
+		,datea nvarchar(10)
+		,mon nvarchar(10)
+		,tggno nvarchar(20)
+		,comp nvarchar(max)
+		,nick nvarchar(20)
+		,productno nvarchar(max)
+		,xproduct nvarchar(max)
 		,kind nvarchar(20)
 		,dime float
 		,width float
@@ -46,11 +48,12 @@ z_rc2_rk01:--z_rc2_rk01
 		,coin nvarchar(50) --幣別
 		,floata float      --匯率
 	)
-	insert into @tmp(gno,noa,noq,type,datea,mon,tggno,comp,nick,productno,xproduct,unit,mount,weight,total,qhref
+	insert into @tmp(gno,noa,noq,type,datea,mon,tggno,comp,nick
+		,productno,xproduct,unit,mount,weight,total,qhref
 		,spec,cspec,source,uno
 		,price,aprice,coin,floata
 		,kind,dime,width,lengthb,radius)
-	select '0' gno, a.noa noa, b.noq noq, (case when a.typea='2' then '退' else '進' end) type, a.datea datea, (case when a.mon='' then left(a.datea,6) else a.mon end)
+	select '1' gno, a.noa noa, b.noq noq, (case when a.typea='2' then '退' else '進' end) type, a.datea datea, (case when a.mon='' then left(a.datea,6) else a.mon end)
 		, a.tggno, a.tgg,isnull(c.nick,left(a.tgg,4)), b.productno, b.product, b.unit, 
 		   b.mount, b.weight, b.total,'rc2st'+b.accy
 		   ,b.spec,d.product,b.source,b.uno
@@ -68,6 +71,7 @@ z_rc2_rk01:--z_rc2_rk01
 		and (isnull(a.tggno,'') between @t_btggno and @t_etggno)
 		and (isnull(b.productno,'') between @t_bproductno and @t_eproductno)  
 		and (len(@t_kind)=0 or a.kind=@t_kind)	
+	
 	order by datea desc,gno,noa,noq
 	
 	update @tmp set csize = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
@@ -77,28 +81,47 @@ z_rc2_rk01:--z_rc2_rk01
 		+case when ISNULL(a.lengthb,0)=0 then '' else CAST(a.lengthb as nvarchar) end
 		+case when Upper(ISNULL(a.spec,''))='MM' or a.kind='A1' or a.kind='A4' or a.kind='A5' then 'mm' else '' end
 	from @tmp a
-	
 	update @tmp set csize = replace(csize,'~#$','''')
-
-	insert into @tmp(gno,datea,mount,total)
-		select '1',datea,sum(mount),sum(total) from @tmp where gno='0' group by datea
-	insert into @tmp(gno,datea,mount,total)
-		select '2',left(datea,6),sum(mount),sum(total) from @tmp where gno='0' group by left(datea,6)
-	update @tmp set qhref = substring(qhref,0,len(qhref)-2)+'?left(noa,'+cast(len(noa) as nvarchar)+')=$noa?'+substring(qhref,len(qhref)-2,len(qhref))
 	
-	select a.gno, a.noa, a.noq, a.type, a.datea
-	, LEFT(a.datea,6) xdatea, a.mon, a.tggno
-	, a.nick comp, a.productno, a.xproduct,a.unit,a.csize
-	,dbo.getComma(a.mount,-1) mount
-	,dbo.getComma(a.weight,-1) weight
-	,dbo.getComma(a.price,-1) price
-	,case when ISNULL(a.aprice,0)=0 then '' else dbo.getComma(a.aprice,-1) end aprice
-	,a.coin
-	,case when ISNULL(a.floata,0)=0 then '' else dbo.getComma(a.floata,-1) end floata
-	,dbo.getComma(a.total,0) total
-	,row_number()over(partition by a.datea,left(a.datea,6) order by a.datea desc,a.gno,a.noa,a.noq) idno,a.qhref
-	,isnull(b.product,a.spec) spec
-	,a.source,a.uno
+	update @tmp set recno=b.recno
+	from @tmp a
+	left join (select sel,ROW_NUMBER()over(order by productno,csize,datea,noa,noq) recno from @tmp ) b on a.sel=b.sel
+	
+	update @tmp set qhref = substring(qhref,0,len(qhref)-2)+'?left(noa,'+cast(len(noa) as nvarchar)+')=$a01?'+substring(qhref,len(qhref)-2,len(qhref))
+	
+	insert into @tmp(gno,productno,csize,mount,[weight],total)
+	select '2',productno,csize,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL(total,0))
+	from @tmp where gno='1'
+	group by productno,csize
+	
+	update @tmp set xproduct=b.product
+	from @tmp a
+	left join ucc b on a.productno=b.noa 
+	where a.gno='2'
+	
+	insert into @tmp(gno,productno,csize,mount,[weight],total)
+	select '3',CHAR(255),CHAR(255),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL(total,0))
+	from @tmp where gno='1'
+	
+	select gno,a.recno rr
+		,a.noa a01
+		,a.datea a02
+		,a.nick a03
+		,a.productno a04
+		,a.xproduct a05
+		,a.uno a06
+		,a.csize a07
+		,isnull(b.product,a.spec) a08
+		,a.source a09
+		,a.unit a10
+		,dbo.getComma(a.mount,-1) a11
+		,dbo.getComma(a.weight,-1) a12
+		,dbo.getComma(a.price,-1) a13
+		,a.coin a14
+		,case when ISNULL(a.floata,0)=0 then '' else dbo.getComma(a.floata,-1) end a15
+		,case when ISNULL(a.aprice,0)=0 then '' else dbo.getComma(a.aprice,-1) end a16
+		,dbo.getComma(a.total,0) a17
+		,a.qhref
 	from @tmp a
 	left join spec b on a.spec=b.noa
-	order by a.datea desc,a.gno,a.noa,a.noq;
+	order by productno,csize,gno,recno;
