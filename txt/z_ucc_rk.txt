@@ -238,6 +238,7 @@ z_ucc_rk02:--z_ucc_rk02
 		,mount float
 		,[weight] float
 		,price float
+		,total float
 		,uno2 nvarchar(30)
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(20)
@@ -292,16 +293,19 @@ z_ucc_rk02:--z_ucc_rk02
 	left join ucc b on a.productno=b.noa
 	where len(ISNULL(a.product,''))=0
 	
-	insert into @tmpa(pno,gno,productno,size,mount,[weight])
-	select 1,'2',productno,size,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmpa where gno='1' group by productno,size
+	update @tmpa set total = round(weight*price,0)
 	
-	insert into @tmpa(pno,gno,mount,[weight])
-	select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmpa where gno='1'
+	insert into @tmpa(pno,gno,productno,size,mount,[weight],total)
+	select 1,'2',productno,size,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from @tmpa where gno='1' group by productno,size
+	
+	insert into @tmpa(pno,gno,mount,[weight],total)
+	select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from @tmpa where gno='1'
 	
 	select row_number()over(order by gno,productno,size,datea,uno) rr
 		,* 
 		,dbo.getComma(mount,-1) cmount
 		,dbo.getComma([weight],-1) cweight
+		,dbo.getComma(total,0) ctotal
 	from @tmpa 
 	order by pno,productno,size,gno,datea,uno;
 
@@ -368,6 +372,7 @@ z_ucc_rk01:--z_ucc_rk01
 		,mount float
 		,[weight] float
 		,price float
+		,total float
 		,uno2 nvarchar(30)
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(20)
@@ -400,6 +405,8 @@ z_ucc_rk01:--z_ucc_rk01
 	and ISNULL(a.eweight,0)>0 
 	and (len(@t_store)=0 or charindex(','+b.storeno+',',','+@t_store+',')>0)
 	
+	update @tmp set total = round(weight*price,0)
+	
 	update @tmp set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
 	from @tmp a
 	left join view_cuts b on b.bno=a.uno
@@ -421,14 +428,16 @@ z_ucc_rk01:--z_ucc_rk01
 	left join ucc b on a.productno=b.noa
 	where len(ISNULL(a.product,''))=0
 	
-	insert into @tmp(pno,gno,productno,size,mount,[weight])
-	select 1,'2',productno,size,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp where gno='1' group by productno,size
+	insert into @tmp(pno,gno,productno,size,mount,[weight],total)
+	select 1,'2',productno,size,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from @tmp where gno='1' group by productno,size
 	
-	insert into @tmp(pno,gno,mount,[weight])select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp where gno='1'
+	insert into @tmp(pno,gno,mount,[weight],total)
+	select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from @tmp where gno='1'
 	
 	select row_number()over(order by gno,productno,size,datea,uno) rr
 		,* 
 		,dbo.getComma(mount,-1) cmount
 		,dbo.getComma([weight],-1) cweight
+		,dbo.getComma(total,0) ctotal
 	from @tmp 
 	order by pno,productno,size,gno,datea,uno;
