@@ -3082,6 +3082,8 @@ z_cub_rkp04:--z_cub_rkp04
 	declare @table nvarchar(20)
 	declare @tables nvarchar(20)
 	
+	-- 進貨、入庫  成本單價都以重量計
+	
 	declare cursor_table cursor for
 	SELECT replace(TABLE_NAME,'rc2s','rc2'),TABLE_NAME 
 	FROM INFORMATION_SCHEMA.TABLES 
@@ -3092,7 +3094,8 @@ z_cub_rkp04:--z_cub_rkp04
 	while(@@FETCH_STATUS <> -1)
 	begin	
 		set @cmd="
-		update "+@tables+" set sprice=a.price,sprice2=a.price 
+		update "+@tables+" set sprice=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end
+			,sprice2=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end
 		from "+@tables+" a
 		left join "+@table+" b on a.noa=b.noa
 		where b.datea<=@t_date"
@@ -3114,7 +3117,8 @@ z_cub_rkp04:--z_cub_rkp04
 	while(@@FETCH_STATUS <> -1)
 	begin	
 		set @cmd="
-		update "+@tables+" set sprice=a.price,sprice2=a.price 
+		update "+@tables+" set sprice=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end
+		,sprice2=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end 
 		from "+@tables+" a
 		left join "+@table+" b on a.noa=b.noa
 		where b.datea<=@t_date"
