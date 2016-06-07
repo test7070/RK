@@ -100,7 +100,7 @@
 					<td align="center" style="width:50px;">單位</td>
 					<td align="center" style="width:80px;">未交數量</td>
 					<td align="center" style="width:80px;">未交重量</td>
-					<td align="center" style="width:50px;">本次<BR>進貨數</td>
+					<td align="center" style="width:70px;">本次<BR>進貨數</td>
 					<td align="center" style="width:200px;">備註</td>
 				</tr>
 			</table>
@@ -118,7 +118,7 @@
 					<td align="center" style="width:50px;">單位</td>
 					<td align="center" style="width:80px;">未交數量</td>
 					<td align="center" style="width:80px;">未交重量</td>
-					<td align="center" style="width:50px;">本次<BR>進貨數</td>
+					<td align="center" style="width:70px;">本次<BR>進貨數</td>
 					<td align="center" style="width:200px;">備註</td>
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -146,7 +146,7 @@
 					<td style="width:50px;"><input type="text" readonly="readonly" id="txtUnit.*" style="float:left;width:95%;text-align: center;"/></td>
 					<td style="width:80px;"><input type="text" readonly="readonly" id="txtMount.*" style="float:left;width:95%;text-align: right;"/></td>
 					<td style="width:80px;"><input type="text" readonly="readonly" id="txtWeight.*" style="float:left;width:95%;text-align: right;"/></td>
-					<td style="width:50px;"><input type="text" id="txtCnt.*" class="txt num" style="float:left;width:95%;text-align: right;"/></td>
+					<td style="width:70px;background-color: pink;"><input type="text" id="txtCnt.*" class="txt num" style="float:left;width:95%;text-align: right;"/></td>
 					<td style="width:200px;"><input type="text" readonly="readonly" id="txtMemo.*" style="float:left;width:95%;"/></td>
 				</tr>
 			</table>
