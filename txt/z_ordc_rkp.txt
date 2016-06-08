@@ -99,10 +99,36 @@ z_ordc_rkp01:--z_ordc_rkp01
 	where len(ISNULL(sizea,''))=0
 	
 	-- 頁尾要保留7行
+	declare @memo nvarchar(max) =''
+	select @memo = memo from view_ordc where noa=@t_noa
+	declare @memo1 nvarchar(max) =''
+	declare @memo2 nvarchar(max) =''
+	declare @memo3 nvarchar(max) =''
+
+	if(CHARINDEX('chr(10)',@memo)>0)
+	begin
+		set @memo1 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
+		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+	end
+	if(CHARINDEX('chr(10)',@memo)>0)
+	begin
+		set  @memo2 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
+		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+	end
+	if(CHARINDEX('chr(10)',@memo)>0)
+	begin
+		set @memo3 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
+		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+	end
+	else
+	begin
+		set @memo3 = @memo
+	end
+	
 	insert into @tmp(gno,pno)values('4',4)
-	insert into @tmp(gno,pno,memo)select '5',5,memo from view_ordc where noa=@t_noa
-	insert into @tmp(gno,pno)values('6',6)
-	insert into @tmp(gno,pno)values('7',7)
+	insert into @tmp(gno,pno,memo)values('5',5,@memo1)
+	insert into @tmp(gno,pno,memo)values('6',6,@memo2)
+	insert into @tmp(gno,pno,memo)values('7',7,@memo3)
 	insert into @tmp(gno,pno)values('8',8)
 	insert into @tmp(gno,pno)values('9',9)
 	insert into @tmp(gno,pno)values('10',10)
