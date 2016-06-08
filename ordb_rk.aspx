@@ -1052,8 +1052,8 @@
 					<td align="center" style="width:180px;"><a id='lblMemos_st'> </a><br><a id='lblOrdenos_st'> </a></td>
 					<td align="center" style="width:60px;"><a>製造商</a></td>
 					<td align="center" style="width:250px;"><a id='lblUno_st'> </a></td>
-					<td align="center" style="width:40px;display:none;"><a>採購<BR>記錄</a></td>
-					<td align="center" style="width:40px;"><a>詢價<BR>記錄</a></td>	
+					<td align="center" style="width:40px;"><a>採購<BR>記錄</a></td>
+					<td align="center" style="width:40px;display:none;"><a>詢價<BR>記錄</a></td>	
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
