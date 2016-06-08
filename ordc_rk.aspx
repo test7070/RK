@@ -551,6 +551,17 @@
 				for (var j = 0; j < q_bbsCount; j++) {
 					$('#lblNo_' + j).text(j + 1);
 					if (!$('#btnMinus_' + j).hasClass('isAssign')) {
+						$('#btnTmprecord_' + j).click(function(){
+							var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
+							var t_pno = $.trim($('#txtProductno_'+n).val());
+							var t_no3 = $.trim($('#txtNo2_'+n).val());
+							var t_noa = $.trim($('#txtNoa').val());
+							if((t_pno.length>0) && (t_no3.length>0) && (t_noa.length>0) && (t_noa != 'AUTO')){
+								var t_where = "noa='" + t_noa + "' and no3='" + t_no3 + "' ";
+								q_box("ordbt_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where, 'ordbt', "95%", "95%", '詢價紀錄');
+							}
+						});
+						
 						$('#txtMount_' + j).change(function() {
 							sum();
 						});
@@ -1232,6 +1243,7 @@
 					<td align="center" style="width:60px;"><a>製造商</a></td>
 					<td align="center" style="width:30px;"><a id='lblEnda_st'> </a></td>
 					<td align="center" style="width:40px;"><a id='lblOrdcrecord'> </a></td>
+					<td align="center" style="width:40px;"><a>詢價<BR>記錄</a></td>
 					<td align="center" style="width:100px;"><a>預計交期</a></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -1295,6 +1307,7 @@
 					<td> <input id="txtSource.*" type="text" style="float:left;width:95%;" /> </td>
 					<td> <input id="chkEnda.*" type="checkbox"/> </td>
 					<td> <input class="btn"  id="btnOrdcrecord.*" type="button" value='.' style=" font-weight: bold;" /> </td>
+					<td><input type="button" id="btnTmprecord.*" value="." /></td>
 					<td> <input id="txtRdate.*" type="text" style="float:left;width:95%;" /> </td>
 				</tr>
 			</table>

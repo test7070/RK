@@ -457,7 +457,7 @@
 					$('#lblNo_' + j).text(j + 1);
 					if (!$('#btnMinus_' + j).hasClass('isAssign')) {
 						$('#btnHistory_'+j).click(function(e){
-							var n = $(this).attr('id').split('_')[$(this).attr('id').split('_').length-1];
+							var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
 							var t_pno = $.trim($('#txtProductno_'+n).val());
 							var t_spec = $.trim($('#cmbSpec_'+n).val());
 							var t_dime = q_float('txtDime_'+n);
@@ -1052,7 +1052,7 @@
 					<td align="center" style="width:180px;"><a id='lblMemos_st'> </a><br><a id='lblOrdenos_st'> </a></td>
 					<td align="center" style="width:60px;"><a>製造商</a></td>
 					<td align="center" style="width:250px;"><a id='lblUno_st'> </a></td>
-					<td align="center" style="width:40px;"><a>採購<BR>記錄</a></td>
+					<td align="center" style="width:40px;display:none;"><a>採購<BR>記錄</a></td>
 					<td align="center" style="width:40px;"><a>詢價<BR>記錄</a></td>	
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -1110,7 +1110,7 @@
 					<td> <input id="txtSource.*" type="text" style="float:left;width:95%;" /> </td>
 					<td> <input id="txtUno.*" type="text" style="float:left;width:95%;" /> </td>
 					<td><input type="button" id="btnHistory.*" value="." /></td>
-					<td><input type="button" id="btnTmprecord.*" value="." /></td>
+					<td style="display:none;"><input type="button" id="btnTmprecord.*" value="." /></td>
 				</tr>
 			</table>
 		</div>
