@@ -22,7 +22,7 @@
         	if(Request.QueryString["db"] !=null && Request.QueryString["db"].Length>0)
         		db= Request.QueryString["db"];
         	connectionString = "Data Source=127.0.0.1,1799;Persist Security Info=True;User ID=sa;Password=artsql963;Database="+db;
-			
+
 			var item = new ParaIn();
 			if (Request.QueryString["noa"] != null && Request.QueryString["noa"].Length > 0)
             {
@@ -45,9 +45,9 @@
             var item = serializer.Deserialize<ParaIn>(encoding.GetString(formData));
 			*/
             /*item = new ParaIn();
-            item.noa = "B1050420001";
+            item.noa = "B1050614003";
             item.noq = "";
-            item.stktype = "A1@金屬底材,A4@皮膜,A5@保護膜,F6@物料,A7@成品,A8@溶劑";
+            item.stktype = "A1@金屬底材,A4@皮膜,A5@保護膜,A6@物料,A7@成品,A8@溶劑";
             connectionString = "Data Source=59.125.143.171,1799;Persist Security Info=True;User ID=sa;Password=artsql963;Database=st6";    
             */
             
@@ -88,7 +88,7 @@
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on a.productno=c.noa
-	left join dbo.fnSplit(@t_stktype) d on c.typea = d.n
+	left join dbo.fnSplit(@t_stktype) d on b.kind = d.n
 	left join spec e on a.spec=e.noa
 	where a.noa=@t_noa
 	and (len(@t_noq)=0 or a.noa=@t_noq)
@@ -96,7 +96,7 @@
 	
 	update @tmp set size= case when spec='mm' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm' 
 		else CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+case when lengthb>0 then '*'+CAST(lengthb as nvarchar) else '' end end
-	where len(isnull(size,''))=0
+	where len(isnull(size,''))=0 and not(dime=0 and width=0)
 	
 	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife
 	 from @tmp order by sel;";
@@ -156,20 +156,77 @@
                         //Insert page
                         doc1.NewPage();
                     }
+                    //LINE
+                    cb.MoveTo(10, 10);
+                    cb.LineTo(10, 412);
+                    cb.LineTo(273, 412);
+                    cb.LineTo(273, 10);
+                    cb.LineTo(10, 10);
+
+                    cb.MoveTo(233, 10);
+                    cb.LineTo(233, 412);
+                    cb.MoveTo(193, 10);
+                    cb.LineTo(193, 412);
+                    cb.MoveTo(153, 10);
+                    cb.LineTo(153, 412);
+                    cb.MoveTo(113, 10);
+                    cb.LineTo(113, 412);
+                    cb.MoveTo(73, 10);
+                    cb.LineTo(73, 412);
+                    cb.MoveTo(33, 10);
+                    cb.LineTo(33, 412);
+
+                    cb.MoveTo(10, 352);
+                    cb.LineTo(233, 352);
+                    cb.MoveTo(33, 182);
+                    cb.LineTo(233, 182);
+
+                    cb.MoveTo(73, 122);
+                    cb.LineTo(233, 122);
+                    cb.Stroke();
+                    
                     //TEXT
                     cb.SetColorFill(iTextSharp.text.BaseColor.BLACK);
                     cb.BeginText();
-                    cb.SetFontAndSize(bfChinese, 16);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).date, 71, doc1.PageSize.Height-150, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).mount.ToString() + " " + ((Para)rc2Label[i]).unit, 113, doc1.PageSize.Height - 150, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).size, 153, doc1.PageSize.Height - 150, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).productno + ((Para)rc2Label[i]).product, 189, doc1.PageSize.Height - 150, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).type, 227, doc1.PageSize.Height - 150, 270);
+                    cb.SetFontAndSize(bfChinese, 12);
 
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).shelflife, 113, doc1.PageSize.Height - 344, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).uno, 153, doc1.PageSize.Height - 344, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).hard!=0?((Para)rc2Label[i]).hard.ToString():"", 189, doc1.PageSize.Height - 344, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).comp, 227, doc1.PageSize.Height - 344, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "類　　別", 208, 382, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "品　　名", 168, 382, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "規　　格", 128, 382, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "數　　量", 88, 382, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "進貨日期", 48, 382, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "備　　註", 18, 382, 270);
+
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "供 應 商", 208, 152, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "硬　　度", 168, 152, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "產品序號", 128, 152, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "保存期限", 88, 152, 270);
+
+                    cb.SetFontAndSize(bfChinese, 16);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).type, 208, 267, 270);
+                    
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).productno, 178, 267, 270);
+                    cb.SetFontAndSize(bfChinese, 11);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).product, 158, 267, 270);
+					cb.SetFontAndSize(bfChinese, 16);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).size, 128, 267, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).mount.ToString() + " " + ((Para)rc2Label[i]).unit, 88, 267, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).date, 48, 267, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "", 18, 267, 270);
+
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).comp, 208, 71, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).hard != 0 ? ((Para)rc2Label[i]).hard.ToString() : "", 168, 71, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).uno, 128, 71, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).shelflife, 88, 71, 270);
+
+                    cb.SetFontAndSize(bfChinese, 10);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "表單編號：LC-14-00-02-01", 18, 150, 270);
+
+                    
+                    cb.SetFontAndSize(iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLDOBLIQUE).BaseFont, 25);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 243, 400, 270);
+                    cb.SetFontAndSize(bfChinese, 20);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "聯琦金屬股份有限公司 － 進貨標籤", 243, 330, 270);
                     cb.EndText();
                 }
             }
