@@ -37,6 +37,10 @@
 					},{
 						type : '6', //[4]
 						name : 'noa'
+					},{
+						type : '8', //[5]
+						name : 'merge',
+						value : ('1@合併').split(',')
 					}]
 				});
 				q_popAssign();
