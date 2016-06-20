@@ -14,6 +14,12 @@
 		<script src="css/jquery/ui/jquery.ui.widget.js"></script>
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script type="text/javascript">
+			/*	
+			 * coin 有值時
+			 * price 為外幣單價
+			 * total 為台幣金額
+			 * 
+			 */
 			q_desc = 1;
 			q_tables = 's';
 			var q_name = "vcc";
@@ -40,11 +46,15 @@
 				,['txtStoreno2_', 'btnStoreno2_', 'store', 'noa,store', 'txtStoreno2_,txtStore2_', 'store_b.aspx']
 			);
 			brwCount2 = 12;
+			
+			t_coin = '';
 			$(document).ready(function() {
 				bbmKey = ['noa'];
 				bbsKey = ['noa', 'noq'];
 				q_brwCount();
-				q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
+				
+				q_gt('flors_coin', '', 0, 0, 0, "flors_coin");
+				
 			});
 			function main() {
 				if (dataErr) {
@@ -93,7 +103,6 @@
 						if (t_float == 0) {
 							t_moneys = round(t_moneys, 0);
 						} else {
-							t_moneyus = q_add(t_moneyus, round(t_moneys, 2));
 							t_moneys = round(q_mul(t_moneys, t_float), 0);
 						}
 						$('#txtTotal_' + j).val(t_moneys);
@@ -152,10 +161,6 @@
 				$('#txtMoney').val(t_money);
 				$('#txtTax').val(t_tax);
 				$('#txtTotal').val(t_total);
-				if (t_float == 0)
-					$('#txtTotalus').val(0);
-				else
-					$('#txtTotalus').val(t_moneyus);
 			}
 
 			function mainPost() {// 載入資料完，未 refresh 前
@@ -169,6 +174,7 @@
 				q_cmbParse("cmbTrantype", q_getPara('sys.tran'));
 				q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
 				q_cmbParse("cmbKind", q_getPara('sys.stktype'));
+				q_cmbParse("cmbCoin", t_coin);
 				//=======================================================
 				$('#lblAccno').hide();
 				$('#txtAccno').hide();
@@ -353,6 +359,15 @@
 
 			function q_gtPost(t_name) {/// 資料下載後 ...
 				switch (t_name) {
+					case 'flors_coin':
+						var as = _q_appendData("flors", "", true);
+						t_coin='';
+						for ( i = 0; i < as.length; i++) {
+							t_coin+=','+as[i].coin;
+						}
+						//if(t_coin.length==0) z_coin=' ';
+						q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
+						break;
 					case 'custaddr':
 						var as = _q_appendData("custaddr", "", true);
 						var t_item = " @ ";
@@ -447,8 +462,14 @@
 				for (var i = 0; i < q_bbsCount; i++) {
 					$('#lblNo_' + i).text(i + 1);
 					if (!$('#btnMinus_' + i).hasClass('isAssign')) {
-						$('#chkAprice_'+i).click(function(e){refreshBbs();});
+						$('#chkAprice_'+i).click(function(e){
+							sum();
+							refreshBbs();
+						});
 						$('#txtUnit_' + i).change(function() {
+								sum();
+						});
+						$('#txtMount_' + i).change(function() {
 								sum();
 						});
 						$('#txtWeight_' + i).change(function() {
@@ -457,16 +478,19 @@
 						$('#txtPrice_' + i).change(function() {
 								sum();
 						});
+						$('#txtTotal_' + i).change(function() {
+								sum();
+						});
 						$('#txtUno_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtUno_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnUno_'+n).click();
                         });
                         $('#txtProductno_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtProductno_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct_'+n).click();
                         });
 					}
@@ -862,25 +886,23 @@
 					<tr style="display:none;">
 						<td><span> </span><a id='lblTotalus' class="lbl"> </a></td>
 						<td><input id="txtTotalus" type="text" class="txt num c1" /></td>
-						<td><span> </span><a id='lblFloata' class="lbl"> </a></td>
-						<td><input id="txtFloata" type="text" class="txt num c1" /></td>
-						<td>
-							<span style="float:left;display:block;width:10px;"></span>
-							<select id="cmbCoin" style="float:left;width:80px;"></select>
-						</td>
+						
 						
 					</tr>
 					<tr>
+						<td><span> </span><a id='lblFloata' class="lbl"> </a></td>
+						<td>
+							<input id="txtFloata" type="text" class="txt num" style="float:left;width:60%;"/>
+							<select id="cmbCoin" style="float:left;width:40%;"> </select>
+						</td>
+						
 						<td><span> </span><a id='lblMoney' class="lbl"> </a></td>
 						<td><input id="txtMoney" type="text" class="txt num c1" /></td>
 						<td><span> </span><a id='lblTax' class="lbl"> </a></td>
 						<td>
-							<input id="txtTax" type="text" class="txt num c1 istax" />
+							<input id="txtTax" type="text" class="txt num istax" style="float:left;width:60%;"/>
 							<input id="txtVccatax" type="text" class="txt num c1 " style="display:none;" />
-						</td>
-						<td>
-							<span style="float:left;display:block;width:10px;"></span>
-							<select id="cmbTaxtype" style="float:left;width:80px;" ></select>
+							<select id="cmbTaxtype" style="float:left;width:40%;"> </select>
 						</td>
 						<td><span> </span><a id='lblTotal' class="lbl istax"> </a></td>
 						<td><input id="txtTotal" type="text" class="txt num c1 istax" /></td>
