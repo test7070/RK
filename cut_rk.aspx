@@ -633,7 +633,7 @@
 					<td style="width:400px;">皮膜<BR>規格</td>
 					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
-					<td style="width:80px;">重量</td>
+					<td style="width:100px;">重量</td>
 					<td style="width:200px;">客戶</td>
 					<td style="width:200px;">入庫批號</td>
 					<td style="width:200px;">棧板序號</td>
