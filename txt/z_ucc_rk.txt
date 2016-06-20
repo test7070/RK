@@ -284,7 +284,7 @@ z_ucc_rk02:--z_ucc_rk02
 	where b.noa is not null
 	
 	update @tmpa set size=case kind when 'A1' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
-			when 'A4' then CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
+			when 'A4' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
 			when 'A5' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
 			when 'A7' then CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
 			else '' end
@@ -419,7 +419,7 @@ z_ucc_rk01:--z_ucc_rk01
 	where b.noa is not null
 	
 	update @tmp set size=case kind when 'A1' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
-			when 'A4' then CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
+			when 'A4' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
 			when 'A5' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm'
 			when 'A7' then CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
 			else '' end
