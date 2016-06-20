@@ -15,7 +15,8 @@
 		<script type="text/javascript">
 			var q_name = "cut_rk_s";
 			var q_readonly = [];
-			aPop = new Array();
+			aPop = new Array(
+				['txtCustno', 'lblCustno', 'cust', 'noa,nick', 'txtCustno', 'cust_b.aspx']);
 			$(document).ready(function() {
 				main();
 			});
@@ -43,6 +44,9 @@
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
 				var t_makeno = $.trim($('#txtMakeno').val());
+				var t_ordeno = $.trim($('#txtOrdeno').val());
+				var t_ordeno2 = $.trim($('#txtOrdeno2').val());
+				var t_custno = $.trim($('#txtCustno').val());
 				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
@@ -50,7 +54,13 @@
 				
 				if(t_makeno.length>0)
 		       		t_where += " and exists(select noa from view_cuts"+r_accy+" where view_cuts"+r_accy+".noa=view_cut"+r_accy+".noa and view_cuts"+r_accy+".cname='"+t_makeno+"')";
-		       				
+		       	if(t_ordeno.length>0)
+		       		t_where += " and exists(select noa from view_cuts"+r_accy+" where view_cuts"+r_accy+".noa=view_cut"+r_accy+".noa and view_cuts"+r_accy+".ordeno='"+t_ordeno+"')";
+		       	if(t_ordeno2.length>0)
+		       		t_where += " and exists(select noa from view_cuts"+r_accy+" where view_cuts"+r_accy+".noa=view_cut"+r_accy+".noa and view_cuts"+r_accy+".no2='"+t_ordeno2+"')";	
+	       		if(t_custno.length>0)
+		       		t_where += " and exists(select noa from view_cuts"+r_accy+" where view_cuts"+r_accy+".noa=view_cut"+r_accy+".noa and view_cuts"+r_accy+".custno='"+t_custno+"')";	
+		       					
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -92,6 +102,17 @@
 				<tr class='seek_tr'>
 					<td class='seek' style="width:90px;"><a id='lblMakeno'>製造批號</a></td>
 					<td><input class="txt" id="txtMakeno" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblOrdeno'>訂單編號</a></td>
+					<td>
+						<input class="txt" id="txtOrdeno" type="text" style="width:150px;" />
+						<input class="txt" id="txtOrdeno2" type="text" style="width:50px;" />
+					</td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblCustno'>客戶編號</a></td>
+					<td><input class="txt" id="txtCustno" type="text" style="width:220px;" /></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
