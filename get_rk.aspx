@@ -181,6 +181,7 @@
 						var t_idno = $('#txtIdno').val();
 						if(t_noa.length>0 && t_idno.length>0){
 							q_func('ina_post.post', r_accy + ',' + t_noa + ',1');
+							location.reload();
 						}
 						break;
 					case 'ina_post.post.post0_delete':
