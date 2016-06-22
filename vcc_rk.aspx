@@ -14,6 +14,7 @@
 		<script src="css/jquery/ui/jquery.ui.widget.js"></script>
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script type="text/javascript">
+			//2016/06/22 BBS 批號有值   品名就不可修改
 			/*	
 			 * coin 有值時
 			 * price 為外幣單價
@@ -566,6 +567,7 @@
 			function q_popPost(s1) {
 				switch (s1) {
 					case 'txtUno_':
+						refreshBbs();
 						sum();
 						break;
 					default:
@@ -600,6 +602,17 @@
 						$('#txtTotal_'+i).css('color','green').css('background-color','rgb(237,237,237)');
 					}
 				}
+				
+				if(q_cur==1 || q_cur==2)
+					for(var i=0;i<q_bbsCount;i++){
+						if($('#txtUno_'+i).val().length>0){
+							$('#txtProductno_'+i).attr('disabled','disabled');
+							$('#txtProduct_'+i).attr('disabled','disabled');
+						}else{
+							$('#txtProductno_'+i).removeAttr('disabled','disabled');
+							$('#txtProduct_'+i).removeAttr('disabled','disabled');
+						}
+					}
 			}
 			function btnMinus(id) {
 				_btnMinus(id);

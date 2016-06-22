@@ -14,6 +14,8 @@
         <script src="css/jquery/ui/jquery.ui.widget.js"></script>
         <script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
         <script type="text/javascript">
+        	//2016/06/22 BBS 批號有值   品名就不可修改
+        
 			this.errorHandler = null;
 			function onPageError(error) {
 				alert("An error occurred:\r\n" + error.Message);
@@ -37,7 +39,7 @@
 				//['txtPost', 'lblPost', 'addr', 'post,addr', 'txtPost', 'addr_b.aspx'],
 				['txtStationno', 'lblStore', 'store', 'noa,store', '0txtStationno,txtStation', 'store_b.aspx'],
 				['txtUno_', 'btnUno_', 'view_uccc', 'uno,productno,product,spec,unit', '0txtUno_,txtProductno_,txtProduct_,cmbSpec_,txtUnit_', 'uccc_seek_b.aspx?;;;1=0', '95%', '60%'],
-				['txtProductno_', 'btnProductno_', 'ucaucc', 'noa,product,unit', '0txtProductno_,txtProduct_,txtUnit_', 'ucaucc_b.aspx'],
+				['txtProductno_', 'btnProduct_', 'ucaucc', 'noa,product,unit', '0txtProductno_,txtProduct_,txtUnit_', 'ucaucc_b.aspx'],
 				['txtProductno', 'lblProduct', 'ucaucc', 'noa,product', 'txtProductno,txtProduct', 'ucaucc_b.aspx']
 			);
 			function sum(){
@@ -80,7 +82,9 @@
 			
 			function q_popPost(s1) {
 				switch (s1) {
-					
+					case 'txtUno_':
+						refreshBbs();
+						break;
 				}
 			}
 
@@ -212,10 +216,10 @@
 				for (var j = 0; j < (q_bbsCount == 0 ? 1 : q_bbsCount); j++) {
 					$('#lblNo_'+j).text(j+1);
 					if (!$('#btnMinus_' + j).hasClass('isAssign')) {
-						$('#txtProductno_' + i).bind('contextmenu', function(e) {
+						$('#txtProductno_' + j).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace(/.*_([0-9]+)/,'$1');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct_'+n).click();
                         });
 						$('#txtMount_' + j).change(function() {
@@ -235,6 +239,7 @@
 					}
 				}
 				_bbsAssign();
+				refreshBbs();
 			}
 
 			function btnIns() {
@@ -274,10 +279,19 @@
 
 			function refresh(recno) {
 				_refresh(recno);
-				/*for(var i=0;i<q_bbsCount;i++){
-					$('#txtEweight_'+i).val(Math.abs(q_float('txtGmount_'+i)));
-					$('#txtMweight_'+i).val(Math.abs(q_float('txtGweight_'+i)));
-				}*/
+				refreshBbs();
+			}
+			function refreshBbs(){
+				if(q_cur==1 || q_cur==2)
+					for(var i=0;i<q_bbsCount;i++){
+						if($('#txtUno_'+i).val().length>0){
+							$('#txtProductno_'+i).attr('disabled','disabled');
+							$('#txtProduct_'+i).attr('disabled','disabled');
+						}else{
+							$('#txtProductno_'+i).removeAttr('disabled','disabled');
+							$('#txtProduct_'+i).removeAttr('disabled','disabled');
+						}
+					}
 			}
 
 			function readonly(t_para, empty) {
