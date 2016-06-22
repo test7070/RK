@@ -6,6 +6,13 @@ post:--post  get_rk
 	declare @t_userno nvarchar(20) = [3]
 	--------------------------------------------------------
 	declare @t_accy nvarchar(20)=''
+	declare @uno nvarchar(30) = ''
+	
+	declare @tmp table(
+		[status] nvarchar(20)
+		,noa nvarchar(max)
+		,uno nvarchar(max)
+	)
 	--------------------------------------------------------
 	DECLARE @chk tinyint = 0
 	Begin Transaction [Trans_Name]
@@ -22,11 +29,12 @@ post:--post  get_rk
 			set @cmd = "delete inas"+@t_accy+" where noa=@t_noa"
 			execute sp_executesql @cmd,N'@t_noa nvarchar(20)',@t_noa=@t_noa
 			IF @@Error <> 0 BEGIN SET @chk = 1 END
+			
+			insert into @tmp([status],noa,uno)values('delete',@t_noa,null)
 		end
 		else if @t_condition='1'
 		begin
 			declare @datea nvarchar(10)=''
-			declare @uno nvarchar(30) = ''
 			declare @productno nvarchar(50) = ''
 			declare @product nvarchar(50) = ''
 			declare @mount float = 1
@@ -126,13 +134,18 @@ post:--post  get_rk
 					,'領料組合作業'
 				IF @@Error <> 0 BEGIN SET @chk = 1 END
 			end
+			
+			insert into @tmp([status],noa,uno)values('insert',@t_noa,@uno)
 		end
 		
 		IF @chk <> 0 BEGIN -- 若是新增資料發生錯誤
 			Rollback Transaction [Trans_Name] -- 復原所有操作所造成的變更
+			insert into @tmp([status],noa,uno)values('error',@t_noa,null)
+			select * from @tmp
 		END
 		ELSE BEGIN
 			Commit Transaction [Trans_Name] -- 提交所有操作所造成的變更
+			select * from @tmp
 		END
 	end try
 	begin catch
@@ -147,4 +160,7 @@ post:--post  get_rk
 			,'ina'
 			,@t_condition
 			,ERROR_MESSAGE()
+		
+		insert into @tmp([status],noa,uno)values('error',@t_noa,null)
+		select * from @tmp
 	end catch;

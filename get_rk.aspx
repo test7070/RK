@@ -74,7 +74,7 @@
 				bbmMask = [['txtDatea', r_picd], ['txtCucdate', r_picd]];
 				q_mask(bbmMask);
 				//,退料單  移除,  不然還得增加入庫倉庫&儲位
-				q_cmbParse("cmbTypea", '領料單,加寄庫出貨');
+				q_cmbParse("cmbTypea", '領料單,加寄庫出貨,退料');
 				q_cmbParse("cmbSpec", t_spec,'s');
 			}
 			
@@ -178,10 +178,16 @@
 						break;
 					case 'qtxt.query.post1':
 						var t_noa = $('#txtNoa').val();
-						var t_idno = $('#txtIdno').val();
+						var t_idno = $.trim($('#txtIdno').val());
+						var as = _q_appendData("tmp0", "", true, true);
+                        if (as[0] != undefined) {
+                        	if(as[0].status == 'insert' && as[0].noa == t_noa && t_idno.length==0){
+                        		t_idno = as[0].uno;
+                        		$('#txtIdno').val(t_idno);
+                        	}
+                        }
 						if(t_noa.length>0 && t_idno.length>0){
 							q_func('ina_post.post', r_accy + ',' + t_noa + ',1');
-							location.reload();
 						}
 						break;
 					case 'ina_post.post.post0_delete':
