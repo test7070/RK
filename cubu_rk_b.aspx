@@ -24,7 +24,7 @@
 			var decbbs = [];
 			var decbbm = [];
 			var q_readonly = [];
-			var q_readonlys = [];
+			var q_readonlys = ['txtProductno','txtProduct'];
 			var bbmNum = [];
 			var bbsNum = [];
 			var bbmMask = [];

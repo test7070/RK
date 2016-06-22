@@ -20,7 +20,7 @@
 			var q_name = "cub";
 			var q_readonly = ['txtNoa','txtWorker','txtWorker2'];
 			var q_readonlys = ['txtNoq','txtMakeno'];
-			var q_readonlyt = ['txtNoq'];
+			var q_readonlyt = ['txtNoq','txtProductno','txtProduct'];
 			var bbmNum = [];
 			var bbsNum = [];
 			var bbtNum = [];
@@ -352,6 +352,16 @@
 
 			function refresh(recno) {
 				_refresh(recno);
+				/*var rbSelect = -1;
+				for(var i=0;i<q_bbsCount;i++){
+					if($('#rbNum_'+i).prop('checked')){
+						rbSelect = i;
+						break;
+					}
+				}
+				if(rbSelect==-1){
+					$('#rbNum_'+0).click();
+				}*/
 			}
 
 			function readonly(t_para, empty) {
@@ -614,6 +624,13 @@
 
 			function q_popPost(id) {
 				switch (id) {
+					case 'txtUno__':
+						var bbt_n = b_seq;
+						var bbs_n = $('input:radio:checked[name="rbNum"]').attr('id').replace(/^(.*)_(\d+)$/,'$2');
+						var t_nor = $('#txtNoq_'+bbs_n).val();
+						if($('#txtNor__'+bbt_n).val().length==0)
+							$('#txtNor__'+bbt_n).val(t_nor);
+						break;
 					default:
 						break;
 				}
