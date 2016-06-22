@@ -33,7 +33,7 @@
 					},{
                         type : '0',  //[3]
                         name : 'xkind',
-                        value : q_getPara('uccc.itype')
+                        value : q_getPara('sys.stktype')
                     },{
 						type : '6',  //[4]  1
 						name : 'xnoa'
@@ -64,7 +64,7 @@
 	            }    
 	            if(t_para.length==0 || t_para.noa==undefined){
 	            }else{
-	            	$('#txtNoa').val(t_para.noa);
+	            	$('#txtXnoa').val(t_para.noa);
 	            }
 				
 				var t_date,t_year,t_month,t_day;
@@ -94,7 +94,7 @@
             	$('#btnOk2').click(function(e){
             		switch($('#q_report').data('info').radioIndex) {
                         case 1:
-                        	window.open("./pdf_rklabel04.aspx?noa="+$('#txtNoa').val()+"&noq=&stktype="+q_getPara('sys.stktype')+"&db="+q_db);
+                        	window.open("./pdf_rklabel04.aspx?noa="+$('#txtXnoa').val()+"&noq=&stktype="+q_getPara('sys.stktype')+"&db="+q_db);
                             break;
                         default:
                            	$('#btnOk').click();
