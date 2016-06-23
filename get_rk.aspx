@@ -36,6 +36,7 @@
 			brwKey = 'Datea';
 			brwCount2 = 6;
 			aPop = new Array(
+				['txtCustno', 'lblCust', 'cust', 'noa,comp,addr_fact', 'txtCustno,txtComp,txtAddr', 'cust_b.aspx'],
 				//['txtPost', 'lblPost', 'addr', 'post,addr', 'txtPost', 'addr_b.aspx'],
 				['txtStationno', 'lblStore', 'store', 'noa,store', '0txtStationno,txtStation', 'store_b.aspx'],
 				['txtUno_', 'btnUno_', 'view_uccc', 'uno,productno,product,spec,unit', '0txtUno_,txtProductno_,txtProduct_,cmbSpec_,txtUnit_', 'uccc_seek_b.aspx?;;;1=0', '95%', '60%'],
@@ -536,6 +537,20 @@
 						</td>
 						<td><span> </span><a id="lblWeight" class="lbl">重量/M</a></td>
 						<td><input id="txtWeight" type="text" class="txt c1 num"/></td>
+					</tr>
+					<tr>
+						<td><span> </span><a id="lblCust" class="lbl btn"> </a></td>
+						<td colspan="3">
+							<input id="txtCustno" type="text" style="float:left;width:25%;"/>
+							<input id="txtComp" type="text" style="float:left;width:75%;"/>
+							<input id="txtNick" type="text" style="display:none;"/>
+						</td>
+					</tr>
+					<tr>
+						<td><span> </span><a id='lblAddr' class="lbl"> </a></td>
+						<td colspan="3" >
+							<input id="txtAddr" type="text" style="float:left; width:100%;"/>
+						</td>
 					</tr>
 					<tr>
 						<td><span> </span><a id="lblMemo" class="lbl" > </a></td>
