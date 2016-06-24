@@ -180,7 +180,20 @@
 		                		}catch(e){
 		                			$('#txtWweight__'+t_para.n).val(0);
 		                		}
+                    		}else if(t_para.action == 'getProduct'){
+                    			try{
+                    				var as = _q_appendData("view_uccb", "", true);
+			                		if (as[0] != undefined) {
+		                				$('#txtProductno__'+t_para.n).val(as[0].productno);
+		                				$('#txtProduct__'+t_para.n).val(as[0].product);
+			                		}else{
+			                			$('#txtProductno__'+t_para.n).val('');
+		                				$('#txtProduct__'+t_para.n).val('');
+			                		}
+		                		}catch(e){
+		                		}
                     		}
+                    		
                     		
                     	}catch(e){
                     		
@@ -630,6 +643,9 @@
 						var t_nor = $('#txtNoq_'+bbs_n).val();
 						if($('#txtNor__'+bbt_n).val().length==0)
 							$('#txtNor__'+bbt_n).val(t_nor);
+							
+						t_where = "where=^^ uno='" + trim($('#txtUno__'+bbt_n).val()) + "' ^^";
+            			q_gt('view_uccb', t_where, 0, 0, 0, JSON.stringify({action:"getProduct",n:bbt_n}), r_accy);
 						break;
 					default:
 						break;
