@@ -53,9 +53,15 @@ z_rc2_rk01:--z_rc2_rk01
 		,spec,cspec,source,uno
 		,price,aprice,coin,floata
 		,kind,dime,width,lengthb,radius)
-	select '1' gno, a.noa noa, b.noq noq, (case when a.typea='2' then '退' else '進' end) type, a.datea datea, (case when a.mon='' then left(a.datea,6) else a.mon end)
-		, a.tggno, a.tgg,isnull(c.nick,left(a.tgg,4)), b.productno, b.product, b.unit, 
-		   b.mount, b.weight, b.total,'rc2st'+b.accy
+	select '1' gno, a.noa noa, b.noq noq
+		, (case when a.typea='2' then '退' else '進' end) type
+		, a.datea datea
+		, (case when a.mon='' then left(a.datea,6) else a.mon end)
+		, a.tggno, a.tgg,isnull(c.nick,left(a.tgg,4)), b.productno, b.product, b.unit
+		   , b.mount*(case when a.typea='2' then -1 else 1 end)
+		   , b.weight*(case when a.typea='2' then -1 else 1 end)
+		   , b.total*(case when a.typea='2' then -1 else 1 end)
+		   ,'rc2st'+b.accy
 		   ,b.spec,d.product,b.source,b.uno
 		   ,b.price
 		   ,b.counta
@@ -116,10 +122,10 @@ z_rc2_rk01:--z_rc2_rk01
 		,a.unit a10
 		,dbo.getComma(a.mount,-1) a11
 		,dbo.getComma(a.weight,-1) a12
-		,dbo.getComma(a.price,-1) a13
+		,case when ISNULL(a.floata,0)=0 then '' else dbo.getComma(a.price,-1) end a13
 		,a.coin a14
 		,case when ISNULL(a.floata,0)=0 then '' else dbo.getComma(a.floata,-1) end a15
-		,case when ISNULL(a.aprice,0)=0 then '' else dbo.getComma(a.aprice,-1) end a16
+		,case when ISNULL(a.aprice,0)=0 then case when ISNULL(a.floata,0)=0 then dbo.getComma(a.price,-1) else '' end else dbo.getComma(a.aprice,-1) end a16
 		,dbo.getComma(a.total,0) a17
 		,a.qhref
 	from @tmp a
