@@ -237,6 +237,7 @@
 				});
 				$('#cmbKind').change(function() {
 					size_change();
+					refreshProduct();
 				});
 				
 				$('#lblOrdb').click(function() {
@@ -673,6 +674,7 @@
 				if(q_getPara('sys.project').toUpperCase()=='RK'){
 					$('#lblWeights_st').text('重量/M');
 				}		
+				refreshProduct();
 			}
 
 			function btnIns() {
@@ -718,9 +720,26 @@
 
 				return true;
 			}
+			
+			function refreshProduct(){
+				if($('#cmbKind').val()=='A6'){
+                	//物料
+                	for(var i=0;i<q_bbsCount;i++){
+                		$('#txtProductno_'+i).hide();
+                		$('#txtProductno1_'+i).show();
+                	}
+                }else{
+                	for(var i=0;i<q_bbsCount;i++){
+                		$('#txtProductno_'+i).show();
+                		$('#txtProductno1_'+i).hide();
+                	}
+                }
+			}
 
 			function refresh(recno) {
                 _refresh(recno);
+                refreshProduct();
+                
                 var obj = $('.control_end2');
                 for(var i=0;i<obj.length;i++){
                     switch(obj.eq(i).html()){

@@ -177,7 +177,7 @@
 				q_cmbParse("cmbCoin", t_coin);
 				//if(abbm[q_recno]) $('#cmbCoin').val(abbm[q_recno].coin);
 				q_cmbParse("cmbSpec", t_spec,'s');
-						
+				
 				$('#lblOrde').click(function() {
 					if(!(q_cur==1 || q_cur ==2))
 						return;
@@ -236,6 +236,7 @@
 				//變動尺寸欄位
 				$('#cmbKind').change(function() {
 					size_change();
+					refreshProduct();
 				});
 			}
 
@@ -512,7 +513,8 @@
 				size_change();
 				if(q_getPara('sys.project').toUpperCase()=='RK'){
 					$('#lblWeights_st').text('重量/M');
-				}		
+				}	
+				refreshProduct();	
 			}
 
 			function btnIns() {
@@ -561,10 +563,27 @@
 
 				return true;
 			}
-
+			
+			function refreshProduct(){
+				if($('#cmbKind').val()=='A6'){
+                	//物料
+                	for(var i=0;i<q_bbsCount;i++){
+                		$('#txtProductno_'+i).hide();
+                		$('#txtProductno1_'+i).show();
+                	}
+                }else{
+                	for(var i=0;i<q_bbsCount;i++){
+                		$('#txtProductno_'+i).show();
+                		$('#txtProductno1_'+i).hide();
+                	}
+                }
+			}
+			
 			function refresh(recno) {
 				_refresh(recno);
 				size_change();
+				refreshProduct();
+				
 				//q_popPost('txtProductno_');
 				$('input[id*="txtProduct_"]').each(function() {
 					thisId = $(this).attr('id').split('_')[$(this).attr('id').split('_').length-1];
