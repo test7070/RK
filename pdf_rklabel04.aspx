@@ -134,8 +134,8 @@
                 rc2Label.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
-           // 10 * 15 
-            var doc1 = new iTextSharp.text.Document(new iTextSharp.text.Rectangle(283, 422), 0, 0, 0, 0);
+            // H*W  15 * 10 
+            var doc1 = new iTextSharp.text.Document(new iTextSharp.text.Rectangle(422, 283), 0, 0, 0, 0);
             iTextSharp.text.pdf.PdfWriter pdfWriter = iTextSharp.text.pdf.PdfWriter.GetInstance(doc1, stream);
             //font
             iTextSharp.text.pdf.BaseFont bfChinese = iTextSharp.text.pdf.BaseFont.CreateFont(@"C:\windows\fonts\msjh.ttf", iTextSharp.text.pdf.BaseFont.IDENTITY_H, iTextSharp.text.pdf.BaseFont.NOT_EMBEDDED);
@@ -162,31 +162,30 @@
                     }
                     //LINE
                     cb.MoveTo(10, 10);
-                    cb.LineTo(10, 412);
-                    cb.LineTo(273, 412);
-                    cb.LineTo(273, 10);
+                    cb.LineTo(412, 10);
+                    cb.LineTo(412, 273);
+                    cb.LineTo(10, 273);
                     cb.LineTo(10, 10);
 
-                    cb.MoveTo(233, 10);
-                    cb.LineTo(233, 412);
-                    cb.MoveTo(193, 10);
-                    cb.LineTo(193, 412);
-                    cb.MoveTo(153, 10);
-                    cb.LineTo(153, 412);
-                    cb.MoveTo(113, 10);
-                    cb.LineTo(113, 412);
-                    cb.MoveTo(73, 10);
-                    cb.LineTo(73, 412);
-                    cb.MoveTo(33, 10);
-                    cb.LineTo(33, 412);
+                    cb.MoveTo(10, 233);
+                    cb.LineTo(412, 233);     
+                    cb.MoveTo(10, 193);
+                    cb.LineTo(412, 193);
+                    cb.MoveTo(10, 153);
+                    cb.LineTo(412, 153);
+                    cb.MoveTo(10, 113);
+                    cb.LineTo(412, 113);
+                    cb.MoveTo(10, 73);
+                    cb.LineTo(412, 73);
+                    cb.MoveTo(10, 33);
+                    cb.LineTo(412, 33);
 
-                    cb.MoveTo(10, 352);
-                    cb.LineTo(233, 352);
-                    cb.MoveTo(33, 182);
-                    cb.LineTo(233, 182);
-
-                    cb.MoveTo(73, 122);
-                    cb.LineTo(233, 122);
+                    cb.MoveTo(80, 10);
+                    cb.LineTo(80, 233);
+                    cb.MoveTo(240, 33);
+                    cb.LineTo(240, 233);
+                    cb.MoveTo(300, 73);
+                    cb.LineTo(300, 233);
                     cb.Stroke();
                     
                     //TEXT
@@ -194,43 +193,43 @@
                     cb.BeginText();
                     cb.SetFontAndSize(bfChinese, 12);
 
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "類　　別", 208, 382, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "品　　名", 168, 382, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "規　　格", 128, 382, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "數　　量", 88, 382, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "入庫日期", 48, 382, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "備　　註", 18, 382, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "類　　別", 47, 208, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "品　　名", 47, 168, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "規　　格", 47, 128, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "數　　量", 47, 88, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "入庫日期", 47, 48, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "備　　註", 47, 18, 0);
 
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "供 應 商", 208, 152, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "硬　　度", 168, 152, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "產品序號", 128, 152, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "保存期限", 88, 152, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "供 應 商", 270, 208, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "硬　　度", 270, 168, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "產品序號", 270, 128, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "保存期限", 270, 88, 0);
 
                     cb.SetFontAndSize(bfChinese, 16);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).type, 208, 267, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).type, 155, 208, 0);
                     
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).productno, 178, 267, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).productno, 155, 175, 0);
                     cb.SetFontAndSize(bfChinese, 11);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).product, 158, 267, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).product, 155, 160, 0);
 					cb.SetFontAndSize(bfChinese, 16);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).size, 128, 267, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).mount.ToString() + " " + ((Para)rc2Label[i]).unit, 88, 267, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).date, 48, 267, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "", 18, 267, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).size, 155, 128, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).mount.ToString() + " " + ((Para)rc2Label[i]).unit, 155, 88, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).date, 155, 48, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "", 155, 18, 0);
 
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).comp, 208, 71, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).hard != 0 ? ((Para)rc2Label[i]).hard.ToString() : "", 168, 71, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).uno, 128, 71, 270);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).shelflife, 88, 71, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).comp, 360, 208, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).hard != 0 ? ((Para)rc2Label[i]).hard.ToString() : "", 360, 168, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).uno, 360, 128, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).shelflife, 360, 88, 0);
 
                     cb.SetFontAndSize(bfChinese, 10);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "表單編號：LC-14-00-02-01", 18, 150, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_RIGHT, "表單編號：LC-14-00-02-01", 407, 18, 0);
 
                     
                     cb.SetFontAndSize(iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLDOBLIQUE).BaseFont, 25);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 243, 400, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 15, 243, 0);
                     cb.SetFontAndSize(bfChinese, 20);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "聯琦金屬股份有限公司 － 入庫標籤", 243, 330, 270);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "聯琦金屬股份有限公司 － 入庫標籤", 90, 243, 0);
                     cb.EndText();
                 }
             }
