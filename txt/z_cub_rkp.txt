@@ -321,11 +321,11 @@ z_cub_rkp10:--z_cub_rkp10
 		,vccno nvarchar(20)
 		,ordeno nvarchar(20)
 		,stype nvarchar(20)
-		,custtype nvarchar(20)
-		,ccusttype nvarchar(20)
+		,custtype nvarchar(max)
+		,ccusttype nvarchar(max)
 		,custno nvarchar(20)
-		,cust nvarchar(50)
-		,nick nvarchar(20)
+		,cust nvarchar(max)
+		,nick nvarchar(max)
 		,[weight] float
 		,m01 float	--包裝
 		,m02 float	--海運費	
