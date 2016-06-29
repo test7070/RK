@@ -492,7 +492,7 @@
                     opacity : 0
                 });
 				//物料品名欄位寫入
-				if ($('#cmbKind').val() == '2') {
+				if ($('#cmbKind').val() == 'A6') {
 					for (var j = 0; j < q_bbsCount; j++) {
 						$('#txtProductno_' + j).val($('#txtProductno1_' + j).val());
 					}
@@ -684,6 +684,7 @@
 					opacity : 0
 				});
 				q_gt('acomp', '', 0, 0, 0, 'getAcomp', r_accy);
+				refreshProduct();
 			}
 
 			function btnModi() {
@@ -693,6 +694,7 @@
 				$('#txtOdate').focus();
 				size_change();
 				sum();
+				refreshProduct();
 			}
 
 			function btnPrint() {

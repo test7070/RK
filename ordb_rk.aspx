@@ -394,7 +394,7 @@
 
 			function btnOk() {
 				//物料品名欄位寫入
-				if($('#cmbKind').val()=='1'){
+				if($('#cmbKind').val()=='A6'){
 					for (var j = 0; j < q_bbsCount; j++) {
 						$('#txtProductno_' + j).val($('#txtProductno1_' + j).val());
 					}
@@ -526,6 +526,7 @@
 				$('#txtAcomp').val((q_getPara('sys.comp').substring(0,3)=='裕承隆'?q_getPara('sys.comp').substring(0,3):q_getPara('sys.comp').substring(0,2)));
 				$('#txtOdate').focus();
 				size_change();
+				refreshProduct();
 			}
 
 			function btnModi() {
@@ -535,6 +536,7 @@
 				$('#txtOdate').focus();
 				size_change();
 				sum();
+				refreshProduct();
 			}
 
 			function btnPrint() {
