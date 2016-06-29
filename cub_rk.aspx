@@ -192,6 +192,14 @@
 			                		}
 		                		}catch(e){
 		                		}
+                    		}else if(t_para.action == 'getSpec'){
+                    			try{
+                    				var as = _q_appendData("spec", "", true);
+			                		if (as[0] != undefined) {
+		                				$('#txtSize_'+t_para.n).val(as[0].product);
+		                			}
+		                		}catch(e){
+		                		}
                     		}
                     		
                     		
@@ -476,6 +484,12 @@
 		                	var t_where ='';
 		                	q_box("cng_cub_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,n:n,page:'cub_rk'}), "cng_cub_"+n, "95%", "95%", '');
                         });
+                        $('#txtProductno_' + i).bind('contextmenu', function(e) {
+                            /*滑鼠右鍵*/
+                            e.preventDefault();
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
+                            $('#btnProduct_'+n).click();
+                        });
                         $('#txtScolor_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
@@ -637,6 +651,13 @@
 
 			function q_popPost(id) {
 				switch (id) {
+					case 'txtUno_':
+						t_spec = $.trim($('#txtSize_'+bbs_n).val());
+						if(t_spec.length>0){
+							t_where = "where=^^ noa='" + t_spec + "' ^^";
+							q_gt('spec', t_where, 0, 0, 0, JSON.stringify({action:"getSpec",n:bbs_n}), r_accy);
+						}
+						break;
 					case 'txtUno__':
 						var bbt_n = b_seq;
 						var bbs_n = $('input:radio:checked[name="rbNum"]').attr('id').replace(/^(.*)_(\d+)$/,'$2');
@@ -874,6 +895,7 @@
 						<td style="width:200px;" align="center">訂單號碼</td>
 						<td style="width:100px;" align="center">客戶</td>
 						<td style="width:200px;" align="center">鋼捲編號</td>
+						<td style="width:100px;" align="center">品名</td>
 						<td style="width:100px;" align="center">COIL<BR>規格<BR>尺寸(厚X寬)</td>
 						<td style="width:100px;" align="center">COIL<BR>重量(KG)</td>
 						<td style="width:100px;" align="center">PVC皮規格</td>
@@ -914,6 +936,11 @@
 						</td>
 						<td title="鋼捲編號">
 							<input id="txtUno.*" type="text" style="float:left;width:95%;"/>
+						</td>
+						<td>
+							<input class="txt" id="txtProductno.*" type="text" style="width:95%;float:left;"/>
+							<input class="txt" id="txtProduct.*" type="text" style="width:95%;float:left;"/>
+							<input id="btnProduct.*" type="button" style="display:none;">
 						</td>
 						<td>
 							<input id="txtSize.*" type="text" style="float:left;width:95%;"/>
