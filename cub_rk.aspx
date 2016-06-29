@@ -391,15 +391,13 @@
                     $('#txtDatea').datepicker('destroy');
                     $('#cmbProcess').attr('disabled','disabled');
                     $('#btnOrde').attr('disabled','disabled');
+                    $('#btnCubu_rk').removeAttr('disabled');
                 } else {	
                     $('#txtDatea').datepicker();
                     $('#cmbProcess').removeAttr('disabled');
                     $('#btnOrde').removeAttr('disabled');
+                    $('#btnCubu_rk').attr('disabled', 'disabled');
                 }
-                if ((q_cur == 1 || q_cur == 2) && trim($('#txtNoa').val()) != '')
-					$('#btnCubu_rk').attr('disabled', 'disabled');
-				else
-					$('#btnCubu_rk').removeAttr('disabled');
 			}
 			
 			function getPosition(element) {
@@ -652,6 +650,7 @@
 			function q_popPost(id) {
 				switch (id) {
 					case 'txtUno_':
+						var bbs_n = b_seq;
 						t_spec = $.trim($('#txtSize_'+bbs_n).val());
 						if(t_spec.length>0){
 							t_where = "where=^^ noa='" + t_spec + "' ^^";
