@@ -306,6 +306,7 @@ z_ucc_rk02:--z_ucc_rk02
 		,dbo.getComma(mount,-1) cmount
 		,dbo.getComma([weight],-1) cweight
 		,dbo.getComma(total,0) ctotal
+		,case when len(ISNULL(cspec,''))>0 then cspec else spec end zspec
 	from @tmpa 
 	order by pno,productno,size,gno,datea,uno;
 
@@ -439,5 +440,6 @@ z_ucc_rk01:--z_ucc_rk01
 		,dbo.getComma(mount,-1) cmount
 		,dbo.getComma([weight],-1) cweight
 		,dbo.getComma(total,0) ctotal
+		,case when len(ISNULL(cspec,''))>0 then cspec else spec end zspec
 	from @tmp 
 	order by pno,productno,size,gno,datea,uno;
