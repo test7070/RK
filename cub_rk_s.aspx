@@ -43,12 +43,19 @@
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
 				var t_vcceno = $.trim($('#txtVcceno').val());
+				var t_ordeno = $.trim($('#txtOrdeno').val());
+				var t_ordeno2 = $.trim($('#txtOrdeno2').val());
 
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
 					+ q_sqlPara2("noa", t_noa)
 					+ q_sqlPara2("vcceno", t_vcceno);
 				
+					if(t_ordeno.length>0)
+			       		t_where += " and exists(select noa from view_cubs"+r_accy+" where view_cubs"+r_accy+".noa=view_cub"+r_accy+".noa and view_cubs"+r_accy+".ordeno='"+t_ordeno+"')";
+			       	if(t_ordeno2.length>0)
+			       		t_where += " and exists(select noa from view_cubs"+r_accy+" where view_cubs"+r_accy+".noa=view_cub"+r_accy+".noa and view_cubs"+r_accy+".no2='"+t_ordeno2+"')";	
+		       		
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -88,9 +95,16 @@
 					<td><input class="txt" id="txtNoa" type="text" style="width:220px;" /></td>
 				</tr>
 				<tr class='seek_tr'>
-					<td class='seek' style="width:90px;"><a id='lblVcceno'>製造批號</a></td>
+					<td class='seek' style="width:90px;"><a id='lblVcceno'>製造批號(表頭)</a></td>
 					<td style="width:215px;">
 						<input class="txt" id="txtVcceno" type="text" style="width:220px;" />
+					</td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblOrdeno'>訂單編號</a></td>
+					<td>
+						<input class="txt" id="txtOrdeno" type="text" style="width:150px;" />
+						<input class="txt" id="txtOrdeno2" type="text" style="width:50px;" />
 					</td>
 				</tr>
 			</table>
