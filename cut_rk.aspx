@@ -116,8 +116,22 @@
                 	case 'orde_cut':
                         if (b_ret != null) {
                         	as = b_ret;
+                        	var curItem,newArray= new Array();
+                        	for(var i=0;i<as.length;i++){
+                        		if(as[i].cnt>1){
+                        			curItem = as[i];
+                        			/*curItem.mount=curItem.mount/curItem.cnt;
+                        			curItem.weight=curItem.weight/curItem.cnt;
+                        			curItem.total=round(curItem.total/curItem.cnt,0);*/
+                        			for(var j=0;j<curItem.cnt;j++){
+                        				newArray.push(curItem);
+                        			}
+                        		}else{
+                    				newArray.push(as[i]);
+                        		}
+                        	}
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtMount,txtWeight,txtCustno,txtComp,txtDime,txtWidth,txtLengthb,txtRadius,txtProductno,txtProduct,txtCname,txtUno,txtSpec,txtClass'
-                        	, as.length, as, 'noa,no2,mount,weight,custno,comp,dime,width,lengthb,radius,productno,product,makeno,uno,pvcno,pvc', 'txtCname','');             	
+                        	, newArray.length, newArray, 'noa,no2,mount,weight,custno,comp,dime,width,lengthb,radius,productno,product,makeno,uno,pvcno,pvc', 'txtCname','');             	
                         }else{
                         	Unlock(1);
                         }
@@ -506,7 +520,7 @@
                 font-size: medium;
             }
             .dbbs {
-                width: 1900px;
+                width: 2000px;
             }
             .dbbs .tbbs {
                 margin: 0;
@@ -518,7 +532,7 @@
                 color: blue;
                 /*background: #cad3ff;*/
                 background: lightgrey;
-                width: 1900px;
+                width: 2000px;
             }
             .dbbs .tbbs tr {
                 height: 35px;
@@ -628,14 +642,14 @@
 					<td style="width:20px;"></td>
 					<td style="width:200px;">訂單號碼</td>
 					<td style="width:200px;">製造批號</td>
-					<td style="width:200px;">Coil編號</td>
+					<td style="width:250px;">Coil編號</td>
 					<td style="width:100px;">品名</td>
 					<td style="width:400px;">皮膜<BR>規格</td>
 					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:100px;">重量</td>
 					<td style="width:200px;">客戶</td>
-					<td style="width:200px;">入庫批號</td>
+					<td style="width:250px;">入庫批號</td>
 					<td style="width:200px;">棧板序號</td>
 					<td style="width:200px;">備註</td>
 					<td style="width:100px;">轉入庫日期</td>
