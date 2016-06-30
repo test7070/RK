@@ -79,7 +79,13 @@
                         type : '8',//[16] 8
                         name : 'xstore',
                         value : t_store.split(',')
-                    }]
+                    }, {
+						type : '6', //[17] 9
+						name : 'xspec'
+					}, {
+						type : '6', //[18] 10
+						name : 'xplace'
+					}]
 				});
 				q_popAssign();
 				q_getFormat();

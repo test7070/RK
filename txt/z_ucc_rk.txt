@@ -39,6 +39,8 @@ z_ucc_rk02:--z_ucc_rk02
 	
 	declare @t_edate nvarchar(10) = case when '#non'=[15] then char(255) else [15] end 
 	declare @t_store nvarchar(max) = case when '#non'=[16] then '' else [16] end 
+	declare @t_spec nvarchar(max) = case when '#non'=[17] then '' else [17] end
+	declare @t_place nvarchar(max) = case when '#non'=[18] then '' else [18] end 
 	------------------------------------------------------------------------
 	--  一個批號只會有一個倉庫一個儲位
 	declare @tmp table(
@@ -271,6 +273,8 @@ z_ucc_rk02:--z_ucc_rk02
 	and (len(@t_kind)=0 or b.kind=@t_kind) 
 	and ISNULL(a.eweight,0)>0
 	and (len(@t_store)=0 or charindex(','+a.storeno+',',','+@t_store+',')>0)
+	and (len(@t_spec)=0 or b.spec=@t_spec)
+	and (len(@t_place)=0 or b.place=@t_place)
 	
 	update @tmpa set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
 	from @tmpa a
@@ -351,6 +355,8 @@ z_ucc_rk01:--z_ucc_rk01
 	
 	declare @t_edate nvarchar(10) = case when '#non'=[15] then '' else [15] end 
 	declare @t_store nvarchar(max) = case when '#non'=[16] then '' else [16] end 
+	declare @t_spec nvarchar(max) = case when '#non'=[17] then '' else [17] end
+	declare @t_place nvarchar(max) = case when '#non'=[18] then '' else [18] end  
 	------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -405,6 +411,8 @@ z_ucc_rk01:--z_ucc_rk01
 	and (len(@t_kind)=0 or b.kind=@t_kind) 
 	and ISNULL(a.eweight,0)>0 
 	and (len(@t_store)=0 or charindex(','+b.storeno+',',','+@t_store+',')>0)
+	and (len(@t_spec)=0 or b.spec=@t_spec)
+	and (len(@t_place)=0 or b.place=@t_place)
 	
 	update @tmp set total = round(weight*price,0)
 	
