@@ -42,7 +42,7 @@
 				,['txtScolor_', 'btnScolor_', 'ucc', 'noa,product', 'txtScolor_,txtProcess_', 'ucc_b.aspx']
             	,['txtZinc_', 'btnZinc_', 'ucc', 'noa,product', 'txtZinc_,txtFlower_', 'ucc_b.aspx']
             	,['txtUno__', 'btnUno__', 'view_uccc2', 'uno,productno,product', '0txtUno__,txtProductno__,txtProduct__', 'uccc_seek_b2.aspx?;;;1=0', '95%', '95%']
-            	,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,productno,product,spec', '0txtUno_,txtProductno_,txtProduct_,txtSize_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '95%']);
+            	,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,productno,product,spec,dime,width', '0txtUno_,txtProductno_,txtProduct_,txtSize_,txtDime_,txtWidth_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '95%']);
 			
 			$(document).ready(function() {
 				bbmKey = ['noa'];
@@ -226,6 +226,8 @@
                         }else{
                         	Unlock(1);
                         }
+                        $('#rbNum_0').prop('checked',true);
+						$('#rbNum_0').click();
                         break;
 					case q_name + '_s':
 						q_boxClose2(s2);

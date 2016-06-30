@@ -243,7 +243,7 @@
 							t_spec+=','+as[i].noa+'@'+as[i].product;
 						}
 						if(t_spec.length==0) t_spec=' ';
-						q_gt('adpro', 'where=^^len(noa)>2^^', 0, 0, 0, '');
+						q_gt('adpro', '', 0, 0, 0, '');
 						break;
 					case 'adpro':
 						var as = _q_appendData("adpro", "", true);
