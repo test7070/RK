@@ -131,7 +131,7 @@
                         		}
                         	}
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtMount,txtWeight,txtCustno,txtComp,txtDime,txtWidth,txtLengthb,txtRadius,txtProductno,txtProduct,txtCname,txtUno,txtSpec,txtClass'
-                        	, newArray.length, newArray, 'noa,no2,mount,weight,custno,comp,dime,width,lengthb,radius,productno,product,makeno,uno,pvcno,pvc', 'txtCname','');             	
+                        	, newArray.length, newArray, 'noa,no2,mount,weight,custno,comp,dime,width,lengthb,radius,productno,product,makeno,uno,pvcno,pvc', 'txtOrdeno','');             	
                         }else{
                         	Unlock(1);
                         }
