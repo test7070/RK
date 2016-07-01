@@ -1,6 +1,232 @@
---z_cub_rkp13 邊際貢獻   UCCP  不含加工,另加變動成本：運費、VCC包裝
+z_cub_rkp13:--z_cub_rkp13	
+	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end
+	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [11] then '' else [11] end
+	declare @t_uno nvarchar(max) = case when '#non' = [12] then '' else [12] end
+--------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,uno nvarchar(30 )--成品批號
+		,uno2 nvarchar(30) --原鋼捲
+		,[weight] float --完工重量
+		--cut
+		,cutaccy nvarchar(10)
+		,cutnoa nvarchar(20)
+		,cutnoq nvarchar(10)
+		
+		,makeno nvarchar(30)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(10)
+		----------------------------
+		,custno nvarchar(20)
+		,cust nvarchar(100)
+		,[contract] nvarchar(50)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(max)
+		,pveno nvarchar(20)
+		,pve nvarchar(max)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+	)
+	insert into @tmp(cutaccy,cutnoa,cutnoq,makeno,ordeno,ordeno2
+		,uno,uno2,[weight],productno,product,pvcno,pvc
+		,dime,width,lengthb,radius,custno,cust)
+	select a.accy,a.noa,a.noq,a.cname,a.ordeno,a.no2
+		,a.bno,a.uno,a.[weight],a.productno,a.product,a.spec,a.[class]
+		,a.dime,a.width,a.lengthb,a.radius,a.custno,a.comp
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @t_bdate and @t_edate
+	and (len(@t_makeno)=0 or a.cname=@t_makeno)
+	and (len(@t_uno)=0 or a.bno=@t_uno)
+	----------------------------------------------------------------
+	-- cuts 、cubs  用製造批號關聯
+	update @tmp set custno=b.custno,cust=b.comp
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	where b.noa is not null
+	--
+	update @tmp set [contract]=ISNULL(d.quatno,'')
+	from @tmp a
+	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
+	left join view_quat d on b.quatno=d.noa
+	--保護膜 回CUBT抓
+	update @tmp set pveno=c.productno,pve=c.product
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	left join view_cubt c on b.accy=c.accy and b.noa=c.noa and b.noq=c.nor
+	where b.noa is not null and c.kind='2'
+	--------------------------------------------------------------------
+	declare @tmpa table(
+		sel int identity(1,1)
+		,seq int
+		,makeno nvarchar(20)
+		,datea nvarchar(20)
+		,[action] nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,size nvarchar(max)
+		--good
+		,mount1 float
+		,weight1 float
+		--bad
+		,mount2 float
+		,[weight2] float
+		--餘料
+		,weight3 float
+		--廢料
+		,weight4 float
+		--
+		,[hours] float
+		,memo nvarchar(max) 
+	)
 
-	z_cub_rkp13:--z_cub_rkp13   現貢	
+	declare @sel int
+	declare @makeno nvarchar(30)
+	
+	declare cursor_table cursor for
+	select sel,makeno from @tmp order by makeno,sel 
+	open cursor_table
+	fetch next from cursor_table
+	into @sel,@makeno
+	while(@@FETCH_STATUS <> -1)
+	begin
+		--生產
+		insert into @tmpa(seq,makeno,datea,[action],accy,noa,noq,size,memo
+			,mount1,weight1)
+		select @sel,a.makeno,b.datea,'生產作業',a.accy,a.noa,a.noq
+			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
+			,a.memo
+			,ISNULL(a.mount,0),ISNULL(a.[weight],0)
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		where a.makeno=@makeno
+		
+		--裁剪
+		insert into @tmpa(seq,makeno,datea,[action],accy,noa,noq,size,memo
+			,mount1,weight1)
+		select @sel,a.cubno,b.datea,b.typea,a.accy,a.noa,a.noq
+			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
+			,a.memo
+			,ISNULL(a.mount,0),ISNULL(a.[weight],0)
+		from view_cucs a
+		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+		where a.cubno=@makeno
+		
+		--烘板
+		insert into @tmpa(seq,makeno,datea,[action],accy,noa,noq,size,memo
+			,mount1,weight1)
+		select @sel,a.memo,b.datea,'烘板',a.accy,a.noa,a.noq
+			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
+			,a.memo
+			,ISNULL(a.mount,0),ISNULL(a.[weight],0) 
+		from view_cuds a
+		left join view_cud b on a.accy=b.accy and a.noa=b.noa
+		
+		fetch next from cursor_table
+		into @sel,@makeno
+	end
+	close cursor_table
+	deallocate cursor_table
+---------------------------------------------------------------------------------------------
+	declare @tmpb table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,pno int
+		,uno nvarchar(30 )--成品批號
+		,uno2 nvarchar(30) --原鋼捲
+		,[weight] float --完工重量
+		--cut
+		,cutaccy nvarchar(10)
+		,cutnoa nvarchar(20)
+		,cutnoq nvarchar(10)
+		
+		,makeno nvarchar(30)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(10)
+		----------------------------
+		,custno nvarchar(20)
+		,cust nvarchar(100)
+		,[contract] nvarchar(50)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(max)
+		,pveno nvarchar(20)
+		,pve nvarchar(max)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		---------------------------
+		,datea nvarchar(20)
+		,[action] nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,size nvarchar(max)
+		--good
+		,mount1 float
+		,weight1 float
+		--bad
+		,mount2 float
+		,weight2 float
+		--餘料
+		,weight3 float
+		--廢料
+		,weight4 float
+		--
+		,[hours] float
+		,memo nvarchar(max)
+	)
+	
+	insert into @tmpb(gno,pno,uno,uno2,[weight],cutaccy,cutnoa,cutnoq,makeno,ordeno,ordeno2,custno,cust,[contract]
+		,pvcno,pvc,pveno,pve,productno,product,dime,width,lengthb,radius
+		,datea,[action],accy,noa,noq,size,mount1,weight1,mount2,weight2,weight3,weight4,[hours],memo)
+	select '1',ROW_NUMBER()over(partition by a.makeno,a.uno order by a.sel,b.seq)
+		,a.uno,a.uno2,a.[weight],a.cutaccy,a.cutnoa,a.cutnoq,a.makeno,a.ordeno,a.ordeno2,a.custno,a.cust,a.[contract]
+		,a.pvcno,a.pvc,a.pveno,a.pve,a.productno,a.product,a.dime,a.width,a.lengthb,a.radius
+		,b.datea,b.[action],b.accy,b.noa,b.noq,b.size,b.mount1,b.weight1,b.mount2,b.weight2,b.weight3,b.weight4,b.[hours],b.memo
+	from @tmp a
+	left join @tmpa b on a.sel=b.seq
+	order by a.sel,b.seq
+	-----------------------------------------------------------------------
+	declare @pageCount int = 10 -- 一頁幾筆明細
+	declare @uno nvarchar(30)
+	declare @n int
+	
+	declare cursor_table cursor for
+	select makeno,uno,count(1) from @tmp group by makeno,uno 
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno,@uno,@n
+	while(@@FETCH_STATUS <> -1)
+	begin
+		while @n%@pageCount!=0
+		begin
+			set @n = @n + 1
+			insert into @tmpb(makeno,uno,gno,pno)values(@makeno,@uno,'2',@n)
+		end
+		fetch next from cursor_table
+		into @makeno,@uno,@n
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	select * from @tmpb order by makeno,uno,pno;	
+
+--------------------------------------------------------------------	
+--z_cub_rkpxx13 邊際貢獻   UCCP  不含加工,另加變動成本：運費、VCC包裝
+	z_cub_rkpxx13:--z_cub_rkpxxx13   現貢	
 	SET QUOTED_IDENTIFIER OFF
 	declare @t_datea nvarchar(max) = '105/06/30'
 	--------------------------------------------------------------------------------

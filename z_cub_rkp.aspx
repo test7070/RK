@@ -48,6 +48,12 @@
 						dbf : 'cust',
 						index : 'noa,comp',
 						src : 'cust_b.aspx'
+					},{
+						type : '6', //[11] 6
+						name : 'xmakeno'
+					},{
+						type : '6', //[12] 7
+						name : 'xuno'
 					}]
 				});
 				q_popAssign();
