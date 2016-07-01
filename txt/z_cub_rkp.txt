@@ -188,7 +188,6 @@ z_cub_rkp13:--z_cub_rkp13
 		,[hours] float
 		,memo nvarchar(max)
 	)
-	
 	insert into @tmpb(gno,pno,uno,uno2,[weight],cutaccy,cutnoa,cutnoq,makeno,ordeno,ordeno2,custno,cust,[contract]
 		,pvcno,pvc,pveno,pve,productno,product,dime,width,lengthb,radius
 		,datea,[action],accy,noa,noq,size,mount1,weight1,mount2,weight2,weight3,weight4,[hours],memo)
@@ -205,7 +204,7 @@ z_cub_rkp13:--z_cub_rkp13
 	declare @n int
 	
 	declare cursor_table cursor for
-	select makeno,uno,count(1) from @tmp group by makeno,uno 
+	select makeno,uno,count(1) from @tmpb group by makeno,uno 
 	open cursor_table
 	fetch next from cursor_table
 	into @makeno,@uno,@n
@@ -222,7 +221,35 @@ z_cub_rkp13:--z_cub_rkp13
 	close cursor_table
 	deallocate cursor_table
 	
-	select * from @tmpb order by makeno,uno,pno;	
+	select gno
+		,cust a01
+		,pveno + ' '+pve a02
+		,makeno a03
+		,'' a04
+		,dbo.getComma([weight],-1) a05
+		,[contract] a06
+		,'' a07
+		,'' a08
+		,uno a09
+		,'' a10
+		,CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end a11
+		, uno2 a12
+		
+		,datea b01
+		,[action] b02
+		,noa b03
+		,size b04
+		,dbo.getComma(mount1,-1) b05
+		,'' b06
+		,dbo.getComma(weight1,-1) b07
+		,dbo.getComma(mount2,-1) b08
+		,dbo.getComma(weight2,-1) b09
+		,dbo.getComma(weight3,-1) b10
+		,dbo.getComma(weight4,-1) b11
+		,dbo.getComma([hours],-1) b12
+		,memo b13
+	from @tmpb 
+	order by makeno,uno,pno;	
 
 --------------------------------------------------------------------	
 --z_cub_rkpxx13 邊際貢獻   UCCP  不含加工,另加變動成本：運費、VCC包裝
