@@ -214,10 +214,10 @@
                 else
                     $('#txtWorker2').val(r_name);
                 sum();
-                getUno(q_bbsCount-1);
+                getUno(0);
             }
 			function getUno(n){
-				if(n<0){
+				if(n>q_bbsCount){
 					var t_noa = trim($('#txtNoa').val());
 	                var t_date = trim($('#txtDatea').val());
 	                if (t_noa.length == 0 || t_noa == "AUTO")
@@ -228,7 +228,7 @@
 					var t_uno = $('#txtUno_'+n).val();
 					var t_bno = $('#txtBno_'+n).val();
 					if(t_uno.length==0 || t_bno.length>0)
-						getUno(n-1);
+						getUno(n+1);
 					else
 						q_func('qtxt.query.getuno_'+n, 'uno_rk.txt,getuno,' + t_uno + ';');
 					//JSON.stringify({action:'getUno',n:n})
@@ -269,7 +269,7 @@
 									$('#txtBno_'+n).val(as[0].uno);
 									console.log(as[0].uno);
 								}
-								getUno(n-1);
+								getUno(n+1);
 							}
 						break;
 				}
@@ -310,7 +310,7 @@
 						$('#txtSpecial_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtSpecial_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             
 							if(!(q_cur==1 || q_cur==2))
 								return;
