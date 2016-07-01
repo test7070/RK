@@ -103,7 +103,7 @@ z_cub_rkp13:--z_cub_rkp13
 		--生產
 		insert into @tmpa(seq,makeno,datea,[action],accy,noa,noq,size,memo
 			,mount1,weight1)
-		select @sel,a.makeno,b.datea,'生產作業',a.accy,a.noa,a.noq
+		select @sel,a.makeno,b.datea,'生產',a.accy,a.noa,a.noq
 			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
 			,a.memo
 			,ISNULL(a.mount,0),ISNULL(a.[weight],0)
@@ -115,7 +115,7 @@ z_cub_rkp13:--z_cub_rkp13
 		insert into @tmpa(seq,makeno,datea,[action],accy,noa,noq,size,memo
 			,mount1,weight1)
 		select @sel,a.cubno,b.datea,b.typea,a.accy,a.noa,a.noq
-			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
+			,a.size2+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
 			,a.memo
 			,ISNULL(a.mount,0),ISNULL(a.[weight],0)
 		from view_cucs a
@@ -131,6 +131,18 @@ z_cub_rkp13:--z_cub_rkp13
 			,ISNULL(a.mount,0),ISNULL(a.[weight],0) 
 		from view_cuds a
 		left join view_cud b on a.accy=b.accy and a.noa=b.noa
+		
+		--進倉
+		insert into @tmpa(seq,makeno,datea,[action],accy,noa,noq,size,memo
+			,mount1,weight1)
+		select @sel,a.cname,b.datea,'進倉',a.accy,a.noa,a.noq
+			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
+			,a.memo
+			,ISNULL(a.mount,0),ISNULL(a.[weight],0)
+		from view_cuts a
+		left join view_cut b on a.accy=b.accy and a.noa=b.noa
+		left join @tmp c on a.accy=c.cutaccy and a.noa=c.cutnoa and a.noq=c.cutnoq 
+		where c.sel=@sel
 		
 		fetch next from cursor_table
 		into @sel,@makeno
