@@ -1,3 +1,309 @@
+z_cub_rkp14:--z_cub_rkp14	
+	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end
+	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [11] then '' else [11] end
+	declare @t_uno nvarchar(max) = case when '#non' = [12] then '' else [12] end
+	declare @t_rate1 float = 0.9 --改善利益轉換邊貢  % 
+	declare @t_rate2 float = 0.25 --不良降低利潤   %
+	declare @t_rate3 float = 0.04 --內部損耗&外部不良扣款 %
+-----------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,uno nvarchar(30)
+		,makeno nvarchar(30)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(10)
+		,custno nvarchar(20)
+		,cust nvarchar(100)
+		,custtype nvarchar(20)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,mount float
+		,[weight] float
+		--期初
+		,m00 float
+		,p00 float
+		,t00 float
+		--本期銷售退回
+		,m01 float
+		,p01 float
+		,t01 float
+		--本期領料
+		,m02 float
+		,p02 float
+		,t02 float
+		--本期生產
+		,m03 float
+		,p03 float
+		,t03 float
+		--委外加工
+		--本期銷售收入
+		,m04 float
+		,p04 float
+		,t04 float
+		--本期銷售成本
+		,m05 float
+		,p05 float
+		,t05 float
+		--電費
+		,t06 float
+		--瓦斯
+		,t07 float
+		--包裝
+		,t08 float
+		--運費
+		,t09 float
+		--其他(payb)
+		,t10 float
+		--匯兌損失
+		,t11 float
+		--改善利益轉換邊貢
+		,t12 float -- m05*p05*@t_rate1
+		--不良降低利潤
+		,t13 float -- m05*p05*@t_rate2
+		--邊際貢獻
+		,t14 float -- p04-(t05+t06+t07+t08+t09+t10+t11+t12+t13)/m05
+		--銷售毛利
+		,t15 float --內部損耗&外部不良扣款 m05*p05*@t_rate3
+		,t16 float --金額
+		--本期報廢
+		,m17 float
+		,p17 float
+		,t17 float
+		--期末存貨
+		,m18 float -- m00+m01-m02+m03-m05-m17
+		,p18 float
+		,t18 float
+	)
+	insert into @tmp(gno,uno,makeno,ordeno,ordeno2,custno,cust,productno,product,pvcno,pvc,dime,width,lengthb,radius,mount,[weight])
+	select '1',a.bno,a.cname,a.ordeno,a.no2,a.custno,a.comp,a.productno,a.product,a.spec,a.[class],a.dime,a.width,a.lengthb,a.radius,a.mount,a.[weight]
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where a.datea<=@t_edate
+	and len(ISNULL(a.bno,''))>0
+	and len(ISNULL(a.cname,''))>0
+	and (len(@t_makeno)=0 or a.cname=@t_makeno)
+	and (len(@t_uno)=0 or a.bno=@t_uno)
+	order by a.cname,a.bno
+	
+	update @tmp set custtype=ISNULL(c.namea,'')
+	from @tmp a
+	left join cust b on a.custno=b.noa
+	left join custtype c on b.typea=c.noa
+	---------------------------------------------------------------------------
+	declare @uno nvarchar(30)
+	declare @m00 float,@m02 float,@m03 float
+	declare @m04 float,@t04 float
+	declare @t06 float,@t07 float,@t08 float,@t09 float,@t10 float,@t11 float,@t12 float,@t13 float
+	declare @price float,@weight float
+	
+	declare cursor_table cursor for
+	select uno from @tmp 
+	open cursor_table
+	fetch next from cursor_table
+	into @uno
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		
+		select @price = sprice from view_uccb where uno=@uno	
+		--前期	
+		select @m00=0
+		--CUT
+		select @weight=0
+		select @weight=sum(a.[weight])
+		from view_cuts a 
+		left join view_cut b on a.accy=b.accy and a.noa=b.noa
+		where a.bno=@uno
+		and a.datea<@t_bdate
+		select @m00=@m00+ISNULL(@weight,0)
+		--VCC
+		select @weight=0
+		select @weight=sum(case when a.typea='1' then 1 else -1 end * case when isnull(a.gweight,0)!=0 then a.gweight else a.[weight] end)
+		from view_vccs a 
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@uno
+		and b.datea<@t_bdate
+		select @m00=@m00-ISNULL(@weight,0)
+		--GET
+		select @weight=0
+		select @weight=sum(case when a.typea='1' then 1 else -1 end * case when isnull(a.gweight,0)!=0 then a.gweight else a.[weight] end)
+		from view_gets a 
+		left join view_get b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@uno
+		and a.datea<@t_bdate
+		select @m00=@m00-ISNULL(@weight,0)
+		----------------------------------------------------------------------------------
+		--本期銷售退回
+		select @m04=0,@t04=0,@weight=0
+		select @m04=sum(case when isnull(a.gweight,0)!=0 then a.gweight else a.[weight] end)
+			,@t04 = SUM(isnull(a.total,0))
+		from view_vccs a 
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@uno
+		and b.datea between @t_bdate and @t_edate
+		and b.typea='2'
+		--本期領料
+		select @m02=0
+		select @m02=sum(case when isnull(a.gweight,0)!=0 then a.gweight else a.[weight] end)
+		from view_gets a 
+		left join view_get b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@uno
+		and a.datea between @t_bdate and @t_edate
+		----------------------------------------------------------------------------------
+		--本期生產
+		select @m03=0
+		select @m03=sum(a.[weight])
+		from view_cuts a 
+		left join view_cut b on a.accy=b.accy and a.noa=b.noa
+		where a.bno=@uno
+		and a.datea between @t_bdate and @t_edate
+		----------------------------------------------------------------------------------
+		--本期銷售收入
+		select @m04=0,@t04=0,@weight=0
+		select @m04=sum(case when isnull(a.gweight,0)!=0 then a.gweight else a.[weight] end)
+			,@t04 = SUM(isnull(a.total,0))
+		from view_vccs a 
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@uno
+		and b.datea between @t_bdate and @t_edate
+		and b.typea='1'
+		----------------------------------------------------------------------------------
+		--本期銷售成本
+		--t05
+		--電費
+		select @t06=0
+		--瓦斯
+		select @t07=0
+		--包裝
+		select @t08=0
+		--運費
+		select @t09=0
+		
+		select @t08 = sum(case when isnull(c.[weight],0)=0 then 0 else round(b.cartrips*a.[weight]/c.[weight],0)end) 
+			,@t09 = sum(case when isnull(c.[weight],0)=0 then 0 else round(b.tranmoney*a.[weight]/c.[weight],0)end)
+		from view_vccs a 
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		outer apply(select SUM([weight]) [weight] from view_vccs where noa=a.noa and len(a.uno)>0) c
+		where a.uno=@uno
+		and b.datea between @t_bdate and @t_edate
+		--其他(payb)
+		select @t10=0
+		
+		--匯兌損失
+		select @t11=0
+		--改善利益轉換邊貢
+		select @t12=0
+		--不良降低利潤
+		select @t13=0
+		
+		update @tmp set m00=@m00,p00=@price,t00=round(@m00*@price,0) 
+			,m02=@m02,p02=@price,t02=round(@m02*@price,0)
+			,m03=@m03,p03=@price,t03=round(@m03*@price,0)
+			,m04=@m04,p04=ROUND(case when @m04=0 then null else @t04/@m04 end,2),t04=@t04
+			,m05=@m04,p05=@price,t05=round(@m04*@price,0)
+			,t06=@t06,t07=@t07
+			,t08=isnull(@t08,0),t09=isnull(@t09,0)
+			,t10=@t10,t11=@t11
+			,t12=@t12,t13=@t13
+			,p18=@price
+		where uno=@uno
+		
+		fetch next from cursor_table
+		into @uno
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update @tmp set m18 = isnull(m00,0)+isnull(m01,0)-isnull(m02,0)+isnull(m03,0)-isnull(m05,0)-isnull(m17,0)
+	
+	insert into @tmp(gno,m00,t00,m01,t01,m02,t02,m03,t03,m04,t04,m05,t05
+		,t06,t07,t08,t09,t10,t11)
+	select '2',sum(isnull(m00,0)),sum(isnull(t00,0)),sum(isnull(m01,0)),sum(isnull(t01,0))
+		,sum(isnull(m02,0)),sum(isnull(t02,0)),sum(isnull(m03,0)),sum(isnull(t03,0))
+		,sum(isnull(m04,0)),sum(isnull(t04,0)),sum(isnull(m05,0)),sum(isnull(t05,0))
+		,sum(isnull(t06,0)),sum(isnull(t07,0)),sum(isnull(t08,0)),sum(isnull(t09,0))
+		,sum(isnull(t10,0)),sum(isnull(t11,0))
+	from @tmp 
+	where gno='1'
+	
+	update @tmp set t12 = round(m05*p05*@t_rate1/100,0)
+		,t13 = round(m05*p05*@t_rate2/100,0)
+		,t14 = case when m05=0 then p04 else round(p04-(t05+t06+t07+t08+t09+t10+t11+t12+t13)/m05,2) end
+		,t15 = round(m05*p05*@t_rate3/100,0)
+		,t18 = ROUND(m18*p18,0)
+	
+	select gno
+		,sel rr
+		,custtype a01
+		,CAST(dime as nvarchar)+'+'+CAST(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+CAST(lengthb as nvarchar) a02 
+		,pvcno a03
+		,uno a04
+		,makeno a05
+		,cust a06
+		,case when ISNULL(m00,0)=0 then '' else dbo.getComma(m00,-1) end a07
+		,case when ISNULL(p00,0)=0 then '' else dbo.getComma(p00,-1) end a08
+		,case when ISNULL(t00,0)=0 then '' else dbo.getComma(t00,-1) end a09
+		,'' a10
+		,'' a11
+		,'' a12
+		,case when ISNULL(m01,0)=0 then '' else dbo.getComma(m01,-1) end a13
+		,case when ISNULL(p01,0)=0 then '' else dbo.getComma(p01,-1) end a14
+		,case when ISNULL(t01,0)=0 then '' else dbo.getComma(t01,-1) end a15
+		
+		,case when ISNULL(m02,0)=0 then '' else dbo.getComma(m02,-1) end a16
+		,case when ISNULL(p02,0)=0 then '' else dbo.getComma(p02,-1) end a17
+		,case when ISNULL(t02,0)=0 then '' else dbo.getComma(t02,-1) end a18
+		
+		,case when ISNULL(m03,0)=0 then '' else dbo.getComma(m03,-1) end a19
+		,case when ISNULL(p03,0)=0 then '' else dbo.getComma(p03,-1) end a20
+		,case when ISNULL(t03,0)=0 then '' else dbo.getComma(t03,-1) end a21
+		
+		,'' a22
+		,'' a23
+		,'' a24
+		
+		,case when ISNULL(m04,0)=0 then '' else dbo.getComma(m04,-1) end a25
+		,case when ISNULL(p04,0)=0 then '' else dbo.getComma(p04,-1) end a26
+		,case when ISNULL(t04,0)=0 then '' else dbo.getComma(t04,-1) end a27
+		
+		,case when ISNULL(m05,0)=0 then '' else dbo.getComma(m05,-1) end a28
+		,case when ISNULL(p05,0)=0 then '' else dbo.getComma(p05,-1) end a29
+		,case when ISNULL(t05,0)=0 then '' else dbo.getComma(t05,-1) end a30
+		
+		,dbo.getComma(t06,-1) a31
+		,dbo.getComma(t07,-1) a32
+		,dbo.getComma(t08,-1) a33
+		,dbo.getComma(t09,-1) a34
+		,dbo.getComma(t10,-1) a35
+		,'' a36--折讓
+		,dbo.getComma(t11,-1) a37
+		,dbo.getComma(t12,-1) a38
+		,dbo.getComma(t13,-1) a39
+		,dbo.getComma(t14,-1) a40
+		,dbo.getComma(t15,-1) a41
+		,dbo.getComma(t16,-1) a42
+		
+		,case when ISNULL(m17,0)=0 then '' else dbo.getComma(m17,-1) end a43
+		,case when ISNULL(p17,0)=0 then '' else dbo.getComma(p17,-1) end a44
+		,case when ISNULL(t17,0)=0 then '' else dbo.getComma(t17,-1) end a45
+	
+		,case when ISNULL(m18,0)=0 then '' else dbo.getComma(m18,-1) end a46
+		,case when ISNULL(p18,0)=0 then '' else dbo.getComma(p18,-1) end a47
+		,case when ISNULL(t18,0)=0 then '' else dbo.getComma(t18,-1) end a48
+	from @tmp
+	order by gno,sel;
+
 z_cub_rkp13:--z_cub_rkp13	
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
