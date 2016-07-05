@@ -45,7 +45,7 @@ getuno_cut:--getuno_cut
 			begin try
 				set @cmd = "update cuts"+@accy+" set bno=@maxuno where noa=@noa and noq=@noq"
 				execute sp_executesql @cmd,N'@maxuno nvarchar(max),@noa nvarchar(max),@noq nvarchar(max)',@maxuno=@maxuno,@noa=@noa,@noq=@noq
-				IF @@Error <> 0 BEGIN SET @chk = 1 END
+				IF @@Error <> 0 BEGIN SET @chk = 1 END 
 			end try
 			begin catch
 				insert into drun(datea,timea,usera,[action],noa,tablea,title,memo)
