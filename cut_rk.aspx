@@ -194,7 +194,16 @@
                     	break;
                 }
             }
-
+			function q_stPost() {
+				if (!(q_cur == 1 || q_cur == 2))
+					return false;
+				Unlock(1);
+				var t_noa = $('#txtNoa').val();
+				if(t_noa.length>0){
+					q_func('qtxt.query.getuno_cut', 'uno_rk.txt,getuno_cut,' + t_noa + ';');
+				}
+			}
+			
             function btnOk() {
 				Lock(1, {
                     opacity : 0
@@ -214,9 +223,17 @@
                 else
                     $('#txtWorker2').val(r_name);
                 sum();
-                getUno(0);
+                //getUno(0);
+                var t_noa = trim($('#txtNoa').val());
+                var t_date = trim($('#txtDatea').val());
+                if (t_noa.length == 0 || t_noa == "AUTO")
+                    q_gtnoa(q_name, replaceAll(q_getPara('sys.key_cut') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
+                else
+                    wrServer(t_noa);
             }
 			function getUno(n){
+				//2016/07/05  改在STPOST再產生批號
+				
 				if(n>q_bbsCount){
 					var t_noa = trim($('#txtNoa').val());
 	                var t_date = trim($('#txtDatea').val());
@@ -236,6 +253,13 @@
 			}
 			function q_funcPost(t_func, result) {
 				switch(t_func) {
+					case 'qtxt.query.getuno_cut':
+						var as = _q_appendData("tmp0", "", true, true);
+						if (as[0] != undefined) {
+							q_func('cut_post.post', as[0].accy + ',' + as[0].noa + ',1');
+							location.reload();
+						}
+						break;
 					case 'qtxt.query.getuno':
 						var as = _q_appendData("tmp0", "", true, true);
 						if (as[0] != undefined) {
@@ -257,7 +281,7 @@
 						var t_noa = trim($('#txtNoa').val());
 						var t_date = trim($('#txtDatea').val());
 						if (t_noa.length == 0 || t_noa == "AUTO")
-							q_gtnoa(q_name, replaceAll(q_getPara('sys.key_rc2') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
+							q_gtnoa(q_name, replaceAll(q_getPara('sys.key_cut') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
 						else
 							wrServer(t_noa);
 						break;
