@@ -186,8 +186,23 @@
 		                			alert('找不到訂單【'+t_para.ordeno+'-'+t_para.no2+'】');
 		                		}
                     			sum();
+                    		}else if(t_para.action=='view_cuts'){
+                    			if($('#txtNoa').val()!=t_para.noa){
+                    				alert('錯誤!!!!');
+                    				return;
+                    			}
+                    			var as = _q_appendData("view_cuts", "", true);
+		                		if (as[0] != undefined) {
+		                			for(var i=0;i<as.length;i++){
+		                				for(var j=0;j<q_bbsCount;j++){
+											if(as[i].noq==$('#txtNoq_'+j).val()){
+												$('#txtBno_'+j).val(as[i].bno);
+												break;
+											}		                					
+		                				}
+		                			}
+		                		}
                     		}
-                    		
                     	}catch(e){
                     		
                     	}
@@ -253,11 +268,14 @@
 			}
 			function q_funcPost(t_func, result) {
 				switch(t_func) {
+					case 'cut_post.post':
+						var t_where = "where=^^ noa='"+$('#txtNoa').val()+"' ^^";
+                		q_gt('view_cuts', t_where, 0, 0, 0, JSON.stringify({action:'view_cuts',noa:$('#txtNoa').val()}));
+						break;
 					case 'qtxt.query.getuno_cut':
 						var as = _q_appendData("tmp0", "", true, true);
 						if (as[0] != undefined) {
 							q_func('cut_post.post', as[0].accy + ',' + as[0].noa + ',1');
-							location.reload();
 						}
 						break;
 					case 'qtxt.query.getuno':
