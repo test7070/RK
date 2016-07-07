@@ -25,6 +25,7 @@ getuno_cut:--getuno_cut
 	begin 
 		if len(@uno)>0 and len(@bno)=0
 		begin
+			select @maxuno = ''
 			select top 1 @maxuno = uno from view_uccb 
 			where uno like @uno+'-[0-9,A-Z][0-9]'
 			order by uno desc
