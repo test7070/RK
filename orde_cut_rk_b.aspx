@@ -1,8 +1,9 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" >
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta http-equiv="Content-Language" content="en-us" />
-		<title></title>
+		<title> </title>
 		<script src="../script/jquery.min.js" type="text/javascript"></script>
 		<script src="../script/qj2.js" type="text/javascript"></script>
 		<script src='qset.js' type="text/javascript"></script>
@@ -31,16 +32,16 @@
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
 	            	
 	            	if(t_para.page=='cub_rk'){
-	            		q_name = "orde_cub"
+	            		q_name = "orde_cub";
 	            		t_content = "where=^^['"+t_para.cubno+"','"+t_para.page+"')^^";
 	            	}else if(t_para.page=='cuc_rk'){
-	            		q_name = "orde_cuc"
+	            		q_name = "orde_cuc";
 	            		t_content = "where=^^['"+t_para.cucno+"','"+t_para.page+"')^^";
 	            	}else if(t_para.page=='cud_rk'){
-	            		q_name = "orde_cud"
+	            		q_name = "orde_cud";
 	            		t_content = "where=^^['"+t_para.cudno+"','"+t_para.page+"')^^";
 	            	}else if(t_para.page=='cut_rk'){
-	            		q_name = "orde_cut"
+	            		q_name = "orde_cut";
 	            		t_content = "where=^^['"+t_para.cutno+"','"+t_para.page+"')^^";
 	            	}else{
 	            		t_content = "where=^^['"+t_para.vccno+"','"+t_para.custno+"','"+t_para.page+"')^^";
