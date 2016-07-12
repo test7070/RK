@@ -200,9 +200,21 @@
 		                			}
 		                		}catch(e){
 		                		}
+                    		}else if(t_para.action == 'checkMakeno'){
+                    			try{
+                    				var as = _q_appendData("view_cub", "", true);
+			                		if (as[0] != undefined) {
+		                				for(var i=0;i<as.length;i++){
+		                					if(as[i].noa!=t_para.noa){
+		                						alert('製造批號重覆，請檢查!');
+		                						return;
+		                					}
+		                				}
+		                			}
+		                			save();
+		                		}catch(e){
+		                		}
                     		}
-                    		
-                    		
                     	}catch(e){
                     		
                     	}
@@ -310,6 +322,11 @@
             }
 
 			function btnOk() {
+				//檢查製造批號是否已重覆
+				t_where="where=^^ vcceno='"+$('#txtVcceno').val()+"' ^^";
+				q_gt('view_cub', t_where, 0, 0, 0, JSON.stringify({action:'checkMakeno',noa:$('#txtNoa').val()}), r_accy);
+			}
+			function save(){
 				toIns = false;
 				if ($('#txtDatea').val().length == 0 || !q_cd($('#txtDatea').val())) {
 					alert(q_getMsg('lblDatea') + '錯誤。');
@@ -399,6 +416,9 @@
                     $('#cmbProcess').removeAttr('disabled');
                     $('#btnOrde').removeAttr('disabled');
                     $('#btnCubu_rk').attr('disabled', 'disabled');
+                    
+                    if($('#txtVcceno').val().length>0)
+                    	$('#txtVcceno').attr('disabled','disabled');
                 }
 			}
 			
