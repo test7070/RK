@@ -48,6 +48,10 @@
 						type : '5',   //[7]  4
 						name : 'xtypea',
 						value : [q_getPara('report.all')].concat(q_getPara('uccc.itype').split(','))
+					},{
+						type : '8', //[8] 1
+						name : 'merge',
+						value : ('1@合併').split(',')
 					}]
 				});
 				q_popAssign();
