@@ -34,6 +34,7 @@
 			brwKey = 'noa';
 			q_desc = 1;
 			brwCount2 = 5;
+			currentNoa = '';
 			aPop = new Array(
 				['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', '0txtProductno_,txtProduct_', 'ucc_b.aspx']
 				,['txtCustno_', 'btnCust_', 'cust', 'noa,nick', 'txtCustno_,txtComp_', 'cust_b.aspx']
@@ -131,6 +132,21 @@
 
 			function q_gtPost(t_name) {
 				switch (t_name) {
+					case 'isexist_get_modi':
+						var t_noa = $('#txtNoa').val();
+						var as = _q_appendData("view_get", "", true);
+						if(as[0]!=undefined){
+							q_func('get_post.post.post1', r_accy + ',' + t_noa + ',1');
+						}
+						break;
+					case 'isexist_get_dele':
+						var t_noa = currentNoa;
+						var as = _q_appendData("view_get", "", true);
+						if(as[0]!=undefined){
+							q_func('get_post.post.post0', r_accy + ',' + t_noa + ',0');
+							q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+						}
+						break;
 					case q_name:
 						if (q_cur == 4)
 							q_Seek_gtPost();
@@ -223,8 +239,17 @@
 			}
 
 			function q_stPost() {
-				if (!(q_cur == 1 || q_cur == 2))
-					return false;
+				if (q_cur == 1 || q_cur == 2){
+					t_noa = $('#txtNoa').val();
+					if(t_noa.length>0){
+						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';1');
+						q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
+					}
+				}
+				if(q_cur==3){
+					q_gt('view_get', "where=^^noa='" + currentNoa + "'^^", 0, 0, 0, "isexist_get_dele",1);				
+				}
 			}
 
 			function q_boxClose(s2) {
@@ -644,8 +669,9 @@
 			}
 
 			function btnDele() {
+				currentNoa = $('#txtNoa').val();
 				toIns = false;
-				_btnDele();
+				_btnDele();	
 			}
 
 			function btnCancel() {
