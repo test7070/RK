@@ -326,6 +326,7 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @pve nvarchar(30)
 	declare @pveno2 nvarchar(20)
 	declare @pve2 nvarchar(30)
+	declare @memos nvarchar(max)
 	
 	declare @string nvarchar(max)
 	declare @n int,@m int
@@ -372,7 +373,8 @@ z_quat_rkp02:--z_quat_rkp02
 		price float,
 		po nvarchar(50),
 		pn nvarchar(50),
-		coin nvarchar(20)
+		coin nvarchar(20),
+		memo nvarchar(max)
 	)
 
 	
@@ -406,14 +408,14 @@ z_quat_rkp02:--z_quat_rkp02
 		declare cursor_table2 cursor for
 		select productno,product,dime,radius,width,lengthb,spec,ucolor
 			,scolor,class,zinc,[source],hard,uno
-			,style,mount,[weight],unit,unit2,price,po,pn
+			,style,mount,[weight],unit,unit2,price,po,pn,memo
 		from view_quats
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
 		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 			,@pvcno, @pvc, @pveno, @pve,@pveno2,@pve2
-			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn
+			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn,@memos
 		while(@@FETCH_STATUS <> -1)
 		begin
 			if @curcount%@pagecount=0
@@ -426,27 +428,27 @@ z_quat_rkp02:--z_quat_rkp02
 	
 			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
 				,pvcno,pvc,pveno,pve,pveno2,pve2
-				,style,mount,weight,unit,unit2,price,po,pn,coin)
+				,style,mount,weight,unit,unit2,price,po,pn,coin,memo)
 			values(1,case when len(@uno)=0 then '2' else '3' end
 				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
 				,@style,@mount,@weight
-				,@unit,@unit2,@price,@po,@pn,@coin)
+				,@unit,@unit2,@price,@po,@pn,@coin,@memos)
 			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
 				,pvcno,pvc,pveno,pve,pveno2,pve2
-				,style,mount,weight,unit,unit2,price,po,pn,coin)
+				,style,mount,weight,unit,unit2,price,po,pn,coin,memo)
 			values(1,'4'
 				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
 				,@style,@mount,@weight
-				,@unit,@unit2,@price,@po,@pn,@coin)
+				,@unit,@unit2,@price,@po,@pn,@coin,@memos)
 			set @curcount = @curcount + 2
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
 			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 			,@pvcno, @pvc, @pveno, @pve,@pveno2,@pve2
-			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn
+			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn,@memos
 		end
 		close cursor_table2
 		deallocate cursor_table2
@@ -566,6 +568,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' memo
 	from @tmp order by pno,sel;
 
 z_quat_rkp01:--z_quat_rkp01
