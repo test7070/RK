@@ -271,8 +271,8 @@
 					case 'ordb_ordc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdbno,txtNo3,txtProductno,txtProduct,cmbSpec,txtUnit,txtDime,txtWidth,txtLengthb,txtPrice,txtMount,txtWeight'
-                        	, as.length, as, 'noa,no3,productno,product,spec,unit,dime,width,lengthb,price,emount,eweight', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdbno,txtNo3,txtProductno,txtProduct,cmbSpec,txtUnit,txtDime,txtWidth,txtLengthb,txtPrice,txtMount,txtWeight,txtMemo'
+                        	, as.length, as, 'noa,no3,productno,product,spec,unit,dime,width,lengthb,price,emount,eweight,memo', '','');
                         	sum();
                         }else{
                         	Unlock(1);

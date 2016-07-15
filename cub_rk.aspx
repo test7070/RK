@@ -19,7 +19,7 @@
 			var toIns = true;
 			var q_name = "cub";
 			var q_readonly = ['txtNoa','txtWorker','txtWorker2'];
-			var q_readonlys = ['txtNoq','txtMakeno'];
+			var q_readonlys = ['txtNoq','txtMakeno','txtSize','txtDime','txtWidth','txtProductno','txtProduct'];
 			var q_readonlyt = ['txtNoq','txtProductno','txtProduct'];
 			var bbmNum = [];
 			var bbsNum = [];
@@ -529,12 +529,11 @@
 		                	var t_where ='';
 		                	q_box("cng_cub_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,n:n,page:'cub_rk'}), "cng_cub_"+n, "95%", "95%", '');
                         });
-                        $('#txtProductno_' + i).bind('contextmenu', function(e) {
-                            /*滑鼠右鍵*/
+                        /*$('#txtProductno_' + i).bind('contextmenu', function(e) {
                             e.preventDefault();
                             var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct_'+n).click();
-                        });
+                        });*/
                         $('#txtScolor_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
