@@ -49,6 +49,7 @@
 	select a.accy,a.noa,a.noq,a.itemno
 	from view_vccs a
 	where a.noa=@t_noa
+	and isnull(a.lengthc,0)!=0
 	order by a.accy,a.noa,a.noq
 	
 	if len(@t_noq)>0

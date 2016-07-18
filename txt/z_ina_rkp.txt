@@ -4,7 +4,7 @@ z_ina_rkp02:--z_ina_rkp02   ref.z_rc2_rkp01
 	declare @t_db nvarchar(max) = '[2]'
 	declare @t_stktype nvarchar(max) = '[3]'
 	declare @t_noa nvarchar(max) = case when '#non' = [4] then '' else [4] end
-	declare @t_merge nvarchar(max) = case when '#non' = [8] then '' else [8] end
+	declare @t_merge nvarchar(max) = case when '#non' = [5] then '' else [5] end
 -----------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
