@@ -12,7 +12,7 @@
             public string accy,noa,noq;
             public string productno,product,engpro,typea,spec,uno,pallet,makeno,pdate,custno,cust,ordeno,ordenoq;
             public float nweight,gweight,mount;
-            public string unit,datea;
+            public string unit,datea,ordepo,po,pn,indate;
         }
         
         System.IO.MemoryStream stream = new System.IO.MemoryStream();
@@ -35,7 +35,7 @@
             {
                 item.noq = Request.QueryString["noq"];
             }
-            //item.noa = "D1050630003";
+            //item.noa = "D1050526007";
             
             //資料
             System.Data.DataTable dt = new System.Data.DataTable();
@@ -66,15 +66,20 @@
 		,mount float
 		,unit nvarchar(20)
 		,datea nvarchar(20)
+		,ordepo nvarchar(max)
+		,po nvarchar(max)
+		,pn nvarchar(max)
+		,indate nvarchar(20)
 	)
 	insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
-		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea)
+		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
 	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro,e.spec+'/'+f.size
 		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
 		,a.uno,a.itemno,e.cname
 		,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
 		,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
 		,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
+		,d.memo
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on a.productno=c.noa
@@ -83,6 +88,17 @@
 	outer apply(select top 1 * from view_cubs where makeno=e.cname) f
 	where a.noa=@t_noa
     and (len(@t_noq)=0 or a.noq=@t_noq)
+	
+	update @tmp set indate = b.datea
+	from @tmp a
+	left join view_uccb b on a.uno=b.uno
+	
+	update @tmp set po=left(ordepo,CHARINDEX('chr(10)',ordepo)-1)
+	where CHARINDEX('chr(10)',ordepo)>0
+	update @tmp set pn=RIGHT(ordepo,len(ordepo)-len(po)-7)
+	where CHARINDEX('chr(10)',ordepo)>0
+	
+	update @tmp set po=ordepo where CHARINDEX('chr(10)',ordepo)=0
 	
 	select * from @tmp";
                 System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand(queryString, connSource);
@@ -118,6 +134,10 @@
                 pa.mount = System.DBNull.Value.Equals(r.ItemArray[19]) ? 0 : (float)(System.Double)r.ItemArray[19];
                 pa.unit = System.DBNull.Value.Equals(r.ItemArray[20]) ? "" : (System.String)r.ItemArray[20];
                 pa.datea = System.DBNull.Value.Equals(r.ItemArray[21]) ? "" : (System.String)r.ItemArray[21];
+                pa.ordepo = System.DBNull.Value.Equals(r.ItemArray[22]) ? "" : (System.String)r.ItemArray[22];
+                pa.po = System.DBNull.Value.Equals(r.ItemArray[23]) ? "" : (System.String)r.ItemArray[23];
+                pa.pn = System.DBNull.Value.Equals(r.ItemArray[24]) ? "" : (System.String)r.ItemArray[24];
+                pa.indate = System.DBNull.Value.Equals(r.ItemArray[25]) ? "" : (System.String)r.ItemArray[25];
                 vccLabel.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -231,16 +251,22 @@
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).spec, 157, 145, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).uno, 157, 115, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).pallet, 157, 85, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).makeno, 157, 55, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).pdate, 157, 25, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).ordeno + " " + ((Para)vccLabel[i]).ordenoq, 157, 55, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).indate, 157, 22, 0);
 
                     cb.SetFontAndSize(bfChinese, 14);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).cust, 360, 208, 0);
+                    
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).ordeno, 360, 175, 0);
+                    cb.SetFontAndSize(bfChinese, 8);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).po, 360, 180, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).pn, 360, 168, 0);
+
                     cb.SetFontAndSize(bfChinese, 12);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).ordeno, 360, 175, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).nweight.ToString() + " KG", 360, 145, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).gweight.ToString() + " KG", 360, 115, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " " + ((Para)vccLabel[i]).unit, 360, 85, 0);
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " " + ((Para)vccLabel[i]).unit, 360, 85, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " 片", 360, 85, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).datea, 360, 55, 0);
                     
                     cb.EndText();
