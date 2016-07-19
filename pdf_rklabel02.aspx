@@ -73,7 +73,7 @@
 	)
 	insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
 		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
-	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro,e.spec+'/'+f.size
+	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro,a.spec+' / '+a.size
 		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
 		,a.uno,a.itemno,e.cname
 		,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
@@ -89,7 +89,7 @@
 	where a.noa=@t_noa
     and (len(@t_noq)=0 or a.noq=@t_noq)
 	
-	update @tmp set indate = b.datea
+	update @tmp set indate = convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
 	from @tmp a
 	left join view_uccb b on a.uno=b.uno
 	
