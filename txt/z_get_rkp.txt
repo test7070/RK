@@ -206,7 +206,10 @@ z_get_rkp01:--z_get_rkp01
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	where b.noa is not null
 	and a.noa = @t_noa
-
+	
+	insert into @tmp(gno,noa,datea,mount,[weight],eweight)
+	select '2',noa,datea,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL(eweight,0)) 
+	from @tmp group by noa,datea
 	------------------------------------------------------------------------------------
 	declare @noa nvarchar(20) = ''
 	declare @datea nvarchar(20) = ''
@@ -224,7 +227,7 @@ z_get_rkp01:--z_get_rkp01
 		while @n%@pagecount !=0
 		begin
 			insert into @tmp(gno,noa,datea)
-			values('2',@noa,@datea)
+			values('3',@noa,@datea)
 			set @n = @n +1
 		end
 		fetch next from cursor_table
@@ -250,7 +253,7 @@ z_get_rkp01:--z_get_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+size +'</a>' a02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit +'</a>' a03
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,0) +'</a>' a04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(eweight,0) +'</a>' a05
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight,0) +'</a>' a05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' a06
 	from @tmp
 	order by gno,recno;
