@@ -42,11 +42,23 @@
 				var t_bdate = $.trim($('#txtBdate').val());
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
-
+				var t_custno = $.trim($('#txtCustno').val());
+				var t_cust = $.trim($('#txtCust').val());
+				var t_idno = $.trim($('#txtIdno').val());
+				var t_uno = $.trim($('#txtUno').val());
+				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
-					+ q_sqlPara2("noa", t_noa);
-					
+					+ q_sqlPara2("noa", t_noa)
+					+ q_sqlPara2("custno", t_custno)
+					+ q_sqlPara2("idno", t_idno);
+				
+				if (t_cust.length>0)
+                    t_where += " and charindex(N'" + t_cust + "',comp)>0";
+                        
+				if(t_uno.length>0)
+		       		t_where += " and exists(select noa from view_gets"+r_accy+" where view_gets"+r_accy+".noa=view_get"+r_accy+".noa and view_gets"+r_accy+".uno='"+t_uno+"')";	
+		       			
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -84,6 +96,22 @@
 				<tr class='seek_tr'>
 					<td class='seek' style="width:90px;"><a id='lblNoa'>電腦編號</a></td>
 					<td><input class="txt" id="txtNoa" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblCustno'>客戶編號</a></td>
+					<td><input class="txt" id="txtCustno" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblCust'>客戶名稱</a></td>
+					<td><input class="txt" id="txtCust" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblIdno'>入庫批號</a></td>
+					<td><input class="txt" id="txtIdno" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblUno'>領料批號</a></td>
+					<td><input class="txt" id="txtUno" type="text" style="width:220px;" /></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
