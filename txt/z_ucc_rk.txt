@@ -308,6 +308,11 @@ z_ucc_rk02:--z_ucc_rk02
 	insert into @tmpa(pno,gno,mount,[weight],total)
 	select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from @tmpa where gno='1'
 	
+	update @tmpa set custno=b.custno,cust=b.comp,ordeno=b.ordeno,ordeno2=b.no2
+	from @tmpa a
+	left join view_cuts b on a.uno=b.bno
+	where b.noa is not null
+	
 	select row_number()over(order by gno,productno,size,datea,uno) rr
 		,* 
 		,dbo.getComma(mount,-1) cmount
@@ -446,6 +451,11 @@ z_ucc_rk01:--z_ucc_rk01
 	
 	insert into @tmp(pno,gno,mount,[weight],total)
 	select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from @tmp where gno='1'
+	
+	update @tmp set custno=b.custno,cust=b.comp,ordeno=b.ordeno,ordeno2=b.no2
+	from @tmp a
+	left join view_cuts b on a.uno=b.bno
+	where b.noa is not null
 	
 	select row_number()over(order by gno,productno,zspec,size,datea,uno) rr
 		,* 
