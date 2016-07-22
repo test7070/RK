@@ -16,7 +16,7 @@
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"></script>
 		<script type="text/javascript">
 
-			var t_custtype='';
+			var t_custtype='',t_adpro='';
 			$(document).ready(function() {
 				_q_boxClose();
 				q_getId();
@@ -34,6 +34,16 @@
 							t_custtype = '';
 							for (i = 0; i < as.length; i++) {
 								t_custtype = t_custtype + (t_custtype.length > 0 ? ',' : '') + $.trim(as[i].noa) + '@' + $.trim(as[i].namea);
+							}
+						}
+						q_gt('adpro', '', 0, 0, 0, "adpro");
+						break;
+					case 'adpro':
+						var as = _q_appendData("adpro", "", true);
+						if (as[0] != undefined) {
+							t_adpro = '';
+							for (i = 0; i < as.length; i++) {
+								t_adpro = t_adpro + (t_adpro.length > 0 ? ',' : '') + $.trim(as[i].noa) + '@' + $.trim(as[i].product);
 							}
 						}
 						loadFinish();
@@ -58,39 +68,43 @@
 						name : 'stktype',
 						value : q_getPara('sys.stktype')
 					},{
-						type : '5', //[4] 1
+						type : '0', //[4]
+						name : 'ordestype',
+						value : q_getPara('orde.stype')
+					},{
+						type : '5', //[5] 1
 						name : 'xkind',
 						value : [q_getPara('report.all')].concat(q_getPara('sys.stktype').split(','))
 					}, {
-						type : '5', //[5] 2
+						type : '5', //[6] 2
 						name : 'xcusttype',
-						value : [q_getPara('report.all')].concat(t_custtype)
+						value : [q_getPara('report.all')].concat(t_adpro.split(','))
 					},{
-                        type : '1',//[6][7] 3
+                        type : '1',//[7][8] 3
                         name : 'xdate'
                     }, {
-						type : '2', //[8][9] 4
+						type : '2', //[9][10] 4
 						name : 'xcust',
 						dbf : 'cust',
 						index : 'noa,nick',
 						src : 'cust_b.aspx'
 					}, {
-						type : '2', //[10][11] 5
+						type : '2', //[11][12] 5
 						name : 'xproduct',
 						dbf : 'ucc',
 						index : 'noa,product',
 						src : 'ucc_b.aspx'
 					}, {
-						type : '1', //[12][13] 6
+						type : '1', //[13][14] 6
 						name : 'xradius'
 					}, {
-						type : '1', //[14][15] 7
+						type : '1', //[15][16] 7
 						name : 'xdime'
 					}, {
-						type : '1', //[16][17] 8
+						type : '1', //[17][18] 8
 						name : 'xwidth'
 					}, {
-						type : '1', //[18][19] 9
+						type : '1', //[19][20] 9
 						name : 'xlengthb'
 					}]
 				});
