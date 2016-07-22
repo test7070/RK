@@ -115,23 +115,25 @@
 		declare @makeno nvarchar(max)
 		insert into @tmpa select bno,makeno from @tmp where len(isnull(bno,''))>0
 		declare @uno nvarchar(max)
-		set @t_rank = @t_rank + 1
-		declare cursor_table cursor for
-		select uno,makeno from @tmpa
-		open cursor_table
-		fetch next from cursor_table
-		into @uno,@makeno
-		while(@@FETCH_STATUS <> -1)
+		if @t_rank>=0
 		begin
-			insert into @tmp
-			select * from dbo.unohistory_rk(@t_rank,@uno,@makeno)
-			
+			set @t_rank = @t_rank + 1
+			declare cursor_table cursor for
+			select uno,makeno from @tmpa
+			open cursor_table
 			fetch next from cursor_table
 			into @uno,@makeno
+			while(@@FETCH_STATUS <> -1)
+			begin
+				insert into @tmp
+				select * from dbo.unohistory_rk(@t_rank,@uno,@makeno)
+				
+				fetch next from cursor_table
+				into @uno,@makeno
+			end
+			close cursor_table
+			deallocate cursor_table
 		end
-		close cursor_table
-		deallocate cursor_table
-		
 		return
 	end
 	
