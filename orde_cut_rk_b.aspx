@@ -113,7 +113,7 @@
 			<table id="tFixedTitle" class='tFixedTitle'  border="2"  cellpadding='2' cellspacing='1' style='width:100%;'  >
 				<tr style='color:white; background:#003366;' >
 					<th align="center" style="width:25px;max-width: 25px;"><input type="checkbox" id="checkAllCheckbox"/></th>
-					<td align="center" style="width:30px;max-width: 30px;"> </td>
+					<td align="center" style="width:30px;max-width: 30px;"><a>　</a></td>
 					<td align="center" style="width:120px;max-width: 120px;">製造批號</td>
 					<td align="center" style="width:120px;max-width: 120px;">訂單編號</td>
 					<td align="center" style="width:100px;max-width: 100px;">客戶</td>
@@ -137,8 +137,8 @@
 		<div id="dbbs" style="overflow: scroll;height:450px;" >
 			<table id="tbbs" class='tbbs' border="2" cellpadding='2' cellspacing='1' style='width:100%;' >
 				<tr style="display:none;">
-					<th align="center" style="width:25px;max-width: 25px;"> </th>
-					<td align="center" style="width:30px;max-width: 30px;"> </td>
+					<th align="center" style="width:25px;max-width: 25px;"><a>　</a></th>
+					<td align="center" style="width:30px;max-width: 30px;"><a>　</a></td>
 					<td align="center" style="width:120px;max-width: 120px;">製造批號</td>
 					<td align="center" style="width:120px;max-width: 120px;">訂單編號</td>
 					<td align="center" style="width:100px;max-width: 100px;">客戶</td>
@@ -159,11 +159,11 @@
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td style="width:25px;max-width: 25px;"><input type="checkbox" class="ccheck" id="chkSel.*"/></td>
-					<td style="width:30px;max-width: 30px;text-align: center;"><a id="lblNo.*" style="font-weight: bold;" readonly="readonly"> </a></td>
+					<td style="width:30px;max-width: 30px;"><a id="lblNo.*" style="font-weight: bold;width:30px;max-width: 30px;" readonly="readonly"> </a></td>
 					<td style="width:120px;max-width: 120px;"><input id="txtMakeno.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:120px;max-width: 120px;">
 						<input id="txtAccy.*" type="text" style="display:none;"  readonly="readonly" />
-						<input id="txtNoa.*" type="text" style="float:left;width:70%;"  readonly="readonly" />
+						<input id="txtNoa.*" type="text" style="float:left;width:60%;"  readonly="readonly" />
 						<input id="txtNo2.*" type="text" style="float:left;width:25%;"  readonly="readonly" />
 					</td>
 					<td style="width:100px;max-width: 100px;"><input id="txtComp.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
@@ -173,10 +173,10 @@
 					<td style="width:80px;max-width: 80px;"><input id="txtLengthb.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:80px;max-width: 80px;"><input id="txtUnit.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:120px;max-width: 120px;">
-						<input id="txtProductno.*" type="text" style="float:left;width:30%;"  readonly="readonly" />
-						<input id="txtProduct.*" type="text" style="float:left;width:70%;"  readonly="readonly" />
-						<input id="txtPvcno.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
-						<input id="txtPvc.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
+						<input id="txtProductno.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
+						<input id="txtProduct.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
+						<input id="txtPvcno.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
+						<input id="txtPvc.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
 					</td>
 					<td style="width:80px;max-width: 80px;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:100px;max-width: 100px;">
