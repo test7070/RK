@@ -61,6 +61,27 @@
 				$('#checkAllCheckbox').click(function(e){
 					$('.ccheck').prop('checked',$(this).prop('checked'));
 				});
+				
+				$('#btnSearch').click(function() {
+					var t_where="1=1";
+					if(!emp($('#txtNoa').val())){
+						t_where+=" and charindex('"+$('#txtNoa').val()+"',noa)>0";
+					}
+					if(!emp($('#txtComp').val())){
+						t_where+=" and charindex('"+$('#txtComp').val()+"',comp)>0";
+					}
+					if(!emp($('#txtSerial').val())){
+						t_where+=" and charindex('"+$('#txtSerial').val()+"',serial)>0";
+					}
+					for(var i=0; i<abbs.length; i++){
+						if(abbs[i].sel==true || abbs[i].sel=="true"){
+							t_noa=t_noa+(t_noa.length>0?',':'')+"'"+abbs[i].noa+"'"; 
+						}
+					}
+					
+					//t_where="where=^^"+t_where+"^^"
+					location.href = "http://"+location.host +location.pathname+"?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk'});
+				});
 			}
             function q_gtPost(t_name) {
 				switch (t_name) {
@@ -176,6 +197,13 @@
 					<td style="width:50px;max-width: 50px;background-color: pink;"><input type="text" id="txtCnt.*" class="txt num" style="float:left;width:95%;text-align: right;"/></td>
 				</tr>
 			</table>
+			<div>
+				<a>訂單編號</a>
+				<input class="txt" id="txtOrdeno" type="text" style="width:150px;" />
+				<a>製造批號查詢</a>
+				<input class="txt" id="txtMakeno" type="text" style="width:150px;" />
+				<input type="button" id="btnSearch" style="border-style: none; width: 26px; height: 26px; cursor: pointer; background: url(../image/search_32.png) 0px 0px no-repeat;background-size: 100%;">
+			 </div>
 		</div>
 		<!--#include file="../inc/pop_ctrl.inc"-->
 	</body>
