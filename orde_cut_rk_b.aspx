@@ -30,7 +30,7 @@
                 var t_para = new Array();
 	            try{
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-	            	
+	            	//目前只有CUT_RK.aspx有用到
 	            	if(t_para.page=='cub_rk'){
 	            		q_name = "orde_cub";
 	            		t_content = "where=^^['"+t_para.cubno+"','"+t_para.page+"')^^";
@@ -42,7 +42,7 @@
 	            		t_content = "where=^^['"+t_para.cudno+"','"+t_para.page+"')^^";
 	            	}else if(t_para.page=='cut_rk'){
 	            		q_name = "orde_cut";
-	            		t_content = "where=^^['"+t_para.cutno+"','"+t_para.page+"')^^";
+	            		t_content = "where=^^['"+t_para.cutno+"','"+t_para.page+"','"+t_para.makeno+"','"+t_para.ordeno+"')^^";
 	            	}else{
 	            		t_content = "where=^^['"+t_para.vccno+"','"+t_para.custno+"','"+t_para.page+"')^^";
 	            	}
@@ -63,24 +63,21 @@
 				});
 				
 				$('#btnSearch').click(function() {
-					var t_where="1=1";
-					if(!emp($('#txtNoa').val())){
-						t_where+=" and charindex('"+$('#txtNoa').val()+"',noa)>0";
-					}
-					if(!emp($('#txtComp').val())){
-						t_where+=" and charindex('"+$('#txtComp').val()+"',comp)>0";
-					}
-					if(!emp($('#txtSerial').val())){
-						t_where+=" and charindex('"+$('#txtSerial').val()+"',serial)>0";
-					}
-					for(var i=0; i<abbs.length; i++){
-						if(abbs[i].sel==true || abbs[i].sel=="true"){
-							t_noa=t_noa+(t_noa.length>0?',':'')+"'"+abbs[i].noa+"'"; 
-						}
-					}
+					var t_makeno = $.trim($('#txtMakeno').val());
+					var t_ordeno = $.trim($('#txtOrdeno').val());
+					var t_noa = '';
+					var t_page='';
+					t_where = '';
 					
-					//t_where="where=^^"+t_where+"^^"
-					location.href = "http://"+location.host +location.pathname+"?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk'});
+					try{
+		            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
+		            	if(t_para.page=='cut_rk'){
+		            		t_noa = t_para.cutno;
+							t_page = t_para.page;
+		            	}
+		            }catch(e){
+		            }   
+					location.href = "http://"+location.host +location.pathname+"?" + r_userno + ";" + r_name + ";" + q_getId()[2]+ ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:t_page,makeno:t_makeno,ordeno:t_ordeno});
 				});
 			}
             function q_gtPost(t_name) {
@@ -197,14 +194,14 @@
 					<td style="width:50px;max-width: 50px;background-color: pink;"><input type="text" id="txtCnt.*" class="txt num" style="float:left;width:95%;text-align: right;"/></td>
 				</tr>
 			</table>
-			<div>
-				<a>訂單編號</a>
-				<input class="txt" id="txtOrdeno" type="text" style="width:150px;" />
-				<a>製造批號查詢</a>
-				<input class="txt" id="txtMakeno" type="text" style="width:150px;" />
-				<input type="button" id="btnSearch" style="border-style: none; width: 26px; height: 26px; cursor: pointer; background: url(../image/search_32.png) 0px 0px no-repeat;background-size: 100%;">
-			 </div>
 		</div>
+		<div>
+			<a>訂單編號</a>
+			<input class="txt" id="txtOrdeno" type="text" style="width:150px;" />
+			<a>製造批號查詢</a>
+			<input class="txt" id="txtMakeno" type="text" style="width:150px;" />
+			<input type="button" id="btnSearch" style="border-style: none; width: 26px; height: 26px; cursor: pointer; background: url(../image/search_32.png) 0px 0px no-repeat;background-size: 100%;">
+		 </div>
 		<!--#include file="../inc/pop_ctrl.inc"-->
 	</body>
 </html>

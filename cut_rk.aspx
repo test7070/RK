@@ -92,7 +92,7 @@
 						return;
 					var t_noa = $('#txtNoa').val();
                 	var t_where ='';
-                	q_box("orde_cut_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk'}), "orde_cut", "95%", "95%", '');
+                	q_box("orde_cut_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk',makeno:'',ordeno:''}), "orde_cut", "95%", "95%", '');
 				});
             }
 
