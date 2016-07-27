@@ -74,6 +74,27 @@
                             q_Seek_gtPost();
                         break;
 					default:
+                    	try{
+                    		t_para = JSON.parse(t_name);
+                    		if(t_para.action == 'getDensity'){
+                    			try{
+                					var t_density = 0,t_mount = q_float('txtMount_'+t_para.n);
+                    				var as = _q_appendData("ucc", "", true);
+			                		if (as[0] != undefined) {
+		                				try{
+		                					t_density = parseFloat(as[0].density);
+			                			}catch(e){
+			                				t_density = 0;
+			                			}
+			                		}
+			                		$('#txtWeight_'+t_para.n).val(round(q_mul(t_density,t_mount),0));
+		                		}catch(e){
+		                			$('#txtWeight_'+t_para.n).val(0);
+		                		}
+                    		}
+                    	}catch(e){
+                    		
+                    	}
                     	break;
 				}
 			}
@@ -198,6 +219,13 @@
 					$('#lblNo_' + i).text(i + 1);
 					if ($('#btnMinus_' + i).hasClass('isAssign'))
 						continue;
+					$('#txtMount_' + i).bind('change', function(e) {
+                        var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
+                		if($('#txtProductno_'+n).val().length>0){
+                			t_where = "where=^^ noa='" + trim($('#txtProductno_'+n).val()) + "' ^^";
+                			q_gt('ucc', t_where, 0, 0, 0, JSON.stringify({action:"getDensity",n:n}), r_accy);
+                		}
+                	});
 					/*	
 					$('#txtUno_' + i).bind('contextmenu', function(e) {
                         e.preventDefault();
