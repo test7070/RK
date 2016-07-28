@@ -303,7 +303,12 @@
 
 			function btnDele() {
 				currentNoa = $('#txtNoa').val();
-				_btnDele();	
+				if(r_rank>8){
+					alert('警告,庫存需自行重新計算');
+					_btnDele();	
+				}else{
+					alert('禁止刪除!');
+				}
 			}
 
 			function btnCancel() {
