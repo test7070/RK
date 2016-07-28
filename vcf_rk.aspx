@@ -101,8 +101,10 @@
 
 			function q_stPost() {
 				if (q_cur == 1 || q_cur == 2){
+					q_func('qtxt.query.vcf2cub', 'vcf.txt,vcf2cub,'+$('#txtNoa').val());
 				}
 				if(q_cur==3){
+					q_func('qtxt.query.vcf2cub', 'vcf.txt,vcf2cub,'+currentNoa);
 				}
 			}
 
@@ -300,6 +302,7 @@
 			}
 
 			function btnDele() {
+				currentNoa = $('#txtNoa').val();
 				_btnDele();	
 			}
 
