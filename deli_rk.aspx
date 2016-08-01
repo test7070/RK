@@ -56,8 +56,10 @@
             	if(q_float('txtFloata')==0)
             		$('#txtFloata').val(1);
             	for(var i=0;i<q_bbsCount;i++){
-            		//進貨金額(重量*單價)
-            		$('#txtMoney_'+i).val(round(q_mul(q_float('txtWeight_'+i),q_float('txtPrice_'+i)),2));
+            		if(!$('#chkAprice_'+i).prop('checked')){
+        				//進貨金額(重量*單價)
+            			$('#txtMoney_'+i).val(round(q_mul(q_float('txtWeight_'+i),q_float('txtPrice_'+i)),2));
+            		}
             		//原幣完稅價格 	
             		$('#txtCointotal_'+i).val(q_float('txtMoney_'+i));
             		//本幣完稅價格
@@ -632,6 +634,7 @@
                 for (var j = 0; j < q_bbsCount; j++) {
                     $('#lblNo_' + j).text(j + 1);
                     if (!$('#btnMinus_' + j).hasClass('isAssign')) {
+                    	$('#chkAprice_'+j).click(function(e){refreshBbs();});
                         $('#txtStoreno_' + j).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
@@ -672,11 +675,25 @@
                          $('#txtLcmoney_' + j).change(function() {
                             sum();
                         });
+                        $('#txtMoney_'+j).change(function(e){sum();});
                     }
                 }
                 _bbsAssign();
+                refreshBbs();
             }
-
+			function refreshBbs(){
+				//金額小計自訂
+				for(var i=0;i<q_bbsCount;i++){
+					$('#txtMoney_'+i).attr('readonly','readonly');
+					if($('#chkAprice_'+i).prop('checked')){
+						$('#txtMoney_'+i).css('color','black').css('background-color','white');
+						if(q_cur==1 || q_cur==2)
+							$('#txtMoney_'+i).removeAttr('readonly');
+					}else{
+						$('#txtMoney_'+i).css('color','green').css('background-color','rgb(237,237,237)');
+					}
+				}
+			}
             function btnIns() {
                 _btnIns();
                 $('#txtNoa').val('AUTO');
@@ -759,6 +776,7 @@
                     $('#txtNegotiatingdate').datepicker();
                     $('#txtDeclaredate').datepicker();
                 }
+                refreshBbs();
             }
 
             function btnMinus(id) {
@@ -1298,10 +1316,11 @@
 					<td align="center" style="width:115px;"><a id='lblMoney_s'> </a>
 					<BR>
 					(重量*單價)</td>
-					
+					<td style="width:50px;">自訂<BR>金額</td>
 					<td align="center" style="width:115px;"><a id='lblCointotal_s'> </a>
 					<BR>
 					<a id='lblTotal_s'> </a></td>
+					
 					<td align="center" style="width:115px;">
 						<a id='lblTariffrate_s'> </a><BR>
 						<a id='lblTariff_s'> </a></td>
@@ -1367,11 +1386,12 @@
 						<input class="txt num c1" id="txtPrice2.*" type="text" style="display:none;"  />
 					</td>
 					<td><input class="txt num c1" id="txtMoney.*" type="text"  /></td>
-					
+					<td><input type="checkbox" id="chkAprice.*"></td>
 					<td>
 						<input class="txt num c1" id="txtCointotal.*" type="text"  />
 						<input class="txt num c1" id="txtTotal.*" type="text"  />
 					</td>
+					
 					<td>
 						<input class="txt num c1" id="txtTariffrate.*" type="text"  />
 						<input class="txt num c1" id="txtTariff.*" type="text"  />
