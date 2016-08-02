@@ -274,7 +274,7 @@ z_ucc_rk02:--z_ucc_rk02
 	and (len(@t_kind)=0 or b.kind=@t_kind) 
 	and ISNULL(a.eweight,0)>0
 	and (len(@t_store)=0 or charindex(','+a.storeno+',',','+@t_store+',')>0)
-	and (len(@t_spec)=0 or b.spec=@t_spec)
+	and (len(@t_spec)=0 or b.spec=@t_spec or b.productno=@t_spec)
 	and (len(@t_place)=0 or b.place=@t_place)
 	
 	update @tmpa set zspec=case when len(ISNULL(cspec,''))>0 then cspec else spec end
@@ -418,7 +418,7 @@ z_ucc_rk01:--z_ucc_rk01
 	and (len(@t_kind)=0 or b.kind=@t_kind) 
 	and ISNULL(a.eweight,0)>0 
 	and (len(@t_store)=0 or charindex(','+b.storeno+',',','+@t_store+',')>0)
-	and (len(@t_spec)=0 or b.spec=@t_spec)
+	and (len(@t_spec)=0 or b.spec=@t_spec or b.productno=@t_spec)
 	and (len(@t_place)=0 or b.place=@t_place)
 	
 	update @tmp set zspec=case when len(ISNULL(cspec,''))>0 then cspec else spec end

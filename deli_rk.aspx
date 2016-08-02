@@ -338,7 +338,8 @@
                 q_cmbParse("cmbCredittype", ",1@可扣抵進貨及費用,2@可扣抵固定資產,3@不可扣抵進貨及費用,4@不可扣抵固定資產");
                 q_cmbParse("cmbFeetype", "1@依進貨金額,2@依進貨數量,3@依進貨重量");
                 q_cmbParse("cmbSpec", t_spec, 's');
-
+				q_cmbParse("cmbKind", q_getPara('sys.stktype'));
+				
                 $('#lblRc2no').click(function(e) {
                     t_where = " noa='" + $('#txtRc2no').val() + "' ";
                     q_box("rc2st.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where + ";;;", 'rc2', "95%", "650px", q_getMsg('popRc2'));
@@ -397,7 +398,7 @@
 
                 $('#btnRc2').click(function() {
                     if (emp($('#txtRc2no').val())) {
-                        q_func('qtxt.query.post1', 'deli.txt,post,' + encodeURI(r_accy) + ';' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
+                        q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
                     } else {
                         var t_rc2no = $('#txtRc2no').val();
                         q_gt('view_rc2', "where=^^ noa='" + t_rc2no + "' ^^", 0, 0, 0, "check_rc2");
@@ -473,7 +474,7 @@
                         //rc2.post內容
                         q_func('rc2_post.post.a1', r_accy + ',' + as[0].noa + ',0');
                     } else {
-                        q_func('qtxt.query.post0', 'deli.txt,post,' + encodeURI(r_accy) + ';' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
+                        q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
                     }
                     break;
 
@@ -575,13 +576,13 @@
                     q_func('rc2_post.post', r_accy + ',' + $('#txtRc2no').val() + ',1');
                     break;
                 case 'rc2_post.post.a1':
-                    q_func('qtxt.query.post0', 'deli.txt,post,' + encodeURI(r_accy) + ';' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
+                    q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
                     break;
                 case 'rc2_post.post.a2':
-                    q_func('qtxt.query.post2', 'deli.txt,post,' + encodeURI(r_accy) + ';' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
+                    q_func('qtxt.query.post2', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
                     break;
                 case 'qtxt.query.post0':
-                    q_func('qtxt.query.post1', 'deli.txt,post,' + encodeURI(r_accy) + ';' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
+                    q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
                     break;
                 case 'qtxt.query.post1':
                     var as = _q_appendData("tmp0", "", true, true);
@@ -831,7 +832,7 @@
                     q_cur = 3;
 
                     if (emp($('#txtRc2no').val()))
-                        q_func('qtxt.query.post2', 'deli.txt,post,' + encodeURI(r_accy) + ';' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
+                        q_func('qtxt.query.post2', 'deli.txt,post_rk_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
                     else
                         q_func('rc2_post.post.a2', r_accy + ',' + $('#txtRc2no').val() + ',0');
                 }
@@ -1222,8 +1223,8 @@
 						<td class="td4">
 						<input id="txtCointotal"  type="text"  class="txt num c1"/>
 						</td>
-						<td class="td5"> </td>
-						<td class="td6"> </td>
+						<td><span> </span><a id='lblKind' class="lbl">類型</a></td>
+						<td><select id="cmbKind" class="txt c1"> </select></td>
 						<td class="td7"> </td>
 						<td class="td8">
 						<input id="btnOrdc" type="button"/>
