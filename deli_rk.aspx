@@ -34,6 +34,7 @@
             //,  ['txtProductno_', 'btnProductno_', 'ucaucc', 'noa,product,unit', 'txtProductno_,txtProduct_,txtUnit_,txtClass_', 'ucaucc_b.aspx']
             ,['txtStoreno_', 'btnStoreno_', 'store', 'noa,store', 'txtStoreno_,txtStore_', 'store_b.aspx'], ['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_', 'ucc_b.aspx'], ['txtStyle_', 'btnStyle_', 'style', 'noa,product', 'txtStyle_', 'style_b.aspx'], ['txtSpec_', '', 'spec', 'noa,product', '0txtSpec_,txtSpec_', 'spec_b.aspx', '95%', '95%']);
 
+			var currentNoa = '';
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'noq'];
@@ -397,12 +398,7 @@
                 });
 
                 $('#btnRc2').click(function() {
-                    if (emp($('#txtRc2no').val())) {
-                        q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
-                    } else {
-                        var t_rc2no = $('#txtRc2no').val();
-                        q_gt('view_rc2', "where=^^ noa='" + t_rc2no + "' ^^", 0, 0, 0, "check_rc2");
-                    }
+                    q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
                 });
             }
 
@@ -467,15 +463,6 @@
                     if (t_spec.length == 0)
                         t_spec = ' ';
                     q_gt(q_name, q_content, q_sqlCount, 1, 0, '', r_accy);
-                    break;
-                case 'check_rc2':
-                    var as = _q_appendData("view_rc2", "", true);
-                    if (as[0] != undefined) {
-                        //rc2.post內容
-                        q_func('rc2_post.post.a1', r_accy + ',' + as[0].noa + ',0');
-                    } else {
-                        q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
-                    }
                     break;
 
                 case 'rc2s':
@@ -575,15 +562,15 @@
                     //rc2.post內容
                     q_func('rc2_post.post', r_accy + ',' + $('#txtRc2no').val() + ',1');
                     break;
-                case 'rc2_post.post.a1':
-                    q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
-                    break;
-                case 'rc2_post.post.a2':
-                    q_func('qtxt.query.post2', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
-                    break;
                 case 'qtxt.query.post0':
-                    q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
-                    break;
+                	var as = _q_appendData("tmp0", "", true, true);
+                	if(as[0]!=undefined){
+                		rc2no = as[0].rc2no;
+                		if(rc2no.length>0){
+                			q_func('rc2_post.post.a1', r_accy + ',' + rc2no + ',0');
+                		}		
+                	}
+                	break;
                 case 'qtxt.query.post1':
                     var as = _q_appendData("tmp0", "", true, true);
                     var t_invono = '';
@@ -617,11 +604,14 @@
             function q_stPost() {
                 if (!(q_cur == 1 || q_cur == 2))
                     return false;
-
-                if (q_cur == 2 && !emp($('#txtRc2no').val())) {//修改後重新產生 避免資料不對應
-                    var t_rc2no = $('#txtRc2no').val();
-                    q_gt('view_rc2', "where=^^ noa='" + t_rc2no + "' ^^", 0, 0, 0, "check_rc2");
-                }
+				
+				if(q_cur==1 || q_cur==2){
+					//新增、修改
+					q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
+				}else if(q_cur==3){
+					//刪除
+					q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI(currentNoa) + ';0;' + r_userno);
+				}
             }
 
             function _btnSeek() {
@@ -826,17 +816,8 @@
             }
 
             function btnDele() {
-                if (!emp($('#txtNoa').val())) {
-                    if (!confirm(mess_dele))
-                        return;
-                    q_cur = 3;
-
-                    if (emp($('#txtRc2no').val()))
-                        q_func('qtxt.query.post2', 'deli.txt,post_rk_rk,' + encodeURI($('#txtNoa').val()) + ';0;' + r_userno);
-                    else
-                        q_func('rc2_post.post.a2', r_accy + ',' + $('#txtRc2no').val() + ',0');
-                }
-                //_btnDele();
+                currentNoa = $('#txtNoa').val();
+                _btnDele();
             }
 
             function btnCancel() {
