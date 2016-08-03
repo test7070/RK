@@ -34,7 +34,7 @@
             //,  ['txtProductno_', 'btnProductno_', 'ucaucc', 'noa,product,unit', 'txtProductno_,txtProduct_,txtUnit_,txtClass_', 'ucaucc_b.aspx']
             ,['txtStoreno_', 'btnStoreno_', 'store', 'noa,store', 'txtStoreno_,txtStore_', 'store_b.aspx'], ['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_', 'ucc_b.aspx'], ['txtStyle_', 'btnStyle_', 'style', 'noa,product', 'txtStyle_', 'style_b.aspx'], ['txtSpec_', '', 'spec', 'noa,product', '0txtSpec_,txtSpec_', 'spec_b.aspx', '95%', '95%']);
 
-			var currentNoa = '';
+			var currentNoa = '',currentRc2no='';
             $(document).ready(function() {
                 bbmKey = ['noa'];
                 bbsKey = ['noa', 'noq'];
@@ -446,6 +446,14 @@
 
             function q_gtPost(t_name) {
                 switch (t_name) {
+                	case 'view_rc2':
+                		var as = _q_appendData("v", "", true);
+	                    if (as[0] != undefined) {
+	                    	q_func('rc2_post.post', as[0].accy + ',' + as[0].noa + ',0');
+	                    }else{
+	                    	q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI(currentNoa) + ';0;' + r_userno);
+	                    }
+                		break;
                 case 'cno_acomp':
                     //新增時  取得公司
                     var as = _q_appendData("acomp", "", true);
@@ -558,18 +566,19 @@
 
             function q_funcPost(t_func, result) {
                 switch(t_func) {
+                	case 'rc2_post.post':
+                		q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI(currentNoa) + ';0;' + r_userno);
+                		break;
                 case 'qtxt.query.genUno':
                     //rc2.post內容
                     q_func('rc2_post.post', r_accy + ',' + $('#txtRc2no').val() + ',1');
                     break;
                 case 'qtxt.query.post0':
                 	var as = _q_appendData("tmp0", "", true, true);
-                	if(as[0]!=undefined){
-                		rc2no = as[0].rc2no;
-                		if(rc2no.length>0){
-                			q_func('rc2_post.post.a1', r_accy + ',' + rc2no + ',0');
-                		}		
-                	}
+                	if (as[0].memo.length > 0) {
+                        alert(as[0].memo);
+                        return;
+                    }
                 	break;
                 case 'qtxt.query.post1':
                     var as = _q_appendData("tmp0", "", true, true);
@@ -610,7 +619,7 @@
 					q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
 				}else if(q_cur==3){
 					//刪除
-					q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI(currentNoa) + ';0;' + r_userno);
+					q_gt('view_rc2', "where=^^ noa='"+currentRc2no+"'^^", 0, 0, 0, "view_rc2");
 				}
             }
 
@@ -817,6 +826,7 @@
 
             function btnDele() {
                 currentNoa = $('#txtNoa').val();
+                currentRc2no = $('#txtRc2no').val();
                 _btnDele();
             }
 
