@@ -447,9 +447,9 @@
             function q_gtPost(t_name) {
                 switch (t_name) {
                 	case 'view_rc2':
-                		var as = _q_appendData("v", "", true);
+                		var as = _q_appendData("view_rc2", "", true);
 	                    if (as[0] != undefined) {
-	                    	q_func('rc2_post.post', as[0].accy + ',' + as[0].noa + ',0');
+	                    	q_func('rc2_post.post0', as[0].accy + ',' + as[0].noa + ',0');
 	                    }else{
 	                    	q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI(currentNoa) + ';0;' + r_userno);
 	                    }
@@ -566,7 +566,7 @@
 
             function q_funcPost(t_func, result) {
                 switch(t_func) {
-                	case 'rc2_post.post':
+                	case 'rc2_post.post0':
                 		q_func('qtxt.query.post0', 'deli.txt,post_rk,' + encodeURI(currentNoa) + ';0;' + r_userno);
                 		break;
                 case 'qtxt.query.genUno':
@@ -611,9 +611,6 @@
             }
 
             function q_stPost() {
-                if (!(q_cur == 1 || q_cur == 2))
-                    return false;
-				
 				if(q_cur==1 || q_cur==2){
 					//新增、修改
 					q_func('qtxt.query.post1', 'deli.txt,post_rk,' + encodeURI($('#txtNoa').val()) + ';1;' + r_userno);
