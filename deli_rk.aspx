@@ -1335,8 +1335,8 @@
 					<a id='lblCuft_s'> </a></td>
 					<td align="center" style="width:115px;"><a id='lblInvoiceno_s'> </a></td>
 					<td align="center"><a id='lblMemo_s'> </a></td>
-					<td align="center" style="width:150px;"><a id='lblStore_s'> </a></td>
-					<td align="center" style="width:150px;"><a id='lblPlace_s'>儲位</a></td>
+					<td align="center" style="width:100px;"><a id='lblStore_s'> </a></td>
+					<td align="center" style="width:80px;"><a id='lblPlace_s'>儲位</a></td>
 					<td align="center" style="width:130px;"><a id='lblUno2_s'> </a></td>
 				</tr>
 				<tr  style='background:#cad3ff;'>
