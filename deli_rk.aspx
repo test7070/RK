@@ -1336,6 +1336,7 @@
 					<td align="center" style="width:115px;"><a id='lblInvoiceno_s'> </a></td>
 					<td align="center"><a id='lblMemo_s'> </a></td>
 					<td align="center" style="width:150px;"><a id='lblStore_s'> </a></td>
+					<td align="center" style="width:150px;"><a id='lblPlace_s'>儲位</a></td>
 					<td align="center" style="width:130px;"><a id='lblUno2_s'> </a></td>
 				</tr>
 				<tr  style='background:#cad3ff;'>
@@ -1425,6 +1426,7 @@
 						<input  id="txtStore.*" type="text" style="width:95%;" />
 						<input class="btn" id="btnStoreno.*" type="button" style="display:none;"/>
 					</td>
+					<td><input class="txt c1" id="txtPlace.*" type="text"/></td>
 					<td><input class="txt c1" id="txtUno2.*" type="text"  /></td>
 				</tr>
 			</table>
