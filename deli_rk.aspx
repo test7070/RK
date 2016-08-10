@@ -343,7 +343,7 @@
 				
                 $('#lblRc2no').click(function(e) {
                     t_where = " noa='" + $('#txtRc2no').val() + "' ";
-                    q_box("rc2st.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where + ";;;", 'rc2', "95%", "650px", q_getMsg('popRc2'));
+                    q_box("rc2st.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where + ";;;", 'rc2', "95%", "95%", q_getMsg('popRc2'));
                 });
 
                 $('#btnOrdc').click(function() {
