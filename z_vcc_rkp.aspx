@@ -34,13 +34,18 @@
 						type : '6', //[3]     1
 						name : 'noa'
 					},{
-						type : '8', //[4]
-						name : 'showprice',
+						type : '8', //[4]     2 	 
+						name : 'showprice', 
 						value : "1@顯示單價".split(',')
+					},{
+						type : '8', //[5]   標籤用     3
+						name : 'showacomp',
+						value : "1@顯示公司抬頭".split(',')
 					}]
 				});
 				q_popAssign();
-
+				$('#chkShowacomp').children().eq(0).prop('checked',true);
+				
 	            var t_para = new Array();
 	            try{
 	            	t_para = JSON.parse(q_getId()[3]);
@@ -56,7 +61,7 @@
             	$('#btnOk2').click(function(e){
             		switch($('#q_report').data('info').radioIndex) {
                         case 2:
-                        	window.open("./pdf_rklabel02.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
+                        	window.open("./pdf_rklabel02.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db+"&acomp="+($('#chkShowacomp').children().eq(0).prop('checked')?'1':'0'));
                             break;
                         case 3:
                         	window.open("./pdf_rklabel03.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db);

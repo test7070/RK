@@ -4,7 +4,7 @@
         //LC-14-00-04-02
         public class ParaIn
         {
-            public string noa="", noq="";
+            public string noa="", noq="",acomp="";
         }
         
         public class Para
@@ -34,6 +34,10 @@
             if (Request.QueryString["noq"] != null && Request.QueryString["noq"].Length > 0)
             {
                 item.noq = Request.QueryString["noq"];
+            }
+            if (Request.QueryString["acomp"] != null && Request.QueryString["acomp"].Length > 0)
+            {
+                item.acomp = Request.QueryString["acomp"];
             }
             //item.noa = "D1050526007";
             
@@ -239,9 +243,12 @@
 
                     //cb.SetFontAndSize(iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLDOBLIQUE).BaseFont, 25);
                     //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 25, 243, 0);
-                    cb.SetFontAndSize(bfChinese, 15);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "聯琦金屬股份有限公司", 210, 253, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "LIEN CHY Laminated Metal Co., Ltd.", 210, 237, 0);
+                    if (item.acomp == "1")
+                    {
+                        cb.SetFontAndSize(bfChinese, 15);
+                        cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "聯琦金屬股份有限公司", 210, 253, 0);
+                        cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "LIEN CHY Laminated Metal Co., Ltd.", 210, 237, 0);
+                    }
 				
                     cb.SetFontAndSize(bfChinese, 12);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).product, 157, 215, 0);
