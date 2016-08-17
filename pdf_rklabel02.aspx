@@ -213,7 +213,7 @@
                     cb.SetFontAndSize(bfChinese, 8);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "訂單/產品No.", 270, 180, 0);
                     cb.SetFontAndSize(bfChinese, 13);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "浮重N.W.", 270, 145, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "淨重N.W.", 270, 145, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "毛重G.W.", 270, 115, 0);
                     cb.SetFontAndSize(bfChinese, 12);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "數量", 270, 90, 0);
