@@ -73,8 +73,9 @@
 	)
 	insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
 		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
-	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro,a.spec+' / '+a.size
-		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
+	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
+		,a.spec+case when len(a.spec)>0 and len(a.size)>0 then ' / ' else '' end+a.size
+		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
 		,a.uno,a.itemno,e.cname
 		,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
 		,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
@@ -275,7 +276,7 @@
             doc1.Close();
             Response.ContentType = "application/octec-stream;";
             Response.AddHeader("Content-transfer-encoding", "binary");
-            Response.AddHeader("Content-Disposition", "attachment;filename=label" + item.noa + ".pdf");
+            Response.AddHeader("Content-Disposition", "attachment;filename=label2" + item.noa + ".pdf");
             Response.BinaryWrite(stream.ToArray());
             Response.End();
         }

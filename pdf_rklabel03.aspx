@@ -135,7 +135,7 @@
             doc1.Close();
             Response.ContentType = "application/octec-stream;";
             Response.AddHeader("Content-transfer-encoding", "binary");
-            Response.AddHeader("Content-Disposition", "attachment;filename=label" + item.noa + ".pdf");
+            Response.AddHeader("Content-Disposition", "attachment;filename=label3" + item.noa + ".pdf");
             Response.BinaryWrite(stream.ToArray());
             Response.End();
         }

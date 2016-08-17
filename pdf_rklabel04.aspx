@@ -1,6 +1,6 @@
 <%@ Page Language="C#" Debug="true"%>
     <script language="c#" runat="server">     
-        //進貨標籤
+        //入庫標籤
         //LC-14-00-02-01
         public class ParaIn
         {
@@ -10,7 +10,7 @@
         public class Para
         {
             public string accy,noa,noq;
-            public string type,productno,product,size,date,comp,uno,shelflife,unit;
+            public string type,productno,product,size,date,comp,uno,shelflife,unit,memo;
             public float mount, hard;
         }
         
@@ -79,12 +79,13 @@
 		,hard float
 		,uno nvarchar(30)
 		,shelflife nvarchar(20)
+        ,memo nvarchar(max)
 	)
 	
 	insert into @tmp(accy,noa,noq,typea,productno,product,size,mount,unit,datea,tggno,hard,uno
-		,shelflife,dime,width,lengthb,specno,spec)
+		,shelflife,dime,width,lengthb,specno,spec,memo)
 	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.mount,a.unit,b.datea,b.tggno,a.hard,a.uno
-		,a.descr,a.dime,a.width,a.lengthb,a.spec,e.product
+		,a.descr,a.dime,a.width,a.lengthb,a.spec,e.product,a.memo
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on a.productno=c.noa
@@ -102,7 +103,7 @@
 	from @tmp a
 	left join tgg b on a.tggno=b.noa 
 	
-	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife
+	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife,memo
 	 from @tmp order by sel;";
                 System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand(queryString, connSource);
                 cmd.Parameters.AddWithValue("@t_noa", item.noa);
@@ -130,7 +131,7 @@
                 pa.hard = System.DBNull.Value.Equals(r.ItemArray[11]) ? 0 : (float)(System.Double)r.ItemArray[11];
                 pa.uno = System.DBNull.Value.Equals(r.ItemArray[12]) ? "" : (System.String)r.ItemArray[12];
                 pa.shelflife = System.DBNull.Value.Equals(r.ItemArray[13]) ? "" : (System.String)r.ItemArray[13];
-
+                pa.memo = System.DBNull.Value.Equals(r.ItemArray[14]) ? "" : (System.String)r.ItemArray[14];
                 rc2Label.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -215,7 +216,7 @@
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).size, 155, 128, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).mount.ToString() + " " + ((Para)rc2Label[i]).unit, 155, 88, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).date, 155, 48, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "", 155, 18, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).memo, 155, 18, 0);
 
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).comp, 360, 208, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).hard != 0 ? ((Para)rc2Label[i]).hard.ToString() : "", 360, 168, 0);
@@ -236,7 +237,7 @@
             doc1.Close();
             Response.ContentType = "application/octec-stream;";
             Response.AddHeader("Content-transfer-encoding", "binary");
-            Response.AddHeader("Content-Disposition", "attachment;filename=label" + item.noa + ".pdf");
+            Response.AddHeader("Content-Disposition", "attachment;filename=label4" + item.noa + ".pdf");
             Response.BinaryWrite(stream.ToArray());
             Response.End();
         }
