@@ -66,6 +66,9 @@
                         case 3:
                         	window.open("./pdf_rklabel03.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
                             break;
+                        case 4:
+                        	window.open("./pdf_rklabel05.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
+                            break;
                         default:
                            	$('#btnOk').click();
                             break;
