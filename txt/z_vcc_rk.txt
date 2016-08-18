@@ -158,8 +158,7 @@ z_vcc_rk02:--z_vcc_rk02
 	-------------------------------------------------------------------------------
 	update @tmp set recno=b.recno
 	from @tmp a
-	left join (select sel, ROW_NUMBER()over(order by custtype,ccusttype,custno,cust,productno,product,pvcno,pvc,pveno,pve,size,style,price) recno from @tmp ) b on a.sel=b.sel
-	--業種	客戶	品名	皮膜	保護膜	規格 批號	數量	重量	單價	金額 
+	left join (select sel, ROW_NUMBER()over(order by noa,noq) recno from @tmp ) b on a.sel=b.sel
 	
 	insert into @tmp(gno,mount,[weight],[money])
 	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)) from @tmp
