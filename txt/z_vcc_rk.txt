@@ -223,7 +223,6 @@ z_vcc_rk01:--z_vcc_rk01
 		set @t_elengthb = 999999
 	end catch
 	------------------------------------------------------------------
-	--------------------------------------------------------------------
 	declare @bdate date = dbo.ChineseEraName2Ad(@t_bdate)	
 	declare @edate date = dbo.ChineseEraName2Ad(@t_edate)	
 	declare @tmpa table(
@@ -269,13 +268,15 @@ z_vcc_rk01:--z_vcc_rk01
 		,vccno nvarchar(20)
 		,datea nvarchar(10)
 		,typea nvarchar(20)
+		,adpro nvarchar(20)
 		,custpro nvarchar(20)
 		,custno nvarchar(20)
 		,cust nvarchar(50)
 		,[weight] float
 	)
-	insert into @tmpc(vccno,datea,typea,custpro,custno,cust,[weight])
-	select a.noa,b.datea,e.item,isnull(f.product,''),b.custno,b.nick,SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0))
+	insert into @tmpc(vccno,datea,typea,adpro,custpro,custno,cust,[weight])
+	select a.noa,b.datea,e.item,isnull(d.custpro,''),isnull(f.product,''),b.custno,b.nick
+		,SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0))
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join view_orde c on a.ordeno=c.noa
@@ -291,7 +292,7 @@ z_vcc_rk01:--z_vcc_rk01
 	and ISNULL(a.dime,0) between @t_bdime and @t_edime
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	group by a.noa,b.datea,e.item,f.product,b.custno,b.nick
+	group by a.noa,b.datea,e.item,isnull(d.custpro,''),isnull(f.product,''),b.custno,b.nick
 	-------------------------------------------------------------------------------------------
 	declare @tmpd table(
 		sel int identity(1,1)
@@ -303,13 +304,14 @@ z_vcc_rk01:--z_vcc_rk01
 		,vccno nvarchar(20)
 		,datea nvarchar(10)
 		,typea nvarchar(20)
+		,adpro nvarchar(20)
 		,custpro nvarchar(20)
 		,custno nvarchar(20)
 		,cust nvarchar(50)
 		,[weight] float
 	)
-	insert into @tmpd(gno,pno,n,bdate,edate,vccno,datea,typea,custpro,custno,cust,[weight])
-	select '1',1,b.n,b.bdate,b.edate,a.vccno,a.datea,a.typea,a.custpro,a.custno,a.cust,a.[weight]
+	insert into @tmpd(gno,pno,n,bdate,edate,vccno,datea,typea,adpro,custpro,custno,cust,[weight])
+	select '1',1,b.n,b.bdate,b.edate,a.vccno,a.datea,a.typea,a.adpro,a.custpro,a.custno,a.cust,a.[weight]
 	from @tmpc a
 	left join @tmpb b on a.datea between b.bdate and b.edate
 	
@@ -321,31 +323,23 @@ z_vcc_rk01:--z_vcc_rk01
 	
 	declare @maxn int = 0
 	select @maxn=MAX(n) from @tmpd
-	insert into @tmpd(gno,pno,n,custpro,[weight])
-	select '4',4,ROW_NUMBER()over(order by custpro)+@maxn,custpro,SUM(ISNULL([weight],0))
+	insert into @tmpd(gno,pno,n,adpro,custpro,[weight])
+	select '4',4,ROW_NUMBER()over(order by adpro,custpro)+@maxn,adpro,custpro,SUM(ISNULL([weight],0))
 	from @tmpd
-	where gno='1'
-	group by custpro
-	
+	where gno='1' and LEFT(adpro,1) between 'A' and 'D'
+	group by adpro,custpro
+
+	set @maxn =0
 	select @maxn=MAX(n) from @tmpd
-	insert into @tmpd(gno,pno,n,[weight])
-	select '5',5,@maxn+1,SUM(ISNULL([weight],0))
-	from @tmpd 
-	where gno='1'
-	----------------------------------------
-	update @tmpd set gno='2'
-	from @tmpd a
-	left join(select ROW_NUMBER()over(PARTITION by n order by sel) recno,sel from @tmpd) b on a.sel=b.sel
-	where gno='1' and b.recno=1
+	insert into @tmpd(gno,pno,n,custpro,[weight])
+	select '5',5,@maxn+1,'自有貼皮小計：',SUM(ISNULL([weight],0))
+	from @tmpd
+	where gno='1' and LEFT(adpro,1) between 'A' and 'D'
 	
-	select gno
-		,'第'+CAST(n as nvarchar)+'週('+RIGHT(bdate,5)+'~'+RIGHT(edate,5)+')' a01
-		,vccno a02
-		,right(datea,5) a03
-		,typea a04
-		,custpro a05
-		,cust a06
-		,dbo.getComma([weight],-1) a07
-		,'' a08
-	from @tmpd 
-	order by n,pno,sel;
+	set @maxn =0
+	select @maxn=MAX(n) from @tmpd
+	insert into @tmpd(gno,pno,n,adpro,custpro,[weight])
+	select '4',4,ROW_NUMBER()over(order by adpro,custpro)+@maxn,adpro,custpro,SUM(ISNULL([weight],0))
+	from @tmpd
+	where gno='1'and not LEFT(adpro,1) between 'A' and 'D' 
+	group by adpro,custpro;
