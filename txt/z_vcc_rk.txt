@@ -222,7 +222,7 @@ z_vcc_rk01:--z_vcc_rk01
 		set @t_blengthb = 0
 		set @t_elengthb = 999999
 	end catch
-	------------------------------------------------------------------
+	--------------------------------------------------------------------
 	declare @bdate date = dbo.ChineseEraName2Ad(@t_bdate)	
 	declare @edate date = dbo.ChineseEraName2Ad(@t_edate)	
 	declare @tmpa table(
@@ -332,7 +332,7 @@ z_vcc_rk01:--z_vcc_rk01
 	set @maxn =0
 	select @maxn=MAX(n) from @tmpd
 	insert into @tmpd(gno,pno,n,custpro,[weight])
-	select '5',5,@maxn+1,'自有貼皮小計：',SUM(ISNULL([weight],0))
+	select '5',5,@maxn+1,'自有貼皮',SUM(ISNULL([weight],0))
 	from @tmpd
 	where gno='1' and LEFT(adpro,1) between 'A' and 'D'
 	
@@ -342,4 +342,28 @@ z_vcc_rk01:--z_vcc_rk01
 	select '4',4,ROW_NUMBER()over(order by adpro,custpro)+@maxn,adpro,custpro,SUM(ISNULL([weight],0))
 	from @tmpd
 	where gno='1'and not LEFT(adpro,1) between 'A' and 'D' 
-	group by adpro,custpro;
+	group by adpro,custpro
+	
+	
+	select @maxn=MAX(n) from @tmpd
+	insert into @tmpd(gno,pno,n,[weight])
+	select '6',6,@maxn+1,SUM(ISNULL([weight],0))
+	from @tmpd 
+	where gno='1'
+	----------------------------------------
+	update @tmpd set gno='2'
+	from @tmpd a
+	left join(select ROW_NUMBER()over(PARTITION by n order by sel) recno,sel from @tmpd) b on a.sel=b.sel
+	where gno='1' and b.recno=1
+	
+	select gno
+		,'第'+CAST(n as nvarchar)+'週('+RIGHT(bdate,5)+'~'+RIGHT(edate,5)+')' a01
+		,vccno a02
+		,right(datea,5) a03
+		,typea a04
+		,custpro a05
+		,cust a06
+		,dbo.getComma([weight],-1) a07
+		,'' a08
+	from @tmpd 
+	order by n,pno,sel;
