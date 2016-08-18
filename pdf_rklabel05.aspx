@@ -12,7 +12,7 @@
             public string accy,noa,noq;
             public string productno,product,engpro,typea,spec,uno,pallet,makeno,pdate,custno,cust,ordeno,ordenoq;
             public float nweight,gweight,mount;
-            public string unit,datea,ordepo,po,pn,indate,pvcno;
+            public string unit,datea,ordepo,po,pn,indate,pvcno,memo;
         }
         
         System.IO.MemoryStream stream = new System.IO.MemoryStream();
@@ -73,9 +73,10 @@
 		,pn nvarchar(max)
 		,indate nvarchar(20)
         ,pvcno nvarchar(20)
+        ,memo nvarchar(max)
 	)
 	insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
-		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo,pvcno)
+		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo,pvcno,memo)
 	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
 		,a.spec+case when len(a.spec)>0 and len(a.size)>0 then ' / ' else '' end+a.size
 		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
@@ -83,7 +84,7 @@
 		,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
 		,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
 		,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
-		,d.memo,a.spec
+		,d.memo,a.spec,a.memo
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on a.productno=c.noa
@@ -143,6 +144,7 @@
                 pa.pn = System.DBNull.Value.Equals(r.ItemArray[24]) ? "" : (System.String)r.ItemArray[24];
                 pa.indate = System.DBNull.Value.Equals(r.ItemArray[25]) ? "" : (System.String)r.ItemArray[25];
                 pa.pvcno = System.DBNull.Value.Equals(r.ItemArray[26]) ? "" : (System.String)r.ItemArray[26];
+                pa.memo = System.DBNull.Value.Equals(r.ItemArray[27]) ? "" : (System.String)r.ItemArray[27];
                 vccLabel.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -181,9 +183,9 @@
                     
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "ALPHCAST", 30, 330, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LAEM CHABANG", 30, 300, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "PO：" + ((Para)vccLabel[i]).po, 30, 270, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "PO：" + ((Para)vccLabel[i]).memo, 30, 270, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "ITEM：" + ((Para)vccLabel[i]).engpro, 30, 240, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "QTY：" + ((Para)vccLabel[i]).mount.ToString(), 30, 210, 0);//???????????
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "QTY：" + ((Para)vccLabel[i]).mount.ToString() + "  片", 30, 210, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "MADE IN TAIWAN", 30, 180, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "R.O.C", 30, 150, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "C/NO："+ (i+1).ToString(), 30, 120, 0);
@@ -195,7 +197,7 @@
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "KGS", 165, 60, 0);
                     
                     cb.SetFontAndSize(bfChinese, 14);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "", 300, 215, 0);//?????????????????????
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)vccLabel[i]).pn, 300, 215, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)vccLabel[i]).pvcno, 300, 195, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "棧板：" + ((Para)vccLabel[i]).pallet, 400, 195, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)vccLabel[i]).spec, 300, 175, 0);
