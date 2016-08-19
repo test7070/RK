@@ -61,7 +61,7 @@
 
 			function mainPost() {
 				q_getFormat();
-				document.title = '生產作業';
+				document.title = '生產物料耗用';
 				bbmMask = [['txtDatea', r_picd]];
 				q_mask(bbmMask);
 				q_cmbParse("cmbCustno", '1@皮膜,2@保護膜,3@物料','s');
