@@ -109,21 +109,30 @@ z_ordc_rkp01:--z_ordc_rkp01
 	begin
 		set @memo1 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
 		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
-	end
-	if(CHARINDEX('chr(10)',@memo)>0)
-	begin
-		set  @memo2 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
-		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
-	end
-	if(CHARINDEX('chr(10)',@memo)>0)
-	begin
-		set @memo3 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
-		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+		if(CHARINDEX('chr(10)',@memo)>0)
+		begin
+			set  @memo2 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
+			set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+			if(CHARINDEX('chr(10)',@memo)>0)
+			begin
+				set @memo3 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
+				set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+			end
+			else
+			begin
+				set @memo3 = @memo
+			end
+		end
+		else
+		begin
+			set @memo2 = @memo
+		end
 	end
 	else
 	begin
-		set @memo3 = @memo
+		set @memo1 = @memo
 	end
+	
 	
 	insert into @tmp(gno,pno)values('4',4)
 	insert into @tmp(gno,pno,memo)values('5',5,@memo1)
