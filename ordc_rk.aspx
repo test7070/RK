@@ -245,8 +245,9 @@
 						return;
 					var t_ordcno = $('#txtNoa').val();
 					var t_tggno = $('#txtTggno').val();
+					var t_kind = $('#cmbKind').val();
                 	var t_where ='';
-                	q_box("ordb_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({ordcno:t_ordcno,tggno:t_tggno,page:'ordc_rk'}), "ordb_ordc", "95%", "95%", '');
+                	q_box("ordb_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({ordcno:t_ordcno,kind:t_kind,tggno:t_tggno,page:'ordc_rk'}), "ordb_ordc", "95%", "95%", '');
 				});
 				
 				

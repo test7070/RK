@@ -35,7 +35,7 @@
                 var t_para = new Array();
                 try {
                     t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-                    t_content = "where=^^['"+t_para.ordcno+"','"+t_para.tggno+"','"+t_para.page+"')^^";
+                    t_content = "where=^^['"+t_para.ordcno+"','"+t_para.tggno+"','"+t_para.kind+"','"+t_para.page+"')^^";
                 } catch(e) {
                 }
                 brwCount = -1;
