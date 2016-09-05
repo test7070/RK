@@ -294,6 +294,7 @@
 		                			$('#txtFax').val(as[0].fax);
 		                			$('#txtTel').val(as[0].tel);
 		                			$('#txtMemo').val(as[0].memo.replace('chr(10)','\n'));
+		                			$('#txtComp').val(as[0].comp);
 		                		}
                     			sum();
                     		}

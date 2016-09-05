@@ -661,6 +661,10 @@
 							<input id="chkIsproj" type="checkbox"/>
 							<span> </span><a id='lblIsproj'> </a>
 						</td>
+						<td>
+							<input id="chkCancel" type="checkbox"/>
+							<span> </span><a id='lblCancel'> </a>
+						</td>
 					</tr>
 				</table>
 			</div>
