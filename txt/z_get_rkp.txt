@@ -47,7 +47,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 		,dime,radius,width,lengthb,size
 		,checker,itemno,memo
 		,lengthc,mount,[weight])	
-	select '1','1',a.accy,a.noa,'',b.datea
+	select '1','1',a.accy,a.noa,a.noq,b.datea
 		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea
 		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
@@ -64,7 +64,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	and (len(@t_noa)=0 or a.noa=@t_noa)
 	and charindex('運費',a.product)=0
 	and charindex('包裝',a.product)=0
-	group by  a.accy,a.noa,b.datea
+	group by  a.accy,a.noa,a.noq,b.datea
 		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea
 		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size,a.memo
