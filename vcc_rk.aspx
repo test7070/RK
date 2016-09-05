@@ -37,7 +37,7 @@
 			brwKey = 'noa';
 			//ajaxPath = "";
 			aPop = new Array(
-				['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,tel,zip_fact,addr_fact,paytype', 'txtCustno,txtComp,txtNick,txtTel,txtPost,txtAddr,txtPaytype', 'cust_b.aspx']
+				['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,tel,fax,zip_fact,addr_fact,paytype', 'txtCustno,txtComp,txtNick,txtTel,txtFax,txtPost,txtAddr,txtPaytype', 'cust_b.aspx']
 				,['txtSalesno', 'lblSales', 'sss', 'noa,namea', 'txtSalesno,txtSales', 'sss_b.aspx']
 				,['txtCno', 'lblAcomp', 'acomp', 'noa,acomp', 'txtCno,txtAcomp', 'acomp_b.aspx']
 				,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
@@ -863,6 +863,10 @@
 							<input id="txtSalesno" type="text" style="float:left;width:50%;"/>
 							<input id="txtSales" type="text" style="float:left;width:50%;"/>
 						</td>
+					</tr>
+					<tr>
+						<td><span> </span><a id='lblFax' class="lbl"> </a></td>
+						<td colspan="4"><input id="txtFax" type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id='lblAddr' class="lbl"> </a></td>
