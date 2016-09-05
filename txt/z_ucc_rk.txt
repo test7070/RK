@@ -247,7 +247,7 @@ z_ucc_rk02:--z_ucc_rk02
 		,ordeno2 nvarchar(20)
 		,[contract] nvarchar(max)--合約編號
 		,custno nvarchar(20)--客戶名稱
-		,cust nvarchar(30)
+		,cust nvarchar(100)
 		,storeno nvarchar(20)
 		,store nvarchar(20)
 		,place nvarchar(20)

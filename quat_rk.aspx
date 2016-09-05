@@ -64,8 +64,11 @@
                 bbmMask = [['txtDatea', r_picd]];
                 bbsMask = [];
                 q_mask(bbmMask);
-                q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
+                
                 q_cmbParse("cmbSpec", t_spec,'s');
+                //q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
+                var t_paytype = "出貨前T/T (依實際出貨數量計價),出貨時收現金或當日現金票 (依實際出貨數量計價),合約簽訂後3天內T/T50%訂金，尾款於出貨前T/T  付款備註帶入->(依實際出貨數量計價),月結30天 付款備註帶入->(每月25日以後出的貨，視同當月之貨款並計算請款，依出貨實際數量計價),月結40天 付款備註帶入->(每月25日以後出的貨，視同當月之貨款並計算請款，依出貨實際數量計價)";
+				q_cmbParse("combPaytype", t_paytype);
                 
                 $('#txtPaytype').change(function(e){
                 	if($('#txtPaytype').val().indexOf('月結')>=0){
