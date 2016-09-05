@@ -297,12 +297,16 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,dime,radius,width,lengthb,size
 		,checker,itemno,memo,ordememo
 		,lengthc,mount,[weight])	
-	select '1','1',a.accy,a.noa,'',b.datea
+	select '1','1',accy,noa,'',datea,custno,comp,nick,tel,fax,conn,ordeno,no2
+		,productno,product,style,spec,class,dime,radius,width,lengthb,size
+		,checker,'' itemno,memo,ordememo,lengthc,sum(isnull(mount,0)),sum(isnull([weight],0))
+	from(
+	select a.accy,a.noa,b.datea
 		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
 		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
-		,a.checker,a.itemno,a.memo,c.memo
-		,sum(isnull(a.lengthc,0)),sum(isnull(a.mount,0)),sum(isnull(a.[weight],0))
+		,a.checker,a.itemno,a.memo,c.memo ordememo
+		,sum(isnull(a.lengthc,0)) lengthc,sum(isnull(a.mount,0)) mount,sum(isnull(a.[weight],0)) [weight]
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa 
 	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
@@ -316,7 +320,10 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
 		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
-		,a.checker,a.itemno,a.memo,c.memo
+		,a.checker,a.itemno,a.memo,c.memo) a
+	group by accy,noa,datea,custno,comp,nick,tel,fax,conn,ordeno,no2
+		,productno,product,style,spec,class,dime,radius,width,lengthb,size
+		,checker,memo,ordememo,lengthc,mount,[weight]
 	
 	update @tmp set po=LEFT(ordememo,CHARINDEX('chr(10)',ordememo)-1) where CHARINDEX('chr(10)',ordememo)>0
 	update @tmp set pn=right(ordememo,len(ordememo)-len(isnull(po,''))-7 ) where CHARINDEX('chr(10)',ordememo)>0
@@ -326,7 +333,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	from @tmp a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	
-	update @tmp set size=case when len(isnull(style,''))>0 then style+' ' else '' end
+	update @tmp set size=ISNULL(size,'')+' '+case when len(isnull(style,''))>0 then style+' ' else '' end
 			+dbo.getComma(dime,-1)
 			+case when ISNULL(radius,0)!=0 then '+'+cast(radius as nvarchar) else '' end
 			+case when ISNULL(width,0)!=0 then '*'+cast(width as nvarchar) else '' end
