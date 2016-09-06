@@ -79,6 +79,15 @@
 				//,退料單  移除,  不然還得增加入庫倉庫&儲位
 				q_cmbParse("cmbTypea", '領料單,加寄庫出貨,退料');
 				q_cmbParse("cmbSpec", t_spec,'s');
+				
+				$('#btnImport').click(function() {
+					if(!(q_cur==1 || q_cur==2))
+						return;
+					var t_noa = $('#txtNoa').val();
+                	var t_custno = $('#txtCustno').val();
+                	var t_where ='';
+                	q_box("get_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({noa:t_noa,custno:t_custno}), "get_rk", "95%", "95%", '');
+				});
 			}
 			
 			function q_popPost(s1) {
@@ -92,6 +101,18 @@
 			function q_boxClose(s2) {
 				var ret;
 				switch (b_pop) {
+					case 'get_rk':
+                        if (b_ret != null) {
+                        	as = b_ret;
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtUno,txtProductno,txtProduct,txtUnit,txtLengthc,txtWeight,txtMemo,txtOrdeno,txtNo2'
+                        	, as.length, as, 'uno,productno,product,unit,lengthc,eweight,memo,ordeno,no2', 'txtOrdeno','');             	
+                        	//訂單資料
+                        	var t_ordeno = $('#txtOrdeno_0').length>0?$('#txtOrdeno_0').val():'';
+                    		q_gt('view_orde', "where=^^ noa='"+t_ordeno+"' ^^", 0, 0, 0, JSON.stringify({action:'importOrde'}));
+                        }else{
+                        	Unlock(1);
+                        }
+                        break;
 					case q_name + '_s':
 						q_boxClose2(s2);
 						break;
@@ -297,6 +318,13 @@
 
 			function readonly(t_para, empty) {
 				_readonly(t_para, empty);
+				if(t_para){
+					$('#txtDatea').datepicker('destroy');
+					$('#btnImport').attr('disabled','disabled');
+				}else{
+					$('#txtDatea').datepicker();
+					$('#btnImport').removeAttr('disabled');
+				}
 			}
 
 			function btnMinus(id) {
@@ -562,6 +590,8 @@
 						<td><input id="txtWorker" type="text" class="txt c1"/></td>
 						<td><span> </span><a id="lblWorker2" class="lbl"> </a></td>
 						<td><input id="txtWorker2" type="text" class="txt c1"/></td>
+						<td> </td>
+						<td><input type="button" id="btnImport" value="寄庫品匯入"/></td>
 					</tr>
 					<tr> </tr>
 				</table>
@@ -576,10 +606,11 @@
 					<td align="center" style="width:150px;">品名</td>
 					<td align="center" style="width:200px;">規格</td>
 					<td align="center" style="width:50px;">單位</td>
+					<td align="center" style="width:50px;">件數</td>
 					<td align="center" style="width:80px;">數量<BR>重量</td>
 					<td align="center" style="display:none;">實際<BR>數量<BR>重量/M</td>
 					<td align="center" style="width:200px;">備註</td>
-					
+					<td align="center" style="width:120px;">訂單編號</td>
 				</tr>
 				<tr  style='background:#cad3ff;'>
                     <td align="center">
@@ -589,12 +620,13 @@
                     <td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
 					<td><input class="txt" id="txtUno.*" type="text" style="width:95%;"/></td>
 					<td>
-						<input id="txtProductno.*" type="text" style="width:45%"/>
-						<input id="txtProduct.*" type="text" style="width:45%"/>
+						<input id="txtProductno.*" type="text" style="float:left;width:30%"/>
+						<input id="txtProduct.*" type="text" style="float:left;width:60%"/>
 						<input id="btnProduct.*" type="button" style="display:none;"/>
 					</td>
 					<td><select id="cmbSpec.*" style="width:95%;"> </select></td>
 					<td><input class="txt" id="txtUnit.*" type="text"  style="width:95%;"/></td>
+					<td><input class="txt num" id="txtLengthc.*" type="text" style="width:95%;"/></td>
 					<td>
 						<input class="txt num" id="txtMount.*" type="text" style="width:95%;"/>
 						<input class="txt num" id="txtWeight.*" type="text" style="width:95%;"/>
@@ -608,7 +640,10 @@
 					<td>
 						<input class="txt" id="txtMemo.*" type="text" style="width:95%;"/>
 					</td>
-					
+					<td>
+						<input id="txtOrdeno.*" type="text" style="float:left;width:65%"/>
+						<input id="txtNo2.*" type="text" style="float:left;width:25%"/>
+					</td>
 				</tr>
 			</table>
 		</div>

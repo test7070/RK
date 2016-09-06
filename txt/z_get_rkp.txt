@@ -42,13 +42,13 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	)
 
 	insert into @tmp(pno,gno,accy,noa,noq,datea
-		,custno,comp,nick,tel,fax,conn
+		,custno,comp,nick,tel,fax,conn,addr
 		,ordeno,no2,productno,product,style,spec,class
 		,dime,radius,width,lengthb,size
 		,checker,itemno,memo
 		,lengthc,mount,[weight])	
 	select '1','1',a.accy,a.noa,a.noq,b.datea
-		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea
+		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea,b.addr
 		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
 		,'','',a.memo
@@ -65,13 +65,14 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	and charindex('運費',a.product)=0
 	and charindex('包裝',a.product)=0
 	group by  a.accy,a.noa,a.noq,b.datea
-		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea
+		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea,b.addr
 		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size,a.memo
 	
-	update @tmp set addr = case when len(isnull(b.addr2,''))>0 then b.addr2 else b.addr end
-	from @tmp a
-	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	--20160906 不確定領料和出貨的關係
+	--update @tmp set addr = case when len(isnull(b.addr2,''))>0 then b.addr2 else b.addr end
+	--from @tmp a
+	--left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	
 	update @tmp set size=case when len(isnull(style,''))>0 then style+' ' else '' end
 			+dbo.getComma(dime,-1)
