@@ -81,10 +81,10 @@
 		,shelflife nvarchar(20)
         ,memo nvarchar(max)
 	)
-	
+	--驗收單廠商及標籤供應商欄位要抓客戶名稱
 	insert into @tmp(accy,noa,noq,typea,productno,product,size,mount,unit,datea,tggno,hard,uno
 		,shelflife,dime,width,lengthb,specno,spec,memo)
-	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.mount,a.unit,b.datea,b.tggno,a.hard,a.uno
+	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.[weight],a.unit,b.datea,b.custno,a.hard,a.uno
 		,a.descr,a.dime,a.width,a.lengthb,a.spec,e.product,a.memo
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
@@ -101,7 +101,7 @@
 	
 	update @tmp set tgg =b.nick
 	from @tmp a
-	left join tgg b on a.tggno=b.noa 
+	left join cust b on a.tggno=b.noa 
 	
 	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife,memo
 	 from @tmp order by sel;";

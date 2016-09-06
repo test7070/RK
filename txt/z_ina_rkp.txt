@@ -34,11 +34,11 @@ z_ina_rkp02:--z_ina_rkp02   ref.z_rc2_rkp01
 		,unit nvarchar(20)
 		,memo nvarchar(max)
 	)	
-	
+	--驗收單廠商及標籤供應商欄位要抓"客戶"名稱
 	insert into @tmp(gno,pno,datea,rc2no,ordcno,tggno,tgg,nick
 		,noq,kind,typea,productno,product,uno,size,[weight],unit,memo
 		,dime,width,lengthb,radius,spec,cspec)
-	select '1','1',a.datea,a.noa,'',a.tggno,f.comp,f.nick
+	select '1','1',a.datea,a.noa,'',a.custno,f.comp,f.nick
 		,b.noq,a.kind,d.item,b.productno,c.product,isnull(b.uno,''),b.size,b.[weight],b.unit,b.memo
 		,b.dime,b.width,b.lengthb,b.radius,b.spec,ISNULL(e.product,'')
 	from view_ina a
@@ -46,7 +46,7 @@ z_ina_rkp02:--z_ina_rkp02   ref.z_rc2_rkp01
 	left join ucc c on b.productno=c.noa
 	left join dbo.fnSplit(@t_stktype) d on a.kind = d.n
 	left join spec e on b.spec=e.noa
-	left join tgg f on a.tggno=f.noa
+	left join cust f on a.custno=f.noa
 	where a.noa=@t_noa
 	
 	update @tmp set size = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
@@ -187,7 +187,7 @@ z_ina_rkp02:--z_ina_rkp02   ref.z_rc2_rkp01
 		,ordcno a04
 		
 		,typea b01
-		,productno+product b02
+		,product b02
 		,uno b03
 		,size b04
 		,[weight] b05
