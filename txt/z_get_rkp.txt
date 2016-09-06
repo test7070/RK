@@ -21,6 +21,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 		addr nvarchar(max),
 		conn nvarchar(20),
 		
+		uno nvarchar(30),
 		ordeno nvarchar(20),
 		no2 nvarchar(10),
 		productno nvarchar(20),
@@ -39,20 +40,22 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 		[weight] float,
 		itemno nvarchar(20),
 		memo nvarchar(max)
+		,ucolor nvarchar(20)
+		,rackno nvarchar(20)
 	)
 
 	insert into @tmp(pno,gno,accy,noa,noq,datea
 		,custno,comp,nick,tel,fax,conn,addr
-		,ordeno,no2,productno,product,style,spec,class
+		,uno,productno,product,style,spec,class
 		,dime,radius,width,lengthb,size
 		,checker,itemno,memo
 		,lengthc,mount,[weight])	
 	select '1','1',a.accy,a.noa,a.noq,b.datea
 		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea,b.addr
-		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
+		,a.uno,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
 		,'','',a.memo
-		,null,sum(isnull(a.mount,0)),sum(isnull(a.[weight],0))
+		,null,isnull(a.mount,0),isnull(a.[weight],0)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa 
 	left join cust c on b.custno=c.noa
@@ -64,27 +67,26 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	and (len(@t_noa)=0 or a.noa=@t_noa)
 	and charindex('運費',a.product)=0
 	and charindex('包裝',a.product)=0
-	group by  a.accy,a.noa,a.noq,b.datea
-		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea,b.addr
-		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
-		,a.dime,a.radius,a.width,a.lengthb,a.size,a.memo
-	
-	--20160906 不確定領料和出貨的關係
-	--update @tmp set addr = case when len(isnull(b.addr2,''))>0 then b.addr2 else b.addr end
-	--from @tmp a
-	--left join view_vcc b on a.accy=b.accy and a.noa=b.noa
-	
+	order by a.noa,a.noq
+
+	update @tmp set ordeno=c.ordeno,no2=c.no2,ucolor=c.ucolor,rackno=c.rackno
+	from @tmp a
+	left join view_inas b on a.uno=b.uno
+	left join view_vccs c on b.noa=c.noa and b.noq=c.noq
+	where c.noa is not null
+
 	update @tmp set size=case when len(isnull(style,''))>0 then style+' ' else '' end
 			+dbo.getComma(dime,-1)
 			+case when ISNULL(radius,0)!=0 then '+'+cast(radius as nvarchar) else '' end
 			+case when ISNULL(width,0)!=0 then '*'+cast(width as nvarchar) else '' end
 			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '*COIL' end 
-	
-	insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
-	select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
-	from @tmp
-	where gno='1'
-	group by productno,spec,size
+			+case when len(ucolor)>0 then ' '+ucolor else '' end
+			+case when len(rackno)>0 then ' '+rackno else '' end
+	--insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
+	--select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
+	--from @tmp
+	--where gno='1'
+	--group by productno,spec,size
 	
 	insert into @tmp(pno,gno,lengthc,mount,[weight])
 	select '3','3',SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
@@ -157,7 +159,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ordeno+'-'+no2 +'</a>' a01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product +'</a>' a02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec +'</a>' a03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+' '+size +'</a>' a04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+size +'</a>' a04
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+checker +'</a>' a05
 		,case when lengthc=0 then '' else  dbo.getComma(lengthc,0) end a06
 		,dbo.getComma(mount,0) a07
