@@ -17,16 +17,27 @@
 		<script type="text/javascript">
 			var t_ucc='';
 			var t_style='';
+			var t_adpro='';
 			$(document).ready(function() {
 				_q_boxClose();
 				q_getId();
 				q_gf('', 'z_orde_rk');
 			});
 			function q_gfPost() {
-				q_gt('ucc', '', 0, 0, 0, "");				
+				q_gt('adpro', '', 0, 0, 0, '');
+								
 			}
 			function q_gtPost(t_name) {
 				switch (t_name) {
+					case 'adpro':
+						var as = _q_appendData("adpro", "", true);
+						t_adpro='';
+						for ( i = as.length-1; i >=0; i--) {
+							t_adpro+=','+as[i].noa+'@'+as[i].product;
+						}
+						if(t_adpro.length==0) t_adpro=' ';
+						q_gt('ucc', '', 0, 0, 0, "");
+						break;
 					case 'ucc':
 						t_ucc = ' @';
 						var as = _q_appendData("ucc", "", true);
@@ -79,9 +90,9 @@
 						name : 'xstype',
 						value : [q_getPara('report.all')].concat(q_getPara('orde.stype').split(','))
 					}, {
-						type : '5', //[12]  7
-						name : 'xtran',
-						value : [q_getPara('report.all')].concat(q_getPara('sys.tran').split(','))
+						type : '5', //[11]  6
+						name : 'xcustpro',
+						value : [q_getPara('report.all')].concat(t_adpro.split(','))
 					}, {
 						type : '5', //[13]  8
 						name : 'xcancel',
@@ -102,33 +113,6 @@
 					}, {
 						type : '1', //[24][25]   15
 						name : 'xlengthb'
-					}
-					
-					
-					, {
-						type : '5', //[16]  10
-						name : 'xsortby',
-						value : 'custno@依客戶,sizea@依尺寸,dime@依厚度'.split(',')
-					}, {
-						type : '5', //[17]  11
-						name : 'xstktype',
-						value : [q_getPara('report.all')].concat(q_getPara('sys.stktype').split(','))
-					}, {
-                        type : '1', //[26][27]  16
-                        name : 'yradius'
-                    }, {
-                        type : '1', //[28][29]   18
-                        name : 'ydime'
-                    }, {
-                        type : '1', //[30][31]  17
-                        name : 'ywidth'
-                    }, {
-                        type : '1', //[32][33]   19
-                        name : 'ylengthb'
-                    }, {
-						type : '5', //[36] 22
-						name : 'xstyle',
-						value : t_style.split('&')
 					}]
 				});
 				q_popAssign();
@@ -149,11 +133,7 @@
 				$('#txtXodate2').mask('999/99/99');
 				$('#txtXodate2').datepicker();
 				$('#Xstktype select').val('').change();
-				setDefaultValue();
-				size_change();
-				$('#Xstktype select').change(function() {
-					size_change();
-				});
+				
 				$('#Xbproduct3 select').change(function(e){
 					$('#Xeproduct3 select').val($('#Xbproduct3 select').val());
 				});
@@ -161,115 +141,8 @@
 				if (t_key[1] != undefined)
 					$('#txtXnoa').val(t_key[1]);
 				
-				if(q_getPara('sys.project').toUpperCase()=='PK'){
-					$('#q_report').find('span.radio').eq(6).click();
-				}else{
-					$('#q_report div div').eq(6).hide();
-				}
 			}
 			
-			function setDefaultValue() {
-				$('#txtXradius1').val(0).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(0);
-				});
-				$('#txtXradius2').val(9999.99).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(9999.99);
-				});
-				$('#txtXwidth1').val(0).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(0);
-				});
-				$('#txtXwidth2').val(9999.99).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(9999.99);
-				});
-				$('#txtXdime1').val(0).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(0);
-				});
-				$('#txtXdime2').val(9999.99).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(9999.99);
-				});
-				$('#txtXlengthb1').val(0).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(0);
-				});
-				$('#txtXlengthb2').val(99999.9).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(99999.9);
-				});
-				$('#txtYwidth1').val(0).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(0);
-				});
-				$('#txtYwidth2').val(9999.99).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(9999.99);
-				});
-				$('#txtYdime1').val(0).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(0);
-				});
-				$('#txtYdime2').val(9999.99).addClass('num').focusout(function() {
-					$(this).val(dec($(this).val()));
-					if ($(this).val() == 'NaN')
-						$(this).val(9999.99);
-				});
-			}
-
-			function size_change() {
-				var SelectedVal = $('#Xstktype select').val().toUpperCase();
-				if (!($('#Xstktype').is(":hidden"))) {
-					switch (SelectedVal.substring(0,1)) {
-						case 'A':
-							$('#Xradius').hide();
-							$('#Xwidth').show();
-							$('#lblXwidth').text('厚度');
-							$('#lblXdime').text('寬度');
-							$('#Xdime').show();
-							$('#Xlengthb').show();
-							break;
-						case 'B':
-							$('#Xradius').show();
-							$('#Xwidth').show();
-							$('#lblXwidth').text('長徑');
-							$('#lblXdime').text('厚度');
-							$('#Xdime').show();
-							$('#Xlengthb').show();
-							break;
-						case 'C':
-							$('#Xradius').hide();
-							$('#Xwidth').hide();
-							$('#Xdime').hide();
-							$('#Xlengthb').show();
-							break;
-						default:
-							$('#Xradius').show();
-							$('#Xwidth').show();
-							$('#lblXwidth').text('長徑');
-							$('#lblXdime').text('厚度');
-							$('#Xdime').show();
-							$('#Xlengthb').show();
-							break;
-					}
-					setDefaultValue();
-					$('#Xitype .cmb').change();
-				}
-			}
 
 			function q_boxClose(s2) {
 			}
