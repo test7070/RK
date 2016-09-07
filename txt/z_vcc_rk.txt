@@ -121,19 +121,32 @@ z_vcc_rk02:--z_vcc_rk02
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(10)
 		,uno nvarchar(30)
+		,invono nvarchar(max)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,mweight float
+		,coin nvarchar(20)
+		,[money2] float
+		,tax float
+		,total float
+		,itemno nvarchar(20)
 	)
 
 	insert into @tmp(gno,accy,noa,noq,custno,cust,custtype,ccusttype
 		,datea,productno,product
 		,style,spec,cspec,size
 		,pvcno,pvc,pveno,pve
-		,lengthc,mount,[weight],unit,price,[money],ordeno,ordeno2,uno)
+		,lengthc,mount,[weight],unit,price,[money],ordeno,ordeno2,uno
+		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno)
 	select '1',a.accy,a.noa,a.noq,b.custno,c.nick,c.stype,isnull(f.product,'')
 		,b.datea,a.productno,a.product
 		,isnull(a.style,''),null,null
 		,case when len(ISNULL(a.size,''))>0 then a.size else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*' + case when ISNULL(a.lengthb,0)>0 then CAST(a.lengthb as nvarchar) else 'COIL' end end
 		,a.spec,a.[class],null,a.rackno
 		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2,a.uno
+		,b.invono,a.dime,a.radius,a.width,a.lengthb,a.mweight,b.coin,0,0,0,a.itemno
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join view_orde c on a.ordeno=c.noa
@@ -175,6 +188,35 @@ z_vcc_rk02:--z_vcc_rk02
 		,dbo.getComma([weight],-1) a09
 		,dbo.getComma(price,-1) a10
 		,dbo.getComma([money],-1) a11
+		
+		,datea a01--出貨日	
+		,uno a02--批號	
+		,invono a03--發票號碼	
+		,custtype a04--業種	
+		,cust a05--客戶	
+		,product a06--品名	
+		,pvcno a07--皮膜編號	
+		,pvc a08--皮膜名稱	
+		,pveno a09--保護膜編號	
+		,pve a10--保護膜名稱	
+		,dime a11--厚	
+		,radius a12--皮膜厚	
+		,width a13--寬	
+		,lengthb a14--長	
+		,cspec a15--規格	
+		,'' a16--包裝單位	
+		,'' a17--Packing NO.	
+		,lengthc a18--件數	
+		,dbo.getComma(mount,-1) a19--數量	
+		,dbo.getComma([weight],-1) a20--重量	
+		,dbo.getComma([mweight],-1) a21--毛重	
+		,price a22--單價	
+		,coin a23--幣別	
+		,dbo.getComma([money],-1) a24--原幣金額	
+		,dbo.getComma([money2],-1) a25--銷售額	
+		,dbo.getComma([tax],-1) a26--稅額	
+		,dbo.getComma([total],-1) a27--總計金額	
+		,itemno a28--棧板序號
 	from @tmp order by gno,recno;
 
 z_vcc_rk01:--z_vcc_rk01 
