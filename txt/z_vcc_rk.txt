@@ -89,7 +89,6 @@ z_vcc_rk02:--z_vcc_rk02
 		set @t_elengthb = 999999
 	end catch
 	------------------------------------------------------------------
-	------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -105,7 +104,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,productno nvarchar(30)
 		,product nvarchar(50)
 		,style nvarchar(20) --底材
-		,spec nvarchar(20) --訂單規程
+		,spec nvarchar(20) --訂單規格
 		,cspec nvarchar(30)
 		,size nvarchar(max)
 		,pvcno nvarchar(20)
@@ -142,7 +141,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno)
 	select '1',a.accy,a.noa,a.noq,b.custno,c.nick,c.stype,isnull(f.product,'')
 		,b.datea,a.productno,a.product
-		,isnull(a.style,''),null,null
+		,isnull(a.style,''),d.spec,null
 		,case when len(ISNULL(a.size,''))>0 then a.size else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*' + case when ISNULL(a.lengthb,0)>0 then CAST(a.lengthb as nvarchar) else 'COIL' end end
 		,a.spec,a.[class],null,a.rackno
 		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2,a.uno
@@ -163,11 +162,10 @@ z_vcc_rk02:--z_vcc_rk02
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
 	
-	update @tmp set spec=b.spec,cspec=c.product
+	update @tmp set cspec=b.product
 	from @tmp a
-	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
-	left join spec c on b.spec=c.noa
-	where b.noa is null
+	left join spec b on a.spec=b.noa
+	where b.noa is not null
 	-------------------------------------------------------------------------------
 	update @tmp set recno=b.recno
 	from @tmp a
