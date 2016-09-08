@@ -131,6 +131,8 @@ z_vcc_rk02:--z_vcc_rk02
 		,tax float
 		,total float
 		,itemno nvarchar(20)
+		,packingno int
+		,memo nvarchar(max)
 	)
 
 	insert into @tmp(gno,accy,noa,noq,custno,cust,custtype,ccusttype
@@ -138,7 +140,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,style,spec,cspec,size
 		,pvcno,pvc,pveno,pve
 		,lengthc,mount,[weight],unit,price,[money],ordeno,ordeno2,uno
-		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno)
+		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno,memo)
 	select '1',a.accy,a.noa,a.noq,b.custno,c.nick,c.stype,isnull(f.product,'')
 		,b.datea,a.productno,a.product
 		,isnull(a.style,''),d.spec,null
@@ -146,6 +148,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,a.spec,a.[class],null,a.rackno
 		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2,a.uno
 		,b.invono,a.dime,a.radius,a.width,a.lengthb,a.mweight,b.coin,0,0,0,a.itemno
+		,a.memo
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join view_orde c on a.ordeno=c.noa
@@ -166,13 +169,21 @@ z_vcc_rk02:--z_vcc_rk02
 	from @tmp a
 	left join spec b on a.spec=b.noa
 	where b.noa is not null
+	
+	update @tmp set packingno=b.recno
+	from @tmp a
+	left join (select accy,noa,noq,ROW_NUMBER()over(partition by accy,noa order by noq) recno 
+		from view_vccs where isnull(lengthc,0)!=0) b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+	where b.noa is not null
 	-------------------------------------------------------------------------------
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel, ROW_NUMBER()over(order by noa,noq) recno from @tmp ) b on a.sel=b.sel
 	
-	insert into @tmp(gno,mount,[weight],[money])
-	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)) from @tmp
+	insert into @tmp(gno,mount,[weight],[money],lengthc,mweight)
+	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)),sum(isnull([lengthc],0)) ,sum(isnull([mweight],0)) 
+	from @tmp
+
 	select  gno
 		,"<a href="+CHAR(34)+"JavaScript:q_box('vcc_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(recno as nvarchar)+"</a>" rr
 		,ccusttype a01
@@ -203,7 +214,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,lengthb a14--長	
 		,cspec a15--規格	
 		,'' a16--包裝單位	
-		,'' a17--Packing NO.	
+		,packingno a17--Packing NO.	
 		,lengthc a18--件數	
 		,dbo.getComma(mount,-1) a19--數量	
 		,dbo.getComma([weight],-1) a20--重量	
@@ -211,10 +222,14 @@ z_vcc_rk02:--z_vcc_rk02
 		,price a22--單價	
 		,coin a23--幣別	
 		,dbo.getComma([money],-1) a24--原幣金額	
-		,dbo.getComma([money2],-1) a25--銷售額	
-		,dbo.getComma([tax],-1) a26--稅額	
-		,dbo.getComma([total],-1) a27--總計金額	
+		--,dbo.getComma([money2],-1) a25--銷售額	
+		--,dbo.getComma([tax],-1) a26--稅額	
+		--,dbo.getComma([total],-1) a27--總計金額	
+		,'' a25
+		,'' a26
+		,'' a27
 		,itemno a28--棧板序號
+		,memo a29
 	from @tmp order by gno,recno;
 
 z_vcc_rk01:--z_vcc_rk01 
