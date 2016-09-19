@@ -201,7 +201,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,datea a01--出貨日	
 		,uno a02--批號	
 		,invono a03--發票號碼	
-		,custtype a04--業種	
+		,ccusttype a04--業種	
 		,cust a05--客戶	
 		,product a06--品名	
 		,pvcno a07--皮膜編號	
