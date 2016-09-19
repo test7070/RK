@@ -117,6 +117,7 @@
 					<td style="width:30%;">
 						<input id="txtProductno.*" type="text" style="float:left;width:30%;"  readonly="readonly" />
 						<input id="txtProduct.*" type="text" style="float:left;width:65%;"  readonly="readonly" />
+						<input id="txtProductno1.*" type="text" style="display:none;"  readonly="readonly" />
 					</td>
 					<td style="width:15%;">
 						<input id="txtCspec.*" type="text" style="float:left;width:100%;"  readonly="readonly" />

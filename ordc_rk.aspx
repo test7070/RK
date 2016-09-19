@@ -272,8 +272,8 @@
 					case 'ordb_ordc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdbno,txtNo3,txtProductno,txtProduct,cmbSpec,txtUnit,txtDime,txtWidth,txtLengthb,txtPrice,txtMount,txtWeight,txtMemo'
-                        	, as.length, as, 'noa,no3,productno,product,spec,unit,dime,width,lengthb,price,emount,eweight,memo', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdbno,txtNo3,txtProductno,txtProductno1,txtProduct,cmbSpec,txtUnit,txtDime,txtWidth,txtLengthb,txtPrice,txtMount,txtWeight,txtMemo'
+                        	, as.length, as, 'noa,no3,productno,productno1,product,spec,unit,dime,width,lengthb,price,emount,eweight,memo', '','');
                         	sum();
                         }else{
                         	Unlock(1);
@@ -594,7 +594,7 @@
                         $('#txtProductno1_' + j).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtProductno1_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct1_'+n).click();
                         });
 						//計算理論重

@@ -52,6 +52,11 @@
 					$('#txtGmount_'+i).val(t_n*q_float('txtMount_'+i));
 					$('#txtGweight_'+i).val(t_n*q_float('txtWeight_'+i));
 				}
+				var t_weight = 0;
+				for(var i=0;i<q_bbsCount;i++){
+					t_weight = q_add(t_weight,q_float('txtWeight_'+i));
+				}
+				$('#txtWeight').val(t_weight);
 			}
 			
 			var t_spec = '';
@@ -249,11 +254,6 @@
 						});
 						$('#txtWeight_' + j).change(function() {
 							sum();
-							var t_weight = 0;
-							for(var i=0;i<q_bbsCount;i++){
-								t_weight = q_add(t_weight,q_float('txtWeight_'+i));
-							}
-							$('#txtWeight').val(t_weight);
 						});
 						$('#txtPrice_' + j).change(function() {
 							sum();
@@ -276,6 +276,7 @@
 				if (emp($('#txtNoa').val()))
 					return;
 				_btnModi();
+				sum();
 			}
 
 			function btnPrint() {
