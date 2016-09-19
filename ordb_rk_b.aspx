@@ -93,7 +93,7 @@
 		<div id="dbbs" style="overflow: scroll;height:450px;" >
 			<table id="tbbs" class='tbbs' border="2" cellpadding='2' cellspacing='1' style='width:100%;' >
 				<tr style="display:none;">
-					<th align="center" style="width:2%;"><input type="checkbox" id="checkAllCheckbox"/></th>
+					<th align="center" style="width:2%;"> </th>
 					<td align="center" style="width:15%;">廠商</td>
 					<td align="center" style="width:30%;">品名</td>
 					<td align="center" style="width:15%;">規格</td>
