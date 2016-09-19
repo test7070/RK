@@ -186,7 +186,7 @@ z_vcc_rk02:--z_vcc_rk02
 
 	select  gno
 		,"<a href="+CHAR(34)+"JavaScript:q_box('vcc_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(recno as nvarchar)+"</a>" rr
-		,ccusttype a01
+		/*,ccusttype a01
 		,cust a02
 		,product a03
 		,pvcno+pvc a04
@@ -196,7 +196,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,dbo.getComma(mount,-1) a08
 		,dbo.getComma([weight],-1) a09
 		,dbo.getComma(price,-1) a10
-		,dbo.getComma([money],-1) a11
+		,dbo.getComma([money],-1) a11*/
 		
 		,datea a01--出貨日	
 		,uno a02--批號	
