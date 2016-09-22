@@ -52,11 +52,7 @@
 					$('#txtGmount_'+i).val(t_n*q_float('txtMount_'+i));
 					$('#txtGweight_'+i).val(t_n*q_float('txtWeight_'+i));
 				}
-				var t_weight = 0;
-				for(var i=0;i<q_bbsCount;i++){
-					t_weight = q_add(t_weight,q_float('txtWeight_'+i));
-				}
-				$('#txtWeight').val(t_weight);
+				
 			}
 			
 			var t_spec = '';
@@ -131,6 +127,14 @@
 				t_err = q_chkEmpField([['txtNoa', q_getMsg('lblNoa')]]);
 				if (t_err.length > 0) {
 					alert(t_err);
+					return;
+				}
+				var t_weight = 0;
+				for(var i=0;i<q_bbsCount;i++){
+					t_weight = q_add(t_weight,q_float('txtWeight_'+i));
+				}
+				if(Math.abs(t_weight-q_float(txtWeight)) > 0.1*t_weight){
+					alert('重量異常!');
 					return;
 				}
 				Lock(1, {
@@ -253,6 +257,12 @@
 							sum();
 						});
 						$('#txtWeight_' + j).change(function() {
+							//BBM重量要可自己修改
+							var t_weight = 0;
+							for(var i=0;i<q_bbsCount;i++){
+								t_weight = q_add(t_weight,q_float('txtWeight_'+i));
+							}
+							$('#txtWeight').val(t_weight);
 							sum();
 						});
 						$('#txtPrice_' + j).change(function() {
