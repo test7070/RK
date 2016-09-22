@@ -133,7 +133,7 @@
 				for(var i=0;i<q_bbsCount;i++){
 					t_weight = q_add(t_weight,q_float('txtWeight_'+i));
 				}
-				if(Math.abs(t_weight-q_float(txtWeight)) > 0.1*t_weight){
+				if(Math.abs(t_weight-q_float('txtWeight')) > 0.1*t_weight){
 					alert('重量異常!');
 					return;
 				}
