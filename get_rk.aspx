@@ -52,7 +52,6 @@
 					$('#txtGmount_'+i).val(t_n*q_float('txtMount_'+i));
 					$('#txtGweight_'+i).val(t_n*q_float('txtWeight_'+i));
 				}
-				
 			}
 			
 			var t_spec = '';
@@ -94,6 +93,13 @@
 			function q_popPost(s1) {
 				switch (s1) {
 					case 'txtUno_':
+						//BBM重量要可自己修改
+						var t_weight = 0;
+						for(var i=0;i<q_bbsCount;i++){
+							t_weight = q_add(t_weight,q_float('txtWeight_'+i));
+						}
+						$('#txtWeight').val(t_weight);
+						sum();
 						refreshBbs();
 						break;
 				}
