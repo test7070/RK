@@ -969,7 +969,7 @@
 					<td style="width:100px;">保護膜</td>
 					<td style="width:150px;">規格</td>
 					<td style="width:60px;">單位</td>
-					<td style="display:none;">包裝內容</td>
+					<td style="width:60px;">包裝<BR>單位</td>
 					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
@@ -1013,7 +1013,7 @@
 					<td><input id="txtRackno.*" type="text" class="txt c1"/></td>
 					<td><input id="txtSize.*" type="text" class="txt c1"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
-					<td style="display:none;"><input id="txtChecker.*" type="text" class="txt c1"/></td>
+					<td><input id="txtChecker.*" type="text" class="txt c1"/></td>
 					<td><input id="txtLengthc.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>
