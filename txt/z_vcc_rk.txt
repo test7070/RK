@@ -145,7 +145,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,b.datea,a.productno,a.product
 		,isnull(a.style,''),d.spec,null
 		,case when len(ISNULL(a.size,''))>0 then a.size else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*' + case when ISNULL(a.lengthb,0)>0 then CAST(a.lengthb as nvarchar) else 'COIL' end end
-		,a.spec,a.[class],null,a.rackno
+		,a.spec,a.[class],d.zinc,a.rackno
 		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2,a.uno
 		,b.invono,a.dime,a.radius,a.width,a.lengthb,a.mweight,b.coin,0,0,0,a.itemno
 		,a.memo
