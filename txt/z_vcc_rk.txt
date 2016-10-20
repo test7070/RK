@@ -89,6 +89,7 @@ z_vcc_rk02:--z_vcc_rk02
 		set @t_elengthb = 999999
 	end catch
 	------------------------------------------------------------------
+	------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -137,14 +138,19 @@ z_vcc_rk02:--z_vcc_rk02
 		,po nvarchar(max)
 		,pn nvarchar(max)
 		,checker nvarchar(max)
-	)
 
+		,tmoney float
+		,floata float
+	)
+	
 	insert into @tmp(gno,accy,noa,noq,custno,cust,custtype,ccusttype
 		,datea,productno,product
 		,style,spec,cspec,size
 		,pvcno,pvc,pveno,pve
 		,lengthc,mount,[weight],unit,price,[money],ordeno,ordeno2,uno
-		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno,memo,ordememo,checker)
+		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno
+		,memo,ordememo,checker
+		,tmoney,floata)
 	select '1',a.accy,a.noa,a.noq,b.custno,c.nick,c.stype,isnull(f.product,'')
 		,b.datea,a.productno,a.product
 		,isnull(a.style,''),d.spec,null
@@ -153,6 +159,8 @@ z_vcc_rk02:--z_vcc_rk02
 		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2,a.uno
 		,b.invono,a.dime,a.radius,a.width,a.lengthb,a.mweight,b.coin,0,0,0,a.itemno
 		,a.memo,isnull(d.memo,''),a.checker
+		,case when isnull(b.floata,0)=0 then 0 else round(a.price*b.floata,4) end
+		,b.floata
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join view_orde c on a.ordeno=c.noa
@@ -168,7 +176,11 @@ z_vcc_rk02:--z_vcc_rk02
 	and ISNULL(a.dime,0) between @t_bdime and @t_edime
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	
+	--t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓'
+	--原幣金額
+	update @tmp set tmoney = round(case when len(unit) = 0 or unit = 'KG' or unit = 'M2' or unit = 'M²' or unit = 'M' or unit = '批' or unit = '公斤' or unit = '噸' or unit = '頓' then [weight] else mount end * price ,2)
+	where isnull(floata,0)!=0
+
 	update @tmp set cspec=b.product
 	from @tmp a
 	left join spec b on a.spec=b.noa
@@ -188,56 +200,46 @@ z_vcc_rk02:--z_vcc_rk02
 	from @tmp a
 	left join (select sel, ROW_NUMBER()over(order by noa,noq) recno from @tmp ) b on a.sel=b.sel
 	
-	insert into @tmp(gno,mount,[weight],[money],lengthc,mweight)
-	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)),sum(isnull([lengthc],0)) ,sum(isnull([mweight],0)) 
+	insert into @tmp(gno,mount,[weight],[money],[tmoney],lengthc,mweight)
+	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)),sum(isnull([tmoney],0)),sum(isnull([lengthc],0)) ,sum(isnull([mweight],0)) 
 	from @tmp
 
 	select  gno
 		,"<a href="+CHAR(34)+"JavaScript:q_box('vcc_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(recno as nvarchar)+"</a>" rr
-		/*,ccusttype a01
-		,cust a02
-		,product a03
-		,pvcno+pvc a04
-		,pve a05
-		,style+size a06
-		,uno a07
-		,dbo.getComma(mount,-1) a08
-		,dbo.getComma([weight],-1) a09
-		,dbo.getComma(price,-1) a10
-		,dbo.getComma([money],-1) a11*/
-		
-		,datea a01--出貨日	
-		,uno a02--批號	
-		,invono a03--發票號碼	
-		,ccusttype a04--業種	
-		,cust a05--客戶	
-		,product a06--品名	
-		,pvcno a07--皮膜編號	
-		,pvc a08--皮膜名稱	
-		,pveno a09--保護膜編號	
-		,pve a10--保護膜名稱	
-		,dime a11--厚	
-		,radius a12--皮膜厚	
-		,width a13--寬	
-		,lengthb a14--長	
-		,cspec a15--規格	
-		,checker a16--包裝單位	
-		,packingno a17--Packing NO.	
-		,lengthc a18--件數	
-		,dbo.getComma(mount,-1) a19--數量	
-		,dbo.getComma([weight],-1) a20--重量	
-		,dbo.getComma([mweight],-1) a21--毛重	
-		,price a22--單價	
-		,coin a23--幣別	
-		,dbo.getComma([money],-1) a24--原幣金額	
-		--,dbo.getComma([money2],-1) a25--銷售額	
-		--,dbo.getComma([tax],-1) a26--稅額	
-		--,dbo.getComma([total],-1) a27--總計金額	
-		,'' a25
-		,itemno a26--棧板序號
-		,po a27
-		,pn a28
-		,memo a29
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+datea+'</a>' a01--出貨日
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ordeno+'</a>' a00
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+uno+'</a>' a02--批號	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+invono+'</a>' a03--發票號碼	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ccusttype+'</a>' a04--業種	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a05--客戶	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' a06--品名	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' a07--皮膜編號	
+	  	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' a08--皮膜名稱		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' a09--保護膜編號		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' a10--保護膜名稱		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(dime as nvarchar)+'</a>' a11--厚		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(radius as nvarchar)+'</a>' a12--皮膜厚
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(width as nvarchar)+'</a>' a13--寬
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(lengthb as nvarchar)+'</a>' a14--長
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' a15--規格	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+checker+'</a>' a16--包裝單位	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(packingno as nvarchar)+'</a>' a17--Packing NO.	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(lengthc as nvarchar)+'</a>' a18--件數		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,-1)+'</a>' a19--數量		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma([weight],-1)+'</a>' a20--重量	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma([mweight],-1)+'</a>' a21--毛重	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' a22--計價單位
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+coin+'</a>' a23--幣別
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when floata=0 then '' else dbo.getComma(price,-1) end+'</a>' a24--原幣單價
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when floata=0 then '' else dbo.getComma(tmoney,-1) end +'</a>' a25--原幣金額
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when floata=0 then '' else dbo.getComma(floata,-1) end +'</a>' a26--匯率
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when [weight]=0 then '' else dbo.getComma(round([money]/[weight],2),-1) end+'</a>' a27--本幣單價KG
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma([money],-1)+'</a>' a28--本幣銷售額
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+itemno+'</a>' a29--棧板序號
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' a30
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' a31
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' a32
 	from @tmp order by gno,recno;
 
 z_vcc_rk01:--z_vcc_rk01 
