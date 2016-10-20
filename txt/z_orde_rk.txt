@@ -83,8 +83,8 @@ z_orde_rk03:--z_orde_rk03
 	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and (ISNULL(b.enda,0)=@t_enda)
-	and (ISNULL(b.cancel,0)=@t_cancel)
+	and (len(@t_enda)=0 or ISNULL(b.enda,0)=@t_enda)
+	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
 	order by a.custno,a.noa,a.no2
 	
 	update @tmp set cspec=ISNULL(b.product,'')
@@ -257,8 +257,8 @@ z_orde_rk02:--z_orde_rk02
 	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and (ISNULL(b.enda,0)=@t_enda)
-	and (ISNULL(b.cancel,0)=@t_cancel)
+	and (len(@t_enda)=0 or ISNULL(b.enda,0)=@t_enda)
+	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
 	order by a.productno,a.noa,a.no2
 	
 	update @tmp set cspec=ISNULL(b.product,'')
@@ -429,8 +429,8 @@ z_orde_rk01:--z_orde_rk01
 	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and (ISNULL(b.enda,0)=@t_enda)
-	and (ISNULL(b.cancel,0)=@t_cancel)
+	and (len(@t_enda)=0 or ISNULL(b.enda,0)=@t_enda)
+	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
 	order by a.noa,a.no2
 	
 	update @tmp set cspec=ISNULL(b.product,'')

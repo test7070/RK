@@ -388,7 +388,8 @@
                 _btnIns();
                 var t_memo = '1.本公司僅接受自出貨日後3個月內之客訴，交易如有爭議涉訟時，雙方同意以台灣桃園地方法院為第一審管轄法院。';
 				t_memo += '\n2.雙方同意依合約簽訂交期後20天內出貨。(如因非本公司因素之不可抗力造成延誤，不在此限。)';			
-                $('#txtMemo').val(t_memo);
+                if(!$('#chekQcopy').prop('checked'))
+                	$('#txtMemo').val(t_memo);
                 q_gt('acomp', '', 0, 0, 0, 'getAcomp', r_accy);
 				var t_where = "where=^^ 1=1 ^^";
 				q_gt('custaddr', t_where, 0, 0, 0, "");

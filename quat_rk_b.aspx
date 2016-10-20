@@ -15,6 +15,7 @@
             var txtfield = [], afield, t_data, t_htm, t_bbsTag = 'tbbs';
        		brwCount = -1;
 			brwCount2 = -1;
+			
             $(document).ready(function() {
                 main();
             });
@@ -42,15 +43,28 @@
 				$('#checkAllCheckbox').click(function(e){
 					$('.ccheck').prop('checked',$(this).prop('checked'));
 				});
+				q_gt('spec', '', 0, 0, 0, '');
 			}
             function q_gtPost(t_name) {
 				switch (t_name) {
+                	case 'spec':
+						var as = _q_appendData("spec", "", true);
+						for(var j=0;j<q_bbsCount;j++){
+							$('#combSpec_'+j).append('<option value=" "> </option>');
+						}
+						for ( i = 0; i < as.length; i++) {
+							for(var j=0;j<q_bbsCount;j++){
+								$('#combSpec_'+j).append('<option value="'+as[i].noa+'">'+as[i].product+'</option>');
+							}
+						}
+						for(var j=0;j<q_bbsCount;j++){
+							$('#combSpec_'+j).val($('#txtSpec_'+j).val());
+						}
+						break;
 					case q_name:
-						//if (isLoadGt == 1) {
-							abbs = _q_appendData(q_name, "", true);
-							isLoadGt = 0;
-							refresh();
-						//}
+						abbs = _q_appendData(q_name, "", true);
+						isLoadGt = 0;
+						refresh();
 						break;
 				}
 			}
@@ -62,9 +76,6 @@
 		<style type="text/css">
 		</style>
 	</head>
-
-
-		
 	<body>
 		<div  id="dFixedTitle" style="overflow-y: scroll;">
 			<table id="tFixedTitle" class='tFixedTitle'  border="2"  cellpadding='2' cellspacing='1' style='width:100%;'  >
@@ -126,7 +137,10 @@
 					<td style="width:5%;"><input id="txtWidth.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtLengthb.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:4%;"><input id="txtUnit.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:5%;"><input id="txtSpec.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:5%;">
+						<input id="txtSpec.*" type="text" style="display:none;"  readonly="readonly" />
+						<select id="combSpec.*" style="float:left;width:100%;"  readonly="readonly"> </select>
+					</td>
 					<td style="width:8%;">
 						<input id="txtScolor.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 						<input id="txtClass.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
