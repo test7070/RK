@@ -122,22 +122,44 @@
                 bbmMask = [['txtDatea', r_picd]];
                 bbsMask = [];
                 q_mask(bbmMask);
-                q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
-                q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
-                q_cmbParse("cmbSpec", t_spec,'s');
-                q_cmbParse("cmbCustpro", t_adpro,'s');
-                q_cmbParse("cmbStype", q_getPara('orde.stype'));
                 
-                $("#cmbTaxtype").change(function(e) {
-                    sum();
-                });
-                
-                $("#combPaytype").change(function(e) {
-					if (q_cur == 1 || q_cur == 2){
-						$('#txtPaytype').val($('#combPaytype').find(":selected").text());
-						$(this)[0].selectedIndex=0;
-					}
-				});
+                switch(q_getPara('sys.project').toUpperCase()){
+					case 'RK':
+						var paytype_rk = ",出貨前T/T,出貨時收現金或當日現金票,合約簽訂後3天內T/T50%訂金，尾款於出貨前T/T,月結30天,月結40天";
+						q_cmbParse("combPaytype", paytype_rk);
+						$('#txtPaytype').change(function(e){
+		                	if($('#txtPaytype').val().indexOf('月結')>=0){
+		                		if($('#txtMemo2').val().length==0){
+		                			$('#txtMemo2').val('每月25日以後出的貨,視同當月之貨款並計算請款,依出貨實際數量計價');
+		                		}
+		                	}else{
+		                		if($('#txtMemo2').val().length==0){
+		                			$('#txtMemo2').val('依實際出貨數量計價');
+		                		}
+		                	}
+		                });
+		                $("#combPaytype").change(function(e) {
+							if (q_cur == 1 || q_cur == 2){
+								$('#txtPaytype').val($('#combPaytype').find(":selected").text());
+								$(this)[0].selectedIndex=0;
+								$('#txtPaytype').change();
+							}
+						});
+		                
+						break;
+					default:
+						q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
+						$("#cmbTaxtype").change(function(e) {
+		                    sum();
+		                });
+		                $("#combPaytype").change(function(e) {
+							if (q_cur == 1 || q_cur == 2){
+								$('#txtPaytype').val($('#combPaytype').find(":selected").text());
+								$(this)[0].selectedIndex=0;
+							}
+						});
+						break;
+				}
                 $("#txtPaytype").focus(function(e) {
 					var n = $(this).val().match(/[0-9]+/g);
 					var input = document.getElementById("txtPaytype");
@@ -153,6 +175,13 @@
 						input.selectionEnd = $(this).val().indexOf(n) + (n + "").length;
 					}
 				});
+				
+                q_cmbParse("cmbTaxtype", q_getPara('sys.taxtype'));
+                q_cmbParse("cmbSpec", t_spec,'s');
+                q_cmbParse("cmbCustpro", t_adpro,'s');
+                q_cmbParse("cmbStype", q_getPara('orde.stype'));
+                
+                
 				$('#btnQuat').click(function(e){
 					if(!(q_cur==1 || q_cur==2))
 						return;
