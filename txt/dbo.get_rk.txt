@@ -1,4 +1,4 @@
-alter function [dbo].[get_rk](@t_noa nvarchar(max), @t_custno nvarchar(max))
+ALTER function [dbo].[get_rk](@t_noa nvarchar(max), @t_custno nvarchar(max))
 returns @tmp table(	
 		sel int identity(1,1)
 		,inano nvarchar(20)
@@ -22,7 +22,9 @@ returns @tmp table(
 		,memo nvarchar(max)
 		,mount float
 		,[weight] float
+		,gmount float
 		,gweight float
+		,emount float
 		,eweight float
 		,ordeno nvarchar(20)
 		,no2 nvarchar(10)
@@ -45,11 +47,15 @@ begin
 	and (len(@t_custno)=0 or d.custno=@t_custno)
 	order by a.noa desc,a.noq
 	
-	update @tmp set gweight=ISNULL(b.[weight],0)
+	update @tmp set gweight=ISNULL(b.[weight],0),gmount=ISNULL(b.[mount],0)
 	from @tmp a
-	left join(select uno,sum(case when ISNULL(gweight,0)>0 then gweight else [weight] end) [weight] from view_gets where len(uno)>0 group by uno) b on a.uno=b.uno
+	left join(select uno
+		,sum(case when ISNULL(gweight,0)>0 then gweight else [weight] end) [weight] 
+		,sum(case when ISNULL(gmount,0)>0 then gmount else [mount] end) [mount] 
+		from view_gets where len(uno)>0 group by uno) b on a.uno=b.uno
 	
 	update @tmp set eweight = ISNULL([weight],0)-ISNULL([gweight],0)
+		,emount = ISNULL([mount],0)-ISNULL([gmount],0)
 	
 	delete @tmp where eweight<=0
 	

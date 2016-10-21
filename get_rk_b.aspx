@@ -74,18 +74,19 @@
 					<th align="center" style="width:25px;max-width: 25px;"><input type="checkbox" id="checkAllCheckbox"/></th>
 					<td align="center" style="width:30px;max-width: 30px;"><a>　</a></td>
 					<td align="center" style="width:60px;max-width: 60px;">客戶</td>
-					<td align="center" style="width:100px;max-width: 100px;">批號</td>
+					<td align="center" style="width:80px;max-width: 80px;">批號</td>
 					<td align="center" style="width:100px;max-width: 100px;">品名</td>
 					<td align="center" style="width:60px;max-width: 60px;">底材</td>
 					<td align="center" style="width:60px;max-width: 60px;">厚</td>
 					<td align="center" style="width:60px;max-width: 60px;">皮膜<br>厚</td>
 					<td align="center" style="width:60px;max-width: 60px;">寬</td>
 					<td align="center" style="width:60px;max-width: 60px;">長</td>
-					<td align="center" style="width:100px;max-width: 100px;">皮膜</td>
+					<td align="center" style="width:100px;max-width: 80px;">皮膜</td>
 					<td align="center" style="width:60px;max-width: 60px;">背面<br>處理</td>
 					<td align="center" style="width:60px;max-width: 60px;">保護膜</td>
 					<td align="center" style="width:60px;max-width: 60px;">單位</td>
 					<td align="center" style="width:60px;max-width: 60px;">件數</td>
+					<td align="center" style="width:60px;max-width: 60px;">數量</td>
 					<td align="center" style="width:60px;max-width: 60px;">重量</td>
 					<td align="center" style="width:80px;max-width: 80px;">備註</td>
 				</tr>
@@ -97,18 +98,19 @@
 					<th align="center" style="width:25px;max-width: 25px;"><a>　</a></th>
 					<td align="center" style="width:30px;max-width: 30px;"><a>　</a></td>
 					<td align="center" style="width:60px;max-width: 60px;">客戶</td>
-					<td align="center" style="width:100px;max-width: 100px;">批號</td>
+					<td align="center" style="width:80px;max-width: 80px;">批號</td>
 					<td align="center" style="width:100px;max-width: 100px;">品名</td>
 					<td align="center" style="width:60px;max-width: 60px;">底材</td>
 					<td align="center" style="width:60px;max-width: 60px;">厚</td>
 					<td align="center" style="width:60px;max-width: 60px;">皮膜<br>厚</td>
 					<td align="center" style="width:60px;max-width: 60px;">寬</td>
 					<td align="center" style="width:60px;max-width: 60px;">長</td>
-					<td align="center" style="width:100px;max-width: 100px;">皮膜</td>
+					<td align="center" style="width:80px;max-width: 80px;">皮膜</td>
 					<td align="center" style="width:60px;max-width: 60px;">背面<br>處理</td>
 					<td align="center" style="width:60px;max-width: 60px;">保護膜</td>
 					<td align="center" style="width:60px;max-width: 60px;">單位</td>
 					<td align="center" style="width:60px;max-width: 60px;">件數</td>
+					<td align="center" style="width:60px;max-width: 60px;">數量</td>
 					<td align="center" style="width:60px;max-width: 60px;">重量</td>
 					<td align="center" style="width:80px;max-width: 80px;">備註</td>
 				</tr>
@@ -120,7 +122,7 @@
 						<input id="txtNo2.*" type="text" style="display:none;"/>						
 					</td>
 					<td style="width:60px;max-width: 60px;"><input id="txtCust.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
-					<td style="width:100px;max-width: 100px;"><input id="txtUno.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
+					<td style="width:80px;max-width: 80px;"><input id="txtUno.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:100px;max-width: 100px;">
 						<input id="txtProductno.*" type="text" style="float:left;width:30%;"  readonly="readonly" />
 						<input id="txtProduct.*" type="text" style="float:left;width:60%;"  readonly="readonly" />
@@ -130,7 +132,7 @@
 					<td style="width:60px;max-width: 60px;"><input id="txtRadius.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtWidth.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtLengthb.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
-					<td style="width:100px;max-width: 100px;">
+					<td style="width:80px;max-width: 80px;">
 						<input id="txtSpec.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
 						<input id="txtClass.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
 					</td>
@@ -138,6 +140,7 @@
 					<td style="width:60px;max-width: 60px;"><input id="txtRackno.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtUnit.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtLengthc.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
+					<td style="width:60px;max-width: 60px;"><input id="txtEmount.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtEweight.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtMemo.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 				</tr>

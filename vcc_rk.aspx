@@ -959,7 +959,7 @@
 					<td align="center" style="width:50px;">棧板<br>編號</td>
 					<td style="width:200px;">批號</td>
 					<td style="width:200px;">品名</td>
-					<td style="width:120px;">底材</td>
+					<td style="width:120px;display:none;">底材</td>
 					<td style="width:60px;">厚</td>
 					<td style="width:60px;">皮膜厚</td>
 					<td style="width:60px;">寬</td>
@@ -998,7 +998,7 @@
 						<input id="txtProduct.*" type="text" style="width:45%"/>
 						<input id="btnProduct.*" type="button" style="display:none;"/>
 					</td>
-					<td><input id="txtStyle.*" type="text" class="txt c1"/></td>
+					<td style="display:none;"><input id="txtStyle.*" type="text" class="txt c1"/></td>
 					<td><input id="txtDime.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtRadius.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWidth.*" type="text" class="txt c1 num"/></td>
