@@ -583,7 +583,7 @@ z_cub_rkp13:--z_cub_rkp13
 		size nvarchar(50),
 		spec nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(30),
+		cust nvarchar(50),
 		weight01 float,--進倉重
 		weight02 float,--在製品耗料
 		weight03 float,--已完工、未進倉
@@ -838,7 +838,7 @@ z_cub_rkp12:--z_cub_rkp12  現價
 		size nvarchar(50),
 		spec nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(30),
+		cust nvarchar(50),
 		weight01 float,--進倉重
 		weight02 float,--在製品耗料
 		weight03 float,--已完工、未進倉
@@ -1759,7 +1759,7 @@ z_cub_rkp07:--z_cub_rkp07   現貢
 		size nvarchar(50),
 		spec nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(30),
+		cust nvarchar(50),
 		weight01 float,--進倉重
 		weight02 float,--在製品耗料
 		weight03 float,--已完工、未進倉
@@ -2311,7 +2311,7 @@ z_cub_rkp03:--z_cub_rkp03
 		,pvcno nvarchar(20)
 		,pvc nvarchar(30)
 		,custno nvarchar(20)
-		,cust nvarchar(30)
+		,cust nvarchar(50)
 		,size nvarchar(20)
 		,datea nvarchar(20)
 		,[weight] float
@@ -2431,6 +2431,7 @@ z_cub_rkp01:--z_cub_rkp01
 	--[6]
 	declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
 	--------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
 		gno nvarchar(10)
@@ -2499,8 +2500,14 @@ z_cub_rkp01:--z_cub_rkp01
 		weight10 float,--投入重量
 		money10 float,--半成品金額
 		weight11 float,--完工重量
-		money11 float,--直接人工
-		money12 float,--製造費用
+		
+		--半成品
+		money11a float,--直接人工
+		money12a float,--製造費用
+		--成品
+		money11b float,--直接人工
+		money12b float,--製造費用
+		
 		weight12 float,--成品重量
 		money13 float,--總計
 		price10 float,--單位成本
@@ -2650,29 +2657,39 @@ z_cub_rkp01:--z_cub_rkp01
 		,price08 = case when weight08!=0 then ROUND(money08/weight05,2) else 0 end
 		,price09 = case when weight09!=0 then ROUND(money09/weight05,2) else 0 end
 	
-		--投入重量
-		update @tmp set weight10 = ISNULL(weight01,0)+ISNULL(weight02,0)+ISNULL(weight03,0)
-			+ISNULL(weight05,0)+ISNULL(weight06,0)+ISNULL(weight07,0)+ISNULL(weight08,0)+ISNULL(weight09,0)
-			,money10 = ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
-			+ISNULL(money05,0)+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
-		
+	--投入重量
+	update @tmp set weight10 = ISNULL(weight01,0)+ISNULL(weight02,0)+ISNULL(weight03,0)
+		+ISNULL(weight05,0)+ISNULL(weight06,0)+ISNULL(weight07,0)+ISNULL(weight08,0)+ISNULL(weight09,0)
+		,money10 = ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
+		+ISNULL(money05,0)+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
 	
-	--update @tmp set weight12 = isnull(b.[weight],0)
-	--from @tmp a
-	--left join (select cname makeno,SUM(ISNULL([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.makeno
 	
-	update @tmp set money13=ISNULL(money10,0)+ISNULL(money11,0)+ISNULL(money12,0)
+	update @tmp set 
+		--半成品直接人工
+		money11a = ISNULL(b.wages02,0)+ISNULL(b.wages03,0)+ISNULL(b.wages04,0)+ISNULL(b.wages05,0)+ISNULL(b.wages06,0)+ISNULL(b.wages07,0)
+		--半成品製造費用
+		,money12a = ISNULL(b.makeless02,0)+ISNULL(b.makeless03,0)+ISNULL(b.makeless04,0)+ISNULL(b.makeless05,0)+ISNULL(b.makeless06,0)+ISNULL(b.makeless07,0)
+		--製成品直接人工
+		,money11b = ISNULL(b.wages01,0) 
+		--製成品製造費用
+		,money12b = ISNULL(b.makeless01,0) 		
+	from @tmp a
+	left join dbo.makeno(@t_datea ,0) b on a.makeno=b.makeno 
+	
+	
+	update @tmp set money13=ISNULL(money10,0)+ISNULL(money11a,0)+ISNULL(money12a,0)+ISNULL(money11b,0)+ISNULL(money12b,0)
 	--合計
 	insert into @tmp(gno,weight01,money01,mount02,weight02,money02
 		,mount03,weight03,money03,mount04,weight04,money04
 		,weight05,money05,weight06,money06,weight07,money07
 		,weight08,money08,weight09,money09,weight10,money10
-		,weight11,money11,money12,weight12,money13)
+		,weight11,money11a,money12a,money11b,money12b,weight12,money13)
 	select '2',sum(isnull(weight01,0)),sum(isnull(money01,0)),sum(isnull(mount02,0)),sum(isnull(weight02,0)),sum(isnull(money02,0))
 		,sum(isnull(mount03,0)),sum(isnull(weight03,0)),sum(isnull(money03,0)),sum(isnull(mount04,0)),sum(isnull(weight04,0)),sum(isnull(money04,0))
 		,sum(isnull(weight05,0)),sum(isnull(money05,0)),sum(isnull(weight06,0)),sum(isnull(money06,0)),sum(isnull(weight07,0)),sum(isnull(money07,0))
 		,sum(isnull(weight08,0)),sum(isnull(money08,0)),sum(isnull(weight09,0)),sum(isnull(money09,0)),sum(isnull(weight10,0)),sum(isnull(money10,0))
-		,sum(isnull(weight11,0)),sum(isnull(money11,0)),sum(isnull(money12,0)),sum(isnull(weight12,0)),sum(isnull(money13,0))
+		,sum(isnull(weight11,0)),sum(isnull(money11a,0)),sum(isnull(money12a,0)),sum(isnull(money11b,0)),sum(isnull(money12b,0))
+		,sum(isnull(weight12,0)),sum(isnull(money13,0))
 	from @tmp
 	where gno='1'
 	
@@ -2736,13 +2753,15 @@ z_cub_rkp01:--z_cub_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight10,-1)+'</a>' a46
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money10,-1)+'</a>' a47
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight11,-1)+'</a>' a48
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money11,-1)+'</a>' a49
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money12,-1)+'</a>' a50
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight12,-1)+'</a>' a51
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money13,-1)+'</a>' a52
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price10,-1)+'</a>' a53
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a54
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a55
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money11a,-1)+'</a>' a49
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money12a,-1)+'</a>' a50
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money11a,-1)+'</a>' a51
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money12a,-1)+'</a>' a52
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight12,-1)+'</a>' a53
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money13,-1)+'</a>' a54
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price10,-1)+'</a>' a55
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a56
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a57
 	from @tmp;
 	
 z_cub_rkp02:--z_cub_rkp02	
@@ -2881,7 +2900,7 @@ z_cub_rkp05:--z_cub_rkp05
 		size nvarchar(50),
 		spec nvarchar(20),
 		custno nvarchar(20),
-		cust nvarchar(30),
+		cust nvarchar(50),
 		weight01 float,--進倉重
 		weight02 float,--在製品耗料
 		weight03 float,--已完工、未進倉
@@ -3306,7 +3325,7 @@ z_cub_rkp01_old:--z_cub_rkp01
 		ordeno nvarchar(20),
 		no2 nvarchar(10),
 		custno nvarchar(20),
-		cust nvarchar(30),
+		cust nvarchar(50),
 		dime float,
 		radius float,
 		width float,
