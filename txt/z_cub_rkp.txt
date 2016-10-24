@@ -2663,7 +2663,6 @@ z_cub_rkp01:--z_cub_rkp01
 		,money10 = ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
 		+ISNULL(money05,0)+ISNULL(money06,0)+ISNULL(money07,0)+ISNULL(money08,0)+ISNULL(money09,0)
 	
-	
 	update @tmp set 
 		--半成品直接人工
 		money11a = ISNULL(b.wages02,0)+ISNULL(b.wages03,0)+ISNULL(b.wages04,0)+ISNULL(b.wages05,0)+ISNULL(b.wages06,0)+ISNULL(b.wages07,0)
