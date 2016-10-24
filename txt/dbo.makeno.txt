@@ -1,0 +1,444 @@
+ALTER  function [dbo].[makeno](@t_datea nvarchar(20),@t_type int)
+returns @tmp table(
+	sel int identity(1,1)
+		,makeno nvarchar(30)
+		,cubno nvarchar(20)
+		,cubnoq nvarchar(10)
+		--鋼捲
+		,uno1 nvarchar(30)
+		,productno1 nvarchar(50)
+		,dime float
+		,weight1 float
+		,price1 float
+		,money1 float
+		--皮膜
+		,mount2 float
+		,weight2 float
+		,money2 float
+		--保護膜
+		,mount3 float
+		,weight3 float
+		,money3 float
+
+		--A01 接著劑	
+		,wwa01 float --重量
+		,mma01 float --金額
+		--A02 接著劑稀釋劑
+		,wwa02 float
+		,mma02 float	
+		--A03 背漆
+		,wwa03 float	
+		,mma03 float
+		--A04 背漆稀釋液
+		,wwa04 float
+		,mma04 float	
+		--A05 面漆
+		,wwa05 float
+		,mma05 float
+		
+		--投入重
+		,totweight1 float -- weight1 + weight2 + weight3 + wwa01 + wwa02 + wwa03 + wwa04 + wwa05
+		,totmoney1 float -- money1+money2+money3+mma01+mma02+mma03+mma04+mma05
+		--完工重
+		,totweight2 float -- cuts 找
+		
+		--******工時、製造成本****************************
+		--生產       CUB
+		,time01 float
+		,wages01 float
+		,makeless01 float 
+		,money01 float
+		--烘板       CUD
+		,time02 float
+		,wages02 float
+		,makeless02 float
+		,money02 float
+		--分條       CUC
+		,time03 float
+		,wages03 float
+		,makeless03 float
+		,money03 float
+		--二呎       CUC
+		,time04 float
+		,wages04 float
+		,makeless04 float
+		,money04 float
+		--三呎       CUC
+		,time05 float
+		,wages05 float
+		,makeless05 float
+		,money05 float
+		--四呎       CUC
+		,time06 float
+		,wages06 float
+		,makeless06 float
+		,money06 float
+		--十呎       CUC
+		,time07 float
+		,wages07 float
+		,makeless07 float
+		,money07 float
+) as
+begin
+	insert into @tmp(makeno,cubno,cubnoq,uno1,dime,weight1)
+	select a.makeno,a.noa,a.noq,a.uno,a.dime,a.[weight]
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and len(a.makeno)>0
+	--***單價***
+	update @tmp set productno1=ISNULL(b.productno,'')
+		,price1 = ISNULL(b.sprice,0)
+		,money1 = ROUND(ISNULL(a.weight1,0)*ISNULL(b.sprice,0),0)
+	from @tmp a
+	left join view_uccb b on a.uno1=b.uno
+	
+	--皮膜
+	declare @tmpa table(
+		sel int identity(1,1)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,mount float
+		,[weight] float
+		,price float
+		,[money] float
+	)
+	insert into @tmpa(noa,noq,uno,productno,product,mount,[weight])
+	select a.noa,a.noq,c.uno,c.productno,c.product,c.mount,c.[weight]
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_cubt c on a.accy=c.accy and a.noa=c.noa and a.noq=c.nor
+	where b.datea<=@t_datea
+	and c.kind = '1'
+	--***單價***
+	if @t_type = 1
+	begin
+		update @tmpa set dime=b.dime,width=b.width,lengthb=b.lengthb
+		from @tmpa a
+		left join view_uccb b on a.uno=b.uno
+		where b.uno is not null
+		--現價
+		update @tmpa set price=ISNULL(b.sprice,0)
+		from @tmpa a
+		outer apply(select top 1 y.noa,x.sprice 
+			from uccps x 
+			left join uccp y on x.noa=y.noa
+			where a.productno=x.productno and a.dime=x.dime and y.datea<=@t_datea
+			order by y.datea desc,y.noa desc) b
+		where b.noa is not null
+	end
+	else
+	begin
+		update @tmpa set price =ISNULL(b.sprice,0),dime=b.dime,width=b.width,lengthb=b.lengthb
+		from @tmpa a
+		left join view_uccb b on a.uno=b.uno
+		update @tmpa set [money] = ROUND(isnull([weight],0)*isnull(price,0),0)
+	end
+	
+	update @tmp set mount2=isnull(b.[mount],0),weight2=isnull(b.[weight],0),money2=isnull(b.[money],0)
+	from @tmp a
+	left join (select noa,noq,SUM(ISNULL([mount],0)) [mount],SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([money],0)) [money] 
+		from @tmpa group by noa,noq) b on a.cubno=b.noa and a.cubnoq=b.noq
+	--保護膜
+	declare @tmpb table(
+		sel int identity(1,1)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,mount float
+		,[weight] float
+		,price float
+		,[money] float
+		
+	)
+	insert into @tmpb(noa,noq,uno,productno,product,mount,[weight])
+	select a.noa,a.noq,c.uno,c.productno,c.product,c.mount,c.[weight]
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_cubt c on a.accy=c.accy and a.noa=c.noa and a.noq=c.nor
+	where b.datea<=@t_datea
+	and c.kind = '2'
+	--***單價***
+	if @t_type = 1
+	begin
+		update @tmpb set dime=b.dime,width=b.width,lengthb=b.lengthb
+		from @tmpb a
+		left join view_uccb b on a.uno=b.uno
+		where b.uno is not null
+		--現價
+		update @tmpb set price=ISNULL(b.sprice,0)
+		from @tmpb a
+		outer apply(select top 1 y.noa,x.sprice 
+			from uccps x 
+			left join uccp y on x.noa=y.noa
+			where a.productno=x.productno and a.dime=x.dime and y.datea<=@t_datea
+			order by y.datea desc,y.noa desc) b
+		where b.noa is not null
+	end
+	else
+	begin
+		update @tmpb set price =ISNULL(b.sprice,0),dime=b.dime,width=b.width,lengthb=b.lengthb
+		from @tmpb a
+		left join view_uccb b on a.uno=b.uno
+		update @tmpb set [money] = ROUND(isnull([weight],0)*isnull(price,0),0)
+	end
+	
+	update @tmp set mount3=isnull(b.[mount],0),weight3=isnull(b.[weight],0),money3=isnull(b.[money],0)
+	from @tmp a
+	left join (select noa,noq,SUM(ISNULL([mount],0)) [mount],SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([money],0)) [money] 
+		from @tmpb group by noa,noq) b on a.cubno=b.noa and a.cubnoq=b.noq
+	--物料  (依重量平均分攤)
+	declare @tmpc table(
+		sel int identity(1,1)
+		,noa nvarchar(20)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(20)
+		,typea nvarchar(20)
+		,dime float
+		,width float
+		,lengthb float
+		,mount float
+		,[weight] float
+		,price float
+		,[money] float
+	)
+	insert into @tmpc(noa,uno,productno,product,typea,mount,[weight])
+	select a.noa,a.uno,a.productno,a.product,c.groupano,a.mount,a.[weight]
+	from view_cubt a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join ucc c on a.productno=c.noa
+	where b.datea<=@t_datea
+	--***單價***
+	if @t_type = 1
+	begin
+		update @tmpc set dime=b.dime,width=b.width,lengthb=b.lengthb
+		from @tmpc a
+		left join view_uccb b on a.uno=b.uno
+		where b.uno is not null
+		--現價
+		update @tmpc set price=ISNULL(b.sprice,0)
+		from @tmpc a
+		outer apply(select top 1 y.noa,x.sprice 
+			from uccps x 
+			left join uccp y on x.noa=y.noa
+			where a.productno=x.productno and a.dime=x.dime and y.datea<=@t_datea
+			order by y.datea desc,y.noa desc) b
+		where b.noa is not null
+	end
+	else
+	begin
+		update @tmpc set price =ISNULL(b.sprice,0),dime=b.dime,width=b.width,lengthb=b.lengthb
+		from @tmpc a
+		left join view_uccb b on a.uno=b.uno
+		update @tmpc set [money] = ROUND(isnull([weight],0)*isnull(price,0),0)
+	end
+	
+	update @tmp set wwa01=case when b.[weight]!=0 and c.typea='A01' then round(isnull(c.[weight],0)*ISNULL(a.[weight1],0)/b.[weight],2) end
+		,wwa02=case when b.[weight]!=0 and c.typea='A02' then round(isnull(c.[weight],0)*ISNULL(a.[weight1],0)/b.[weight],2) end
+		,wwa03=case when b.[weight]!=0 and c.typea='A03' then round(isnull(c.[weight],0)*ISNULL(a.[weight1],0)/b.[weight],2) end
+		,wwa04=case when b.[weight]!=0 and c.typea='A04' then round(isnull(c.[weight],0)*ISNULL(a.[weight1],0)/b.[weight],2) end
+		,wwa05=case when b.[weight]!=0 and c.typea='A05' then round(isnull(c.[weight],0)*ISNULL(a.[weight1],0)/b.[weight],2) end
+	from @tmp a
+	left join (select cubno,SUM(ISNULL([weight1],0)) [weight] from @tmp group by cubno) b on a.cubno=b.cubno
+	left join (select noa,typea,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([money],0)) [money] 
+		from @tmpc group by noa,typea) c on a.cubno=c.noa
+	----------------------------------------------------------------------------------------------
+	--******工時、製造成本*******
+	declare @tmpd table(
+		sel int identity(1,1)
+		,kind nvarchar(20)
+		,makeno nvarchar(30)
+		,mon nvarchar(10)
+		,mins float
+		--依當月工時比例分攤
+		,wages float          --直接人工
+		,makeless float       --製造費用
+		,[money] float        --變動成本
+	)
+	--生產       CUB
+	insert into @tmpd(kind,makeno,mon,mins)
+	select '生產', a.makeno,LEFT(b.datea,6),SUM(isnull(a.mins,0))
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and len(a.makeno)>0
+	group by a.makeno,LEFT(b.datea,6)
+	
+	--烘板	cuc
+	insert into @tmpd(kind,makeno,mon,mins)
+	select '烘板', a.memo,LEFT(b.datea,6),SUM(isnull(a.mins,0))
+	from view_cuds a
+	left join view_cud b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and len(a.memo)>0
+	group by a.memo,LEFT(b.datea,6)
+	
+	--分條       CUC
+	insert into @tmpd(kind,makeno,mon,mins)
+	select '分條',a.cubno,LEFT(b.datea,6),SUM(isnull(a.mins,0))
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and b.typea='分條作業'
+	and len(a.cubno)>0
+	group by  a.cubno,LEFT(b.datea,6)
+
+	--二呎       CUC
+	insert into @tmpd(kind,makeno,mon,mins)
+	select '二呎',a.cubno,LEFT(b.datea,6),SUM(isnull(a.mins,0))
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and b.typea='二呎裁切'
+	and len(a.cubno)>0
+	group by  a.cubno,LEFT(b.datea,6)
+
+	--三呎       CUC
+	insert into @tmpd(kind,makeno,mon,mins)
+	select '三呎',a.cubno,LEFT(b.datea,6),SUM(isnull(a.mins,0))
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and b.typea='三呎裁切'
+	and len(a.cubno)>0
+	group by  a.cubno,LEFT(b.datea,6)
+	
+	--四呎       CUC
+	insert into @tmpd(kind,makeno,mon,mins)
+	select '四呎',a.cubno,LEFT(b.datea,6),SUM(isnull(a.mins,0))
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and b.typea='四呎裁切'
+	and len(a.cubno)>0
+	group by  a.cubno,LEFT(b.datea,6)	
+
+	--十呎       CUC
+	insert into @tmpd(kind,makeno,mon,mins)
+	select '十呎',a.cubno,LEFT(b.datea,6),SUM(isnull(a.mins,0))
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_datea
+	and b.typea='十呎裁切'
+	and len(a.cubno)>0
+	group by  a.cubno,LEFT(b.datea,6)
+	--------------------------------------------------------------------
+	
+
+	declare @tmpe table(
+		sel int identity(1,1)
+		,mon nvarchar(20)
+		,kind nvarchar(20)
+		,wages float          --直接人工
+		,makeless float       --製造費用
+		,[money] float        --變動成本
+	)
+	insert into @tmpe(mon,kind,wages,makeless,[money])
+	select b.mon
+		,case when CHARINDEX('生產',c.mech)>0 then '生產' 
+			when CHARINDEX('烘板',c.mech)>0 then '烘板' 
+			when CHARINDEX('分條',c.mech)>0 then '分條' 
+			when CHARINDEX('二呎',c.mech)>0 or CHARINDEX('2呎',c.mech)>0 then '二呎' 
+			when CHARINDEX('三呎',c.mech)>0 or CHARINDEX('3呎',c.mech)>0 then '三呎' 
+			when CHARINDEX('四呎',c.mech)>0 or CHARINDEX('4呎',c.mech)>0 then '四呎' 
+			when CHARINDEX('十呎',c.mech)>0 then '十呎' 
+			else '' end
+		,sum(ISNULL(a.wages,0)),sum(ISNULL(a.makeless,0)),sum(ISNULL(a.[money],0))
+	from costas a
+	left join costa b on a.noa=b.noa
+	left join mech c on a.mechno=c.noa
+	group by b.mon
+		,case when CHARINDEX('生產',c.mech)>0 then '生產' 
+			when CHARINDEX('烘板',c.mech)>0 then '烘板' 
+			when CHARINDEX('分條',c.mech)>0 then '分條' 
+			when CHARINDEX('二呎',c.mech)>0 or CHARINDEX('2呎',c.mech)>0 then '二呎' 
+			when CHARINDEX('三呎',c.mech)>0 or CHARINDEX('3呎',c.mech)>0 then '三呎' 
+			when CHARINDEX('四呎',c.mech)>0 or CHARINDEX('4呎',c.mech)>0 then '四呎' 
+			when CHARINDEX('十呎',c.mech)>0 then '十呎' 
+			else '' end
+	
+	update @tmpd set wages = case when b.mins!=0 then round(a.mins/b.mins*c.wages,0) else 0 end
+		,makeless = case when b.mins!=0 then round(a.mins/b.mins*c.makeless,0) else 0 end
+		,[money] = case when b.mins!=0 then round(a.mins/b.mins*c.[money],0) else 0 end
+	from @tmpd a
+	left join (select mon,kind,SUM(ISNULL(mins,0)) mins from @tmpd group by mon,kind) b on a.mon=b.mon and a.kind=b.kind
+	left join @tmpe c on a.mon=c.mon and a.kind=c.kind
+
+	----------------------------------------------------------------------------
+	update @tmp set time01 = b.mins
+		,wages01 = b.wages
+		,makeless01 = b.makeless
+		,money01 = b.[money]
+	from @tmp a
+	left join @tmpd b on a.makeno=b.makeno
+	where b.kind='生產'
+	
+	update @tmp set time02 = b.mins
+		,wages02 = b.wages
+		,makeless02 = b.makeless
+		,money02 = b.[money]
+	from @tmp a
+	left join @tmpd b on a.makeno=b.makeno
+	where b.kind='烘板'
+	
+	update @tmp set time03 = b.mins
+		,wages03 = b.wages
+		,makeless03 = b.makeless
+		,money03 = b.[money]
+	from @tmp a
+	left join @tmpd b on a.makeno=b.makeno
+	where b.kind='分條'
+	
+	update @tmp set time04 = b.mins
+		,wages04 = b.wages
+		,makeless04 = b.makeless
+		,money04 = b.[money]
+	from @tmp a
+	left join @tmpd b on a.makeno=b.makeno
+	where b.kind='二呎'
+	
+	update @tmp set time05 = b.mins
+		,wages05 = b.wages
+		,makeless05 = b.makeless
+		,money05 = b.[money]
+	from @tmp a
+	left join @tmpd b on a.makeno=b.makeno
+	where b.kind='三呎'
+	
+	update @tmp set time06 = b.mins
+		,wages06 = b.wages
+		,makeless06 = b.makeless
+		,money06 = b.[money]
+	from @tmp a
+	left join @tmpd b on a.makeno=b.makeno
+	where b.kind='四呎'
+	
+	update @tmp set time07 = b.mins
+		,wages07 = b.wages
+		,makeless07 = b.makeless
+		,money07 = b.[money]
+	from @tmp a
+	left join @tmpd b on a.makeno=b.makeno
+	where b.kind='十呎'
+
+	update @tmp set totweight1 = isnull(weight1,0) + isnull(weight2,0) + isnull(weight3,0) 
+		+ isnull(wwa01,0) + isnull(wwa02,0) + isnull(wwa03,0) + isnull(wwa04,0) + isnull(wwa05,0)
+		,totmoney1 = isnull(money1,0) + isnull(money2,0) + isnull(money3,0) 
+		+ isnull(mma01,0) + isnull(mma02,0) + isnull(mma03,0) + isnull(mma04,0) + isnull(mma05,0)
+	update @tmp set totweight2 = isnull(b.[weight],0)
+	from @tmp a
+	left join (select cname,sum(isnull([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.cname
+	return
+end
