@@ -141,6 +141,8 @@ z_vcc_rk02:--z_vcc_rk02
 
 		,tmoney float
 		,floata float
+		,acc1 nvarchar(20)
+		,acc2 nvarchar(50)
 	)
 	
 	insert into @tmp(gno,accy,noa,noq,custno,cust,custtype,ccusttype
@@ -180,6 +182,10 @@ z_vcc_rk02:--z_vcc_rk02
 	--原幣金額
 	update @tmp set tmoney = round(case when len(unit) = 0 or unit = 'KG' or unit = 'M2' or unit = 'M²' or unit = 'M' or unit = '批' or unit = '公斤' or unit = '噸' or unit = '頓' then [weight] else mount end * price ,2)
 	where isnull(floata,0)!=0
+
+	update @tmp set acc1=isnull(b.vccacc1,''),acc2=isnull(b.vccacc2,'')
+	from @tmp a
+	left join ucc b on a.productno=b.noa
 
 	update @tmp set cspec=b.product
 	from @tmp a
@@ -240,6 +246,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' a30
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' a31
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' a32
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+acc1+'</a>' a33
 	from @tmp order by gno,recno;
 
 z_vcc_rk01:--z_vcc_rk01 
