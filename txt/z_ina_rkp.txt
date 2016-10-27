@@ -187,7 +187,7 @@ z_ina_rkp02:--z_ina_rkp02   ref.z_rc2_rkp01
 		,ordcno a04
 		
 		,typea b01
-		,product b02
+		,productno+' '+product b02
 		,uno b03
 		,size b04
 		,[weight] b05
