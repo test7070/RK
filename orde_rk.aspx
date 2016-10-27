@@ -323,7 +323,9 @@
 		                			$('#txtFax').val(as[0].fax);
 		                			$('#txtTel').val(as[0].tel);
 		                			$('#txtMemo').val(as[0].memo.replace('chr(10)','\n'));
+		                			$('#txtCustno').val(as[0].custno);
 		                			$('#txtComp').val(as[0].comp);
+		                			$('#txtNick').val(as[0].nick);
 		                		}
                     			sum();
                     		}
@@ -771,7 +773,7 @@
 					<tr>
 						<td><span> </span><a class="lbl">付款方式</a></td>
 						<td>
-							<input id="txtPaytype" type="text" class="txt" style="float:left;width: 80%;" maxlength="20"/>
+							<input id="txtPaytype" type="text" class="txt" style="float:left;width: 80%;"/>
 							<select id="combPaytype" style="float:left;width:20px;"></select>							
 						</td>
 						<td><span> </span><a class="lbl">付款備註</a></td>
