@@ -246,7 +246,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' a30
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' a31
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' a32
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+acc1+'</a>' a33
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+acc2+'</a>' a33
 	from @tmp order by gno,recno;
 
 z_vcc_rk01:--z_vcc_rk01 
