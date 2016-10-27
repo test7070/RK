@@ -81,7 +81,7 @@
 					<td align="center" style="width:60px;max-width: 60px;">皮膜<br>厚</td>
 					<td align="center" style="width:60px;max-width: 60px;">寬</td>
 					<td align="center" style="width:60px;max-width: 60px;">長</td>
-					<td align="center" style="width:100px;max-width: 80px;">皮膜</td>
+					<td align="center" style="width:80px;max-width: 80px;">皮膜</td>
 					<td align="center" style="width:60px;max-width: 60px;">背面<br>處理</td>
 					<td align="center" style="width:60px;max-width: 60px;">保護膜</td>
 					<td align="center" style="width:60px;max-width: 60px;">單位</td>
@@ -133,8 +133,8 @@
 					<td style="width:60px;max-width: 60px;"><input id="txtWidth.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtLengthb.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:80px;max-width: 80px;">
-						<input id="txtSpec.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
-						<input id="txtClass.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
+						<input id="txtSpec.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
+						<input id="txtClass.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
 					</td>
 					<td style="width:60px;max-width: 60px;"><input id="txtUcolor.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:60px;max-width: 60px;"><input id="txtRackno.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
