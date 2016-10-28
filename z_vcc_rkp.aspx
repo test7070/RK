@@ -61,13 +61,13 @@
             	$('#btnOk2').click(function(e){
             		switch($('#q_report').data('info').radioIndex) {
                         case 2:
-                        	window.open("./pdf_rklabel02.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db+"&acomp="+($('#chkShowacomp').children().eq(0).prop('checked')?'1':'0'));
+                        	window.open("./pdf_rklabel02.aspx?table=vcc&noa="+$('#txtNoa').val()+"&noq=&db="+q_db+"&acomp="+($('#chkShowacomp').children().eq(0).prop('checked')?'1':'0'));
                             break;
                         case 3:
-                        	window.open("./pdf_rklabel03.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
+                        	window.open("./pdf_rklabel03.aspx?table=vcc&noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
                             break;
                         case 4:
-                        	window.open("./pdf_rklabel05.aspx?noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
+                        	window.open("./pdf_rklabel05.aspx?table=vcc&noa="+$('#txtNoa').val()+"&noq=&db="+q_db);
                             break;
                         default:
                            	$('#btnOk').click();

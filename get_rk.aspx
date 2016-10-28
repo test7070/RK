@@ -111,8 +111,8 @@
 					case 'get_rk':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtUno,txtProductno,txtProduct,txtUnit,txtLengthc,txtMount,txtWeight,txtMemo,txtOrdeno,txtNo2'
-                        	, as.length, as, 'uno,productno,product,unit,lengthc,emount,eweight,memo,ordeno,no2', 'txtOrdeno','');             	
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtUno,txtProductno,txtProduct,txtUnit,txtLengthc,txtMount,txtWeight,txtMemo,txtOrdeno,txtNo2,cmbSpec'
+                        	, as.length, as, 'uno,productno,product,unit,lengthc,emount,eweight,memo,ordeno,no2,ospec', 'txtOrdeno','');             	
                         	//訂單資料
                         	var t_ordeno = $('#txtOrdeno_0').length>0?$('#txtOrdeno_0').val():'';
                     		q_gt('view_orde', "where=^^ noa='"+t_ordeno+"' ^^", 0, 0, 0, JSON.stringify({action:'importOrde'}));
@@ -204,6 +204,24 @@
 						if (q_cur == 4)
 							q_Seek_gtPost();
 						break;
+					default:
+                    	try{
+                    		t_para = JSON.parse(t_name);
+                    		if(t_para.action == 'importOrde'){
+                    			var as = _q_appendData("view_orde", "", true);
+		                		if (as[0] != undefined) {
+		                			$('#txtCustno').val(as[0].custno);
+		                			$('#txtComp').val(as[0].comp);
+		                			$('#txtNick').val(as[0].nick);
+		                			$('#txtAddr').val(as[0].addr2);	
+		                		}
+                    			sum();
+                    		}
+                    		
+                    	}catch(e){
+                    		
+                    	}
+                    	break;
 				}
 			}
 			function q_funcPost(t_func, result) {

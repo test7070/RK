@@ -4,7 +4,7 @@
         //LC-14-00-04-02
         public class ParaIn
         {
-            public string noa="", noq="",acomp="";
+            public string table="",noa="", noq="",acomp="";
         }
         
         public class Para
@@ -27,6 +27,10 @@
             //connectionString = "Data Source=59.125.143.171,1799;Persist Security Info=True;User ID=sa;Password=artsql963;Database=st6";
 
 			var item = new ParaIn();
+			if (Request.QueryString["table"] != null && Request.QueryString["table"].Length > 0)
+            {
+                item.table = Request.QueryString["table"];
+            }
 			if (Request.QueryString["noa"] != null && Request.QueryString["noa"].Length > 0)
             {
                 item.noa = Request.QueryString["noa"];
@@ -75,24 +79,53 @@
 		,pn nvarchar(max)
 		,indate nvarchar(20)
 	)
-	insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
-		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
-	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
-		,a.spec+case when len(a.spec)>0 and len(a.size)>0 then ' / ' else '' end+a.size
-		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
-		,a.uno,a.itemno,e.cname
-		,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
-		,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
-		,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
-		,d.memo
-	from view_vccs a
-	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
-	left join ucc c on a.productno=c.noa
-	left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
-	outer apply(select top 1 * from view_cuts where uno=a.uno) e
-	outer apply(select top 1 * from view_cubs where makeno=e.cname) f
-	where a.noa=@t_noa
-    and (len(@t_noq)=0 or a.noq=@t_noq)
+	if ISNULL(@t_table,'') = 'get'
+	begin
+		insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
+			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
+		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
+			,isnull(h.product,'')+case when len(isnull(h.product,''))>0 and len(isnull(a.size,''))>0 then ' / ' else '' end+a.size
+			,case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
+			else CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end end
+			,a.uno,'',g.cname
+			,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
+			,b.custno,i.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
+			,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
+			,f.memo
+		from view_gets a
+		left join view_get b on a.accy=b.accy and a.noa=b.noa
+		left join ucc c on a.productno=c.noa
+		outer apply(select top 1 * from view_inas where uno=a.uno) d
+		left join view_vccs e on d.noa=e.noa and d.noq=e.noq
+		left join view_ordes f on a.ordeno=f.noa and a.no2=f.no2
+		outer apply(select top 1 * from view_cuts where bno=e.uno) g
+		left join spec h on h.noa=a.spec
+		left join cust i on i.noa=b.custno
+		where a.noa=@t_noa
+		and (len(@t_noq)=0 or a.noq=@t_noq)
+	end
+	else
+	begin
+		insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
+			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
+		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
+			,a.spec+case when len(a.spec)>0 and len(a.size)>0 then ' / ' else '' end+a.size
+			,case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
+			else CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end end
+			,a.uno,a.itemno,e.cname
+			,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
+			,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
+			,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
+			,d.memo
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		left join ucc c on a.productno=c.noa
+		left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
+		outer apply(select top 1 * from view_cuts where bno=a.uno) e
+		outer apply(select top 1 * from view_cubs where makeno=e.cname) f
+		where a.noa=@t_noa
+		and (len(@t_noq)=0 or a.noq=@t_noq)
+    end
 	
 	update @tmp set indate = convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
 	from @tmp a
@@ -107,6 +140,7 @@
 	
 	select * from @tmp";
                 System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand(queryString, connSource);
+                cmd.Parameters.AddWithValue("@t_table", item.table);
                 cmd.Parameters.AddWithValue("@t_noa", item.noa);
                 cmd.Parameters.AddWithValue("@t_noq", item.noq);
                 adapter.SelectCommand = cmd;

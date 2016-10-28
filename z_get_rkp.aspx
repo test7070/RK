@@ -33,9 +33,14 @@
 					},{
 						type : '6', //[3]     1
 						name : 'noa'
+					},{
+						type : '8', //[4]   標籤用     2
+						name : 'showacomp',
+						value : "1@顯示公司抬頭".split(',')
 					}]
 				});
 				q_popAssign();
+				$('#chkShowacomp').children().eq(0).prop('checked',true);
 
 	            var t_para = new Array();
 	            try{
@@ -46,6 +51,18 @@
 	            }else{
 	            	$('#txtNoa').val(t_para.noa);
 	            }
+	            $('<input id="btnOk2" type="button" value="查詢" style="font-size: 16px; font-weight: bold; color: blue; cursor: pointer;"/>').insertBefore('#btnOk');
+            	$('#btnOk').hide();
+            	$('#btnOk2').click(function(e){
+            		switch($('#q_report').data('info').radioIndex) {
+                        case 2:
+                        	window.open("./pdf_rklabel02.aspx?table=get&noa="+$('#txtNoa').val()+"&noq=&db="+q_db+"&acomp="+($('#chkShowacomp').children().eq(0).prop('checked')?'1':'0'));
+                            break;
+                        default:
+                           	$('#btnOk').click();
+                            break;
+                    }
+            	});
             }
 
 			function q_funcPost(t_func, result) {
