@@ -31,14 +31,17 @@ z_cut_rkp01:--z_cut_rkp01
 		bno nvarchar(30),
 		special nvarchar(30),
 		memo nvarchar(max)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
 	)
 	insert into @tmp(recno,gno,accy,noa,noq,datea,ordeno,no2
 		,productno,product,dime,radius,width,lengthb,mount,[weight]
-		,custno,comp,uno,bno,special,memo)
+		,custno,comp,uno,bno,special,memo,pvcno,pvc)
 	select ROW_NUMBER()over(order by a.noa,a.no2),'1'
 		,a.accy,a.noa,a.noq,b.datea,a.ordeno,a.no2
 		,c.productno,c.product,a.dime,a.radius,a.width,a.lengthb
 		,a.mount,a.[weight],a.custno,a.comp,a.uno,a.bno,a.special,a.memo
+		,a.spec,a.[class]
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa 
 	left join view_ordes c on a.ordeno=b.noa and a.no2=c.no2
@@ -48,6 +51,11 @@ z_cut_rkp01:--z_cut_rkp01
 	--and (b.datea between @t_bdate and @t_edate)
 	--and (d.custno between @t_bcustno and @t_ecustno)
 	order by a.noa,a.no2
+	
+	update @tmp set comp=ISNULL(b.nick,a.comp)
+	from @tmp a
+	left join cust b on a.custno=b.noa
+	
 	----------------------------------------------------------------------------------
 	declare @pagecount int = 20
 	declare @n int
@@ -91,5 +99,7 @@ z_cut_rkp01:--z_cut_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+bno +'</a>' bno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+special +'</a>' special
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' memo
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' ppvc
 	from @tmp
 	order by case when recno is null then 'z' else '' end,recno;
