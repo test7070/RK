@@ -52,14 +52,16 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 		,lengthc,mount,[weight])	
 	select '1','1',a.accy,a.noa,a.noq,b.datea
 		,b.custno,b.comp,c.nick,c.tel,c.fax,d.namea,b.addr
-		,a.uno,a.productno,a.product,a.style,a.spec,a.class
-		,a.dime,a.radius,a.width,a.lengthb,a.size
+		,a.uno,a.productno,a.product,f.style,a.spec,a.class
+		,f.dime,f.radius,f.width,f.lengthb,f.size
 		,'','',a.memo
 		,null,isnull(a.mount,0),isnull(a.[weight],0)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa 
 	left join cust c on b.custno=c.noa
 	outer apply (select top 1 * from conn where noa=b.custno and typea='1' order by noq) d
+	left join view_inas e on a.uno=e.uno
+	left join view_vccs f on e.noa=f.noa and e.noq=f.noq
 	--left join view_ordes c on a.ordeno=b.noa and a.no2=c.no2
 	--left join view_orde d on a.ordeno=d.noa
 	--left join view_quat e on d.quatno=e.noa
@@ -82,6 +84,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '*COIL' end 
 			+case when len(ucolor)>0 then ' '+ucolor else '' end
 			+case when len(rackno)>0 then ' '+rackno else '' end
+	
 	--insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
 	--select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
 	--from @tmp

@@ -84,7 +84,7 @@
 	--驗收單廠商及標籤供應商欄位要抓客戶名稱
 	insert into @tmp(accy,noa,noq,typea,productno,product,size,mount,unit,datea,tggno,hard,uno
 		,shelflife,dime,width,lengthb,specno,spec,memo)
-	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.[weight],a.unit,b.datea,b.custno,a.size,a.uno
+	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.[weight],a.unit,b.datea,b.custno,a.brand,a.uno
 		,a.descr,a.dime,a.width,a.lengthb,a.spec,e.product,a.memo
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
@@ -94,7 +94,7 @@
 	where a.noa=@t_noa
 	and (len(@t_noq)=0 or a.noa=@t_noq)
 	order by a.noa,a.noq
-	--硬度因為是字串,改用SIZE來存
+	--RK因為硬度會有字串,改用brand來存
 	update @tmp set size= case when spec='mm' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm' 
 		else CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+case when lengthb>0 then '*'+CAST(lengthb as nvarchar) else '' end end
 	--where len(isnull(size,''))=0 and not(dime=0 and width=0)
