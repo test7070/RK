@@ -37,7 +37,7 @@
 			currentNoa = '';
 			aPop = new Array(
 				['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', '0txtProductno_,txtProduct_', 'ucc_b.aspx']
-            	,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,productno,product,spec,dime,width', '0txtUno_,txtProductno_,txtProduct_,txtSize_,txtDime_,txtWidth_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '95%']);
+            	,['txtUno_', 'btnUno_', 'view_uccc2', 'uno,productno,product,spec,dime,width', '0txtUno_,txtProductno_,txtProduct_', 'uccc_seek_b2.aspx?;;;1=0', '95%', '95%']);
 			
 			$(document).ready(function() {
 				bbmKey = ['noa'];
