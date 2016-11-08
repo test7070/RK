@@ -2423,14 +2423,10 @@ z_cub_rkp03:--z_cub_rkp03
 
 z_cub_rkp01:--z_cub_rkp01	
 	SET QUOTED_IDENTIFIER OFF
-	--[1]
-	--[2]
-	--[3]
-	--[4]
-	--[5]
-	--[6]
-	declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
-	--------------------------------------------------------------------------------
+	--declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
+	declare @t_bdate nvarchar(max) = case when '#non' = [7] then '' else [7] end
+	declare @t_edate nvarchar(max) = case when '#non' = [8] then char(255) else [8] end
+	declare @t_datea nvarchar(max) = @t_edate
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -2700,6 +2696,8 @@ z_cub_rkp01:--z_cub_rkp01
 	left join view_cuts b on a.makeno=b.cname
 	left join view_cut c on b.accy=c.accy and b.noa=c.noa
 	where gno='1'
+	
+	delete @tmp where not isnull(mon,'') between left(@t_bdate,6) and left(@t_edate,6)
 
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar)+'</a>' rr
@@ -2765,7 +2763,10 @@ z_cub_rkp01:--z_cub_rkp01
 	
 z_cub_rkp02:--z_cub_rkp02	
 	SET QUOTED_IDENTIFIER OFF
-	declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
+	--declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
+	declare @t_bdate nvarchar(max) = case when '#non' = [7] then '' else [7] end
+	declare @t_edate nvarchar(max) = case when '#non' = [8] then char(255) else [8] end
+	declare @t_datea nvarchar(max) = @t_edate
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -2799,6 +2800,7 @@ z_cub_rkp02:--z_cub_rkp02
 		memo nvarchar(max)
 		,ordeno nvarchar(20)
 		,no2 nvarchar(10)
+		,mon nvarchar(20)
 	)
 	insert into @tmp(cubno,cubnoq,gno,dime,radius,width,lengthb
 		,makeno,custno,cust,timea,weight02,ordeno,no2)
@@ -2857,7 +2859,15 @@ z_cub_rkp02:--z_cub_rkp02
 		,rate03 = case when money04=0 then 0 else ROUND(money03/money04*100,2) end
 		,price01 = case when weight02=0 then 0 else ROUND((isnull(money02,0)+isnull(money03,0))/weight02,2) end
 		,price02 = case when weight02=0 then 0 else ROUND(money04/weight02,2) end
-
+	
+	update @tmp set mon=LEFT(c.datea,6)
+	from @tmp a
+	left join view_cuts b on a.makeno=b.cname
+	left join view_cut c on b.accy=c.accy and b.noa=c.noa
+	where gno='1'
+	
+	delete @tmp where not isnull(mon,'') between left(@t_bdate,6) and left(@t_edate,6)
+	
 	select gno
 		,row_number()over(order by gno,makeno) rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar)+'</a>' rr
@@ -2883,6 +2893,7 @@ z_cub_rkp02:--z_cub_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money04,0)+'</a>' a20
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price01,-1)+'</a>' a21
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a22
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a23
 	from @tmp
 	order by gno,makeno
 	drop table #z_cub_rkp02;
