@@ -67,6 +67,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,rdate nvarchar(20) --預計交期
 		,memo nvarchar(max)
 		,xrdate nvarchar(20) --交貨日期以最小預計交期為主
+		,coin nvarchar(20)
 	)
 	---------------------------------------------------------------------------------------------
 	insert into @tmp(gno,pno,accy,noa,noq,cno,acomp,odate,paytype,trantype
@@ -74,20 +75,20 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,tggno,tgg,tel,fax,post,addr,post2,addr2,conn
 		,[money],tax,total
 		,kind, productno,product,dime,width,lengthb,radius,sizea,spec,cspec
-		,unit,mount,[weight],price,totals,rdate,memo
+		,unit,mount,[weight],price,totals,rdate,memo,coin
 	)
 	select '1',1,a.accy,a.noa,b.no2,a.cno,a.acomp,a.odate,a.paytype,a.trantype
 		,a.salesno,a.sales
 		,a.tggno,a.tgg,a.tel,a.fax,a.post,a.addr,a.post2,a.addr2,c.namea
 		,a.[money],a.tax,a.total
 		,a.kind,b.productno,b.product,b.dime,b.width,b.lengthb,b.radius,b.sizea,b.spec,d.product
-		,b.unit,b.mount,b.[weight],b.price,b.total,b.rdate,b.memo
+		,b.unit,b.mount,b.[weight],b.price,b.total,b.rdate,b.memo,a.coin
 	from view_ordc a
 	left join view_ordcs b on a.accy=b.accy and a.noa=b.noa
 	outer apply(select top 1 * from conn where noa=a.tggno and len(ISNULL(namea,''))>0)c
 	left join spec d on b.spec=d.noa
 	where a.noa=@t_noa
-	
+
 	update @tmp set sizea = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
 		+case when ISNULL(a.dime,0)=0 or ISNULL(a.width,0)=0 then '' else '*' end
 		+case when ISNULL(a.width,0)=0 then '' else CAST(a.width as nvarchar) end
@@ -109,21 +110,30 @@ z_ordc_rkp01:--z_ordc_rkp01
 	begin
 		set @memo1 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
 		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
-	end
-	if(CHARINDEX('chr(10)',@memo)>0)
-	begin
-		set  @memo2 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
-		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
-	end
-	if(CHARINDEX('chr(10)',@memo)>0)
-	begin
-		set @memo3 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
-		set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+		if(CHARINDEX('chr(10)',@memo)>0)
+		begin
+			set  @memo2 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
+			set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+			if(CHARINDEX('chr(10)',@memo)>0)
+			begin
+				set @memo3 = substring(@memo,1,CHARINDEX('chr(10)',@memo)-1)
+				set @memo = SUBSTRING(@memo,CHARINDEX('chr(10)',@memo)+7,LEN(@memo))
+			end
+			else
+			begin
+				set @memo3 = @memo
+			end
+		end
+		else
+		begin
+			set @memo2 = @memo
+		end
 	end
 	else
 	begin
-		set @memo3 = @memo
+		set @memo1 = @memo
 	end
+	
 	
 	insert into @tmp(gno,pno)values('4',4)
 	insert into @tmp(gno,pno,memo)values('5',5,@memo1)
@@ -184,7 +194,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,dbo.getComma([weight],-1) b06
 		,dbo.getComma([price],-1) b07
 		,dbo.getComma([totals],-1) b08
-		,memo b09
+		,case when len(ISNULL(coin,''))>0 then coin+' ' else '' end + isnull(memo,'') b09
 		
 		,dbo.getComma([money],-1) c01
 		,dbo.getComma([tax],-1) c02

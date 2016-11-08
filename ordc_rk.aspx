@@ -245,8 +245,9 @@
 						return;
 					var t_ordcno = $('#txtNoa').val();
 					var t_tggno = $('#txtTggno').val();
+					var t_kind = $('#cmbKind').val();
                 	var t_where ='';
-                	q_box("ordb_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({ordcno:t_ordcno,tggno:t_tggno,page:'ordc_rk'}), "ordb_ordc", "95%", "95%", '');
+                	q_box("ordb_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({ordcno:t_ordcno,kind:t_kind,tggno:t_tggno,page:'ordc_rk'}), "ordb_ordc", "95%", "95%", '');
 				});
 				
 				
@@ -271,8 +272,8 @@
 					case 'ordb_ordc':
                         if (b_ret != null) {
                         	as = b_ret;
-                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdbno,txtNo3,txtProductno,txtProduct,cmbSpec,txtUnit,txtDime,txtWidth,txtLengthb,txtPrice,txtMount,txtWeight'
-                        	, as.length, as, 'noa,no3,productno,product,spec,unit,dime,width,lengthb,price,emount,eweight', '','');
+                    		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdbno,txtNo3,txtProductno,txtProductno1,txtProduct,cmbSpec,txtUnit,txtDime,txtWidth,txtLengthb,txtPrice,txtMount,txtWeight,txtMemo'
+                        	, as.length, as, 'noa,no3,productno,productno1,product,spec,unit,dime,width,lengthb,price,emount,eweight,memo', '','');
                         	sum();
                         }else{
                         	Unlock(1);
@@ -593,7 +594,7 @@
                         $('#txtProductno1_' + j).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtProductno1_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct1_'+n).click();
                         });
 						//計算理論重

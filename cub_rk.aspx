@@ -19,7 +19,7 @@
 			var toIns = true;
 			var q_name = "cub";
 			var q_readonly = ['txtNoa','txtWorker','txtWorker2'];
-			var q_readonlys = ['txtNoq','txtMakeno'];
+			var q_readonlys = ['txtNoq','txtMakeno','txtSize','txtDime','txtWidth','txtProductno','txtProduct'];
 			var q_readonlyt = ['txtNoq','txtProductno','txtProduct'];
 			var bbmNum = [];
 			var bbsNum = [];
@@ -34,6 +34,7 @@
 			brwKey = 'noa';
 			q_desc = 1;
 			brwCount2 = 5;
+			currentNoa = '';
 			aPop = new Array(
 				['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', '0txtProductno_,txtProduct_', 'ucc_b.aspx']
 				,['txtCustno_', 'btnCust_', 'cust', 'noa,nick', 'txtCustno_,txtComp_', 'cust_b.aspx']
@@ -131,6 +132,21 @@
 
 			function q_gtPost(t_name) {
 				switch (t_name) {
+					case 'isexist_get_modi':
+						var t_noa = $('#txtNoa').val();
+						var as = _q_appendData("view_get", "", true);
+						if(as[0]!=undefined){
+							q_func('get_post.post.post1', r_accy + ',' + t_noa + ',1');
+						}
+						break;
+					case 'isexist_get_dele':
+						var t_noa = currentNoa;
+						var as = _q_appendData("view_get", "", true);
+						if(as[0]!=undefined){
+							q_func('get_post.post.post0', r_accy + ',' + t_noa + ',0');
+							q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+						}
+						break;
 					case q_name:
 						if (q_cur == 4)
 							q_Seek_gtPost();
@@ -200,9 +216,21 @@
 		                			}
 		                		}catch(e){
 		                		}
+                    		}else if(t_para.action == 'checkMakeno'){
+                    			try{
+                    				var as = _q_appendData("view_cub", "", true);
+			                		if (as[0] != undefined) {
+		                				for(var i=0;i<as.length;i++){
+		                					if(as[i].noa!=t_para.noa){
+		                						alert('製造批號重覆，請檢查!');
+		                						return;
+		                					}
+		                				}
+		                			}
+		                			save();
+		                		}catch(e){
+		                		}
                     		}
-                    		
-                    		
                     	}catch(e){
                     		
                     	}
@@ -211,8 +239,17 @@
 			}
 
 			function q_stPost() {
-				if (!(q_cur == 1 || q_cur == 2))
-					return false;
+				if (q_cur == 1 || q_cur == 2){
+					t_noa = $('#txtNoa').val();
+					if(t_noa.length>0){
+						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';1');
+						q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
+					}
+				}
+				if(q_cur==3){
+					q_gt('view_get', "where=^^noa='" + currentNoa + "'^^", 0, 0, 0, "isexist_get_dele",1);				
+				}
 			}
 
 			function q_boxClose(s2) {
@@ -222,7 +259,7 @@
                         if (b_ret != null) {
                         	as = b_ret;
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtCustno,txtComp,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtUnit,txtSize,txtSpec,txtScolor,txtProcess,txtZinc,txtFlower,txtWeight'
-                        	, as.length, as, 'noa,no2,custno,comp,productno,product,dime,radius,width,lengthb,unit,size,spec,zinc,source,hard,uno,tweight', 'txtOrdeno','');             	
+                        	, as.length, as, 'noa,no2,custno,nick,productno,product,dime,radius,width,lengthb,unit,size,spec,zinc,source,hard,uno,tweight', 'txtOrdeno','');             	
                         }else{
                         	Unlock(1);
                         }
@@ -310,6 +347,11 @@
             }
 
 			function btnOk() {
+				//檢查製造批號是否已重覆
+				t_where="where=^^ vcceno='"+$('#txtVcceno').val()+"' ^^";
+				q_gt('view_cub', t_where, 0, 0, 0, JSON.stringify({action:'checkMakeno',noa:$('#txtNoa').val()}), r_accy);
+			}
+			function save(){
 				toIns = false;
 				if ($('#txtDatea').val().length == 0 || !q_cd($('#txtDatea').val())) {
 					alert(q_getMsg('lblDatea') + '錯誤。');
@@ -399,6 +441,9 @@
                     $('#cmbProcess').removeAttr('disabled');
                     $('#btnOrde').removeAttr('disabled');
                     $('#btnCubu_rk').attr('disabled', 'disabled');
+                    
+                    if($('#txtVcceno').val().length>0)
+                    	$('#txtVcceno').attr('disabled','disabled');
                 }
 			}
 			
@@ -484,12 +529,11 @@
 		                	var t_where ='';
 		                	q_box("cng_cub_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cubno:t_noa,n:n,page:'cub_rk'}), "cng_cub_"+n, "95%", "95%", '');
                         });
-                        $('#txtProductno_' + i).bind('contextmenu', function(e) {
-                            /*滑鼠右鍵*/
+                        /*$('#txtProductno_' + i).bind('contextmenu', function(e) {
                             e.preventDefault();
                             var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct_'+n).click();
-                        });
+                        });*/
                         $('#txtScolor_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
@@ -624,8 +668,9 @@
 			}
 
 			function btnDele() {
+				currentNoa = $('#txtNoa').val();
 				toIns = false;
-				_btnDele();
+				_btnDele();	
 			}
 
 			function btnCancel() {

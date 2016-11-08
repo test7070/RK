@@ -113,8 +113,8 @@
 					<td style="width:2%;"><input type="checkbox" class="ccheck" id="chkSel.*"/></td>
 					<td style="width:10%;">
 						<input id="txtAccy.*" type="text" style="display:none;"  readonly="readonly" />
-						<input id="txtNoa.*" type="text" style="float:left;width:85%;"  readonly="readonly" />
-						<input id="txtNo2.*" type="text" style="float:left;width:15%;"  readonly="readonly" />
+						<input id="txtNoa.*" type="text" style="float:left;width:70%;"  readonly="readonly" />
+						<input id="txtNo2.*" type="text" style="float:left;width:25%;"  readonly="readonly" />
 					</td>
 					<td style="width:20%;">
 						<input id="txtProductno.*" type="text" style="float:left;width:45%;"  readonly="readonly" />

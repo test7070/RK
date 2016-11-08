@@ -1,8 +1,9 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" >
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta http-equiv="Content-Language" content="en-us" />
-		<title></title>
+		<title> </title>
 		<script src="../script/jquery.min.js" type="text/javascript"></script>
 		<script src="../script/qj2.js" type="text/javascript"></script>
 		<script src='qset.js' type="text/javascript"></script>
@@ -29,19 +30,19 @@
                 var t_para = new Array();
 	            try{
 	            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-	            	
+	            	//目前只有CUT_RK.aspx有用到
 	            	if(t_para.page=='cub_rk'){
-	            		q_name = "orde_cub"
+	            		q_name = "orde_cub";
 	            		t_content = "where=^^['"+t_para.cubno+"','"+t_para.page+"')^^";
 	            	}else if(t_para.page=='cuc_rk'){
-	            		q_name = "orde_cuc"
+	            		q_name = "orde_cuc";
 	            		t_content = "where=^^['"+t_para.cucno+"','"+t_para.page+"')^^";
 	            	}else if(t_para.page=='cud_rk'){
-	            		q_name = "orde_cud"
+	            		q_name = "orde_cud";
 	            		t_content = "where=^^['"+t_para.cudno+"','"+t_para.page+"')^^";
 	            	}else if(t_para.page=='cut_rk'){
-	            		q_name = "orde_cut"
-	            		t_content = "where=^^['"+t_para.cutno+"','"+t_para.page+"')^^";
+	            		q_name = "orde_cut";
+	            		t_content = "where=^^['"+t_para.cutno+"','"+t_para.page+"','"+t_para.makeno+"','"+t_para.ordeno+"')^^";
 	            	}else{
 	            		t_content = "where=^^['"+t_para.vccno+"','"+t_para.custno+"','"+t_para.page+"')^^";
 	            	}
@@ -59,6 +60,24 @@
 				
 				$('#checkAllCheckbox').click(function(e){
 					$('.ccheck').prop('checked',$(this).prop('checked'));
+				});
+				
+				$('#btnSearch').click(function() {
+					var t_makeno = $.trim($('#txtMakeno').val());
+					var t_ordeno = $.trim($('#txtOrdeno').val());
+					var t_noa = '';
+					var t_page='';
+					t_where = '';
+					
+					try{
+		            	t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
+		            	if(t_para.page=='cut_rk'){
+		            		t_noa = t_para.cutno;
+							t_page = t_para.page;
+		            	}
+		            }catch(e){
+		            }   
+					location.href = "http://"+location.host +location.pathname+"?" + r_userno + ";" + r_name + ";" + q_getId()[2]+ ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:t_page,makeno:t_makeno,ordeno:t_ordeno});
 				});
 			}
             function q_gtPost(t_name) {
@@ -94,7 +113,7 @@
 			<table id="tFixedTitle" class='tFixedTitle'  border="2"  cellpadding='2' cellspacing='1' style='width:100%;'  >
 				<tr style='color:white; background:#003366;' >
 					<th align="center" style="width:25px;max-width: 25px;"><input type="checkbox" id="checkAllCheckbox"/></th>
-					<td align="center" style="width:30px;max-width: 30px;"> </td>
+					<td align="center" style="width:30px;max-width: 30px;"><a>　</a></td>
 					<td align="center" style="width:120px;max-width: 120px;">製造批號</td>
 					<td align="center" style="width:120px;max-width: 120px;">訂單編號</td>
 					<td align="center" style="width:100px;max-width: 100px;">客戶</td>
@@ -118,8 +137,8 @@
 		<div id="dbbs" style="overflow: scroll;height:450px;" >
 			<table id="tbbs" class='tbbs' border="2" cellpadding='2' cellspacing='1' style='width:100%;' >
 				<tr style="display:none;">
-					<th align="center" style="width:25px;max-width: 25px;"> </th>
-					<td align="center" style="width:30px;max-width: 30px;"> </td>
+					<th align="center" style="width:25px;max-width: 25px;"><a>　</a></th>
+					<td align="center" style="width:30px;max-width: 30px;"><a>　</a></td>
 					<td align="center" style="width:120px;max-width: 120px;">製造批號</td>
 					<td align="center" style="width:120px;max-width: 120px;">訂單編號</td>
 					<td align="center" style="width:100px;max-width: 100px;">客戶</td>
@@ -140,11 +159,11 @@
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td style="width:25px;max-width: 25px;"><input type="checkbox" class="ccheck" id="chkSel.*"/></td>
-					<td style="width:30px;max-width: 30px;text-align: center;"><a id="lblNo.*" style="font-weight: bold;" readonly="readonly"> </a></td>
+					<td style="width:30px;max-width: 30px;"><a id="lblNo.*" style="font-weight: bold;width:30px;max-width: 30px;" readonly="readonly"> </a></td>
 					<td style="width:120px;max-width: 120px;"><input id="txtMakeno.*" type="text" style="float:left;width:95%;"  readonly="readonly" /></td>
 					<td style="width:120px;max-width: 120px;">
 						<input id="txtAccy.*" type="text" style="display:none;"  readonly="readonly" />
-						<input id="txtNoa.*" type="text" style="float:left;width:70%;"  readonly="readonly" />
+						<input id="txtNoa.*" type="text" style="float:left;width:60%;"  readonly="readonly" />
 						<input id="txtNo2.*" type="text" style="float:left;width:25%;"  readonly="readonly" />
 					</td>
 					<td style="width:100px;max-width: 100px;"><input id="txtComp.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
@@ -154,10 +173,10 @@
 					<td style="width:80px;max-width: 80px;"><input id="txtLengthb.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:80px;max-width: 80px;"><input id="txtUnit.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:120px;max-width: 120px;">
-						<input id="txtProductno.*" type="text" style="float:left;width:30%;"  readonly="readonly" />
-						<input id="txtProduct.*" type="text" style="float:left;width:70%;"  readonly="readonly" />
-						<input id="txtPvcno.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
-						<input id="txtPvc.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
+						<input id="txtProductno.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
+						<input id="txtProduct.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
+						<input id="txtPvcno.*" type="text" style="float:left;width:40%;"  readonly="readonly" />
+						<input id="txtPvc.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
 					</td>
 					<td style="width:80px;max-width: 80px;"><input id="txtUcolor.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:100px;max-width: 100px;">
@@ -176,6 +195,13 @@
 				</tr>
 			</table>
 		</div>
+		<div>
+			<a>訂單編號</a>
+			<input class="txt" id="txtOrdeno" type="text" style="width:150px;" />
+			<a>製造批號查詢</a>
+			<input class="txt" id="txtMakeno" type="text" style="width:150px;" />
+			<input type="button" id="btnSearch" style="border-style: none; width: 26px; height: 26px; cursor: pointer; background: url(../image/search_32.png) 0px 0px no-repeat;background-size: 100%;">
+		 </div>
 		<!--#include file="../inc/pop_ctrl.inc"-->
 	</body>
 </html>

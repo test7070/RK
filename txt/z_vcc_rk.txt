@@ -1,4 +1,4 @@
-z_vcc_rk03:--z_vcc_rk02  ref.z_vccst5
+z_vcc_rk03:--z_vcc_rk03  ref.z_vccst5
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
 	
@@ -49,15 +49,16 @@ z_vcc_rk02:--z_vcc_rk02
 	declare @t_cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
 	declare @t_db nvarchar(max) = '[2]'
-	declare @t_stktype nvarchar(max)='[3]'
-	declare @t_kind nvarchar(max)= case when '#non'=[4] then '' else [4] end 
-	declare @t_custtype nvarchar(max)= case when '#non'=[5] then '' else [5] end 
-	declare @t_bdate nvarchar(30) = case when '#non'=[6] then '' else [6] end 
-	declare @t_edate nvarchar(30) = case when '#non'=[7] then char(255) else [7] end 
-	declare @t_bcustno nvarchar(30) = case when '#non'=[8] then '' else [8] end 
-	declare @t_ecustno nvarchar(30) = case when '#non'=[9] then char(255) else [9] end
-	declare @t_bproductno nvarchar(30) = case when '#non'=[10] then '' else [10] end 
-	declare @t_eproductno nvarchar(30) = case when '#non'=[11] then char(255) else [11] end 
+	declare @t_stktype nvarchar(max)=N'[3]'
+	declare @t_ordestype nvarchar(max)=N'[4]'
+	declare @t_kind nvarchar(max)= case when '#non'=[5] then '' else [5] end 
+	declare @t_custtype nvarchar(max)= case when '#non'=[6] then '' else [6] end 
+	declare @t_bdate nvarchar(30) = case when '#non'=[7] then '' else [7] end 
+	declare @t_edate nvarchar(30) = case when '#non'=[8] then char(255) else [8] end 
+	declare @t_bcustno nvarchar(30) = case when '#non'=[9] then '' else [9] end 
+	declare @t_ecustno nvarchar(30) = case when '#non'=[10] then char(255) else [10] end
+	declare @t_bproductno nvarchar(30) = case when '#non'=[11] then '' else [11] end 
+	declare @t_eproductno nvarchar(30) = case when '#non'=[12] then char(255) else [12] end 
 	
 	declare @t_bradius float = 0
 	declare @t_eradius float = 999999
@@ -68,14 +69,14 @@ z_vcc_rk02:--z_vcc_rk02
 	declare @t_blengthb float = 0
 	declare @t_elengthb float = 999999
 	begin try
-		set @t_bradius = case when '#non'=[12] then 0 else cast([12] as float) end 
-		set @t_eradius = case when '#non'=[13] then 99999 else cast([13] as float) end 
-		set @t_bdime = case when '#non'=[14] then 0 else cast([14] as float) end 
-		set @t_edime = case when '#non'=[15] then 99999 else cast([15] as float) end 
-		set @t_bwidth = case when '#non'=[16] then 0 else cast([16] as float) end 
-		set @t_ewidth = case when '#non'=[17] then 99999 else cast([17] as float) end 
-		set @t_blengthb = case when '#non'=[18] then 0 else cast([18] as float) end 
-		set @t_elengthb = case when '#non'=[19] then 99999 else cast([19] as float) end 
+		set @t_bradius = case when '#non'=[13] then 0 else cast([13] as float) end 
+		set @t_eradius = case when '#non'=[14] then 99999 else cast([14] as float) end 
+		set @t_bdime = case when '#non'=[15] then 0 else cast([15] as float) end 
+		set @t_edime = case when '#non'=[16] then 99999 else cast([16] as float) end 
+		set @t_bwidth = case when '#non'=[17] then 0 else cast([17] as float) end 
+		set @t_ewidth = case when '#non'=[18] then 99999 else cast([18] as float) end 
+		set @t_blengthb = case when '#non'=[19] then 0 else cast([19] as float) end 
+		set @t_elengthb = case when '#non'=[20] then 99999 else cast([20] as float) end 
 	end try
 	begin catch
 		set @t_bradius = 0
@@ -87,6 +88,7 @@ z_vcc_rk02:--z_vcc_rk02
 		set @t_blengthb = 0
 		set @t_elengthb = 999999
 	end catch
+	------------------------------------------------------------------
 	------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -103,7 +105,7 @@ z_vcc_rk02:--z_vcc_rk02
 		,productno nvarchar(30)
 		,product nvarchar(50)
 		,style nvarchar(20) --底材
-		,spec nvarchar(20) --訂單規程
+		,spec nvarchar(20) --訂單規格
 		,cspec nvarchar(30)
 		,size nvarchar(max)
 		,pvcno nvarchar(20)
@@ -119,25 +121,56 @@ z_vcc_rk02:--z_vcc_rk02
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(10)
 		,uno nvarchar(30)
-	)
+		,invono nvarchar(max)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,mweight float
+		,coin nvarchar(20)
+		,[money2] float
+		,tax float
+		,total float
+		,itemno nvarchar(20)
+		,packingno int
+		,memo nvarchar(max)
+		,ordememo nvarchar(max)
+		,po nvarchar(max)
+		,pn nvarchar(max)
+		,checker nvarchar(max)
 
+		,tmoney float
+		,floata float
+		,acc1 nvarchar(20)
+		,acc2 nvarchar(50)
+	)
+	
 	insert into @tmp(gno,accy,noa,noq,custno,cust,custtype,ccusttype
 		,datea,productno,product
 		,style,spec,cspec,size
 		,pvcno,pvc,pveno,pve
-		,lengthc,mount,[weight],unit,price,[money],ordeno,ordeno2,uno)
-	select '1',a.accy,a.noa,a.noq,b.custno,c.nick,c.typea,d.namea
+		,lengthc,mount,[weight],unit,price,[money],ordeno,ordeno2,uno
+		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno
+		,memo,ordememo,checker
+		,tmoney,floata)
+	select '1',a.accy,a.noa,a.noq,b.custno,c.nick,c.stype,isnull(f.product,'')
 		,b.datea,a.productno,a.product
-		,isnull(a.style,''),null,null
+		,isnull(a.style,''),d.spec,null
 		,case when len(ISNULL(a.size,''))>0 then a.size else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*' + case when ISNULL(a.lengthb,0)>0 then CAST(a.lengthb as nvarchar) else 'COIL' end end
-		,a.spec,a.[class],null,a.rackno
+		,a.spec,a.[class],d.zinc,a.rackno
 		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2,a.uno
+		,b.invono,a.dime,a.radius,a.width,a.lengthb,a.mweight,b.coin,0,0,0,a.itemno
+		,a.memo,isnull(d.memo,''),a.checker
+		,case when isnull(b.floata,0)=0 then 0 else round(a.price*b.floata,4) end
+		,b.floata
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
-	left join cust c on b.custno=c.noa
-	left join custtype d on c.typea=d.noa
+	left join view_orde c on a.ordeno=c.noa
+	left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
+	left join dbo.fnSplit(@t_ordestype) e on c.stype=e.n
+	left join adpro f on d.custpro=f.noa
 	where (len(@t_kind)=0 or b.kind=@t_kind)
-	and (len(@t_custtype)=0 or c.typea=@t_custtype)
+	and (len(@t_custtype)=0 or d.custpro=@t_custtype)
 	and ISNULL(b.datea,'') between @t_bdate and @t_edate
 	and ISNULL(b.custno,'') between @t_bcustno and @t_ecustno
 	and isnull(a.productno,'') between @t_bproductno and @t_eproductno
@@ -145,33 +178,75 @@ z_vcc_rk02:--z_vcc_rk02
 	and ISNULL(a.dime,0) between @t_bdime and @t_edime
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	
-	update @tmp set spec=b.spec,cspec=c.product
+	--t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓'
+	--原幣金額
+	update @tmp set tmoney = round(case when len(unit) = 0 or unit = 'KG' or unit = 'M2' or unit = 'M²' or unit = 'M' or unit = '批' or unit = '公斤' or unit = '噸' or unit = '頓' then [weight] else mount end * price ,2)
+	where isnull(floata,0)!=0
+
+	update @tmp set acc1=isnull(b.vccacc1,''),acc2=isnull(b.vccacc2,'')
 	from @tmp a
-	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
-	left join spec c on b.spec=c.noa
-	where b.noa is null
+	left join ucc b on a.productno=b.noa
+
+	update @tmp set cspec=b.product
+	from @tmp a
+	left join spec b on a.spec=b.noa
+	where b.noa is not null
+	
+	update @tmp set packingno=b.recno
+	from @tmp a
+	left join (select accy,noa,noq,ROW_NUMBER()over(partition by accy,noa order by noq) recno 
+		from view_vccs where isnull(lengthc,0)!=0) b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+	where b.noa is not null
+	
+	update @tmp set po=case when CHARINDEX('chr(10)',ordememo)>0 then LEFT(ordememo,CHARINDEX('chr(10)',ordememo)-1) else ordememo end
+		,pn = case when CHARINDEX('chr(10)',ordememo)>0 then substring(ordememo,CHARINDEX('chr(10)',ordememo)+7,len(ordememo)) else '' end
+	where len(ordememo)>0
 	-------------------------------------------------------------------------------
 	update @tmp set recno=b.recno
 	from @tmp a
-	left join (select sel, ROW_NUMBER()over(order by custtype,ccusttype,custno,cust,productno,product,pvcno,pvc,pveno,pve,size,style,price) recno from @tmp ) b on a.sel=b.sel
-	--業種	客戶	品名	皮膜	保護膜	規格 批號	數量	重量	單價	金額 
+	left join (select sel, ROW_NUMBER()over(order by noa,noq) recno from @tmp ) b on a.sel=b.sel
 	
-	insert into @tmp(gno,mount,[weight],[money])
-	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)) from @tmp
+	insert into @tmp(gno,mount,[weight],[money],[tmoney],lengthc,mweight)
+	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)),sum(isnull([tmoney],0)),sum(isnull([lengthc],0)) ,sum(isnull([mweight],0)) 
+	from @tmp
+
 	select  gno
 		,"<a href="+CHAR(34)+"JavaScript:q_box('vcc_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(recno as nvarchar)+"</a>" rr
-		,ccusttype a01
-		,cust a02
-		,product a03
-		,pvcno+pvc a04
-		,pve a05
-		,style+size a06
-		,uno a07
-		,dbo.getComma(mount,-1) a08
-		,dbo.getComma([weight],-1) a09
-		,dbo.getComma(price,-1) a10
-		,dbo.getComma([money],-1) a11
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+datea+'</a>' a01--出貨日
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ordeno+'</a>' a00
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+uno+'</a>' a02--批號	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+invono+'</a>' a03--發票號碼	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ccusttype+'</a>' a04--業種	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a05--客戶	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' a06--品名	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' a07--皮膜編號	
+	  	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' a08--皮膜名稱		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' a09--保護膜編號		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' a10--保護膜名稱		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(dime as nvarchar)+'</a>' a11--厚		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(radius as nvarchar)+'</a>' a12--皮膜厚
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(width as nvarchar)+'</a>' a13--寬
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(lengthb as nvarchar)+'</a>' a14--長
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' a15--規格	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+checker+'</a>' a16--包裝單位	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(packingno as nvarchar)+'</a>' a17--Packing NO.	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(lengthc as nvarchar)+'</a>' a18--件數		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(mount,-1)+'</a>' a19--數量		
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma([weight],-1)+'</a>' a20--重量	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma([mweight],-1)+'</a>' a21--毛重	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' a22--計價單位
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+coin+'</a>' a23--幣別
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when floata=0 then '' else dbo.getComma(price,-1) end+'</a>' a24--原幣單價
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when floata=0 then '' else dbo.getComma(tmoney,-1) end +'</a>' a25--原幣金額
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when floata=0 then '' else dbo.getComma(floata,-1) end +'</a>' a26--匯率
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when [weight]=0 then '' else dbo.getComma(round([money]/[weight],2),-1) end+'</a>' a27--本幣單價KG
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma([money],-1)+'</a>' a28--本幣銷售額
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+itemno+'</a>' a29--棧板序號
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' a30
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' a31
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' a32
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+acc2+'</a>' a33
 	from @tmp order by gno,recno;
 
 z_vcc_rk01:--z_vcc_rk01 
@@ -179,15 +254,16 @@ z_vcc_rk01:--z_vcc_rk01
 	declare @t_cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
 	declare @t_db nvarchar(max) = '[2]'
-	declare @t_stktype nvarchar(max)='[3]'
-	declare @t_kind nvarchar(max)= case when '#non'=[4] then '' else [4] end 
-	declare @t_custtype nvarchar(max)= case when '#non'=[5] then '' else [5] end 
-	declare @t_bdate nvarchar(30) = case when '#non'=[6] then '' else [6] end 
-	declare @t_edate nvarchar(30) = case when '#non'=[7] then char(255) else [7] end 
-	declare @t_bcustno nvarchar(30) = case when '#non'=[8] then '' else [8] end 
-	declare @t_ecustno nvarchar(30) = case when '#non'=[9] then char(255) else [9] end
-	declare @t_bproductno nvarchar(30) = case when '#non'=[10] then '' else [10] end 
-	declare @t_eproductno nvarchar(30) = case when '#non'=[11] then char(255) else [11] end 
+	declare @t_stktype nvarchar(max)=N'[3]'
+	declare @t_ordestype nvarchar(max)=N'[4]'
+	declare @t_kind nvarchar(max)= case when '#non'=[5] then '' else [5] end 
+	declare @t_custtype nvarchar(max)= case when '#non'=[6] then '' else [6] end 
+	declare @t_bdate nvarchar(30) = case when '#non'=[7] then '' else [7] end 
+	declare @t_edate nvarchar(30) = case when '#non'=[8] then char(255) else [8] end 
+	declare @t_bcustno nvarchar(30) = case when '#non'=[9] then '' else [9] end 
+	declare @t_ecustno nvarchar(30) = case when '#non'=[10] then char(255) else [10] end
+	declare @t_bproductno nvarchar(30) = case when '#non'=[11] then '' else [11] end 
+	declare @t_eproductno nvarchar(30) = case when '#non'=[12] then char(255) else [12] end 
 	
 	declare @t_bradius float = 0
 	declare @t_eradius float = 999999
@@ -198,14 +274,14 @@ z_vcc_rk01:--z_vcc_rk01
 	declare @t_blengthb float = 0
 	declare @t_elengthb float = 999999
 	begin try
-		set @t_bradius = case when '#non'=[12] then 0 else cast([12] as float) end 
-		set @t_eradius = case when '#non'=[13] then 99999 else cast([13] as float) end 
-		set @t_bdime = case when '#non'=[14] then 0 else cast([14] as float) end 
-		set @t_edime = case when '#non'=[15] then 99999 else cast([15] as float) end 
-		set @t_bwidth = case when '#non'=[16] then 0 else cast([16] as float) end 
-		set @t_ewidth = case when '#non'=[17] then 99999 else cast([17] as float) end 
-		set @t_blengthb = case when '#non'=[18] then 0 else cast([18] as float) end 
-		set @t_elengthb = case when '#non'=[19] then 99999 else cast([19] as float) end 
+		set @t_bradius = case when '#non'=[13] then 0 else cast([13] as float) end 
+		set @t_eradius = case when '#non'=[14] then 99999 else cast([14] as float) end 
+		set @t_bdime = case when '#non'=[15] then 0 else cast([15] as float) end 
+		set @t_edime = case when '#non'=[16] then 99999 else cast([16] as float) end 
+		set @t_bwidth = case when '#non'=[17] then 0 else cast([17] as float) end 
+		set @t_ewidth = case when '#non'=[18] then 99999 else cast([18] as float) end 
+		set @t_blengthb = case when '#non'=[19] then 0 else cast([19] as float) end 
+		set @t_elengthb = case when '#non'=[20] then 99999 else cast([20] as float) end 
 	end try
 	begin catch
 		set @t_bradius = 0
@@ -217,54 +293,69 @@ z_vcc_rk01:--z_vcc_rk01
 		set @t_blengthb = 0
 		set @t_elengthb = 999999
 	end catch
-	------------------------------------------------------------------
-	declare @tmp table(
-		sel int identity(1,1)
-		,accy nvarchar(10)
-		,noa nvarchar(20)
-		,noq nvarchar(10)
-		,custno nvarchar(20)
-		,cust nvarchar(30)
-		,custtype nvarchar(20)
-		,ccusttype nvarchar(20)
-		,datea nvarchar(10)
-		,productno nvarchar(30)
-		,product nvarchar(50)
-		,style nvarchar(20) --底材
-		,spec nvarchar(20) --訂單規程
-		,cspec nvarchar(30)
-		,size nvarchar(max)
-		,pvcno nvarchar(20)
-		,pvc nvarchar(30)
-		,pveno nvarchar(20)
-		,pve nvarchar(30)
-		,lengthc float --件數
-		,mount float
-		,[weight] float
-		,unit nvarchar(20)
-		,price float
-		,[money] float
-		,ordeno nvarchar(20)
-		,ordeno2 nvarchar(10)
+	--------------------------------------------------------------------
+	declare @bdate date = dbo.ChineseEraName2Ad(@t_bdate)	
+	declare @edate date = dbo.ChineseEraName2Ad(@t_edate)	
+	declare @tmpa table(
+		datea date
+		,[week] int
 	)
-
-	insert into @tmp(accy,noa,noq,custno,cust,custtype,ccusttype
-		,datea,productno,product
-		,style,spec,cspec,size
-		,pvcno,pvc,pveno,pve
-		,lengthc,mount,[weight],unit,price,[money],ordeno,ordeno2)
-	select a.accy,a.noa,a.noq,b.custno,c.nick,c.typea,d.namea
-		,b.datea,a.productno,a.product
-		,isnull(a.style,''),null,null
-		,case when len(ISNULL(a.size,''))>0 then a.size else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*' + case when ISNULL(a.lengthb,0)>0 then CAST(a.lengthb as nvarchar) else 'COIL' end end
-		,a.spec,a.[class],null,a.rackno
-		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2
+	declare @curdate date = @bdate
+	while @curdate<=@edate
+	begin
+		insert into @tmpa(datea)values(@curdate)
+		set @curdate = DATEADD(DD,1,@curdate)
+	end
+	update @tmpa set [week]=DATEPART(WW,datea)
+	
+	declare @tmpb table(
+		n int
+		,[week] int
+		,bdate nvarchar(10)
+		,edate nvarchar(10)
+	)
+	
+	declare @week int
+	declare @n int
+	
+	declare cursor_table cursor for
+	select [week],ROW_NUMBER()over(order by [week])recno from @tmpa group by [week]
+	open cursor_table
+	fetch next from cursor_table
+	into @week,@n
+	while(@@FETCH_STATUS <> -1)
+	begin
+		insert into @tmpb(n,[week])values(@n,@week)
+		update @tmpb set bdate=dbo.AD2ChineseEraName(b.datea) from @tmpb a outer apply(select top 1 * from @tmpa where [week]=a.[week] order by datea) b
+		update @tmpb set edate=dbo.AD2ChineseEraName(b.datea) from @tmpb a outer apply(select top 1 * from @tmpa where [week]=a.[week] order by datea desc) b
+		fetch next from cursor_table
+		into @week,@n
+	end
+	close cursor_table
+	deallocate cursor_table
+	--------------------------------------------------------------------
+	declare @tmpc table(
+		sel int identity(1,1)
+		,vccno nvarchar(20)
+		,datea nvarchar(10)
+		,typea nvarchar(20)
+		,adpro nvarchar(20)
+		,custpro nvarchar(20)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,[weight] float
+	)
+	insert into @tmpc(vccno,datea,typea,adpro,custpro,custno,cust,[weight])
+	select a.noa,b.datea,e.item,isnull(d.custpro,''),isnull(f.product,''),b.custno,b.nick
+		,SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0))
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
-	left join cust c on b.custno=c.noa
-	left join custtype d on c.typea=d.noa
+	left join view_orde c on a.ordeno=c.noa
+	left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
+	left join dbo.fnSplit(@t_ordestype) e on c.stype=e.n
+	left join adpro f on d.custpro=f.noa
 	where (len(@t_kind)=0 or b.kind=@t_kind)
-	and (len(@t_custtype)=0 or c.typea=@t_custtype)
+	and (len(@t_custtype)=0 or d.custpro=@t_custtype)
 	and ISNULL(b.datea,'') between @t_bdate and @t_edate
 	and ISNULL(b.custno,'') between @t_bcustno and @t_ecustno
 	and isnull(a.productno,'') between @t_bproductno and @t_eproductno
@@ -272,59 +363,78 @@ z_vcc_rk01:--z_vcc_rk01
 	and ISNULL(a.dime,0) between @t_bdime and @t_edime
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	
-	update @tmp set spec=b.spec,cspec=c.product
-	from @tmp a
-	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
-	left join spec c on b.spec=c.noa
-	where b.noa is null
-	-------------------------------------------------------------------------------
-	
-	declare @tmpa table(
+	group by a.noa,b.datea,e.item,isnull(d.custpro,''),isnull(f.product,''),b.custno,b.nick
+	-------------------------------------------------------------------------------------------
+	declare @tmpd table(
 		sel int identity(1,1)
-		,gno nvarchar(20)
-		,recno int
-		,custtype nvarchar(20)
-		,ccusttype nvarchar(20)
+		,gno nvarchar(10)
+		,pno int
+		,n int 
+		,bdate nvarchar(10)
+		,edate nvarchar(10)
+		,vccno nvarchar(20)
+		,datea nvarchar(10)
+		,typea nvarchar(20)
+		,adpro nvarchar(20)
+		,custpro nvarchar(20)
 		,custno nvarchar(20)
-		,cust nvarchar(30)
-		,productno nvarchar(20)
-		,product nvarchar(30)
-		,pvcno nvarchar(20)
-		,pvc nvarchar(20)
-		,pveno nvarchar(20)
-		,pve nvarchar(20)
-		,size nvarchar(max)
-		,style nvarchar(20)
-		,mount float
+		,cust nvarchar(50)
 		,[weight] float
-		,price float
-		,[money] float
 	)
-	insert into @tmpa(gno,custtype,ccusttype,custno,cust,productno,product,pvcno,pvc,pveno,pve,size,style,mount,[weight],price,[money])
-	select '1',a.custtype,a.ccusttype,a.custno,a.cust,a.productno,a.product,a.pvcno,a.pvc,a.pveno,a.pve,a.size,a.style
-		,sum(isnull(a.mount,0)),sum(isnull(a.[weight],0)),a.price,sum(isnull(a.[money],0))
-	from @tmp a
-	group by a.custtype,a.ccusttype,a.custno,a.cust,a.productno,a.product,a.pvcno,a.pvc,a.pveno,a.pve,a.size,a.style,a.price
+	insert into @tmpd(gno,pno,n,bdate,edate,vccno,datea,typea,adpro,custpro,custno,cust,[weight])
+	select '1',1,b.n,b.bdate,b.edate,a.vccno,a.datea,a.typea,a.adpro,a.custpro,a.custno,a.cust,a.[weight]
+	from @tmpc a
+	left join @tmpb b on a.datea between b.bdate and b.edate
 	
-	update @tmpa set recno=b.recno
-	from @tmpa a
-	left join (select sel, ROW_NUMBER()over(order by custtype,ccusttype,custno,cust,productno,product,pvcno,pvc,pveno,pve,size,style,price) recno from @tmpa ) b on a.sel=b.sel
+	insert into @tmpd(gno,pno,n,[weight])
+	select '3',3,n,SUM(ISNULL([weight],0))
+	from @tmpd 
+	where gno='1'
+	group by n
 	
-	insert into @tmpa(gno,mount,[weight],[money])
-	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)) from @tmpa
+	declare @maxn int = 0
+	select @maxn=MAX(n) from @tmpd
+	insert into @tmpd(gno,pno,n,adpro,custpro,[weight])
+	select '4',4,ROW_NUMBER()over(order by adpro,custpro)+@maxn,adpro,custpro,SUM(ISNULL([weight],0))
+	from @tmpd
+	where gno='1' and LEFT(adpro,1) between 'A' and 'D'
+	group by adpro,custpro
+
+	set @maxn =0
+	select @maxn=MAX(n) from @tmpd
+	insert into @tmpd(gno,pno,n,custpro,[weight])
+	select '5',5,@maxn+1,'自有貼皮',SUM(ISNULL([weight],0))
+	from @tmpd
+	where gno='1' and LEFT(adpro,1) between 'A' and 'D'
 	
-	--業種	客戶	品名	皮膜	保護膜	規格	數量	重量	單價	金額 
-	select gno,recno rr
-		,ccusttype a01
-		,cust a02
-		,product a03
-		,pvcno+pvc a04
-		,pve a05
-		,style+size a06
-		,dbo.getComma(mount,-1) a07
-		,dbo.getComma([weight],-1) a08
-		,dbo.getComma(price,-1) a09
-		,dbo.getComma([money],-1) a10
-	from @tmpa 
-	order by gno,recno;
+	set @maxn =0
+	select @maxn=MAX(n) from @tmpd
+	insert into @tmpd(gno,pno,n,adpro,custpro,[weight])
+	select '4',4,ROW_NUMBER()over(order by adpro,custpro)+@maxn,adpro,custpro,SUM(ISNULL([weight],0))
+	from @tmpd
+	where gno='1'and not LEFT(adpro,1) between 'A' and 'D' 
+	group by adpro,custpro
+	
+	
+	select @maxn=MAX(n) from @tmpd
+	insert into @tmpd(gno,pno,n,[weight])
+	select '6',6,@maxn+1,SUM(ISNULL([weight],0))
+	from @tmpd 
+	where gno='1'
+	----------------------------------------
+	update @tmpd set gno='2'
+	from @tmpd a
+	left join(select ROW_NUMBER()over(PARTITION by n order by sel) recno,sel from @tmpd) b on a.sel=b.sel
+	where gno='1' and b.recno=1
+	
+	select gno
+		,'第'+CAST(n as nvarchar)+'週('+RIGHT(bdate,5)+'~'+RIGHT(edate,5)+')' a01
+		,vccno a02
+		,right(datea,5) a03
+		,typea a04
+		,custpro a05
+		,cust a06
+		,dbo.getComma([weight],-1) a07
+		,'' a08
+	from @tmpd 
+	order by n,pno,sel;

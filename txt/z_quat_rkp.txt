@@ -326,11 +326,12 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @pve nvarchar(30)
 	declare @pveno2 nvarchar(20)
 	declare @pve2 nvarchar(30)
+	declare @memos nvarchar(max)
 	
 	declare @string nvarchar(max)
 	declare @n int,@m int
 	declare @curcount int
-	declare @pagecount int = 40 -- 一頁全部幾行   要偶數行(HEAD DETAIL都2個)
+	declare @pagecount int = 37 -- 一頁全部幾行   要奇數行(HEAD DETAIL都3個)
 	
 	declare @tmp table(
 		sel int identity(1,1),
@@ -346,6 +347,7 @@ z_quat_rkp02:--z_quat_rkp02
 		[attn] nvarchar(50),
 		[subject] nvarchar(20),
 		fax nvarchar(50),
+		tel nvarchar(50),
 		quatno nvarchar(20),
 		productno nvarchar(50),
 		product nvarchar(50),
@@ -372,7 +374,8 @@ z_quat_rkp02:--z_quat_rkp02
 		price float,
 		po nvarchar(50),
 		pn nvarchar(50),
-		coin nvarchar(20)
+		coin nvarchar(20),
+		memo nvarchar(max)
 	)
 
 	
@@ -399,6 +402,7 @@ z_quat_rkp02:--z_quat_rkp02
 			---- 欄位名稱
 			insert into @tmp(pno,gno,noa)values(1,'8',@noa)
 			insert into @tmp(pno,gno,noa)values(1,'9',@noa)
+			insert into @tmp(pno,gno,noa)values(1,'10',@noa)
 			set @curcount = @curcount + 2
 		end
 
@@ -406,14 +410,14 @@ z_quat_rkp02:--z_quat_rkp02
 		declare cursor_table2 cursor for
 		select productno,product,dime,radius,width,lengthb,spec,ucolor
 			,scolor,class,zinc,[source],hard,uno
-			,style,mount,[weight],unit,unit2,price,po,pn
+			,style,mount,[weight],unit,unit2,price,po,pn,memo
 		from view_quats
 		where noa=@t_noa	
 		open cursor_table2
 		fetch next from cursor_table2
 		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 			,@pvcno, @pvc, @pveno, @pve,@pveno2,@pve2
-			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn
+			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn,@memos
 		while(@@FETCH_STATUS <> -1)
 		begin
 			if @curcount%@pagecount=0
@@ -421,32 +425,33 @@ z_quat_rkp02:--z_quat_rkp02
 				---- 欄位名稱
 				insert into @tmp(pno,gno,noa)values(1,'8',@noa)
 				insert into @tmp(pno,gno,noa)values(1,'9',@noa)
+				insert into @tmp(pno,gno,noa)values(1,'10',@noa)
 				set @curcount = @curcount + 2
 			end
 	
 			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
 				,pvcno,pvc,pveno,pve,pveno2,pve2
-				,style,mount,weight,unit,unit2,price,po,pn,coin)
+				,style,mount,weight,unit,unit2,price,po,pn,coin,memo)
 			values(1,case when len(@uno)=0 then '2' else '3' end
 				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
 				,@style,@mount,@weight
-				,@unit,@unit2,@price,@po,@pn,@coin)
+				,@unit,@unit2,@price,@po,@pn,@coin,@memos)
 			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
 				,pvcno,pvc,pveno,pve,pveno2,pve2
-				,style,mount,weight,unit,unit2,price,po,pn,coin)
+				,style,mount,weight,unit,unit2,price,po,pn,coin,memo)
 			values(1,'4'
 				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
 				,@style,@mount,@weight
-				,@unit,@unit2,@price,@po,@pn,@coin)
+				,@unit,@unit2,@price,@po,@pn,@coin,@memos)
 			set @curcount = @curcount + 2
 			
 			set @n = @n + 1
 			fetch next from cursor_table2
 			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
 			,@pvcno, @pvc, @pveno, @pve,@pveno2,@pve2
-			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn
+			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn,@memos
 		end
 		close cursor_table2
 		deallocate cursor_table2
@@ -490,13 +495,13 @@ z_quat_rkp02:--z_quat_rkp02
 			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'註：' else '' end,@string)
 		end
 		---------------------------------------------------------
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno,aa)values(2,'6','聯琦金屬股份有限公司')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'7')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno,aa)values(4,'6','聯琦金屬股份有限公司')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'7')
 		---------------------------------------------------------
 		--假如備註不能印在同一頁,那就換到下一頁印
 		select @n = count(1) from @tmp where pno='1'
@@ -522,19 +527,30 @@ z_quat_rkp02:--z_quat_rkp02
 	close cursor_table
 	deallocate cursor_table
 	
-	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno,fax=b.fax
+	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno,fax=b.fax,tel=b.tel
 	from @tmp a
 	left join view_quat b on a.noa=b.noa
 	
 	update @tmp set cspec=ISNULL(b.product,'')
 	from @tmp a
 	left join spec b on a.spec=b.noa
+	
+	---
+	--補空白行
+	select @n = count(1) from @tmp
+	while @n%@pagecount!=0
+	begin
+		insert into @tmp(pno,gno)values(3,'5')
+		set @n=@n+1
+	end
 
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.AD2ChineseEraName(GETDATE())+'</a>' a05
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+tel+'</a>' a06
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(aa,"~#$","'")+'</a>' aa
@@ -545,10 +561,11 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
-			+CAST(dime as nvarchar)
+			+case when dime=0 and width=0 and lengthb=0 then''
+			else CAST(dime as nvarchar)
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
-			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end
+			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
 			+'</a>' size
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' cspec
@@ -566,6 +583,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' memo
 	from @tmp order by pno,sel;
 
 z_quat_rkp01:--z_quat_rkp01
@@ -637,7 +655,7 @@ z_quat_rkp01:--z_quat_rkp01
 	declare @string nvarchar(max)
 	declare @n int,@m int
 	declare @curcount int
-	declare @pagecount int = 41 -- 一頁全部幾行   要奇數行
+	declare @pagecount int = 37 -- 一頁全部幾行   要奇數行
 	
 	declare @tmp table(
 		sel int identity(1,1),
@@ -653,6 +671,7 @@ z_quat_rkp01:--z_quat_rkp01
 		[attn] nvarchar(50),
 		[subject] nvarchar(20),
 		fax nvarchar(50),
+		tel nvarchar(50),
 		quatno nvarchar(20),
 		productno nvarchar(50),
 		product nvarchar(50),
@@ -763,7 +782,7 @@ z_quat_rkp01:--z_quat_rkp01
 		--備註
 		---------------------------------------------------------
 		insert into @tmp(pno,gno,noa)values(2,'5',@noa)
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Delivery Date：',@odate)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Delivery Date：',convert(nvarchar,dbo.ChineseEraName2AD(@odate),111))
 		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Payment:',@paytype+@memo2)
 		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Packing:',@packtype)
 		
@@ -800,13 +819,13 @@ z_quat_rkp01:--z_quat_rkp01
 			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then 'Remark：' else '' end,@string)
 		end
 		---------------------------------------------------------
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno,aa)values(2,'6','Lien Chy Laminated Metal Co., Ltd.')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'5')
-		insert into @tmp(pno,gno)values(2,'7')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno,aa)values(4,'6','Lien Chy Laminated Metal Co., Ltd.')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'7')
 		---------------------------------------------------------
 		--假如備註不能印在同一頁,那就換到下一頁印
 		select @n = count(1) from @tmp where pno='1'
@@ -832,7 +851,7 @@ z_quat_rkp01:--z_quat_rkp01
 	close cursor_table
 	deallocate cursor_table
 	
-	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno,fax=b.fax
+	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno,fax=b.fax,tel=b.tel
 	from @tmp a
 	left join view_quat b on a.noa=b.noa
 	
@@ -854,12 +873,23 @@ z_quat_rkp01:--z_quat_rkp01
 	from @tmp a
 	left join ucc b on a.pveno=b.noa
 	where len(isnull(b.engpro,''))>0
-
+	
+	---
+	--補空白行
+	select @n = count(1) from @tmp
+	while @n%@pagecount!=0
+	begin
+		insert into @tmp(pno,gno)values(3,'5')
+		set @n=@n+1
+	end
+	
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+convert(nvarchar,getdate(),111)+'</a>' a05
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+tel+'</a>' a06
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC02'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(aa,"~#$","'")+'</a>' aa
@@ -870,10 +900,11 @@ z_quat_rkp01:--z_quat_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
-			+CAST(dime as nvarchar)
+			+case when dime=0 and width=0 and lengthb=0 then''
+			else CAST(dime as nvarchar)
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
-			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end
+			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
 			+'</a>' size
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' cspec

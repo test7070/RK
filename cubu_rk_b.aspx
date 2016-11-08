@@ -96,6 +96,12 @@
 			function btnOk() {
                 t_key = q_getHref();
                 _btnOk(t_key[1], bbsKey[0], bbsKey[1], '', 2);
+                t_noa = t_key[1];
+				if(t_noa.length>0){
+					q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+					q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';1');
+					q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
+				}
 			}
 
 			function bbsSave(as) {
@@ -125,6 +131,13 @@
 			}
 			function q_gtPost(t_postname) {
 				switch (t_postname) {
+					case 'isexist_get_modi':
+						var t_noa = t_key[1];
+						var as = _q_appendData("view_get", "", true);
+						if(as[0]!=undefined){
+							q_func('get_post.post.post1', r_accy + ',' + t_noa + ',1');
+						}
+						break;
 					case q_name:
 						break;
 					default:

@@ -10,7 +10,7 @@
         {
             public int sel;
             public string accy,noa,noq;
-            public string pallet;
+            public string pallet,cust;
         }
         
         System.IO.MemoryStream stream = new System.IO.MemoryStream();
@@ -43,12 +43,15 @@
 		,noa nvarchar(20)
 		,noq nvarchar(10)
 		,pallet nvarchar(20)
-		
+		,cust nvarchar(20)
 	)
-	insert into @tmp(accy,noa,noq,pallet)
-	select a.accy,a.noa,a.noq,a.itemno
+	insert into @tmp(accy,noa,noq,pallet,cust)
+	select a.accy,a.noa,a.noq,a.itemno,c.head
 	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join cust c on b.custno=c.noa
 	where a.noa=@t_noa
+	and isnull(a.lengthc,0)!=0
 	order by a.accy,a.noa,a.noq
 	
 	if len(@t_noq)>0
@@ -72,7 +75,8 @@
                 pa.noa = System.DBNull.Value.Equals(r.ItemArray[2]) ? "" : (System.String)r.ItemArray[2];
                 pa.noq = System.DBNull.Value.Equals(r.ItemArray[3]) ? "" : (System.String)r.ItemArray[3];
                 pa.pallet = System.DBNull.Value.Equals(r.ItemArray[4]) ? "" : (System.String)r.ItemArray[4];
-
+				pa.cust = System.DBNull.Value.Equals(r.ItemArray[5]) ? "" : (System.String)r.ItemArray[5];
+				
                 vccLabel.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -117,7 +121,7 @@
                     cb.SetColorFill(iTextSharp.text.BaseColor.BLACK);
                     cb.BeginText();
                     cb.SetFontAndSize(bfChinese,24);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "SHLC", 211, 190, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).cust, 211, 190, 0);
                     cb.SetFontAndSize(bfChinese, 16);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "C/NO：", 100, 105, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).sel.ToString(),212, 105, 0);
@@ -131,7 +135,7 @@
             doc1.Close();
             Response.ContentType = "application/octec-stream;";
             Response.AddHeader("Content-transfer-encoding", "binary");
-            Response.AddHeader("Content-Disposition", "attachment;filename=label" + item.noa + ".pdf");
+            Response.AddHeader("Content-Disposition", "attachment;filename=label3" + item.noa + ".pdf");
             Response.BinaryWrite(stream.ToArray());
             Response.End();
         }

@@ -38,16 +38,9 @@
 						type : '6',  //[4]  1
 						name : 'xnoa'
 					},{
-						type : '1',   //[5]  2
-						name : 'xdate'
-					},{
-						type : '5',   //[6]  3
-						name : 'xitype',
-						value : [q_getPara('report.all')].concat(q_getPara('ina.typea').split(','))
-					},{
-						type : '5',   //[7]  4
-						name : 'xtypea',
-						value : [q_getPara('report.all')].concat(q_getPara('uccc.itype').split(','))
+						type : '8', //[5] 2
+						name : 'merge',
+						value : ('1@合併').split(',')
 					}]
 				});
 				q_popAssign();

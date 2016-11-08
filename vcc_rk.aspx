@@ -37,7 +37,7 @@
 			brwKey = 'noa';
 			//ajaxPath = "";
 			aPop = new Array(
-				['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,tel,zip_fact,addr_fact,paytype', 'txtCustno,txtComp,txtNick,txtTel,txtPost,txtAddr,txtPaytype', 'cust_b.aspx']
+				['txtCustno', 'lblCust', 'cust', 'noa,comp,nick,tel,fax,zip_fact,addr_fact,paytype', 'txtCustno,txtComp,txtNick,txtTel,txtFax,txtPost,txtAddr,txtPaytype', 'cust_b.aspx']
 				,['txtSalesno', 'lblSales', 'sss', 'noa,namea', 'txtSalesno,txtSales', 'sss_b.aspx']
 				,['txtCno', 'lblAcomp', 'acomp', 'noa,acomp', 'txtCno,txtAcomp', 'acomp_b.aspx']
 				,['txtProductno_', 'btnProduct_', 'ucc', 'noa,product', 'txtProductno_,txtProduct_', 'ucc_b.aspx']
@@ -318,7 +318,7 @@
                         if (b_ret != null) {
                         	as = b_ret;
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice'
-                        	, as.length, as, 'noa,no2,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,unit,price', '','');             	
+                        	, as.length, as, 'noa,no2,productno,product,dime,radius,width,lengthb,spec,class,ucolor,source,unit,price', 'txtOrdeno','');             	
                         	//訂單資料
                         	var t_ordeno = $('#txtOrdeno_0').length>0?$('#txtOrdeno_0').val():'';
                     		q_gt('view_orde', "where=^^ noa='"+t_ordeno+"' ^^", 0, 0, 0, JSON.stringify({action:'importOrde'}));
@@ -865,6 +865,10 @@
 						</td>
 					</tr>
 					<tr>
+						<td><span> </span><a id='lblFax' class="lbl"> </a></td>
+						<td colspan="4"><input id="txtFax" type="text" class="txt c1"/></td>
+					</tr>
+					<tr>
 						<td><span> </span><a id='lblAddr' class="lbl"> </a></td>
 						<td colspan="4" >
 							<input id="txtPost" type="text" style="float:left; width:15%;"/>
@@ -955,7 +959,7 @@
 					<td align="center" style="width:50px;">棧板<br>編號</td>
 					<td style="width:200px;">批號</td>
 					<td style="width:200px;">品名</td>
-					<td style="width:120px;">底材</td>
+					<td style="width:120px;display:none;">底材</td>
 					<td style="width:60px;">厚</td>
 					<td style="width:60px;">皮膜厚</td>
 					<td style="width:60px;">寬</td>
@@ -965,7 +969,7 @@
 					<td style="width:100px;">保護膜</td>
 					<td style="width:150px;">規格</td>
 					<td style="width:60px;">單位</td>
-					<td style="display:none;">包裝內容</td>
+					<td style="width:60px;">包裝<BR>單位</td>
 					<td style="width:80px;">件數</td>
 					<td style="width:80px;">數量</td>
 					<td style="width:80px;">重量</td>
@@ -994,7 +998,7 @@
 						<input id="txtProduct.*" type="text" style="width:45%"/>
 						<input id="btnProduct.*" type="button" style="display:none;"/>
 					</td>
-					<td><input id="txtStyle.*" type="text" class="txt c1"/></td>
+					<td style="display:none;"><input id="txtStyle.*" type="text" class="txt c1"/></td>
 					<td><input id="txtDime.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtRadius.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWidth.*" type="text" class="txt c1 num"/></td>
@@ -1009,7 +1013,7 @@
 					<td><input id="txtRackno.*" type="text" class="txt c1"/></td>
 					<td><input id="txtSize.*" type="text" class="txt c1"/></td>
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
-					<td style="display:none;"><input id="txtChecker.*" type="text" class="txt c1"/></td>
+					<td><input id="txtChecker.*" type="text" class="txt c1"/></td>
 					<td><input id="txtLengthc.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtMount.*" type="text" class="txt c1 num"/></td>
 					<td><input id="txtWeight.*" type="text" class="txt c1 num"/></td>

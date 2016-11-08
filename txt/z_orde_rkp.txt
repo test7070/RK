@@ -637,7 +637,7 @@ z_orde_rkp01:--z_orde_rkp01
 		,recno rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+' '+cspec+'</a>'ppx
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>'cspec
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
 			+CAST(dime as nvarchar)
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 

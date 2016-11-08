@@ -106,8 +106,8 @@ post:--post  get_rk
 			
 			if len(@t_accy)>0
 			begin
-				--都當成物料
-				set @cmd = "insert into ina"+@t_accy+"(datea,noa,itype,typea,kind,storeno,store)values(@datea,@t_noa,'1','生產入庫','F6',@storeno,@store)"
+				--都當成溶劑
+				set @cmd = "insert into ina"+@t_accy+"(datea,noa,itype,typea,kind,storeno,store)values(@datea,@t_noa,'1','生產入庫','A8',@storeno,@store)"
 				execute sp_executesql @cmd,N'@datea nvarchar(20),@t_noa nvarchar(20),@storeno nvarchar(20),@store nvarchar(20)'
 					,@datea=@datea,@t_noa=@t_noa,@storeno=@storeno,@store=@store
 				IF @@Error <> 0 BEGIN SET @chk = 1 END

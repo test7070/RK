@@ -92,7 +92,7 @@
 						return;
 					var t_noa = $('#txtNoa').val();
                 	var t_where ='';
-                	q_box("orde_cut_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk'}), "orde_cut", "95%", "95%", '');
+                	q_box("orde_cut_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cutno:t_noa,page:'cut_rk',makeno:'',ordeno:''}), "orde_cut", "95%", "95%", '');
 				});
             }
 
@@ -186,15 +186,39 @@
 		                			alert('找不到訂單【'+t_para.ordeno+'-'+t_para.no2+'】');
 		                		}
                     			sum();
+                    		}else if(t_para.action=='view_cuts'){
+                    			if($('#txtNoa').val()!=t_para.noa){
+                    				alert('錯誤!!!!');
+                    				return;
+                    			}
+                    			var as = _q_appendData("view_cuts", "", true);
+		                		if (as[0] != undefined) {
+		                			for(var i=0;i<as.length;i++){
+		                				for(var j=0;j<q_bbsCount;j++){
+											if(as[i].noq==$('#txtNoq_'+j).val()){
+												$('#txtBno_'+j).val(as[i].bno);
+												break;
+											}		                					
+		                				}
+		                			}
+		                		}
                     		}
-                    		
                     	}catch(e){
                     		
                     	}
                     	break;
                 }
             }
-
+			function q_stPost() {
+				if (!(q_cur == 1 || q_cur == 2))
+					return false;
+				Unlock(1);
+				var t_noa = $('#txtNoa').val();
+				if(t_noa.length>0){
+					q_func('qtxt.query.getuno_cut', 'uno_rk.txt,getuno_cut,' + t_noa + ';');
+				}
+			}
+			
             function btnOk() {
 				Lock(1, {
                     opacity : 0
@@ -214,10 +238,18 @@
                 else
                     $('#txtWorker2').val(r_name);
                 sum();
-                getUno(q_bbsCount-1);
+                //getUno(0);
+                var t_noa = trim($('#txtNoa').val());
+                var t_date = trim($('#txtDatea').val());
+                if (t_noa.length == 0 || t_noa == "AUTO")
+                    q_gtnoa(q_name, replaceAll(q_getPara('sys.key_cut') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
+                else
+                    wrServer(t_noa);
             }
 			function getUno(n){
-				if(n<0){
+				//2016/07/05  改在STPOST再產生批號
+				
+				if(n>q_bbsCount){
 					var t_noa = trim($('#txtNoa').val());
 	                var t_date = trim($('#txtDatea').val());
 	                if (t_noa.length == 0 || t_noa == "AUTO")
@@ -228,7 +260,7 @@
 					var t_uno = $('#txtUno_'+n).val();
 					var t_bno = $('#txtBno_'+n).val();
 					if(t_uno.length==0 || t_bno.length>0)
-						getUno(n-1);
+						getUno(n+1);
 					else
 						q_func('qtxt.query.getuno_'+n, 'uno_rk.txt,getuno,' + t_uno + ';');
 					//JSON.stringify({action:'getUno',n:n})
@@ -236,6 +268,16 @@
 			}
 			function q_funcPost(t_func, result) {
 				switch(t_func) {
+					case 'cut_post.post':
+						var t_where = "where=^^ noa='"+$('#txtNoa').val()+"' ^^";
+                		q_gt('view_cuts', t_where, 0, 0, 0, JSON.stringify({action:'view_cuts',noa:$('#txtNoa').val()}));
+						break;
+					case 'qtxt.query.getuno_cut':
+						var as = _q_appendData("tmp0", "", true, true);
+						if (as[0] != undefined) {
+							q_func('cut_post.post', as[0].accy + ',' + as[0].noa + ',1');
+						}
+						break;
 					case 'qtxt.query.getuno':
 						var as = _q_appendData("tmp0", "", true, true);
 						if (as[0] != undefined) {
@@ -257,7 +299,7 @@
 						var t_noa = trim($('#txtNoa').val());
 						var t_date = trim($('#txtDatea').val());
 						if (t_noa.length == 0 || t_noa == "AUTO")
-							q_gtnoa(q_name, replaceAll(q_getPara('sys.key_rc2') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
+							q_gtnoa(q_name, replaceAll(q_getPara('sys.key_cut') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
 						else
 							wrServer(t_noa);
 						break;
@@ -269,7 +311,7 @@
 									$('#txtBno_'+n).val(as[0].uno);
 									console.log(as[0].uno);
 								}
-								getUno(n-1);
+								getUno(n+1);
 							}
 						break;
 				}
@@ -310,7 +352,7 @@
 						$('#txtSpecial_' + i).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
-                            var n = $(this).attr('id').replace('txtSpecial_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             
 							if(!(q_cur==1 || q_cur==2))
 								return;

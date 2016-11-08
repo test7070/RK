@@ -1,3 +1,81 @@
+getuno_cut:--getuno_cut
+	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
+	declare @t_noa nvarchar(max) = [1]
+-------------------------------------------------------------	
+	declare @accy nvarchar(10) = ''
+	select @accy=accy from view_cut where noa=@t_noa
+	declare @uno nvarchar(max)
+	declare @bno nvarchar(max)
+	declare @maxuno nvarchar(max)
+	declare @noa nvarchar(max),@noq nvarchar(max)
+	
+	DECLARE @chk tinyint = 0
+	Begin Transaction [Trans_Name]
+	
+	declare cursor_table cursor for 
+	select a.noa,a.noq,isnull(a.uno,''),isnull(a.bno,'') 
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where a.accy=@accy and a.noa=@t_noa
+	open cursor_table 
+	fetch next from cursor_table 
+	into @noa,@noq,@uno,@bno
+	while(@@FETCH_STATUS <> -1) 
+	begin 
+		if len(@uno)>0 and len(@bno)=0
+		begin
+			select @maxuno = ''
+			select top 1 @maxuno = uno from view_uccb 
+			where uno like @uno+'-[0-9,A-Z][0-9]'
+			order by uno desc
+			
+			if(LEN(isnull(@maxuno,''))=0)
+			begin
+				set @maxuno = @uno + '-01'
+			end
+			else
+			begin
+				declare @string nvarchar(max) = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+				declare @key nvarchar(2) = right(@maxuno,2)
+				declare @n int = (charindex(left(@key,1),@string)-1)*10 + cast(right(@key,1) as int) + 1
+				set @key = SUBSTRING(@string,@n/10+1,1)+CAST(@n%10 as nvarchar)
+				set @maxuno = @uno+'-'+@key
+			end
+		
+			begin try
+				set @cmd = "update cuts"+@accy+" set bno=@maxuno where noa=@noa and noq=@noq"
+				execute sp_executesql @cmd,N'@maxuno nvarchar(max),@noa nvarchar(max),@noq nvarchar(max)',@maxuno=@maxuno,@noa=@noa,@noq=@noq
+				IF @@Error <> 0 BEGIN SET @chk = 1 END 
+			end try
+			begin catch
+				insert into drun(datea,timea,usera,[action],noa,tablea,title,memo)
+				select dbo.AD2ChineseEraName( CONVERT(nvarchar,getdate(),111))
+					,LEFT(CONVERT(nvarchar,getdate(),108),5)
+					,''
+					,'getuno_cut錯誤'
+					,@t_noa
+					,'cut'
+					,''
+					,ERROR_MESSAGE()
+				break
+			end catch
+		end
+
+		fetch next from cursor_table 
+		into @noa,@noq,@uno,@bno
+	end 
+	close cursor_table 
+	deallocate cursor_table 
+	
+	IF @chk <> 0 BEGIN -- 若是新增資料發生錯誤
+		Rollback Transaction [Trans_Name] -- 復原所有操作所造成的變更
+	END
+	ELSE BEGIN
+		Commit Transaction [Trans_Name] -- 提交所有操作所造成的變更
+	END
+	select @accy accy,@t_noa noa;
+
 getuno:--getuno
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)

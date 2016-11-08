@@ -394,7 +394,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 		,ordcno a04
 		
 		,typea b01
-		,productno+product b02
+		,productno+' '+product b02
 		,uno b03
 		,size b04
 		,[weight] b05

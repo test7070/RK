@@ -64,13 +64,20 @@
                 bbmMask = [['txtDatea', r_picd]];
                 bbsMask = [];
                 q_mask(bbmMask);
-                q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
+                
                 q_cmbParse("cmbSpec", t_spec,'s');
+                //q_cmbParse("combPaytype", q_getPara('vcc.paytype'));
+                var t_paytype = ",出貨前T/T,出貨時收現金或當日現金票,合約簽訂後3天內T/T50%訂金，尾款於出貨前T/T,月結30天,月結40天";
+				q_cmbParse("combPaytype", t_paytype);
                 
                 $('#txtPaytype').change(function(e){
                 	if($('#txtPaytype').val().indexOf('月結')>=0){
                 		if($('#txtMemo2').val().length==0){
                 			$('#txtMemo2').val('每月25日以後出的貨,視同當月之貨款並計算請款,依出貨實際數量計價');
+                		}
+                	}else{
+                		if($('#txtMemo2').val().length==0){
+                			$('#txtMemo2').val('依實際出貨數量計價');
                 		}
                 	}
                 });
@@ -259,9 +266,11 @@
                 _btnIns();
                 $('#txtNoa').val('AUTO');
                 $('#txtDatea').val(q_date()).focus();
-                var t_memo = '1.本公司僅接受自出貨日後3個月內之客訴，交易如有爭議涉訟時，雙方同意以台灣桃園地方法院為第一審管轄法院。';
-				t_memo += '\n2.雙方同意依合約簽訂交期後20天內出貨。(如因非本公司因素之不可抗力造成延誤，不在此限。)';			
-                $('#txtMemo').val(t_memo);
+                if($('#txtMemo').val().length==0){
+                	var t_memo = '1.本公司僅接受自出貨日後3個月內之客訴，交易如有爭議涉訟時，雙方同意以台灣桃園地方法院為第一審管轄法院。';
+					t_memo += '\n2.雙方同意依合約簽訂交期後20天內出貨。(如因非本公司因素之不可抗力造成延誤，不在此限。)';			
+	                $('#txtMemo').val(t_memo);
+                }
             }
 
             function btnModi() {
@@ -655,6 +664,10 @@
 						<td>
 							<input id="chkIsproj" type="checkbox"/>
 							<span> </span><a id='lblIsproj'> </a>
+						</td>
+						<td>
+							<input id="chkCancel" type="checkbox"/>
+							<span> </span><a id='lblCancel'> </a>
 						</td>
 					</tr>
 				</table>

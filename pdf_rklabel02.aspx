@@ -4,7 +4,7 @@
         //LC-14-00-04-02
         public class ParaIn
         {
-            public string noa="", noq="";
+            public string table="",noa="", noq="",acomp="";
         }
         
         public class Para
@@ -12,7 +12,7 @@
             public string accy,noa,noq;
             public string productno,product,engpro,typea,spec,uno,pallet,makeno,pdate,custno,cust,ordeno,ordenoq;
             public float nweight,gweight,mount;
-            public string unit,datea;
+            public string unit,datea,ordepo,po,pn,indate;
         }
         
         System.IO.MemoryStream stream = new System.IO.MemoryStream();
@@ -24,7 +24,13 @@
         		db= Request.QueryString["db"];
         	connectionString = "Data Source=127.0.0.1,1799;Persist Security Info=True;User ID=sa;Password=artsql963;Database="+db;
 
+            //connectionString = "Data Source=59.125.143.171,1799;Persist Security Info=True;User ID=sa;Password=artsql963;Database=st6";
+
 			var item = new ParaIn();
+			if (Request.QueryString["table"] != null && Request.QueryString["table"].Length > 0)
+            {
+                item.table = Request.QueryString["table"];
+            }
 			if (Request.QueryString["noa"] != null && Request.QueryString["noa"].Length > 0)
             {
                 item.noa = Request.QueryString["noa"];
@@ -33,7 +39,12 @@
             {
                 item.noq = Request.QueryString["noq"];
             }
-
+            if (Request.QueryString["acomp"] != null && Request.QueryString["acomp"].Length > 0)
+            {
+                item.acomp = Request.QueryString["acomp"];
+            }
+            //item.noa = "D1050526007";
+            
             //資料
             System.Data.DataTable dt = new System.Data.DataTable();
             using (System.Data.SqlClient.SqlConnection connSource = new System.Data.SqlClient.SqlConnection(connectionString))
@@ -63,26 +74,73 @@
 		,mount float
 		,unit nvarchar(20)
 		,datea nvarchar(20)
+		,ordepo nvarchar(max)
+		,po nvarchar(max)
+		,pn nvarchar(max)
+		,indate nvarchar(20)
 	)
-	insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
-		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea)
-	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro,e.spec+'/'+f.size
-		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
-		,a.uno,a.itemno,e.cname
-		,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
-		,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
-		,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
-	from view_vccs a
-	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
-	left join ucc c on a.productno=c.noa
-	left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
-	outer apply(select top 1 * from view_cuts where uno=a.uno) e
-	outer apply(select top 1 * from view_cubs where makeno=e.cname) f
-	where a.noa=@t_noa
-    and (len(@t_noq)=0 or a.noq=@t_noq)
+	if ISNULL(@t_table,'') = 'get'
+	begin
+		insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
+			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
+		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
+			,isnull(h.product,'')+case when len(isnull(h.product,''))>0 and len(isnull(a.size,''))>0 then ' / ' else '' end+a.size
+			,case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
+			else CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end end
+			,a.uno,'',g.cname
+			,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
+			,b.custno,i.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
+			,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
+			,f.memo
+		from view_gets a
+		left join view_get b on a.accy=b.accy and a.noa=b.noa
+		left join ucc c on a.productno=c.noa
+		outer apply(select top 1 * from view_inas where uno=a.uno) d
+		left join view_vccs e on d.noa=e.noa and d.noq=e.noq
+		left join view_ordes f on a.ordeno=f.noa and a.no2=f.no2
+		outer apply(select top 1 * from view_cuts where bno=e.uno) g
+		left join spec h on h.noa=a.spec
+		left join cust i on i.noa=b.custno
+		where a.noa=@t_noa
+		and (len(@t_noq)=0 or a.noq=@t_noq)
+	end
+	else
+	begin
+		insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
+			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
+		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
+			,a.spec+case when len(a.spec)>0 and len(a.size)>0 then ' / ' else '' end+a.size
+			,case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
+			else CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end end
+			,a.uno,a.itemno,e.cname
+			,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
+			,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
+			,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
+			,d.memo
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		left join ucc c on a.productno=c.noa
+		left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
+		outer apply(select top 1 * from view_cuts where bno=a.uno) e
+		outer apply(select top 1 * from view_cubs where makeno=e.cname) f
+		where a.noa=@t_noa
+		and (len(@t_noq)=0 or a.noq=@t_noq)
+    end
+	
+	update @tmp set indate = convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
+	from @tmp a
+	left join view_uccb b on a.uno=b.uno
+	
+	update @tmp set po=left(ordepo,CHARINDEX('chr(10)',ordepo)-1)
+	where CHARINDEX('chr(10)',ordepo)>0
+	update @tmp set pn=RIGHT(ordepo,len(ordepo)-len(po)-7)
+	where CHARINDEX('chr(10)',ordepo)>0
+	
+	update @tmp set po=ordepo where CHARINDEX('chr(10)',ordepo)=0
 	
 	select * from @tmp";
                 System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand(queryString, connSource);
+                cmd.Parameters.AddWithValue("@t_table", item.table);
                 cmd.Parameters.AddWithValue("@t_noa", item.noa);
                 cmd.Parameters.AddWithValue("@t_noq", item.noq);
                 adapter.SelectCommand = cmd;
@@ -115,6 +173,10 @@
                 pa.mount = System.DBNull.Value.Equals(r.ItemArray[19]) ? 0 : (float)(System.Double)r.ItemArray[19];
                 pa.unit = System.DBNull.Value.Equals(r.ItemArray[20]) ? "" : (System.String)r.ItemArray[20];
                 pa.datea = System.DBNull.Value.Equals(r.ItemArray[21]) ? "" : (System.String)r.ItemArray[21];
+                pa.ordepo = System.DBNull.Value.Equals(r.ItemArray[22]) ? "" : (System.String)r.ItemArray[22];
+                pa.po = System.DBNull.Value.Equals(r.ItemArray[23]) ? "" : (System.String)r.ItemArray[23];
+                pa.pn = System.DBNull.Value.Equals(r.ItemArray[24]) ? "" : (System.String)r.ItemArray[24];
+                pa.indate = System.DBNull.Value.Equals(r.ItemArray[25]) ? "" : (System.String)r.ItemArray[25];
                 vccLabel.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -190,7 +252,7 @@
                     cb.SetFontAndSize(bfChinese, 8);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "訂單/產品No.", 270, 180, 0);
                     cb.SetFontAndSize(bfChinese, 13);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "浮重N.W.", 270, 145, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "淨重N.W.", 270, 145, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "毛重G.W.", 270, 115, 0);
                     cb.SetFontAndSize(bfChinese, 12);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "數量", 270, 90, 0);
@@ -213,29 +275,40 @@
                     cb.SetFontAndSize(bfChinese, 10);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_RIGHT, "表單編號：LC-14-00-04-02", 407, 18, 0);
 
-                    cb.SetFontAndSize(iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLDOBLIQUE).BaseFont, 25);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 25, 243, 0);
-                    cb.SetFontAndSize(bfChinese, 20);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "聯琦金屬股份有限公司", 105, 243, 0);
-
+                    //cb.SetFontAndSize(iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLDOBLIQUE).BaseFont, 25);
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 25, 243, 0);
+                    if (item.acomp == "1")
+                    {
+                        cb.SetFontAndSize(bfChinese, 15);
+                        cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "聯琦金屬股份有限公司", 210, 253, 0);
+                        cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "LIEN CHY Laminated Metal Co., Ltd.", 210, 237, 0);
+                    }
+				
                     cb.SetFontAndSize(bfChinese, 12);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).product, 155, 215, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).engpro, 155, 200, 0);
-
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).typea, 155, 175, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).spec, 155, 145, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).uno, 155, 115, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).pallet, 155, 85, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).makeno, 155, 55, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).pdate, 155, 25, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).product, 157, 215, 0);
+                    cb.SetFontAndSize(bfChinese, 10);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).engpro, 157, 200, 0);
+                    cb.SetFontAndSize(bfChinese, 12);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).typea, 157, 175, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).spec, 157, 145, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).uno, 157, 115, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).pallet, 157, 85, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).ordeno + " " + ((Para)vccLabel[i]).ordenoq, 157, 55, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).indate, 157, 22, 0);
 
                     cb.SetFontAndSize(bfChinese, 14);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).cust, 360, 208, 0);
+                    
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).ordeno, 360, 175, 0);
+                    cb.SetFontAndSize(bfChinese, 8);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).po, 360, 180, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).pn, 360, 168, 0);
+
                     cb.SetFontAndSize(bfChinese, 12);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).ordeno, 360, 175, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).nweight.ToString() + " KG", 360, 145, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).gweight.ToString() + " KG", 360, 115, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " " + ((Para)vccLabel[i]).unit, 360, 85, 0);
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " " + ((Para)vccLabel[i]).unit, 360, 85, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " 片", 360, 85, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).datea, 360, 55, 0);
                     
                     cb.EndText();
@@ -244,7 +317,7 @@
             doc1.Close();
             Response.ContentType = "application/octec-stream;";
             Response.AddHeader("Content-transfer-encoding", "binary");
-            Response.AddHeader("Content-Disposition", "attachment;filename=label" + item.noa + ".pdf");
+            Response.AddHeader("Content-Disposition", "attachment;filename=label2" + item.noa + ".pdf");
             Response.BinaryWrite(stream.ToArray());
             Response.End();
         }

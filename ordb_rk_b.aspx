@@ -35,7 +35,7 @@
                 var t_para = new Array();
                 try {
                     t_para = JSON.parse(decodeURIComponent(q_getId()[5]));
-                    t_content = "where=^^['"+t_para.ordcno+"','"+t_para.tggno+"','"+t_para.page+"')^^";
+                    t_content = "where=^^['"+t_para.ordcno+"','"+t_para.tggno+"','"+t_para.kind+"','"+t_para.page+"')^^";
                 } catch(e) {
                 }
                 brwCount = -1;
@@ -93,7 +93,7 @@
 		<div id="dbbs" style="overflow: scroll;height:450px;" >
 			<table id="tbbs" class='tbbs' border="2" cellpadding='2' cellspacing='1' style='width:100%;' >
 				<tr style="display:none;">
-					<th align="center" style="width:2%;"><input type="checkbox" id="checkAllCheckbox"/></th>
+					<th align="center" style="width:2%;"> </th>
 					<td align="center" style="width:15%;">廠商</td>
 					<td align="center" style="width:30%;">品名</td>
 					<td align="center" style="width:15%;">規格</td>
@@ -117,6 +117,7 @@
 					<td style="width:30%;">
 						<input id="txtProductno.*" type="text" style="float:left;width:30%;"  readonly="readonly" />
 						<input id="txtProduct.*" type="text" style="float:left;width:65%;"  readonly="readonly" />
+						<input id="txtProductno1.*" type="text" style="display:none;"  readonly="readonly" />
 					</td>
 					<td style="width:15%;">
 						<input id="txtCspec.*" type="text" style="float:left;width:100%;"  readonly="readonly" />

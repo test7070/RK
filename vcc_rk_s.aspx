@@ -46,6 +46,7 @@
 				var t_cust = $.trim($('#txtCust').val());
 				var t_invo = $.trim($('#txtInvono').val());
 				var t_uno = $.trim($('#txtUno').val());
+				var t_ordeno = $.trim($('#txtOrdeno').val());
 				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
@@ -56,8 +57,10 @@
 				if(t_invo.length>0)
 					t_where += " and charindex('"+t_invo+"',invono)>0";
 				if(t_uno.length>0)
-		       		t_where += " and exists(select noa from view_vccs"+r_accy+" where view_vccs"+r_accy+".noa=view_vcc"+r_accy+".noa and view_vccs"+r_accy+".uno='"+t_uno+"')";
-					
+		       		t_where += " and exists(select noa from view_vccs"+r_accy+" where view_vccs"+r_accy+".noa=view_vcc"+r_accy+".noa and charindex('"+t_uno+"',view_vccs"+r_accy+".uno)>0 )";
+				if(t_ordeno.length>0)
+		       		t_where += " and exists(select noa from view_vccs"+r_accy+" where view_vccs"+r_accy+".noa=view_vcc"+r_accy+".noa and charindex('"+t_ordeno+"',view_vccs"+r_accy+".ordeno)>0 )";
+		       			
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -111,6 +114,10 @@
 				<tr class='seek_tr'>
 					<td><a id='lblUno'>批號</a></td>
 					<td><input id="txtUno" type="text"/></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td><a id='lblOrdeno'>訂單編號</a></td>
+					<td><input id="txtOrdeno" type="text"/></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
