@@ -1118,7 +1118,7 @@ z_cub_rk01:--z_cub_rk01
 				update @tmp set uno2=@uno,dime2=@dime,width2=@width
 					,productno2=@productno,product2=@product,mount2=@mount,weight2=@weight
 					,size2=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				where recno=@recno and recno2=1
+				where recno=@recno and recno2=@n
 			end
 			else
 			begin
@@ -1161,7 +1161,7 @@ z_cub_rk01:--z_cub_rk01
 				update @tmp set uno3=@uno,dime3=@dime,width3=@width
 					,productno3=@productno,product3=@product,mount3=@mount,weight3=@weight
 					,size3=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				where recno=@recno and recno2=1
+				where recno=@recno and recno2=@n
 			end
 			else
 			begin
