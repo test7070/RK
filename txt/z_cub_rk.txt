@@ -34,6 +34,7 @@ z_cub_rk02:--z_cub_rk02
 		set @t_ewidth =0
 	end catch
 	-----------------------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -89,7 +90,7 @@ z_cub_rk02:--z_cub_rk02
 		
 		,w05 float--期初半成品結存	 XXXXXXXXXXXXXXX
 		,w06 float--待修品再投入   cucs.weight5	
-		,w07 float--成品再投入	   cucs.weight3
+		,w07 float--成品再投入	   cucs.para
 		,w08 nvarchar(40)--成品規格	
 		,w09 float--(1)進倉成品	   cuts.weight
 
@@ -134,7 +135,7 @@ z_cub_rk02:--z_cub_rk02
 	update @tmp set 
 		 w04=ISNULL(b.weight4,0)
 		,w06=ISNULL(b.weight5,0)
-		,w07=ISNULL(b.weight3,0) 
+		,w07=ISNULL(b.para ,'')
 		,w10=ISNULL(b.weight6,0)+ISNULL(b.weight7,0)
 		,w11=ISNULL(b.weight8,0)
 		,w12=ISNULL(b.weight9,0)
@@ -142,7 +143,7 @@ z_cub_rk02:--z_cub_rk02
 	from @tmp a
 	left join(
 		select a.cubno makeno
-			,SUM(ISNULL(a.weight3,0)) weight3
+			,SUM(cast(replace(a.para,',','') as float)) para
 			,SUM(ISNULL(a.weight4,0)) weight4
 			,SUM(ISNULL(a.weight5,0)) weight5
 			,SUM(ISNULL(a.weight6,0)) weight6
@@ -213,7 +214,7 @@ z_cub_rk02:--z_cub_rk02
 				update @tmp set uno2=@uno,dime2=@dime,width2=@width
 					,productno2=@productno,product2=@product,mount2=@mount,weight2=@weight
 					,size2=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				where recno=@recno and recno2=1
+				where recno=@recno and recno2=@n
 			end
 			else
 			begin
@@ -224,7 +225,7 @@ z_cub_rk02:--z_cub_rk02
 					,@uno,@dime,@width,@productno,@product,@mount,@weight
 					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
 				from @tmp
-				where recno=@recno and recno2=1
+				where recno=@recno and recno2=@n
 			end
 			fetch next from cursor_table2
 			into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
@@ -256,7 +257,7 @@ z_cub_rk02:--z_cub_rk02
 				update @tmp set uno3=@uno,dime3=@dime,width3=@width
 					,productno3=@productno,product3=@product,mount3=@mount,weight3=@weight
 					,size3=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				where recno=@recno and recno2=1
+				where recno=@recno and recno2=@n
 			end
 			else
 			begin
@@ -267,7 +268,7 @@ z_cub_rk02:--z_cub_rk02
 					,@uno,@dime,@width,@productno,@product,@mount,@weight
 					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
 				from @tmp
-				where recno=@recno and recno2=1
+				where recno=@recno and recno2=@n
 			end
 			fetch next from cursor_table2
 			into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
