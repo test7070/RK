@@ -417,6 +417,7 @@
 
             function btnIns() {
                 _btnIns();
+                $('#chkIsproj').prop('checked',true);
                 var t_memo = '1.本公司僅接受自出貨日後3個月內之客訴，交易如有爭議涉訟時，雙方同意以台灣桃園地方法院為第一審管轄法院。';
 				t_memo += '\n2.雙方同意依合約簽訂交期後20天內出貨。(如因非本公司因素之不可抗力造成延誤，不在此限。)';			
                 if(!$('#chekQcopy').prop('checked'))
@@ -834,7 +835,7 @@
 					<td style="width:100px;">保護膜(一)<br>編號<BR>名稱</td>
 					<td style="width:100px;">保護膜(二)<br>編號<BR>名稱</td>	
 					<td style="width:80px;">數量</td>
-					<td style="width:80px;">重量</td>
+					<td style="width:80px;">重量/M</td>
 					<td style="width:60px;">計量<BR>單位</td>
 					<td style="width:80px;">單價</td>
 					<td style="width:60px;">計價<BR>單位</td>
