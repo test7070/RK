@@ -85,8 +85,14 @@
 			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
 		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
 			,isnull(h.product,'')+case when len(isnull(h.product,''))>0 and len(isnull(a.size,''))>0 then ' / ' else '' end+a.size
-			,case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
-			else CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end end
+			,case when e.noa is not null
+				then 
+				case when e.dime=0 and e.radius=0 and e.width=0 and e.lengthb=0 then ''
+				else CAST(e.dime as nvarchar)+'+'+cast(e.radius as nvarchar)+'*'+CAST(e.width as nvarchar)+'*'+case when e.lengthb=0 then 'COIL' else CAST(e.lengthb as nvarchar) end end
+			else
+				case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
+				else CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end end
+			end
 			,a.uno,'',g.cname
 			,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
 			,b.custno,i.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
