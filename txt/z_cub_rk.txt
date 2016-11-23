@@ -1217,6 +1217,47 @@ z_cub_rk01:--z_cub_rk01
 				,w04 = ROUND(@w04*[weight]/@totweight,2)
 				,w05 = ROUND(@w05*[weight]/@totweight,2)
 			where accy=@accy and noa=@noa
+			
+			--物料均攤尾差在第一筆修正
+			update @tmp set w01= a.w01+(@w01-b.w01)
+			from @tmp a
+			outer apply(select SUM(ISNULL(w01,0)) w01 
+				from @tmp where accy=@accy and noa=@noa) b
+				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+					where accy=@accy and noa=@noa and ISNULL(w01,0)!=0) c on a.sel=c.sel
+			where accy=@accy and noa=@noa  and c.recno=1
+			
+			update @tmp set w02= a.w02+(@w02-b.w02)
+			from @tmp a
+			outer apply(select SUM(ISNULL(w02,0)) w02 
+				from @tmp where accy=@accy and noa=@noa) b
+				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+					where accy=@accy and noa=@noa and ISNULL(w02,0)!=0) c on a.sel=c.sel
+			where accy=@accy and noa=@noa  and c.recno=1
+			
+			update @tmp set w03= a.w03+(@w03-b.w03)
+			from @tmp a
+			outer apply(select SUM(ISNULL(w03,0)) w03 
+				from @tmp where accy=@accy and noa=@noa) b
+				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+					where accy=@accy and noa=@noa and ISNULL(w03,0)!=0) c on a.sel=c.sel
+			where accy=@accy and noa=@noa  and c.recno=1
+			
+			update @tmp set w04= a.w04+(@w04-b.w04)
+			from @tmp a
+			outer apply(select SUM(ISNULL(w04,0)) w04 
+				from @tmp where accy=@accy and noa=@noa) b
+				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+					where accy=@accy and noa=@noa and ISNULL(w04,0)!=0) c on a.sel=c.sel
+			where accy=@accy and noa=@noa  and c.recno=1
+			
+			update @tmp set w05= a.w05+(@w05-b.w05)
+			from @tmp a
+			outer apply(select SUM(ISNULL(w05,0)) w05 
+				from @tmp where accy=@accy and noa=@noa) b
+				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+					where accy=@accy and noa=@noa and ISNULL(w05,0)!=0) c on a.sel=c.sel
+			where accy=@accy and noa=@noa  and c.recno=1
 		end 
 		fetch next from cursor_table
 		into @accy,@noa,@totweight
