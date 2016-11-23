@@ -149,7 +149,6 @@
 						var as = _q_appendData("view_get", "", true);
 						if(as[0]!=undefined){
 							q_func('get_post.post.post0', r_accy + ',' + t_noa + ',0');
-							q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
 						}
 						break;
 					case q_name:
@@ -256,6 +255,10 @@
 			}
 			function q_funcPost(t_func, result) {
                 switch(t_func) {
+                	case 'get_post.post.post0':
+                		var t_noa = currentNoa;
+						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+						break;
                 	case 'qtxt.query.cub2get1':
                 		t_noa = $('#txtNoa').val();
                 		console.log('qtxt.query.cub2get1:'+t_noa);
