@@ -98,8 +98,13 @@
 				document.title = '生產作業';
 				bbmMask = [['txtDatea', r_picd]];
 				q_mask(bbmMask);
-				q_cmbParse("cmbProcess", '日、高溫,午,晚');
 				q_cmbParse("cmbKind", '1@皮膜,2@保護膜','t');
+				
+				q_cmbParse("combProcess", ' ,覆膜,覆膜代工,抗指紋,抗指紋代工,試貼,試塗');
+				$('#combProcess').change(function(e){
+					$('#txtProcess').val($(this).val());
+					$(this)[0].selectedIndex = 0;
+				});
 				
 				$('#dbbt').mousedown(function(e) {
 					if(e.button==2){			   		
@@ -242,15 +247,29 @@
 				if (q_cur == 1 || q_cur == 2){
 					t_noa = $('#txtNoa').val();
 					if(t_noa.length>0){
-						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
-						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';1');
-						q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
+						q_func('qtxt.query.cub2get1', 'cub.txt,cub2get,'+t_noa+';0');
 					}
 				}
 				if(q_cur==3){
 					q_gt('view_get', "where=^^noa='" + currentNoa + "'^^", 0, 0, 0, "isexist_get_dele",1);				
 				}
 			}
+			function q_funcPost(t_func, result) {
+                switch(t_func) {
+                	case 'qtxt.query.cub2get1':
+                		t_noa = $('#txtNoa').val();
+                		console.log('qtxt.query.cub2get1:'+t_noa);
+                		q_func('qtxt.query.cub2get2', 'cub.txt,cub2get,'+t_noa+';1');
+                		break;
+            		case 'qtxt.query.cub2get2':
+            			t_noa = $('#txtNoa').val();
+            			console.log('qtxt.query.cub2get2:'+t_noa);
+                		q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
+                		break;
+                    default:
+                        break;
+                }
+            }
 
 			function q_boxClose(s2) {
 				var ret;
@@ -436,12 +455,13 @@
                     $('#cmbProcess').attr('disabled','disabled');
                     $('#btnOrde').attr('disabled','disabled');
                     $('#btnCubu_rk').removeAttr('disabled');
+                    $('#combProcess').attr('disabled','disabled');
                 } else {	
                     $('#txtDatea').datepicker();
                     $('#cmbProcess').removeAttr('disabled');
                     $('#btnOrde').removeAttr('disabled');
                     $('#btnCubu_rk').attr('disabled', 'disabled');
-                    
+                    $('#combProcess').removeAttr('disabled');
                     if($('#txtVcceno').val().length>0)
                     	$('#txtVcceno').attr('disabled','disabled');
                 }
@@ -872,7 +892,7 @@
 						<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
 						<td style="width:80px; color:black;"><a>製造批號</a></td>
 						<td style="width:100px; color:black;"><a id='vewDatea'> </a></td>
-						<td style="width:100px; color:black;">班、線別</td>
+						<td style="width:100px; color:black;">生產製程</td>
 					</tr>
 					<tr>
 						<td><input id="chkBrow.*" type="checkbox" style=''/></td>
@@ -898,9 +918,10 @@
 						<td><input id="txtDatea" type="text" class="txt c1"/></td>
 					</tr>
 					<tr>
-						<td><span> </span><a class="lbl" >班、線別</a></td>
+						<td><span> </span><a class="lbl" >生產製程</a></td>
 						<td>
-							<select id="cmbProcess" class="txt c1"> </select>
+							<input id="txtProcess" type="text" class="txt" style="float:left;width:80%;"/>
+							<select id="combProcess" class="txt" style="float:left;width:15%;"> </select>
 						</td>
 						<td><span> </span><a class="lbl">製造批號</a></td>
 						<td><input id="txtVcceno" type="text" class="txt c1"/></td>
