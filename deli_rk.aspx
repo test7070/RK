@@ -60,11 +60,11 @@
             		if(!$('#chkAprice_'+i).prop('checked')){
         				//進貨金額(重量*單價)
             			$('#txtMoney_'+i).val(round(q_mul(q_float('txtWeight_'+i),q_float('txtPrice_'+i)),2));
+            			//原幣完稅價格 	
+            			$('#txtCointotal_'+i).val(q_float('txtMoney_'+i));
+            			//本幣完稅價格
+            			$('#txtTotal_'+i).val(round(q_mul(q_float('txtCointotal_'+i),q_float('txtFloata')),0));
             		}
-            		//原幣完稅價格 	
-            		$('#txtCointotal_'+i).val(q_float('txtMoney_'+i));
-            		//本幣完稅價格
-            		$('#txtTotal_'+i).val(round(q_mul(q_float('txtCointotal_'+i),q_float('txtFloata')),0));
             		//本幣關稅
             		$('#txtTariff_'+i).val(round(q_mul(q_float('txtTotal_'+i),q_float('txtTariffrate_'+i))/100,0));
             		//推廣貿易費
@@ -682,12 +682,21 @@
 				//金額小計自訂
 				for(var i=0;i<q_bbsCount;i++){
 					$('#txtMoney_'+i).attr('readonly','readonly');
+					$('#txtCointotal_'+i).attr('readonly','readonly');
+					$('#txtTotal_'+i).attr('readonly','readonly');
 					if($('#chkAprice_'+i).prop('checked')){
 						$('#txtMoney_'+i).css('color','black').css('background-color','white');
-						if(q_cur==1 || q_cur==2)
+						$('#txtCointotal_'+i).css('color','black').css('background-color','white');
+						$('#txtTotal_'+i).css('color','black').css('background-color','white');
+						if(q_cur==1 || q_cur==2){
 							$('#txtMoney_'+i).removeAttr('readonly');
+							$('#txtCointotal_'+i).removeAttr('readonly');
+							$('#txtTotal_'+i).removeAttr('readonly');
+						}
 					}else{
 						$('#txtMoney_'+i).css('color','green').css('background-color','rgb(237,237,237)');
+						$('#txtCointotal_'+i).css('color','green').css('background-color','rgb(237,237,237)');
+						$('#txtTotal_'+i).css('color','green').css('background-color','rgb(237,237,237)');
 					}
 				}
 			}
