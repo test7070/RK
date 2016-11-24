@@ -312,6 +312,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 	declare @productno nvarchar(max)
 	declare @size nvarchar(max)
 	declare @unit nvarchar(max)
+	declare @n int = 0
 	
 	declare cursor_table cursor for
 	select sel,kind,productno,size,unit from @tmpa where len(uno)=0
@@ -337,7 +338,16 @@ z_rc2_rkp01:--z_rc2_rkp01
 		end
 		else
 		begin
-			update @tmpa set uno=@uno1 +'～' + @uno2 where sel=@sel
+			set @n = 0
+			while 1=1
+			begin
+				if LEFT(@uno1,@n+1) = LEFT(@uno2,@n+1)
+					set @n = @n + 1
+				else
+					break
+			end
+			update @tmpa set uno=@uno1 + '~' + substring(@uno2,@n+1,len(@uno2)) where sel=@sel
+			--update @tmpa set uno=@uno1 +'～' + @uno2 where sel=@sel
 		end
 		
 		fetch next from cursor_table
@@ -374,7 +384,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 	group by datea,rc2no,ordcno,tggno,tgg,unit
 	------------------------------------------------------------------------------------
 	declare @t_pagecount int = 20 -- 一頁幾行
-	declare @n int = 0
+	set @n = 0
 	select @n=count(1) from @tmpa
 	while @n%@t_pagecount!=0
 	begin
