@@ -85,6 +85,12 @@
 					}, {
 						type : '6', //[18] 10
 						name : 'xplace'
+					}, {
+						type : '6', //[19] 11
+						name : 'xuno'
+					}, {
+						type : '6', //[20] 12
+						name : 'xcust'
 					}]
 				});
 				q_popAssign();
