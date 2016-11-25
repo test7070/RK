@@ -1,0 +1,188 @@
+
+
+alter function [dbo].[smoney_rk](@uno nvarchar(30))
+returns float
+as
+begin
+	--進貨成本
+	declare @money float = 0
+	--批號不能重覆
+	declare @tablea nvarchar(20) = ''
+	declare @accy nvarchar(10) = ''
+	declare @noa nvarchar(20) = ''
+	declare @noq nvarchar(10) = ''
+	select top 1 @tablea=tablea,@accy=accy,@noa=noa,@noq=noq from view_uccb where uno=@uno
+	if len(@tablea)=0
+		return @money
+	--rc2s 進貨
+	declare @bkmoney float = 0 
+	if @tablea = 'rc2s'
+	begin
+		select @money = total from view_rc2s where accy=@accy and noa=@noa and noq=@noq
+		select @bkmoney = sum(isnull(a.total,0)) 
+		from view_rc2s a 
+		left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+		where isnull(b.typea,'') = '2'
+		and uno=@uno
+		set @money = @money - isnull(@bkmoney,0)
+	end
+	--inas 入庫
+	if @tablea = 'inas'
+	begin
+		--出貨單轉來的 (都是代工或寄庫,可以忽略)
+		--領料單轉來的
+		if exists(select noa from view_gets where noa=@noa and noq=@noq)
+		begin
+			select top 1 @money = [dbo].[scost_rk]('get',accy,noa,noq)
+			from view_gets
+			where noa=@noa and noq=@noq
+		end
+		--入庫單直接輸入
+		else
+		begin
+			select top 1 @money=isnull(total,0) from view_inas where accy=@accy and noa=@noa and noq=@noq
+		end
+	end
+	--cuts 成品入庫
+	if @tablea='cuts'
+	begin
+		--記錄 CUB產生的 GET 的領料成本
+		declare @tmpa table(
+			sel int identity(1,1)
+			,accy nvarchar(10)
+			,noa nvarchar(20)
+			,noq nvarchar(10)
+			,uno nvarchar(30)
+			,[weight] float
+			,cost float
+		)
+		
+		-- 記錄 CUBS 的領料成本
+		declare @tmpb table(
+			sel int identity(1,1)
+			,accy nvarchar(10)
+			,noa nvarchar(20)
+			,noq nvarchar(10)
+			,makeno nvarchar(20)
+			,cub_uno nvarchar(30)
+			,[weight] float --鋼捲領料重
+			,rweight float --製成品重
+			,cost1 float --鋼捲的領料成本
+			,cost2 float --皮膜、保護膜的領料成本(CUBT)
+			,cost3 float --物料的領料成本(CUBU)
+		)
+		--記錄 物料 的領料成本
+		declare @tmpc table(
+			sel int identity(1,1)
+			,accy nvarchar(10)
+			,noa nvarchar(20)
+			,noq nvarchar(10)
+			,nor nvarchar(10)
+			,cost float
+		)
+		declare @makeno nvarchar(20) = ''--製造批號
+		declare @cutno nvarchar(20)
+		declare @cutnoq nvarchar(20)
+		
+		declare @cubaccy nvarchar(10)=''
+		declare @cubno nvarchar(20)=''
+		
+		declare @cub_uno nvarchar(30)
+		declare @cost float
+		declare @cost1 float
+
+		select @makeno = cname from view_cuts where accy=@accy and noa=@noa and noq=@noq
+		if len(isnull(@makeno,''))>0 
+		begin
+			select @cubaccy = accy,@cubno=noa from view_cubs where makeno=@makeno 
+			--CUB產生的 GET 的領料成本
+			insert into @tmpa(accy,noa,noq,uno,[weight],cost)
+			select accy,noa,noq,uno
+				,case when isnull(gweight,0)>0 then gweight else isnull([weight],0) end
+				,dbo.scost_rk('get',accy,noa,noq)
+			from view_gets 
+			where noa=@cubno
+			
+			--CUBS鋼捲的領料成本
+			insert into @tmpb(accy,noa,noq,makeno,cub_uno,[weight],rweight)
+			select a.accy,a.noa,a.noq,a.makeno,a.uno,isnull(a.[weight],0),isnull(a.hweight,0)
+			from view_cubs a
+			left join view_cub b on a.accy=b.accy and a.noa=b.noa
+			where b.accy=@cubaccy and b.noa=@cubno
+			--計算鋼捲分攤成本 
+			declare cursor_table cursor for
+			select cub_uno,sum(isnull([weight],0)) from @tmpb group by cub_uno			
+			open cursor_table
+			fetch next from cursor_table
+			into @cub_uno,@weight
+			while(@@FETCH_STATUS <> -1)
+			begin
+				select @cost =0
+				select @cost = sum(isnull(cost,0)) from @tmpa where uno=@cub_uno
+			
+				update @tmpb set cost1= case when [weight]=0 then 0 else round(@weight/[weight]*isnull(@cost,0),0) end
+				from @tmpb a
+				where cub_uno=@cub_uno
+				--尾差由最後一筆補足
+				select @cost1 = sum(cost1) from @tmpb where cub_uno=@cub_uno
+				update @tmpb set cost1 = a.cost1 + (@cost-isnull(@cost1,0))
+				from @tmpb a
+				outer apply(select top 1 sel from @tmpb order by accy desc,noa desc,noq desc,sel desc) b
+				where a.sel=b.sel
+				
+				fetch next from cursor_table
+				into @cub_uno,@weight
+			end
+			close cursor_table
+			deallocate cursor_table
+			--物料 的領料成本
+			insert into @tmpc(accy,noa,noq,nor,uno,[weight])
+			select a.accy,a.noa,a.noq,b.noq,b.ucolor,b.[weight]
+			from view_cubs a
+			left join view_cubu b on a.accy=b.accy and a.noa=b.noa
+			where a.accy=@cubaccy and a.noa=@cubno
+			
+			declare cursor_table cursor for
+			select uno,sum(isnull([weight],0)) from @tmpc group by uno			
+			open cursor_table
+			fetch next from cursor_table
+			into @cub_uno,@weight --物料批號
+			while(@@FETCH_STATUS <> -1)
+			begin
+				select @cost =0
+				select @cost = sum(isnull(cost,0)) from @tmpa where uno=@cub_uno
+			
+				update @tmpc set cost1= case when [weight]=0 then 0 else round(@weight/[weight]*isnull(@cost,0),0) end
+				from @tmpb a
+				where cub_uno=@cub_uno
+				--尾差由最後一筆補足
+				select @cost1 = sum(cost1) from @tmpb where cub_uno=@cub_uno
+				update @tmpb set cost1 = a.cost1 + (@cost-isnull(@cost1,0))
+				from @tmpb a
+				outer apply(select top 1 sel from @tmpb order by accy desc,noa desc,noq desc,sel desc) b
+				where a.sel=b.sel
+				
+				fetch next from cursor_table
+				into @cub_uno,@weight
+			end
+			close cursor_table
+			deallocate cursor_table
+			
+			
+			
+			--insert into @tmp(accy,noa,noq,uno,[weight])
+			--select accy,noa,noq,uno,isnull([weight],0)
+			--from view_cuts
+			--where cname = @makeno
+		
+			
+		
+		end
+	end
+	
+
+	return @money
+end
+GO
+
+
