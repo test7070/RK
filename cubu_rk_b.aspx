@@ -32,6 +32,9 @@
 			var Parent = window.parent;
 			var cubBBsArray = '';
 			var cubBBtArray = '';
+			
+			var currentNoa = '';
+			
 			if (Parent.q_name && Parent.q_name == 'cub') {
 				cubBBsArray = Parent.abbsNow;
 				cubBBtArray = Parent.abbtNow;
@@ -68,7 +71,6 @@
 
 
 			function bbsAssign() {
-				
 				for (var i = 0; i < q_bbsCount; i++) {
 					$('#lblNo_' + i).text(i + 1);
 					if (!$('#btnMinus_' + i).hasClass('isAssign')) {
@@ -76,16 +78,15 @@
 							e.preventDefault();
 							if(!(q_cur==1 || q_cur==2))
 								return;
-                            var n = $(this).attr('id').replace('txtUcolor_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnUcolor_'+n).click();
                         });
 						$('#txtProductno_' + i).bind('contextmenu', function(e) {
-							
                             /*滑鼠右鍵*/
                             e.preventDefault();
                             if(!(q_cur==1 || q_cur==2))
 								return;
-                            var n = $(this).attr('id').replace('txtProductno_', '');
+                            var n = $(this).attr('id').replace(/^(.*)_(\d+)$/,'$2');
                             $('#btnProduct_'+n).click();
                         });
 					}
@@ -94,16 +95,55 @@
 			}
 
 			function btnOk() {
-                t_key = q_getHref();
-                _btnOk(t_key[1], bbsKey[0], bbsKey[1], '', 2);
-                t_noa = t_key[1];
-				if(t_noa.length>0){
-					q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
-					q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';1');
-					q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
+                
+			}
+			function q_funcPost(t_func, result) {
+                switch(t_func) {
+                	case 'get_post.post.post1':
+                		//alert('done');
+	                    qbtnOk();
+	                    parent.$.fn.colorbox.close();
+                		break;
+                	case 'get_post.post.post0':
+                		
+                		var t_noa = currentNoa;
+						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+						break;
+                	case 'qtxt.query.cub2get1':
+               
+                		var t_noa = currentNoa;
+                		q_func('qtxt.query.cub2get2', 'cub.txt,cub2get,'+t_noa+';1');
+                		break;
+            		case 'qtxt.query.cub2get2':
+            		
+            			var t_noa = currentNoa;
+                		q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
+                		break;
+                    default:
+                        break;
+                }
+            }
+            function q_gtPost(t_name) {
+				switch (t_name) {
+					case 'isexist_get_modi':
+						var t_noa = currentNoa;
+						var as = _q_appendData("view_get", "", true);
+						if(as[0]!=undefined){
+							q_func('get_post.post.post1', r_accy + ',' + t_noa + ',1');
+						}else{
+							//alert('done');
+							//存檔
+		                    qbtnOk();
+		                    parent.$.fn.colorbox.close();
+						}
+						break;
+					case q_name:
+						break;
+					default:
+                    	break;
 				}
 			}
-
+			
 			function bbsSave(as) {
 				if (!as['ucolor']) {
 					as[bbsKey[0]] = '';
@@ -121,38 +161,34 @@
 				$('#btnOk').before($('#btnOk').clone().attr('id', 'btnOk2').show()).hide();
 				$('#btnOk2').click(function() {
 					//存檔
-                    qbtnOk();
-                    parent.$.fn.colorbox.close();
-                   
+            		var t_key = q_getHref();
+            		_btnOk(t_key[1], bbsKey[0], bbsKey[1], '', 2);
 				});
 			}
+			function q_stPost() {
+				if (!(q_cur == 1 || q_cur == 2))
+					return false;
+				
+				is_btnOk = 1; 
+				var t_key = q_getHref();
+				currentNoa = t_key[1];
+				if(currentNoa.length>0){
+					q_func('qtxt.query.cub2get1', 'cub.txt,cub2get,'+currentNoa+';0');
+				}else{
+					//存檔
+					//alert('error');
+                    qbtnOk();
+                    parent.$.fn.colorbox.close();
+				}
+			}
+			
 			function refresh() {
 				_refresh();
 			}
-			function q_gtPost(t_postname) {
-				switch (t_postname) {
-					case 'isexist_get_modi':
-						var t_noa = t_key[1];
-						var as = _q_appendData("view_get", "", true);
-						if(as[0]!=undefined){
-							q_func('get_post.post.post1', r_accy + ',' + t_noa + ',1');
-						}
-						break;
-					case q_name:
-						break;
-					default:
-						break;
-				} 
-			}
+
 
 			function q_popPost(s1) {
 				switch (s1) {
-					default:
-						break;
-				}
-			}
-			function q_funcPost(t_func, result) {
-				switch(t_func) {
 					default:
 						break;
 				}
