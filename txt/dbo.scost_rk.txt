@@ -1,6 +1,17 @@
+USE [ST6]
+GO
+
+/****** Object:  UserDefinedFunction [dbo].[scost_rk]    Script Date: 12/02/2016 09:02:04 ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
 
 
-alter function [dbo].[scost_rk](@tablea nvarchar(20)
+
+
+ALTER function [dbo].[scost_rk](@tablea nvarchar(20)
 	,@accy nvarchar(10)
 	,@noa nvarchar(20)
 	,@noq nvarchar(10))
@@ -107,7 +118,18 @@ begin
 	--用重量去攤
 	select @weight = sum([weight]) from @tmp
 	set @weight = isnull(@weight,0) 
-	update @tmp set [money]= case when @weight=0 then 0 else round(@money*[weight]/@weight,0) end
+	
+	declare @begin_weight float = 0
+	declare @stock_weight float = 0
+	select @begin_weight = [weight] from view_uccb where uno=@uno
+	set @stock_weight = @begin_weight - @weight
+	if @stock_weight>0
+	begin
+		insert into @tmp(tablea,accy,noa,noq,datea,mount,[weight])
+		select '' tablea,'' accy,'' noa,'' noq,'' datea,0,@stock_weight
+	end
+	
+	update @tmp set [money]= case when @begin_weight=0 then 0 else round(@money*[weight]/@begin_weight,0) end
 	--尾差在最後一筆扣掉
 	select @cost = sum([money]) from @tmp
 	set @cost = @money - @cost
@@ -123,6 +145,8 @@ begin
 	
 	return @cost
 end
+
+
 GO
 
 
