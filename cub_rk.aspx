@@ -148,7 +148,7 @@
 						var t_noa = currentNoa;
 						var as = _q_appendData("view_get", "", true);
 						if(as[0]!=undefined){
-							//alert('isexist_get_dele:'+t_noa);
+							alert('isexist_get_dele:'+t_noa);
 							q_func('get_post.post.post0', r_accy + ',' + t_noa + ',0');
 						}
 						break;
@@ -258,6 +258,7 @@
 			function q_funcPost(t_func, result) {
                 switch(t_func) {
                 	case 'get_post.post.post0':
+                	alert('q_funcPost:'+t_noa);
                 		var t_noa = currentNoa;
 						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
 						break;
