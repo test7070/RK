@@ -6,6 +6,9 @@ z_uccg_rk01:
 	
 	declare @t_bdate nvarchar(10) = case when '#non'=[3] then '' else [3] end
 	declare @t_edate nvarchar(10) = case when '#non'=[4] then char(255) else [4] end
+	declare @t_bproductno nvarchar(30) = case when '#non'=[5] then '' else [5] end
+	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then char(255) else [6] end
+	declare @t_kind nvarchar(max) = case when '#non'=[8] then '' else [8] end
 	-----------------------------------------------------------------------------------------------------
 	IF OBJECT_ID('tempdb..#z_uccg_rk01')is not null
 	BEGIN
@@ -22,6 +25,7 @@ z_uccg_rk01:
 		,lengthb float
 		,radius float
 		,uno nvarchar(30)
+		,kind nvarchar(20)
 		--期初存貨
 		,mount01 float
 		,price01 float
@@ -391,8 +395,31 @@ z_uccg_rk01:
 	close cursor_table 
 	deallocate cursor_table 
 	------------------------------------------------------------------------------------------
-	update #z_uccg_rk01 set gno = '1'
+	update #z_uccg_rk01 set productno=b.productno
+		,product=b.product
+		,dime=b.dime
+		,width=b.width
+		,lengthb=b.lengthb
+		,radius=b.radius
+		,kind=b.kind
+	from #z_uccg_rk01 a
+	left join view_uccb b on a.uno=b.uno
 	
+	--A1 金屬底材
+	--A4 皮膜
+	--A5 保護膜
+	--A6 物料
+	--A7 成品
+	--A8 溶劑
+	
+	if len(@t_kind)>0
+	begin
+		delete #z_uccg_rk01 where not CHARINDEX(kind,@t_kind)>0
+	end
+	delete #z_uccg_rk01 where not ISNULL(productno,'') between @t_bproductno and @t_eproductno
+	
+	
+	update #z_uccg_rk01 set gno = '1'
 	insert into #z_uccg_rk01(gno
 		,mount01,mount02,mount03,mount04,mount05,mount06,mount07,mount08,mount09
 		,money01,money02,money03,money04,money05,money06,money07,money08,money09)
@@ -420,15 +447,6 @@ z_uccg_rk01:
 	update #z_uccg_rk01 set price08 = case when isnull(mount08,0)=0 then 0 else ROUND(money08/mount08,2) end
 	update #z_uccg_rk01 set price09 = case when isnull(mount09,0)=0 then 0 else ROUND(money09/mount09,2) end
 	update #z_uccg_rk01 set price10 = case when isnull(mount10,0)=0 then 0 else ROUND(money10/mount10,2) end		
-	
-	update #z_uccg_rk01 set productno=b.productno
-		,product=b.product
-		,dime=b.dime
-		,width=b.width
-		,lengthb=b.lengthb
-		,radius=b.radius
-	from #z_uccg_rk01 a
-	left join view_uccb b on a.uno=b.uno
 
 	update #z_uccg_rk01 set recno=b.recno
 	from #z_uccg_rk01 a
@@ -439,6 +457,8 @@ z_uccg_rk01:
 		,product a01
 		,dime a02
 		,width a03
+		,uno a04
+		
 		,mount01 b01
 		,price01 b02
 		,money01 b03

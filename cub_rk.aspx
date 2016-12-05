@@ -148,6 +148,7 @@
 						var t_noa = currentNoa;
 						var as = _q_appendData("view_get", "", true);
 						if(as[0]!=undefined){
+							//alert('isexist_get_dele:'+t_noa);
 							q_func('get_post.post.post0', r_accy + ',' + t_noa + ',0');
 						}
 						break;
@@ -250,6 +251,7 @@
 					}
 				}
 				if(q_cur==3){
+					//alert('q_stPost:'+currentNoa);
 					q_gt('view_get', "where=^^noa='" + currentNoa + "'^^", 0, 0, 0, "isexist_get_dele",1);				
 				}
 			}
