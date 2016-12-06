@@ -106,14 +106,13 @@
                 		break;
                 	case 'get_post.post.post0':
                 		var t_noa = currentNoa;
-						q_func('qtxt.query.cub2get', 'cub.txt,cub2get,'+t_noa+';0');
+                		q_func('qtxt.query.cub2get1', 'cub.txt,cub2get,'+t_noa+';0');
 						break;
                 	case 'qtxt.query.cub2get1':
                 		var t_noa = currentNoa;
                 		q_func('qtxt.query.cub2get2', 'cub.txt,cub2get,'+t_noa+';1');
                 		break;
             		case 'qtxt.query.cub2get2':
-            		
             			var t_noa = currentNoa;
                 		q_gt('view_get', "where=^^noa='" + t_noa + "'^^", 0, 0, 0, "isexist_get_modi",1);
                 		break;
@@ -127,8 +126,9 @@
 						var t_noa = currentNoa;
 						var as = _q_appendData("view_get", "", true);
 						if(as[0]!=undefined){
-							alert('isexist_get_dele:'+t_noa);
 							q_func('get_post.post.post0', r_accy + ',' + t_noa + ',0');
+						}else{
+							q_func('qtxt.query.cub2get2', 'cub.txt,cub2get,'+t_noa+';1');
 						}
 						break;
 					case 'isexist_get_modi':
@@ -172,18 +172,15 @@
 				});
 			}
 			function q_stPost() {
-				if (!(q_cur == 1 || q_cur == 2 || q_cur == 3))
+				if (!(q_cur == 1 || q_cur == 2))
 					return false;
 				
 				is_btnOk = 1; 
 				var t_key = q_getHref();
 				currentNoa = t_key[1];
 				if(currentNoa.length>0){
-					if(q_cur==3){
-						q_gt('view_get', "where=^^noa='" + currentNoa + "'^^", 0, 0, 0, "isexist_get_dele",1);				
-					}else{
-						q_func('qtxt.query.cub2get1', 'cub.txt,cub2get,'+currentNoa+';0');
-					}
+					q_gt('view_get', "where=^^noa='" + currentNoa + "'^^", 0, 0, 0, "isexist_get_dele",1);
+					
 				}else{
 					//存檔
 					//alert('error');
