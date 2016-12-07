@@ -60,7 +60,8 @@ z_rc2_rk01:--z_rc2_rk01
 		, a.tggno, a.tgg,isnull(c.nick,left(a.tgg,4)), b.productno, b.product, b.unit
 		   , b.mount*(case when a.typea='2' then -1 else 1 end)
 		   , b.weight*(case when a.typea='2' then -1 else 1 end)
-		   , b.total*(case when a.typea='2' then -1 else 1 end)
+			,case when  e.noa is not null then  e.total else b.total end *(case when a.typea='2' then -1 else 1 end)
+		   --, b.total*(case when a.typea='2' then -1 else 1 end)
 		   ,'rc2st'+b.accy
 		   ,b.spec,d.product,b.source,b.uno
 		   ,b.price
@@ -71,13 +72,13 @@ z_rc2_rk01:--z_rc2_rk01
 	left join view_rc2 a on a.noa = b.noa
 	left join tgg c on c.noa=a.tggno
 	left join spec d on b.spec=d.noa
+	left join delis e on b.noa=e.noa and b.noq=e.noq
 	where a.noa is not null
 		and(a.datea between @t_bdate and @t_edate)
 		and ((case when isnull(a.mon,'')='' then left(a.datea,6) else a.mon end)  between @t_bmon and @t_emon)
 		and (isnull(a.tggno,'') between @t_btggno and @t_etggno)
 		and (isnull(b.productno,'') between @t_bproductno and @t_eproductno)  
 		and (len(@t_kind)=0 or a.kind=@t_kind)	
-	
 	order by datea desc,gno,noa,noq
 	
 	update @tmp set csize = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end

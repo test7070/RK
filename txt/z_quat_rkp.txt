@@ -540,7 +540,7 @@ z_quat_rkp02:--z_quat_rkp02
 	select @n = count(1) from @tmp
 	while @n%@pagecount!=0
 	begin
-		insert into @tmp(pno,gno)values(3,'5')
+		insert into @tmp(pno,gno)values(1,'5')
 		set @n=@n+1
 	end
 
@@ -559,7 +559,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
 		,recno rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+left(product,8)+'</a>' pp --品名要保留8個中文字的空間，若再加長可不顯示
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
 			+case when dime=0 and width=0 and lengthb=0 then''
 			else CAST(dime as nvarchar)
