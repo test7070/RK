@@ -1,3 +1,222 @@
+z_cub_rkp15:--z_cub_rkp15	
+	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end
+	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [11] then '' else [11] end
+	declare @t_uno nvarchar(max) = case when '#non' = [12] then '' else [12] end
+	------------------------------------------------------------------------------------
+	declare @tmpa table(
+		sel int identity(1,1)
+		,makeno nvarchar(30)		
+	)
+	insert into @tmpa(makeno)
+	select a.makeno
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where ISNULL(b.datea,'') between @t_bdate and @t_edate
+	and (len(@t_makeno)=0 or @t_makeno=a.makeno)
+	and (len(@t_uno)=0 or exists(select * from view_cuts where bno=@t_uno and cname=a.makeno))
+	---------------------------------------------------------------------------
+	declare @tmpb table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,makeno nvarchar(30)
+		,pno int
+		,typea nvarchar(30)
+		,datea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,size nvarchar(max)
+		
+		,mount float
+		,[weight] float
+		,[money] float
+		,memo nvarchar(max)
+
+		--良品
+		,mount1 float--數量	
+		,length1 float--米數	
+		,weight1 float--重量
+		
+		--不良品
+		,mount2 float--數量	
+		,weight2 float--重量
+		
+		--餘料	
+		,weight3 float
+		--廢料
+		,weight4 float
+		--工時
+		,mins float
+		--客戶
+		,custno nvarchar(20)
+		,cust nvarchar(max)
+		--合約NO         生產日報表
+		,contractno nvarchar(30)
+		--規格尺寸
+		,asize nvarchar(max)
+		--保謢膜         生產日報表
+		,pveno nvarchar(20)
+		,pve nvarchar(50)
+		--背漆           生產日報表
+		,item1 nvarchar(50)
+		--製造批號
+		--makeno 
+		--鋼捲材質       生產日報表
+		,spec nvarchar(50)
+		--原鋼捲規格
+		,bsize nvarchar(max)
+		--鋼捲批號
+		,uno nvarchar(30)
+		--原鋼捲母號
+		,uno2 nvarchar(30)
+		--投入重量       生產日報表
+		,w01 float
+		--完工重量       進倉單
+		,w02 float
+		--總損耗        (投入重量-完工重量)/投入重量 請以%表達	
+		,rate01 float
+	)
+	declare @makeno nvarchar(20)
+	
+	declare cursor_table cursor for
+	select makeno from @tmpa	
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		--CUB
+		insert into @tmpb(makeno,pno,typea,datea,accy,noa,noq,size,memo
+			,mount1,length1,weight1
+			,mount2,weight2
+			,weight3
+			,weight4
+			,mins)
+		select a.makeno,1,'生產',b.datea,a.accy,a.noa,a.noq
+		--生產："LENGTHB"固定以" C"表達
+			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)
+				+'*'+CAST(a.width as nvarchar)+'*C'
+			,a.memo
+			,0 mount1
+			,ISNULL(a.w09,0) length1
+			,isnull(a.hweight,0) weight1
+			,0 mount2
+			,0 weight2
+			,0 weight3
+			,ISNULL(a.price,0) weight04
+			,ISNULL(a.mins,0) mins
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		where a.makeno=@makeno
+		--CUC
+		insert into @tmpb(makeno,pno,typea,datea,accy,noa,noq,size,memo
+			,mount1,length1,weight1
+			,mount2,weight2
+			,weight3
+			,weight4
+			,mins)
+		select a.cubno,2,b.typea,b.datea,a.accy,a.noa,a.noq
+			--分條：最後請固定加上"C"
+			,a.size2+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar) + case when CHARINDEX('分條',b.typea)>0 then 'C' else '' end
+			,a.memo
+			,case when CHARINDEX('分條',b.typea)>0 then a.mount2 when CHARINDEX('裁切',b.typea)>0 then a.mount3 else 0 end
+			,case when CHARINDEX('分條',b.typea)>0 then 0 when CHARINDEX('裁切',b.typea)>0 then 0 else 0 end
+			,case when CHARINDEX('分條',b.typea)>0 then a.weight2 when CHARINDEX('裁切',b.typea)>0 then a.weight3 else 0 end
+			,0 mount2
+			,ISNULL(a.weight8,0)+ISNULL(a.weight9,0)+ISNULL(a.weight10,0) weight2
+			,ISNULL(a.weight4,0) weight3
+			,ISNULL(a.waste,0) weight4
+			,isnull(a.mins,0) mins
+		from view_cucs a
+		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+		where a.cubno = @makeno
+		--CUT
+		insert into @tmpb(makeno,pno,typea,datea,accy,noa,noq,size,memo
+			,mount1,length1,weight1
+			,mount2,weight2
+			,weight3
+			,weight4
+			,mins)
+		select a.cname,3,'進倉',b.datea,a.accy,a.noa,a.noq
+			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)
+				+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
+			,a.memo
+			,ISNULL(a.mount,0) mount1
+			,0 length1
+			,ISNULL(a.[weight],0) weight1
+			,0 mount2,0 weight2
+			,0 weight3,0 weight4,0 mins 
+		from view_cuts a
+		left join view_cut b on a.accy=b.accy and a.noa=b.noa
+		where a.cname = @makeno
+		
+		fetch next from cursor_table
+		into @makeno
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update @tmpb set gno='1'
+	
+	insert into @tmpb(gno,makeno,typea,mount1,weight1,mount2,weight2,weight3,weight4,mins)
+	select '2',makeno,typea,SUM(ISNULL(mount1,0)),SUM(ISNULL(weight1,0)),SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0))
+		,SUM(ISNULL(weight3,0)),SUM(ISNULL(weight4,0)),SUM(ISNULL(mins,0))
+	from @tmpb
+	where typea='進倉'
+	group by makeno,typea
+	
+	
+	update @tmpb set custno=b.custno,cust=b.comp,contractno=''
+		,asize=CAST(b.dime as nvarchar)+'+'+CAST(b.radius as nvarchar)+'*'+CAST(b.width as nvarchar)+'*'+CAST(b.lengthb as nvarchar)
+		,pveno=c.productno,pve=c.product,item1=d.product
+		,spec=b.size
+		,bsize=CAST(b.dime as nvarchar)+'*'+CAST(b.width as nvarchar)
+		,uno=b.uno,uno2=e.uno2
+		,w01=b.hweight,w02=f.[weight]
+		,rate01= case when ISNULL(b.hweight,0)=0 then 0 else  round((ISNULL(b.hweight,0)-ISNULL(f.[weight],0))*100/ISNULL(b.hweight,0),2) end
+	from @tmpb a
+	left join view_cubs b on a.makeno=b.makeno
+	outer apply(select top 1 * from view_cubt where accy=b.accy and noa=b.noa and nor=b.noq and kind='2') c
+	outer apply(select top 1 * from view_cubu where accy=b.accy and noa=b.noa) d
+	left join view_uccb e on b.uno=e.uno
+	outer apply(select SUM(ISNULL([weight],0)) [weight] from view_cuts where cname=a.makeno) f
+	
+	select gno
+		, cust a01
+		, pveno+' '+pve a02
+		, makeno a03
+		, bsize a04
+		, dbo.getComma(w01,0) a05
+		, contractno a06
+		, item1 a07
+		, spec a08
+		, uno a09
+		, dbo.getComma(w02,0) a10
+		, asize a11
+		, uno2 a12
+		, cast(rate01 as nvarchar)+' %' a13
+		
+		,datea b01
+		,typea b02
+		,noa b03
+		,size b04
+		,mount1 b05
+		,length1 b06
+		,weight1 b07
+		,mount2 b08
+		,weight2 b09
+		,weight3 b10
+		,weight4 b11
+		,mins b12
+		,memo b13
+	from @tmpb 
+	order by makeno,gno,pno;
+
 z_cub_rkp14:--z_cub_rkp14	
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
