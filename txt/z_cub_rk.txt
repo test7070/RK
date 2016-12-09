@@ -116,7 +116,7 @@ z_cub_rk02:--z_cub_rk02
 		,custno,cust,uno,[weight],dime,width,lengthb,radius
 		,w02,w03)
 	select '1','1',ROW_NUMBER()over(order by b.datea,a.noa),1
-		,a.accy,a.noa,a.noq,c.quatno,c.custpro,d.product,makeno
+		,a.accy,a.noa,a.noq,c.quatno,isnull(f.productno,g.productno),d.product,makeno
 		,a.custno,ISNULL(e.nick,'')
 		,a.uno,a.[weight],a.dime,a.width,a.lengthb,a.radius
 		,a.hweight,a.price
@@ -125,6 +125,10 @@ z_cub_rk02:--z_cub_rk02
 	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
 	left join adpro d on c.custpro=c.noa
 	left join cust e on a.custno=e.noa
+	outer apply(select top 1 * from view_cubt where accy=a.accy and noa=a.noa and nor=a.noq and kind='1') f
+	outer apply(select top 1 x.* from view_cubu x 
+		left join ucc y on x.productno=y.noa  
+		where x.accy=a.accy and x.noa=a.noa and y.groupano='A05') g
 	where b.datea<=@t_date
 	and (len(@t_makeno)=0 or a.makeno=@t_makeno)
 	and (len(@t_spec)=0 or a.spec=@t_spec)
