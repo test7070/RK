@@ -110,7 +110,7 @@ z_uccg_rk01:
 		--領用  扣
 		if not exists(select * from #z_uccg_rk01 where uno=@uno)
 		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,@weight,@money)
+			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,-@weight,-@money)
 		end
 		else
 		begin
@@ -137,7 +137,7 @@ z_uccg_rk01:
 		--領用  扣
 		if not exists(select * from #z_uccg_rk01 where uno=@uno)
 		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,@weight,@money)
+			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,-@weight,-@money)
 		end
 		else
 		begin
@@ -216,7 +216,7 @@ z_uccg_rk01:
 		--銷貨  扣
 		if not exists(select * from #z_uccg_rk01 where uno=@uno)
 		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,@weight,@money)
+			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,-@weight,-@money)
 		end
 		else
 		begin
@@ -596,7 +596,7 @@ z_uccg_rk:
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
 	where ISNULL(b.datea,'')<=@t_edate
-	and ISNULL(b.itype,'') = '1'
+	--and ISNULL(b.itype,'') = '1'
 	and len(ISNULL(a.uno,''))>0
 	
 	--cuts 成品進倉
@@ -636,7 +636,7 @@ z_uccg_rk:
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	where ISNULL(b.datea,'')<=@t_edate
-	and ISNULL(b.stype,'') = '1'
+	--and ISNULL(b.stype,'') = '1'
 	and len(ISNULL(a.uno,''))>0
 	------------------------------------------------------------------------
 	delete z_uccg_rk

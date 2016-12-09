@@ -1087,6 +1087,9 @@ z_cub_rk01:--z_cub_rk01
 	declare @weight float
 
 	declare @n int
+	declare @dime2 float
+	declare @width2 float
+	
 	--皮膜、保護膜
 	declare cursor_table cursor for
 	select sel,recno,accy,noa,noq from @tmp where recno2=1
@@ -1113,7 +1116,7 @@ z_cub_rk01:--z_cub_rk01
 		fetch next from cursor_table2
 		into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
 		while(@@FETCH_STATUS <> -1)
-		begin	
+		begin
 			if exists(select * from @tmp where recno=@recno and recno2=@n)
 			begin
 				update @tmp set uno2=@uno,dime2=@dime,width2=@width
@@ -1137,15 +1140,62 @@ z_cub_rk01:--z_cub_rk01
 		end
 		close cursor_table2
 		deallocate cursor_table2
-
+		--沒有皮膜就改顯示面漆
+		declare cursor_table2 cursor for
+		
+		select 1,b.ucolor,0,0,b.productno,b.product,0,0
+		from @tmp a
+		outer apply(select top 1 x.* 
+			from view_cubu x 
+			left join ucc y on x.productno=y.noa 
+			where x.accy=a.accy and x.noa=a.noa and y.groupano='A05') b
+		where len(isnull(a.uno2,''))=0
+		and a.recno=@recno
+		and a.recno2=1	
+		and b.noa is not null
+		
+		open cursor_table2
+		fetch next from cursor_table2
+		into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+		while(@@FETCH_STATUS <> -1)
+		begin
+			if exists(select * from @tmp where recno=@recno and recno2=@n)
+			begin
+				update @tmp set uno2=@uno,dime2=@dime,width2=@width
+					,productno2=@productno,product2=@product,mount2=@mount,weight2=@weight
+					,size2=@product
+				where recno=@recno and recno2=@n
+			end
+			else
+			begin
+				insert into @tmp(recno,recno2,accy,noa,noq,makeno,custno,cust
+					,uno2,dime2,width2,productno2,product2,mount2,weight2
+					,size2)
+				select recno,@n,accy,noa,noq,makeno,custno,cust
+					,@uno,@dime,@width,@productno,@product,@mount,@weight
+					,@product
+				from @tmp
+				where recno=@recno and recno2=1
+			end
+			fetch next from cursor_table2
+			into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+		end
+		close cursor_table2
+		deallocate cursor_table2
+		
+		
+		
 		--保護膜
+		
 		declare cursor_table2 cursor for
 		
 		select row_number()over(order by a.noq) 
 			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
+			,d.dime,d.width
 		from @tmp a
 		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
 		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
+		left join view_uccb d on b.uno=d.uno
 		where b.noa is not null
 		and len(ISNULL(b.uno,''))>0
 		and b.kind='2'
@@ -1154,14 +1204,14 @@ z_cub_rk01:--z_cub_rk01
 		
 		open cursor_table2
 		fetch next from cursor_table2
-		into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+		into @n,@uno,@dime,@width,@productno,@product,@mount,@weight,@dime2,@width2
 		while(@@FETCH_STATUS <> -1)
 		begin	
 			if exists(select * from @tmp where recno=@recno and recno2=@n)
 			begin
 				update @tmp set uno3=@uno,dime3=@dime,width3=@width
 					,productno3=@productno,product3=@product,mount3=@mount,weight3=@weight
-					,size3=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
+					,size3=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime2,0) as nvarchar)+' * '+CAST(ISNULL(@width2,0) as nvarchar) end
 				where recno=@recno and recno2=@n
 			end
 			else
@@ -1171,12 +1221,12 @@ z_cub_rk01:--z_cub_rk01
 					,size3)
 				select recno,@n,accy,noa,noq,makeno,custno,cust
 					,@uno,@dime,@width,@productno,@product,@mount,@weight
-					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
+					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime2,0) as nvarchar)+' * '+CAST(ISNULL(@width2,0) as nvarchar) end
 				from @tmp
 				where recno=@recno and recno2=1
 			end
 			fetch next from cursor_table2
-			into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+			into @n,@uno,@dime,@width,@productno,@product,@mount,@weight,@dime2,@width2
 		end
 		close cursor_table2
 		deallocate cursor_table2
