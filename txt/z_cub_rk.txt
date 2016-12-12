@@ -1073,7 +1073,7 @@ z_cub_rk01:--z_cub_rk01
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where LEFT(b.datea,6)=@t_mon
 	and len(ISNULL(a.makeno,''))>0
-	order by b.datea,a.makeno
+	order by a.makeno,b.datea
 
 	---------------------------------------------------------------------------------
 	declare @sel int
@@ -1272,12 +1272,12 @@ z_cub_rk01:--z_cub_rk01
 				,w05 = ROUND(@w05*[weight]/@totweight,2)
 			where accy=@accy and noa=@noa
 			
-			--物料均攤尾差在第一筆修正
+			--物料均攤尾差在最後一筆修正
 			update @tmp set w01= a.w01+(@w01-b.w01)
 			from @tmp a
 			outer apply(select SUM(ISNULL(w01,0)) w01 
 				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
 					where accy=@accy and noa=@noa and ISNULL(w01,0)!=0) c on a.sel=c.sel
 			where accy=@accy and noa=@noa  and c.recno=1
 			
@@ -1285,7 +1285,7 @@ z_cub_rk01:--z_cub_rk01
 			from @tmp a
 			outer apply(select SUM(ISNULL(w02,0)) w02 
 				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
 					where accy=@accy and noa=@noa and ISNULL(w02,0)!=0) c on a.sel=c.sel
 			where accy=@accy and noa=@noa  and c.recno=1
 			
@@ -1293,7 +1293,7 @@ z_cub_rk01:--z_cub_rk01
 			from @tmp a
 			outer apply(select SUM(ISNULL(w03,0)) w03 
 				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
 					where accy=@accy and noa=@noa and ISNULL(w03,0)!=0) c on a.sel=c.sel
 			where accy=@accy and noa=@noa  and c.recno=1
 			
@@ -1301,7 +1301,7 @@ z_cub_rk01:--z_cub_rk01
 			from @tmp a
 			outer apply(select SUM(ISNULL(w04,0)) w04 
 				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
 					where accy=@accy and noa=@noa and ISNULL(w04,0)!=0) c on a.sel=c.sel
 			where accy=@accy and noa=@noa  and c.recno=1
 			
@@ -1309,7 +1309,7 @@ z_cub_rk01:--z_cub_rk01
 			from @tmp a
 			outer apply(select SUM(ISNULL(w05,0)) w05 
 				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy,noa,noq) recno from @tmp 
+				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
 					where accy=@accy and noa=@noa and ISNULL(w05,0)!=0) c on a.sel=c.sel
 			where accy=@accy and noa=@noa  and c.recno=1
 		end 
@@ -1357,14 +1357,25 @@ z_cub_rk01:--z_cub_rk01
 	close cursor_table
 	deallocate cursor_table
 	
-	--總計
-	insert into @tmp(gno,recno,recno2,[weight],mount2,weight2,mount3,weight3
+	--小計
+	insert into @tmp(gno,makeno,recno,recno2,[weight],mount2,weight2,mount3,weight3
 		,w01,w02,w03,w04,w05,x01,x02,x03,x04,x06)
-	select '9',99999,1,SUM(case when recno2=1 then ISNULL([weight],0) else 0 end)
+	select '10',LEFT(makeno,1)+CHAR(255),99999,1,SUM(case when recno2=1 then ISNULL([weight],0) else 0 end)
 		,SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0)),SUM(ISNULL(mount3,0)),SUM(ISNULL(weight3,0))
 		,SUM(ISNULL(w01,0)),SUM(ISNULL(w02,0)),SUM(ISNULL(w03,0)),SUM(ISNULL(w04,0)),SUM(ISNULL(w05,0))
 		,SUM(ISNULL(x01,0)),SUM(ISNULL(x02,0)),SUM(ISNULL(x03,0)),SUM(ISNULL(x04,0)),SUM(ISNULL(x06,0))
 	from @tmp
+	group by LEFT(makeno,1)
+	
+	--總計
+	insert into @tmp(gno,makeno,recno,recno2,[weight],mount2,weight2,mount3,weight3
+		,w01,w02,w03,w04,w05,x01,x02,x03,x04,x06)
+	select '9',CHAR(255),99999,1,SUM(case when recno2=1 then ISNULL([weight],0) else 0 end)
+		,SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0)),SUM(ISNULL(mount3,0)),SUM(ISNULL(weight3,0))
+		,SUM(ISNULL(w01,0)),SUM(ISNULL(w02,0)),SUM(ISNULL(w03,0)),SUM(ISNULL(w04,0)),SUM(ISNULL(w05,0))
+		,SUM(ISNULL(x01,0)),SUM(ISNULL(x02,0)),SUM(ISNULL(x03,0)),SUM(ISNULL(x04,0)),SUM(ISNULL(x06,0))
+	from @tmp
+	where gno!='10'
 	
 	--損耗重量
 	update @tmp set x04 = ISNULL(x01,0)-ISNULL(x03,0) where recno2=1
@@ -1411,4 +1422,4 @@ z_cub_rk01:--z_cub_rk01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when x07=0 then '' else dbo.getComma(a.[x07],2) +' %'end +'</a>' f07
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(partition by datea order by recno) recno from @tmp) b on a.sel=b.sel
-	order by a.recno,a.recno2;
+	order by a.makeno,a.recno,a.recno2;
