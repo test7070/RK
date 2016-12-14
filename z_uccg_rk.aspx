@@ -49,7 +49,10 @@
 							type : '8', //[8]            4
 							name : 'xkind',
 							value : q_getPara('sys.stktype').split(',')
-						}
+						},{
+	                        type : '6',
+	                        name : 'edate' //[9]       5
+	                    }
                     ]
                 });
                 q_popAssign();
@@ -60,6 +63,8 @@
                 $('#txtDate1').datepicker();
                 $('#txtDate2').mask('999/99/99');
                 $('#txtDate2').datepicker();
+                $('#txtEdate').mask('999/99/99');
+                $('#txtEdate').datepicker();
                 
                 var t_date, t_year, t_month, t_day;
 				t_date = new Date();
@@ -82,6 +87,51 @@
 				t_day = t_date.getUTCDate();
 				t_day = t_day > 9 ? t_day + '' : '0' + t_day;
 				$('#txtDate2').val(t_year + '/' + t_month + '/' + t_day);
+				$('#txtEdate').val(t_year + '/' + t_month + '/' + t_day);
+				
+				$('#btnOk').before($('#btnOk').clone().attr('id', 'btnOk2').show()).hide();
+				$('#btnOk2').click(function() {
+					switch($('#q_report').data('info').radioIndex) {
+                        case 2:
+                        	Lock(1);
+                        	//q_func('qtxt.query.uccstk_1', 'uccstk.txt,uccstk_1,'+$('#txtXdate').val());
+                            
+                            $.ajax({
+			                    url: 'uccg_rk.aspx?date='+$('#txtEdate').val()+'&db='+q_db,
+			                    type: 'POST',
+			                    dataType: 'text',
+			                    timeout: 600000,
+			                    success: function(data){
+			                       alert(data);
+			                    },
+			                    complete: function(){ 
+			                    	Unlock(1);                
+			                    },
+			                    error: function(jqXHR, exception) {
+			                        var errmsg = this.url+'資料讀取異常。\n';
+			                        if (jqXHR.status === 0) {
+			                            alert(errmsg+'Not connect.\n Verify Network.');
+			                        } else if (jqXHR.status == 404) {
+			                            alert(errmsg+'Requested page not found. [404]');
+			                        } else if (jqXHR.status == 500) {
+			                            alert(errmsg+'Internal Server Error [500].');
+			                        } else if (exception === 'parsererror') {
+			                            alert(errmsg+'Requested JSON parse failed.');
+			                        } else if (exception === 'timeout') {
+			                            alert(errmsg+'Time out error.');
+			                        } else if (exception === 'abort') {
+			                            alert(errmsg+'Ajax request aborted.');
+			                        } else {
+			                            alert(errmsg+'Uncaught Error.\n' + jqXHR.responseText);
+			                        }
+			                    }
+			                });	
+                            break;
+                        default:
+                           	$('#btnOk').click();
+                            break;
+                    }
+				});
             }
 
             function q_boxClose(s2) {
