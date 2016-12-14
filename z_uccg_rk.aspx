@@ -100,7 +100,7 @@
 			                    url: 'uccg_rk.aspx?date='+$('#txtEdate').val()+'&db='+q_db,
 			                    type: 'POST',
 			                    dataType: 'text',
-			                    timeout: 600000,
+			                    timeout: 1200000,
 			                    success: function(data){
 			                       alert(data);
 			                    },
