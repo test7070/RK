@@ -29,6 +29,7 @@
 				q_langShow();
 				bbmMask = [['txtBdate', r_picd], ['txtEdate', r_picd]];
                 q_mask(bbmMask);
+                q_cmbParse("cmbTypea", '@全部,'+q_getPara('vcc.typea'));
                 $('#txtBdate').datepicker();
                 $('#txtEdate').datepicker();
 			}
@@ -39,6 +40,7 @@
 			}
 
 			function q_seekStr() {
+				var t_typea = $.trim($('#cmbTypea').val());
 				var t_bdate = $.trim($('#txtBdate').val());
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
@@ -48,7 +50,8 @@
 				var t_uno = $.trim($('#txtUno').val());
 				var t_ordeno = $.trim($('#txtOrdeno').val());
 				
-				var t_where = " 1=1 " 
+				var t_where = " 1=1 "
+					+ q_sqlPara2("typea", t_typea) 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
 					+ q_sqlPara2("noa", t_noa)
 					+ q_sqlPara2("custno", t_custno);
@@ -87,6 +90,10 @@
 	ondrop="event.dataTransfer.dropEffect='none';event.stopPropagation(); event.preventDefault();">
 		<div style='width:400px; text-align:center;padding:15px;' >
 			<table id="seek" border="1" cellpadding='3' cellspacing='2' style='width:100%;' >
+				<tr class='seek_tr'>
+					<td class='seek'  style="width:20%;"><a id='lblTypea'> </a></td>
+					<td><select id="cmbTypea" style="width:215px; font-size:medium;" > </select></td>
+				</tr>
 				<tr class='seek_tr'>
 					<td   style="width:35%;"><a id='lblDatea'>日期</a></td>
 					<td style="width:65%;  ">

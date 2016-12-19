@@ -406,9 +406,11 @@ z_orde_rk01:--z_orde_rk01
 		,coin nvarchar(20)
 		,floata float
 		,size nvarchar(max)
+		,adpro nvarchar(max)
 	)
 	insert into @tmp(gno,accy,noa,no2,datea,odate,productno,product,dime,radius,width,lengthb,scolor,[class]
-		,ucolor,zinc,[source],spec,unit,price,mount,[weight],total,memo,enda,cancel,custno,cust,coin,floata)
+		,ucolor,zinc,[source],spec,unit,price,mount,[weight],total,memo,enda,cancel,custno,cust,coin,floata
+		,adpro)
 	select '1',a.accy,a.noa,a.no2,b.datea,b.odate,a.productno,a.product,a.dime,a.radius,a.width,a.lengthb,a.scolor,a.[class]
 		,a.ucolor,a.zinc,a.[source],a.spec,a.unit,a.price,a.mount,a.[weight],a.total,a.memo
 		,case when ISNULL(a.enda,0)=0 and ISNULL(b.enda,0)=0 then 0 else 1 end
@@ -417,8 +419,10 @@ z_orde_rk01:--z_orde_rk01
 		,b.nick
 		,b.coin
 		,b.floata
+		,c.product
 	from view_ordes a
 	left join view_orde b on a.accy=b.accy and a.noa=b.noa
+	left join adpro c on a.custpro=c.noa
 	where b.datea between @t_bdate and @t_edate
 	and b.odate between @t_bodate and @t_eodate
 	and ISNULL(b.custno,'') between @t_bcustno and @t_ecustno
@@ -432,6 +436,8 @@ z_orde_rk01:--z_orde_rk01
 	and (len(@t_enda)=0 or ISNULL(b.enda,0)=@t_enda)
 	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
 	order by a.noa,a.no2
+	
+
 	
 	update @tmp set cspec=ISNULL(b.product,'')
 	from @tmp a
@@ -462,6 +468,7 @@ z_orde_rk01:--z_orde_rk01
 	select gno 
 		,@dlabel+@dvalue aaa
 		,"<a href="+CHAR(34)+"JavaScript:q_box('orde_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(sel as nvarchar)+"</a>" rr --序
+		,adpro a00
 		,odate a01 --訂單日期
 		,case when enda=0 then '' else '*' end a02 --結
 		,noa a03 --訂單編號
