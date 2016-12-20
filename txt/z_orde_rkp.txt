@@ -400,7 +400,7 @@ z_orde_rkp01:--z_orde_rkp01
 	declare @string nvarchar(max)
 	declare @n int,@m int
 	declare @curcount int
-	declare @pagecount int = 40 -- 一頁全部幾行   要奇數行(HEAD DETAIL 3個)
+	declare @pagecount int = 37 -- 一頁全部幾行   要奇數行(HEAD DETAIL 3個)
 	
 	declare @tmp table(
 		sel int identity(1,1),
