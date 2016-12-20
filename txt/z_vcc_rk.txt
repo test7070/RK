@@ -2,8 +2,8 @@ z_vcc_rk03:--z_vcc_rk03  ref.z_vccst5
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
 	
-	declare @t_bdate nvarchar(30) = case when '#non'=[6] then '' else [6] end 
-	declare @t_edate nvarchar(30) = case when '#non'=[7] then char(255) else [7] end 
+	declare @t_bdate nvarchar(30) = case when '#non'=[7] then '' else [7] end 
+	declare @t_edate nvarchar(30) = case when '#non'=[8] then char(255) else [8] end 
 	-----------------------------------------------------------------------------
 	declare @tmp table(
 		gno nvarchar(10),
@@ -31,10 +31,10 @@ z_vcc_rk03:--z_vcc_rk03  ref.z_vccst5
 	update @tmp set rate = case when @total =0 then 0 else round(total/@total*100,2) end
 	
 	select a.*, b.nick nick
-	,reverse(substring(reverse(convert(nvarchar(20),CONVERT(money,a.[weight]),1)),4,17)) a1
-	,reverse(substring(reverse(convert(nvarchar(20),CONVERT(money,a.[money]),1)),4,17)) a2
-	,reverse(substring(reverse(convert(nvarchar(20),CONVERT(money,a.[tax]),1)),4,17)) a3
-	,reverse(substring(reverse(convert(nvarchar(20),CONVERT(money,a.[total]),1)),4,17)) a4
+	,dbo.getComma(a.[weight],-1) a1
+	,dbo.getComma(a.[money],-1) a2
+	,dbo.getComma(a.[tax],-1) a3
+	,dbo.getComma(a.[total],-1) a4
 	from(
 		select ROW_NUMBER()over(order by total desc) rr,* 
 		from @tmp
