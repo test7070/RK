@@ -213,202 +213,222 @@ z_rc2_rkp01:--z_rc2_rkp01
 	declare @t_stktype nvarchar(max) = '[3]'
 	declare @t_noa nvarchar(max) = case when '#non' = [4] then '' else [4] end
 	declare @t_merge nvarchar(max) = case when '#non' = [5] then '' else [5] end
------------------------------------------------------------------------------------------------
-	declare @tmp table(
+	------------------------------------------------------------------------------
+	declare @tmpa table(
 		sel int identity(1,1)
-		,gno nvarchar(10)
-		,pno nvarchar(10)
-		,datea nvarchar(20)
-		,rc2no nvarchar(20)
-		,ordcno nvarchar(20)
-		,tggno nvarchar(20)
-		,tgg nvarchar(50)
-		,nick nvarchar(20)
-		
+		,accy nvarchar(10)
+		,noa nvarchar(20)
 		,noq nvarchar(10)
-		,kind nvarchar(20)
+		,uno nvarchar(30)
 		,typea nvarchar(20)
 		,productno nvarchar(20)
-		,product nvarchar(50)
-		,uno nvarchar(30)
+		,product nvarchar(max)
 		,size nvarchar(max)
+		,mount float
+		,[weight] float
+		,unit nvarchar(20)
+		,memo nvarchar(max)
+		
+		,kind nvarchar(20)
 		,dime float
 		,width float
 		,lengthb float
 		,radius float
 		,spec nvarchar(20)
 		,cspec nvarchar(20)
-		,[weight] float
-		,unit nvarchar(20)
-		,memo nvarchar(max)
-	)	
-	
-	insert into @tmp(gno,pno,datea,rc2no,ordcno,tggno,tgg,nick
-		,noq,kind,typea,productno,product,uno,size,[weight],unit,memo
-		,dime,width,lengthb,radius,spec,cspec)
-	select '1','1',a.datea,a.noa,isnull(b.ordeno,''),a.tggno,a.tgg,a.nick
-		,b.noq,a.kind,d.item,b.productno,c.product,isnull(b.uno,''),b.size,b.[weight],b.unit,b.memo
-		,b.dime,b.width,b.lengthb,b.radius,b.spec,ISNULL(e.product,'')
-	from view_rc2 a
-	left join view_rc2s b on a.accy=b.accy and a.noa=b.noa
-	left join ucc c on b.productno=c.noa
-	left join dbo.fnSplit(@t_stktype) d on a.kind = d.n
-	left join spec e on b.spec=e.noa
+	)
+	insert into @tmpa(accy,noa,noq,uno,typea,productno,product
+		,size,mount,[weight],unit,memo
+		,kind,dime,width,lengthb,radius,spec,cspec)
+	select a.accy,a.noa,a.noq,a.uno,isnull(d.item,''),isnull(a.productno,''),isnull(a.product,'')
+		,isnull(a.size,''),isnull(a.mount,0),isnull(a.[weight],0),isnull(a.unit,''),a.memo
+		,b.kind,a.dime,a.width,a.lengthb,a.radius,a.spec,ISNULL(e.product,'')
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join ucc c on a.productno=c.noa
+	left join dbo.fnSplit(@t_stktype) d on b.kind = d.n
+	left join spec e on a.spec=e.noa
 	where a.noa=@t_noa
+	order by a.accy,a.noa,a.noq
 	
-	update @tmp set size = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
+	update @tmpa set size = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
 		+case when ISNULL(a.dime,0)=0 or ISNULL(a.width,0)=0 then '' else '*' end
 		+case when ISNULL(a.width,0)=0 then '' else CAST(a.width as nvarchar) end
 		+case when ISNULL(a.width,0)=0 or ISNULL(a.lengthb,0)=0  then '' else '*' end
 		+case when ISNULL(a.lengthb,0)=0 then '' else CAST(a.lengthb as nvarchar) end
 		+case when Upper(ISNULL(a.spec,''))='MM' or a.kind='A1' or a.kind='A4' or a.kind='A5' then 'mm' else '' end
 		+case when len(cspec)>0 then ' '+cspec else '' end
-	from @tmp a
-
-	declare @tmpa table(
+	from @tmpa a
+	---------------------------------------------------------------------------
+	declare @tmpb table(
 		sel int identity(1,1)
-		,gno nvarchar(2)
-		,datea nvarchar(20)
-		,rc2no nvarchar(20)
-
-		,ordcno nvarchar(max)
-		,tggno nvarchar(20)
-		,tgg nvarchar(50)
-		,kind nvarchar(20)
+		,gno nvarchar(20)
+		,pno int
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
 		,typea nvarchar(20)
 		,productno nvarchar(20)
-		,product nvarchar(50)
-		,uno nvarchar(max)
-		,size nvarchar(50)
+		,product nvarchar(max)
+		,size nvarchar(max)
+		,mount float
 		,[weight] float
 		,unit nvarchar(20)
 		,memo nvarchar(max)
+		
+		,datea nvarchar(20)
+		,tgg nvarchar(max)
+		,rc2no nvarchar(20)
+		,ordcno nvarchar(20)
 	)
-	if len(@t_merge)>0
-	begin
-		insert into @tmpa(gno,datea,rc2no,tggno,kind,uno,productno,size,[weight],unit,memo)
-		select '1',datea,rc2no
-			,tggno,kind,'',productno,size,SUM(ISNULL([weight],0)),unit,''
-		from @tmp
-		group by datea,rc2no,tggno,kind,productno,size,unit
-	end
-	else
-	begin
-		insert into @tmpa(gno,datea,rc2no,tggno,kind,uno,productno,size,[weight],unit,memo)
-		select '1',datea,rc2no
-			,tggno,kind,uno,productno,size,[weight],unit,memo
-		from @tmp
-	end
-	update @tmpa set tgg=b.comp,typea=c.item,product=d.product
-	from @tmpa a
-	left join tgg b on a.tggno=b.noa
-	left join dbo.fnSplit(@t_stktype) c on a.kind = c.n
-	left join ucc d on a.productno=d.noa
-	--------------------------------------------------------------------------
-	declare @uno1 nvarchar(max)
-	declare @uno2 nvarchar(max)
 	declare @sel int
-	declare @kind nvarchar(max)
-	declare @productno nvarchar(max)
+	declare @typea nvarchar(20)
+	declare @productno nvarchar(20)
+	declare @product nvarchar(max)
 	declare @size nvarchar(max)
 	declare @unit nvarchar(max)
-	declare @n int = 0
+	declare @memo nvarchar(max)
+	declare @mount float
+	declare @weight float
+	declare @uno1 nvarchar(30)
+	declare @uno2 nvarchar(30)
+	declare @n int
+	declare @t_memo nvarchar(max)
 	
-	declare cursor_table cursor for
-	select sel,kind,productno,size,unit from @tmpa where len(uno)=0
-	open cursor_table
-	fetch next from cursor_table
-	into @sel,@kind,@productno,@size,@unit
-	while(@@FETCH_STATUS <> -1)
+	if len(@t_merge)=0
 	begin
-		select @uno1='',@uno2=''
-		select @uno1 = min(uno) from @tmp where kind=@kind and productno=@productno and size=@size and unit=@unit and len(uno)>0
-		select @uno2 = max(uno) from @tmp where kind=@kind and productno=@productno and size=@size and unit=@unit and len(uno)>0
-		if len(isnull(@uno1,''))=0
+		declare cursor_table cursor for
+		select sel from @tmpa
+		open cursor_table
+		fetch next from cursor_table
+		into @sel
+		while(@@FETCH_STATUS <> -1)
 		begin
-			update @tmpa set uno=@uno2 where sel=@sel
+			
+			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight],memo)
+			select '1',1,typea,uno,productno,product,size,unit,mount,[weight],memo
+			from @tmpa 
+			where sel=@sel
+			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight])
+			select '2',1,typea,uno,productno,product,size,unit,mount,[weight]
+			from @tmpa 
+			where sel=@sel
+			
+			fetch next from cursor_table
+			into @sel
 		end
-		else if len(isnull(@uno2,''))=0
-		begin
-			update @tmpa set uno=@uno1 where sel=@sel
-		end
-		else if @uno1=@uno2  
-		begin
-			update @tmpa set uno=@uno1 where sel=@sel
-		end
-		else
-		begin
-			set @n = 0
-			while 1=1
-			begin
-				if LEFT(@uno1,@n+1) = LEFT(@uno2,@n+1)
-					set @n = @n + 1
-				else
-					break
-			end
-			update @tmpa set uno=@uno1 + '~' + substring(@uno2,@n+1,len(@uno2)) where sel=@sel
-			--update @tmpa set uno=@uno1 +'～' + @uno2 where sel=@sel
-		end
+		close cursor_table
+		deallocate cursor_table
 		
-		fetch next from cursor_table
-		into @sel,@kind,@productno,@size,@unit
-	end
-	close cursor_table
-	deallocate cursor_table
-	-------------------------------------------------------------
-	declare @string nvarchar(max)=''
-	declare @ordcno nvarchar(max)
-	
-	declare cursor_table cursor for
-	select ordcno from @tmp where len(ordcno)>0 group by ordcno
-	open cursor_table
-	fetch next from cursor_table
-	into @ordcno
-	while(@@FETCH_STATUS <> -1)
+	end	
+	else
 	begin
-		set @string = @string + case when len(@string)>0 then ',' else '' end + @ordcno
+		declare cursor_table cursor for
+		select b.sel,typea,productno,product,size,unit
+			,sum(isnull(mount,0)),isnull([weight],0) 
+			from @tmpa a
+			outer apply(select top 1 sel from @tmpa 
+				where typea=a.typea and productno=a.productno and product=a.product and size=a.size and unit=a.unit and [weight]=a.[weight] order by sel) b
+		group by b.sel,typea,productno,product,size,unit,[weight]
+		order by b.sel
+		open cursor_table
 		fetch next from cursor_table
-		into @ordcno
+		into @n,@typea,@productno,@product,@size,@unit,@mount,@weight
+		while(@@FETCH_STATUS <> -1)
+		begin
+			set @t_memo = ''
+			
+			declare cursor_table2 cursor for
+			select isnull(memo,'') 
+			from @tmpa 
+			where typea=@typea and productno=@productno and product=@product and size=@size and unit=@unit and [weight]=@weight 
+			order by sel
+			open cursor_table2
+			fetch next from cursor_table2
+			into @memo
+			while(@@FETCH_STATUS <> -1)
+			begin
+				set @t_memo = @t_memo + @memo
+				fetch next from cursor_table2
+				into @memo
+			end
+			close cursor_table2
+			deallocate cursor_table2
+		
+			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight],memo)
+			select '1',1,@typea,@productno,@product,@size,@unit,@mount,@weight,@t_memo
+			select @sel = @@IDENTITY
+			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight])
+			select '2',1,@typea,@productno,@product,@size,@unit,@mount,@weight
+			
+			select @uno1='',@uno2=''
+			select top 1 @uno1 = uno from @tmpa where typea=@typea and productno=@productno and product=@product and size=@size and unit=@unit and isnull([weight],0)=@weight and len(uno)>0 order by uno
+			select top 1 @uno2 = uno from @tmpa where typea=@typea and productno=@productno and product=@product and size=@size and unit=@unit and isnull([weight],0)=@weight and len(uno)>0 order by uno desc
+			if len(isnull(@uno1,''))=0
+			begin
+				update @tmpb set uno=@uno2 where sel=@sel
+			end
+			else if len(isnull(@uno2,''))=0
+			begin
+				update @tmpb set uno=@uno1 where sel=@sel
+			end
+			else if @uno1=@uno2  
+			begin
+				update @tmpb set uno=@uno1 where sel=@sel
+			end
+			else
+			begin
+				set @n = 0
+				while 1=1
+				begin
+					if LEFT(@uno1,@n+1) = LEFT(@uno2,@n+1)
+						set @n = @n + 1
+					else
+						break
+				end
+				update @tmpb set uno=@uno1 + '~' + substring(@uno2,@n+1,len(@uno2)) where sel=@sel
+			end
+
+			fetch next from cursor_table
+			into @n,@typea,@productno,@product,@size,@unit,@mount,@weight
+		end
+		close cursor_table
+		deallocate cursor_table
 	end
-	close cursor_table
-	deallocate cursor_table
-	
-	update @tmpa set ordcno=@string
-	-------------------------------------------------------------
-	insert into @tmpa(gno,datea,rc2no,ordcno,tggno,tgg,[weight],unit)
-	
-	select case when ROW_NUMBER()over(order by unit)=1 then '2' else '3' end
-		,datea,rc2no,ordcno,tggno,tgg,sum([weight]),unit 
-	from @tmpa
+	insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight])
+	select '3',3,'','','','',unit,sum(mount),sum([weight]*mount)
+	from @tmpb
 	where gno='1'
-	group by datea,rc2no,ordcno,tggno,tgg,unit
-	------------------------------------------------------------------------------------
+	group by unit
+	
 	declare @t_pagecount int = 20 -- 一頁幾行
 	set @n = 0
 	select @n=count(1) from @tmpa
 	while @n%@t_pagecount!=0
 	begin
-		insert into @tmpa(gno,datea,rc2no,ordcno,tggno,tgg)
-		select '4',a.datea,a.rc2no,a.ordcno,a.tggno,a.tgg
-		from @tmpa a
-		group by datea,rc2no,ordcno,tggno,tgg
-		
+		insert into @tmpb(gno,pno)
+		select '4',4
 		set @n = @n + 1
 	end
-		
-	select gno 
+	
+	update @tmpb set datea=b.datea,tgg=b.tgg,rc2no=@t_noa,ordcno=b.ordcno
+	from @tmpb a
+	left join view_rc2 b on b.noa=@t_noa
+	
+	select gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo 
 		,datea a01
 		,tgg a02
 		,rc2no a03
 		,ordcno a04
-		
 		,typea b01
-		,productno+' '+product b02
-		,uno b03
-		,size b04
-		,[weight] b05
-		,unit b06
+		,productno b02
+		,product b03
+		,uno b04
+		,size b05
+		,CAST(mount as nvarchar) +' X '+CAST([weight] as nvarchar) + ' '+ unit b06
 		,memo b07
-	from @tmpa
-	order by sel;
+		,mount b08
+		,[weight] b09
+	from @tmpb order by pno;
