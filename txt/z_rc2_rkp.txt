@@ -402,15 +402,46 @@ z_rc2_rkp01:--z_rc2_rkp01
 	where gno='1'
 	group by unit
 	
-	declare @t_pagecount int = 20 -- 一頁幾行
+	declare @t_pagecount int = 34 -- 一頁幾行
+	declare @t_endcount int = 14 --要保留14行印頁尾
 	set @n = 0
-	select @n=count(1) from @tmpa
-	while @n%@t_pagecount!=0
+	select @n=count(1) from @tmpb
+	if @n%@t_pagecount >@t_endcount
 	begin
-		insert into @tmpb(gno,pno)
-		select '4',4
-		set @n = @n + 1
+		while (@n+@t_endcount)%@t_pagecount!=0
+		begin
+			insert into @tmpb(gno,pno)values('4',4)
+			set @n = @n + 1
+		end
 	end
+	else if @n%@t_pagecount < @t_endcount
+	begin
+		while @n%@t_pagecount!=0
+		begin
+			insert into @tmpb(gno,pno)values('4',4)
+			set @n = @n + 1
+		end
+		while (@n+@t_endcount)%@t_pagecount!=0
+		begin
+			insert into @tmpb(gno,pno)values('4',4)
+			set @n = @n + 1
+		end
+	end
+	--要保留14行印頁尾
+	insert into @tmpb(gno,pno)values('5',99)
+	insert into @tmpb(gno,pno)values('6',99)
+	insert into @tmpb(gno,pno)values('7',99)
+	insert into @tmpb(gno,pno)values('8',99)
+	insert into @tmpb(gno,pno)values('9',99)
+	insert into @tmpb(gno,pno)values('10',99)
+	insert into @tmpb(gno,pno)values('11',99)
+	insert into @tmpb(gno,pno)values('12',99)
+	insert into @tmpb(gno,pno)values('13',99)
+	insert into @tmpb(gno,pno)values('14',99)
+	insert into @tmpb(gno,pno)values('15',99)
+	insert into @tmpb(gno,pno)values('16',99)
+	insert into @tmpb(gno,pno)values('17',99)
+	insert into @tmpb(gno,pno)values('18',99)
 	
 	update @tmpb set datea=b.datea,tgg=b.tgg,rc2no=@t_noa,ordcno=b.ordcno
 	from @tmpb a
@@ -427,8 +458,9 @@ z_rc2_rkp01:--z_rc2_rkp01
 		,product b03
 		,uno b04
 		,size b05
-		,CAST(mount as nvarchar) +' X '+CAST([weight] as nvarchar) + ' '+ unit b06
+		,case when len(@t_merge)>0 then CAST(mount as nvarchar) +' X '+CAST([weight] as nvarchar) + ' = '+CAST(mount*[weight] as nvarchar)+ unit 
+			else CAST([weight] as nvarchar) + ' '+ unit end b06
 		,memo b07
-		,mount b08
-		,[weight] b09
+		,[weight] b08
+		,mount b09
 	from @tmpb order by pno;
