@@ -274,6 +274,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 		,size nvarchar(max)
 		,mount float
 		,[weight] float
+		,totweight float
 		,unit nvarchar(20)
 		,memo nvarchar(max)
 		
@@ -291,6 +292,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 	declare @memo nvarchar(max)
 	declare @mount float
 	declare @weight float
+	declare @totweight float
 	declare @uno1 nvarchar(30)
 	declare @uno2 nvarchar(30)
 	declare @n int
@@ -306,12 +308,12 @@ z_rc2_rkp01:--z_rc2_rkp01
 		while(@@FETCH_STATUS <> -1)
 		begin
 			
-			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight],memo)
-			select '1',1,typea,uno,productno,product,size,unit,mount,[weight],memo
+			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight],totweight,memo)
+			select '1',1,typea,uno,productno,product,size,unit,mount,[weight],[weight],memo
 			from @tmpa 
 			where sel=@sel
-			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight])
-			select '2',1,typea,uno,productno,product,size,unit,mount,[weight]
+			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight],totweight)
+			select '2',1,typea,uno,productno,product,size,unit,mount,[weight],[weight]
 			from @tmpa 
 			where sel=@sel
 			
@@ -326,7 +328,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 	begin
 		declare cursor_table cursor for
 		select b.sel,typea,productno,product,size,unit
-			,sum(isnull(mount,0)),isnull([weight],0) 
+			,sum(isnull(mount,0)),isnull([weight],0) ,sum(isnull([weight],0))
 			from @tmpa a
 			outer apply(select top 1 sel from @tmpa 
 				where typea=a.typea and productno=a.productno and product=a.product and size=a.size and unit=a.unit and [weight]=a.[weight] order by sel) b
@@ -334,7 +336,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 		order by b.sel
 		open cursor_table
 		fetch next from cursor_table
-		into @n,@typea,@productno,@product,@size,@unit,@mount,@weight
+		into @n,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight
 		while(@@FETCH_STATUS <> -1)
 		begin
 			set @t_memo = ''
@@ -356,11 +358,11 @@ z_rc2_rkp01:--z_rc2_rkp01
 			close cursor_table2
 			deallocate cursor_table2
 		
-			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight],memo)
-			select '1',1,@typea,@productno,@product,@size,@unit,@mount,@weight,@t_memo
+			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight],totweight,memo)
+			select '1',1,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight,@t_memo
 			select @sel = @@IDENTITY
-			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight])
-			select '2',1,@typea,@productno,@product,@size,@unit,@mount,@weight
+			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight],totweight)
+			select '2',1,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight
 			
 			select @uno1='',@uno2=''
 			select top 1 @uno1 = uno from @tmpa where typea=@typea and productno=@productno and product=@product and size=@size and unit=@unit and isnull([weight],0)=@weight and len(uno)>0 order by uno
@@ -391,13 +393,13 @@ z_rc2_rkp01:--z_rc2_rkp01
 			end
 
 			fetch next from cursor_table
-			into @n,@typea,@productno,@product,@size,@unit,@mount,@weight
+			into @n,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight
 		end
 		close cursor_table
 		deallocate cursor_table
 	end
 	insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight])
-	select '3',3,'','','','',unit,sum(mount),sum([weight]*mount)
+	select '3',3,'','','','',unit,sum(mount),sum(totweight)
 	from @tmpb
 	where gno='1'
 	group by unit
@@ -406,7 +408,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 	declare @t_endcount int = 14 --要保留14行印頁尾
 	set @n = 0
 	select @n=count(1) from @tmpb
-	if @n%@t_pagecount >@t_endcount
+	if @n%@t_pagecount < @t_endcount
 	begin
 		while (@n+@t_endcount)%@t_pagecount!=0
 		begin
@@ -414,7 +416,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 			set @n = @n + 1
 		end
 	end
-	else if @n%@t_pagecount < @t_endcount
+	else if @n%@t_pagecount > @t_endcount
 	begin
 		while @n%@t_pagecount!=0
 		begin
@@ -458,9 +460,9 @@ z_rc2_rkp01:--z_rc2_rkp01
 		,product b03
 		,uno b04
 		,size b05
-		,case when len(@t_merge)>0 then CAST(mount as nvarchar) +' X '+CAST([weight] as nvarchar) + ' = '+CAST(mount*[weight] as nvarchar)+ unit 
-			else CAST([weight] as nvarchar) + ' '+ unit end b06
+		,case when len(@t_merge)>0 then CAST(mount as nvarchar) +' X '+CAST([weight] as nvarchar) + ' = '+CAST(totweight as nvarchar)+ unit 
+			else CAST(totweight as nvarchar) + ' '+ unit end b06
 		,memo b07
-		,[weight] b08
+		,CAST([weight] as nvarchar) + ' '+ unit b08
 		,mount b09
 	from @tmpb order by pno;
