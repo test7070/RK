@@ -77,7 +77,7 @@
 				bbmMask = [['txtDatea', r_picd], ['txtCucdate', r_picd]];
 				q_mask(bbmMask);
 				//,退料單  移除,  不然還得增加入庫倉庫&儲位
-				q_cmbParse("cmbTypea", '領料單,加寄庫出貨,退料');
+				q_cmbParse("cmbTypea", '領料單,加寄庫出貨,退料,盤點,報廢');
 				q_cmbParse("cmbSpec", t_spec,'s');
 				
 				$('#btnImport').click(function() {

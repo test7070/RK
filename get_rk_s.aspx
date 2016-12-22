@@ -31,6 +31,7 @@
                 q_mask(bbmMask);
                 $('#txtBdate').datepicker();
                 $('#txtEdate').datepicker();
+                q_cmbParse("cmbTypea", '領料單,加寄庫出貨,退料,盤點,報廢');
 			}
 
 			function q_gtPost(t_name) {
@@ -46,12 +47,14 @@
 				var t_cust = $.trim($('#txtCust').val());
 				var t_idno = $.trim($('#txtIdno').val());
 				var t_uno = $.trim($('#txtUno').val());
+				var t_typea = $.trim($('#cmbTypea').val());
 				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
 					+ q_sqlPara2("noa", t_noa)
 					+ q_sqlPara2("custno", t_custno)
-					+ q_sqlPara2("idno", t_idno);
+					+ q_sqlPara2("idno", t_idno)
+					+ q_sqlPara2("typea", t_typea);
 				
 				if (t_cust.length>0)
                     t_where += " and charindex(N'" + t_cust + "',comp)>0";
@@ -85,6 +88,10 @@
 	ondrop="event.dataTransfer.dropEffect='none';event.stopPropagation(); event.preventDefault();">
 		<div style='width:400px; text-align:center;padding:15px;' >
 			<table id="seek" border="1" cellpadding='3' cellspacing='2' style='width:100%;' >
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblTypea'>出庫別</a></td>
+					<td><select id="cmbTypea" style="width:220px;"> </select>
+				</tr>
 				<tr class='seek_tr'>
 					<td   style="width:35%;"><a id='lblDatea'>日期</a></td>
 					<td style="width:65%;  ">
