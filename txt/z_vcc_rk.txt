@@ -364,6 +364,8 @@ z_vcc_rk01:--z_vcc_rk01
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
 	group by a.noa,b.datea,e.item,isnull(d.custpro,''),isnull(f.product,''),b.custno,b.nick
+	having SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0))!=0
+
 	-------------------------------------------------------------------------------------------
 	declare @tmpd table(
 		sel int identity(1,1)
@@ -391,6 +393,7 @@ z_vcc_rk01:--z_vcc_rk01
 	from @tmpd 
 	where gno='1'
 	group by n
+	having SUM(ISNULL([weight],0))!=0
 	
 	declare @maxn int = 0
 	select @maxn=MAX(n) from @tmpd
@@ -399,6 +402,7 @@ z_vcc_rk01:--z_vcc_rk01
 	from @tmpd
 	where gno='1' and LEFT(adpro,1) between 'A' and 'D'
 	group by adpro,custpro
+	having SUM(ISNULL([weight],0))!=0
 
 	set @maxn =0
 	select @maxn=MAX(n) from @tmpd
@@ -406,6 +410,7 @@ z_vcc_rk01:--z_vcc_rk01
 	select '5',5,@maxn+1,'自有貼皮',SUM(ISNULL([weight],0))
 	from @tmpd
 	where gno='1' and LEFT(adpro,1) between 'A' and 'D'
+	having SUM(ISNULL([weight],0))!=0
 	
 	set @maxn =0
 	select @maxn=MAX(n) from @tmpd
@@ -414,7 +419,7 @@ z_vcc_rk01:--z_vcc_rk01
 	from @tmpd
 	where gno='1'and not LEFT(adpro,1) between 'A' and 'D' 
 	group by adpro,custpro
-	
+	having SUM(ISNULL([weight],0))!=0
 	
 	select @maxn=MAX(n) from @tmpd
 	insert into @tmpd(gno,pno,n,[weight])
