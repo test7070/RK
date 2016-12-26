@@ -34,54 +34,77 @@ z_cub_rk02:--z_cub_rk02
 		set @t_ewidth =0
 	end catch
 	-----------------------------------------------------------------------------------------------
-	-----------------------------------------------------------------------------------------------
+	---------------------------------------------------------------------------------------------- 
+	begin try 
+	set @t_bdime = cast('0' as float) 
+	end try 
+	begin catch 
+	set @t_bdime =0 
+	end catch 
+	begin try 
+	set @t_edime = cast('99999' as float) 
+	end try 
+	begin catch 
+	set @t_edime =0 
+	end catch 
+
+	begin try 
+	set @t_bwidth = cast('0' as float) 
+	end try 
+	begin catch 
+	set @t_bwidth =0 
+	end catch 
+	begin try 
+	set @t_ewidth = cast('99999' as float) 
+	end try 
+	begin catch 
+	set @t_ewidth =0 
+	end catch
+
+	----------------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
-		,gno nvarchar(10)
-		,pno nvarchar(10)
-		,recno int
-		,recno2 int
-		,accy nvarchar(20)
+		,gno nvarchar(20)
+		,pno int
+		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
-		,quatno nvarchar(30)
-		,typea nvarchar(20)
-		,ctype nvarchar(30)
-		,makeno nvarchar(30)
-		,custno nvarchar(20)
-		,cust nvarchar(30)
-		,uno nvarchar(30)
-		,[weight] float
-		,dime float
+		--盤點NO	
+		--合約書	
+		--分類	
+		--製造批號	
+		,ordeno nvarchar(20)
+		,ordenoq nvarchar(10)
+		,quatno nvarchar(20)
+		
+		,custno nvarchar(20)--客戶名稱	
+		,cust nvarchar(50)
+		,uno nvarchar(30)--COIL編號	
+		
+		,dime float--原鋼材規格
 		,width float
 		,lengthb float
 		,radius float
-		
+		,[weight] float
+		,[mount] float
+		,makeno nvarchar(30)
+		,typea nvarchar(20)
 		--皮膜
-		,uno2 nvarchar(30)
-		,dime2 float
-		,width2 float
-		,size2 nvarchar(max)
-		,productno2 nvarchar(20)
-		,product2 nvarchar(50)
-		,mount2 float
-		,weight2 float
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
+		,pvcweight float
+		,pvcmount float
 		--保護膜
-		,uno3 nvarchar(30)
-		,dime3 float
-		,width3 float
-		,size3 nvarchar(max)
-		,productno3 nvarchar(20)
-		,product3 nvarchar(50)
-		,mount3 float
-		,weight3 float
+		,pveno nvarchar(20)
+		,pve nvarchar(50)
+		,pveweight float
+		,pvemount float
 		--物料
 		,x01 float  --接著劑
 		,x02 float  --接著劑稀釋液	
 		,x03 float  --背漆
 		,x04 float	--背漆稀釋液
 		,x05 float  --面漆
-		
 		
 		,w01 float--原材料投入重量	
 		,w02 float--本期生產半成品	
@@ -111,187 +134,131 @@ z_cub_rk02:--z_cub_rk02
 		,w23 float--期末半成品結存   w03+w05-w09-w10-w11-w12-w13-w15
 		,w24 float--完工總損耗 w16+w17+w18+w19
 		,memo nvarchar(max)
+
 	)
-	insert into @tmp(gno,pno,recno,recno2,accy,noa,noq,quatno,typea,ctype,makeno
-		,custno,cust,uno,[weight],dime,width,lengthb,radius
-		,w02,w03)
-	select '1','1',ROW_NUMBER()over(order by b.datea,a.noa),1
-		,a.accy,a.noa,a.noq,c.quatno,isnull(f.productno,g.productno),d.product,makeno
-		,a.custno,ISNULL(e.nick,'')
-		,a.uno,a.[weight],a.dime,a.width,a.lengthb,a.radius
-		,a.hweight,a.price
+	
+	insert into @tmp(gno,pno,accy,noa,noq,custno,cust,uno,dime,width,[weight],[mount],makeno,typea
+		,ordeno,ordenoq,quatno)
+	select '1',1,a.accy,a.noa,a.noq,a.custno,a.comp,a.uno,a.dime,a.width,a.[weight],a.[mount],a.makeno
+		,isnull(f.productno,g.productno)
+		,a.ordeno,a.ordeno2,c.quatno
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
-	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
-	left join adpro d on c.custpro=c.noa
-	left join cust e on a.custno=e.noa
+	left join view_orde c on a.ordeno=c.noa
 	outer apply(select top 1 * from view_cubt where accy=a.accy and noa=a.noa and nor=a.noq and kind='1') f
 	outer apply(select top 1 x.* from view_cubu x 
 		left join ucc y on x.productno=y.noa  
 		where x.accy=a.accy and x.noa=a.noa and y.groupano='A05') g
-	where b.datea<=@t_date
-	and (len(@t_makeno)=0 or a.makeno=@t_makeno)
+	where 
+		(len(@t_makeno)=0
+		or charindex(a.makeno, ISNULL(@t_makeno,''))>0 
+		or charindex(b.vcceno, ISNULL(@t_makeno,''))>0)
+	and ISNULL(b.datea,'') <=@t_date
 	and (len(@t_spec)=0 or a.spec=@t_spec)
 	and (isnull(a.dime,0) between @t_bdime and @t_edime)
 	and (isnull(a.width,0) between @t_bwidth and @t_ewidth)
-	order by b.datea,a.noa
-	
-	update @tmp set 
-		 w04=ISNULL(b.weight4,0)
-		,w06=ISNULL(b.weight5,0)
-		,w07=ISNULL(b.para ,'')
-		,w10=ISNULL(b.weight6,0)+ISNULL(b.weight7,0)
-		,w11=ISNULL(b.weight8,0)
-		,w12=ISNULL(b.weight9,0)
-		,w13=ISNULL(b.weight10,0)
-	from @tmp a
-	left join(
-		select a.cubno makeno
-			,SUM(cast(replace(a.para,',','') as float)) para
-			,SUM(ISNULL(a.weight4,0)) weight4
-			,SUM(ISNULL(a.weight5,0)) weight5
-			,SUM(ISNULL(a.weight6,0)) weight6
-			,SUM(ISNULL(a.weight7,0)) weight7
-			,SUM(ISNULL(a.weight8,0)) weight8
-			,SUM(ISNULL(a.weight9,0)) weight9
-			,SUM(ISNULL(a.weight10,0)) weight10
-		from view_cucs a
-		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
-		where ISNULL(b.datea,'')<=@t_date
-		group by a.cubno)b on a.makeno=b.makeno
-	
-	--(1)進倉成品	
-	update @tmp set w09=b.[weight]
-	from @tmp a
-	left join (
-		select cname makeno,SUM(ISNULL([weight],0)) [weight] 
-		from view_cuts
-		where isnull(datea,'')<=@t_date 
-		group by cname
-	) b on a.makeno = b.makeno
 	------------------------------------------------------------------------------------------------
+	--顯示皮膜，不然就顯示面漆
 	declare @sel int
-	declare @recno int
-	declare @accy nvarchar(20)
+	declare @productno nvarchar(20)
+	declare @product nvarchar(50)
+	declare @weight float
+	declare @mount float
+	declare @wweight float
+	declare @n int
+	declare @accy nvarchar(10)
 	declare @noa nvarchar(20)
 	declare @noq nvarchar(10)
 	
-	declare @uno nvarchar(30)
-	declare @dime float
-	declare @width float
-	declare @productno nvarchar(20)
-	declare @product nvarchar(50)
-	declare @mount float
-	declare @weight float
-
-	declare @n int
-	
-	--皮膜、保護膜
 	declare cursor_table cursor for
-	select sel,recno,accy,noa,noq from @tmp where recno2=1
+	select a.sel,a.accy,a.noa,a.noq
+	from @tmp a
+	where pno=1
 	open cursor_table
 	fetch next from cursor_table
-	into @sel,@recno,@accy,@noa,@noq
+	into @sel,@accy,@noa,@noq
 	while(@@FETCH_STATUS <> -1)
 	begin	
+		set @n = 1
 		--皮膜
 		declare cursor_table2 cursor for
-		
-		select row_number()over(order by a.noq) 
-			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
-		from @tmp a
-		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
-		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
-		where b.noa is not null
-		and len(ISNULL(b.uno,''))>0
-		and b.kind='1'
-		and a.recno=@recno
-		and a.recno2=1
-		
+		select productno,product,isnull([weight],0),isnull(wweight,0)
+		from view_cubt a
+		where a.accy=@accy and a.noa=@noa and a.nor=@noq and a.kind='1'
 		open cursor_table2
 		fetch next from cursor_table2
-		into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+		into @productno,@product,@mount,@weight
 		while(@@FETCH_STATUS <> -1)
 		begin	
-			if exists(select * from @tmp where recno=@recno and recno2=@n)
-			begin
-				update @tmp set uno2=@uno,dime2=@dime,width2=@width
-					,productno2=@productno,product2=@product,mount2=@mount,weight2=@weight
-					,size2=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				where recno=@recno and recno2=@n
-			end
-			else
-			begin
-				insert into @tmp(gno,pno,recno,recno2,accy,noa,noq,makeno,custno,cust
-					,uno2,dime2,width2,productno2,product2,mount2,weight2
-					,size2)
-				select '6','1',recno,@n,accy,noa,noq,makeno,custno,cust
-					,@uno,@dime,@width,@productno,@product,@mount,@weight
-					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				from @tmp
-				where recno=@recno and recno2=@n
-			end
+			update @tmp set pvcno=@productno,pvc=@product,pvcmount=isnull(pvcmount,0)+isnull(@mount,0),[pvcweight]=isnull([pvcweight],0)+isnull(@weight,0) 
+			where accy=@accy and noa=@noa and noq=@noq and pno=1
+				
+			--if not exists(select * from @tmp where accy=@accy and noa=@noa and noq=@noq and pno=@n)
+			--begin
+			--	insert into @tmp(gno,pno,accy,noa,noq,custno,cust,uno,pvcno,pvc,dime,width,pvcmount,pvcweight)
+			--	select '1',@n,a.accy,a.noa,a.noq,a.custno,a.cust,a.uno,@productno,@product,a.dime,a.width,@mount,@weight
+			--	from @tmp a
+			--	where accy=@accy and noa=@noa and noq=@noq and pno=1
+			--end
+			--else
+			--begin
+			--	update @tmp set pvcno=@productno,pvc=@product,pvcmount=@mount,[pvcweight]=@weight 
+			--	where accy=@accy and noa=@noa and noq=@noq and pno=@n
+			--end
+			--set @n = @n + 1
+			
 			fetch next from cursor_table2
-			into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+			into @productno,@product,@mount,@weight
 		end
 		close cursor_table2
 		deallocate cursor_table2
-
+		set @n = 1
 		--保護膜
 		declare cursor_table2 cursor for
-		
-		select row_number()over(order by a.noq) 
-			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
-		from @tmp a
-		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
-		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
-		where b.noa is not null
-		and len(ISNULL(b.uno,''))>0
-		and b.kind='2'
-		and a.recno=@recno
-		and a.recno2=1
-		
+		select productno,product,isnull([weight],0),isnull(wweight,0)
+		from view_cubt a
+		where a.accy=@accy and a.noa=@noa and a.nor=@noq and a.kind='2'
 		open cursor_table2
 		fetch next from cursor_table2
-		into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+		into @productno,@product,@mount,@weight
 		while(@@FETCH_STATUS <> -1)
 		begin	
-			if exists(select * from @tmp where recno=@recno and recno2=@n)
-			begin
-				update @tmp set uno3=@uno,dime3=@dime,width3=@width
-					,productno3=@productno,product3=@product,mount3=@mount,weight3=@weight
-					,size3=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				where recno=@recno and recno2=@n
-			end
-			else
-			begin
-				insert into @tmp(gno,pno,recno,recno2,accy,noa,noq,makeno,custno,cust
-					,uno3,dime3,width3,productno3,product3,mount3,weight3
-					,size3)
-				select '6','1',recno,@n,accy,noa,noq,makeno,custno,cust
-					,@uno,@dime,@width,@productno,@product,@mount,@weight
-					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
-				from @tmp
-				where recno=@recno and recno2=@n
-			end
+			update @tmp set pveno=@productno,pve=@product,pvemount=isnull(pvemount,0)+@mount,[pveweight]=isnull([pveweight],0)+@weight 
+				where accy=@accy and noa=@noa and noq=@noq and pno=1
+				
+			--if not exists(select * from @tmp where accy=@accy and noa=@noa and noq=@noq and pno=@n)
+			--begin
+			--	insert into @tmp(gno,pno,accy,noa,noq,custno,cust,uno,pveno,pve,dime,width,pvemount,pveweight)
+			--	select '1',@n,a.accy,a.noa,a.noq,a.custno,a.cust,a.uno,@productno,@product,a.dime,a.width,@mount,@weight
+			--	from @tmp a
+			--	where accy=@accy and noa=@noa and noq=@noq and pno=1
+			--end
+			--else
+			--begin
+			--	update @tmp set pveno=@productno,pve=@product,pvemount=@mount,[pveweight]=@weight 
+			--	where accy=@accy and noa=@noa and noq=@noq and pno=@n
+			--end
+			--set @n = @n + 1
+			
 			fetch next from cursor_table2
-			into @n,@uno,@dime,@width,@productno,@product,@mount,@weight
+			into @productno,@product,@mount,@weight
 		end
 		close cursor_table2
 		deallocate cursor_table2
 		
-		
 		fetch next from cursor_table
-		into @sel,@recno,@accy,@noa,@noq
+		into @sel,@accy,@noa,@noq
 	end
 	close cursor_table
 	deallocate cursor_table
-	---------------------------------------------------------------------------------------------------
+	
+	------------------------------------------------------------------------------------
+	--物料
 	declare @totweight float
 	declare @x01 float,@x02 float,@x03 float,@x04 float,@x05 float
 	
 	declare cursor_table cursor for
-	select accy,noa,sum(isnull([weight],0)) from @tmp group by accy,noa
+	select accy,noa,sum(isnull([weight],0)) from @tmp where pno=1 group by accy,noa
 	open cursor_table
 	fetch next from cursor_table
 	into @accy,@noa,@totweight
@@ -315,47 +282,87 @@ z_cub_rk02:--z_cub_rk02
 				,x03 = ROUND(@x03*[weight]/@totweight,2)
 				,x04 = ROUND(@x04*[weight]/@totweight,2)
 				,x05 = ROUND(@x05*[weight]/@totweight,2)
-			where accy=@accy and noa=@noa and recno2=1
+			where accy=@accy and noa=@noa and pno=1
 		end 
 		fetch next from cursor_table
 		into @accy,@noa,@totweight
 	end
 	close cursor_table
 	deallocate cursor_table
+	
+	
+	------------------------------------------------------------------------------------------------
+	update @tmp set 
+		 w04=ISNULL(b.weight4,0)
+		,w06=ISNULL(b.weight5,0)
+		,w07=ISNULL(b.para ,'')
+		,w10=ISNULL(b.weight6,0)+ISNULL(b.weight7,0)
+		,w11=ISNULL(b.weight8,0)
+		,w12=ISNULL(b.weight9,0)
+		,w13=ISNULL(b.weight10,0)
+	from @tmp a
+	left join(
+		select a.cubno makeno
+			,SUM(cast(replace(a.para,',','') as float)) para
+			,SUM(ISNULL(a.weight4,0)) weight4
+			,SUM(ISNULL(a.weight5,0)) weight5
+			,SUM(ISNULL(a.weight6,0)) weight6
+			,SUM(ISNULL(a.weight7,0)) weight7
+			,SUM(ISNULL(a.weight8,0)) weight8
+			,SUM(ISNULL(a.weight9,0)) weight9
+			,SUM(ISNULL(a.weight10,0)) weight10
+		from view_cucs a
+		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+		where ISNULL(b.datea,'')<=@t_date
+		group by a.cubno)b 
+		on  a.makeno=b.makeno
+	--(1)進倉成品
+	update @tmp set w09=b.[weight]
+	from @tmp a
+	left join (
+		select cname makeno,SUM(ISNULL([weight],0)) [weight] 
+		from view_cuts
+		where isnull(datea,'')<=@t_date 
+		group by cname
+	) b on a.makeno = b.makeno
+	left join (select sel,ROW_NUMBER()over(partition by makeno order by noa) recno from @tmp ) c on a.sel=c.sel
+	where c.recno=1
+	
+	
+
 	---------------------------------------------------------------------------------------------------
 	--原材料投入重量	
-	update @tmp set w01=b.[weight]+ isnull(a.x01,0)+ isnull(a.x02,0)+ isnull(a.x03,0)+ isnull(a.x04,0)+ isnull(a.x05,0)
+	update @tmp set w01=isnull(a.[weight],0)+isnull(a.[pvcweight],0)+isnull(a.[pveweight],0)
+		+ isnull(a.x01,0)+ isnull(a.x02,0)+ isnull(a.x03,0)+ isnull(a.x04,0)+ isnull(a.x05,0)
 	from @tmp a
-	left join (select recno,SUM(case when recno2=1 then [weight] else 0 end
-		+ISNULL(weight2,0)+ISNULL(weight3,0)) [weight] from @tmp group by recno) b on a.recno=b.recno
-	
-	-------------------------------------------------------------------------------------------------
-	-------------小計
+	where a.pno=1
+	---------------------------------------------------------------------------------------------------
+	---------------小計
 	insert into @tmp(gno,pno,w01,w02,w03,w04,w05,w06,w07
 		,w09,w10,w11,w12,w13
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
-	select '2','2',sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
+	select '2',2,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
 		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp
-	where pno='1'
+	where pno=1
 	
 	--類別 小
 	insert into @tmp(gno,pno,typea,w01,w02,w03,w04,w05,w06,w07
 		,w09,w10,w11,w12,w13
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
-	select '3','3',typea
+	select '3',3,typea
 		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
 		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp
-	where pno='1'
+	where pno=1
 	and len(typea)>2
 	group by typea
 	--類別 中
@@ -363,14 +370,14 @@ z_cub_rk02:--z_cub_rk02
 		,w09,w10,w11,w12,w13
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
-	select '4','4',left(typea,2)
+	select '4',4,left(typea,2)
 		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
 		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp a
-	where pno='1'
+	where pno=1
 	and len(typea)>2
 	and exists(select * from adpro where noa=left(a.typea,2))
 	group by left(typea,2)
@@ -379,23 +386,24 @@ z_cub_rk02:--z_cub_rk02
 		,w09,w10,w11,w12,w13
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
-	select '5','5',left(typea,1)
+	select '5',5,left(typea,1)
 		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
 		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp a
-	where pno='1'
+	where pno=1
 	and len(typea)>2
 	and exists(select * from adpro where noa=left(a.typea,1))
 	group by left(typea,1)
-	
-	--w15 float,
+
+
+	----w15 float,
 	update @tmp set w15 = 0--原物料損耗  (損耗率減項)      ??/w07
-		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,1) end--不良品損耗率	w11/w01
-		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,1) end--尺寸損耗率	        w12/w01
-		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,1) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,2) end--不良品損耗率	w11/w01
+		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,2) end--尺寸損耗率	        w12/w01
+		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,2) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
 		,w19=0--扣除求償損耗率	
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 		,w22=ISNULL(w09,0)+ISNULL(w10,0)--當月耗量(1+2+3)	  w09+w10
@@ -403,8 +411,12 @@ z_cub_rk02:--z_cub_rk02
 	update @tmp set w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)	
 		,w23 = ISNULL(w02,0)+ISNULL(w05,0)-ISNULL(w09,0)-ISNULL(w10,0)
 			-ISNULL(w11,0)-ISNULL(w12,0)-ISNULL(w13,0)-ISNULL(w15,0)
+	
+	
+	
+	
 	select a.gno
-		,recno rr
+		--,recno rr
 		,'' a01
 		,a.quatno a02
 		,a.typea
@@ -429,19 +441,19 @@ z_cub_rk02:--z_cub_rk02
 		,dbo.getComma(a.w13,-1) a21
 		
 		,dbo.getComma(a.w15,-1) a22
-		, case when ISNULL(a.w16,0)=0 then '' else dbo.getComma(a.w16,-1)+'%' end a23
-		, case when ISNULL(a.w17,0)=0 then '' else dbo.getComma(a.w17,-1) +'%' end a24
-		, case when ISNULL(a.w18,0)=0 then '' else dbo.getComma(a.w18,-1) +'%' end a25
+		, case when ISNULL(a.w16,0)=0 then '' else dbo.getComma(a.w16,2)+'%' end a23
+		, case when ISNULL(a.w17,0)=0 then '' else dbo.getComma(a.w17,2) +'%' end a24
+		, case when ISNULL(a.w18,0)=0 then '' else dbo.getComma(a.w18,2) +'%' end a25
 		, case when ISNULL(a.w19,0)=0 then '' else dbo.getComma(a.w19,-1) +'%' end a26
 		
 		,dbo.getComma(a.w21,-1) a27
 		,dbo.getComma(a.w22,-1) a28
 		,dbo.getComma(a.w23,-1) a29
-		,case when ISNULL(a.w24,0)=0 then '0%' else dbo.getComma(a.w24,-1) +'%' end a30
+		,case when ISNULL(a.w24,0)=0 then '0%' else dbo.getComma(a.w24,2) +'%' end a30
 		,'' a31
 	from @tmp a
 	left join adpro b on a.typea=b.noa
-	order by a.pno,recno,recno2;
+	order by a.gno,a.accy,a.noa,a.noq,a.pno;
 
 z_cub_rk02_mon:--z_cub_rk02_mon
 	declare @t_mon nvarchar(max) = case when '#non' = [1] then '' else [1] end
