@@ -33,34 +33,6 @@ z_cub_rk02:--z_cub_rk02
 	begin catch
 		set @t_ewidth =0
 	end catch
-	-----------------------------------------------------------------------------------------------
-	---------------------------------------------------------------------------------------------- 
-	begin try 
-	set @t_bdime = cast('0' as float) 
-	end try 
-	begin catch 
-	set @t_bdime =0 
-	end catch 
-	begin try 
-	set @t_edime = cast('99999' as float) 
-	end try 
-	begin catch 
-	set @t_edime =0 
-	end catch 
-
-	begin try 
-	set @t_bwidth = cast('0' as float) 
-	end try 
-	begin catch 
-	set @t_bwidth =0 
-	end catch 
-	begin try 
-	set @t_ewidth = cast('99999' as float) 
-	end try 
-	begin catch 
-	set @t_ewidth =0 
-	end catch
-
 	----------------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -122,7 +94,7 @@ z_cub_rk02:--z_cub_rk02
 		,w11 float--不良品(b1)	cucs.wright8  + (cuds.weight1 ~ cuds.weight10)
 		,w12 float--尺寸損耗(b3)	cucs.wright9
 		,w13 float--頭尾(廠內)損耗(b4)	cucs.wright10
-
+		,w14 float--供應商求償
 		,w15 float--原物料損耗  (損耗率減項)      /w07
 		
 		,w16 float--不良品損耗率	w11/w01
@@ -141,11 +113,13 @@ z_cub_rk02:--z_cub_rk02
 	insert into @tmp(gno,pno,accy,noa,noq,custno,cust,uno,[weight],[mount],makeno
 		,typea,kind
 		,ordeno,ordenoq,quatno
-		,dime,width,lengthb,radius)
+		,dime,width,lengthb,radius
+		,w02,w03)
 	select '1',1,a.accy,a.noa,a.noq,a.custno,a.comp,a.uno,a.[weight],a.[mount],a.makeno
 		,d.custpro,isnull(f.productno,g.productno)
 		,a.ordeno,a.ordeno2,c.quatno
 		,a.dime,a.width,a.lengthb,a.radius
+		,isnull(a.hweight,0),isnull(a.price,0)
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_orde c on a.ordeno=c.noa
@@ -261,6 +235,7 @@ z_cub_rk02:--z_cub_rk02
 	--物料
 	declare @totweight float
 	declare @x01 float,@x02 float,@x03 float,@x04 float,@x05 float
+	declare @x01a float,@x02a float,@x03a float,@x04a float,@x05a float
 	
 	declare cursor_table cursor for
 	select accy,noa,sum(isnull([weight],0)) from @tmp where pno=1 group by accy,noa
@@ -282,33 +257,52 @@ z_cub_rk02:--z_cub_rk02
 			left join ucc b on a.productno=b.noa
 			where accy=a.accy and a.noa=@noa
 			
-			update @tmp set x01 = ROUND(@x01*[weight]/@totweight,2)
-				,x02 = ROUND(@x02*[weight]/@totweight,2)
-				,x03 = ROUND(@x03*[weight]/@totweight,2)
-				,x04 = ROUND(@x04*[weight]/@totweight,2)
-				,x05 = ROUND(@x05*[weight]/@totweight,2)
+			update @tmp set x01 = ROUND(@x01*[weight]/@totweight,0)
+				,x02 = ROUND(@x02*[weight]/@totweight,0)
+				,x03 = ROUND(@x03*[weight]/@totweight,0)
+				,x04 = ROUND(@x04*[weight]/@totweight,0)
+				,x05 = ROUND(@x05*[weight]/@totweight,0)
 			where accy=@accy and noa=@noa and pno=1
+			--尾差修正
+			select @x01a=0,@x02a=0,@x03a=0,@x04a=0,@x05a=0
+			select @x01a = SUM(ISNULL(x01,0))--接著劑 	
+				,@x02a = SUM(ISNULL(x02,0))--接著劑稀釋液	
+				,@x03a = SUM(ISNULL(x03,0))--背漆	
+				,@x04a = SUM(ISNULL(x04,0))--背漆稀釋液	
+				,@x05a = SUM(ISNULL(x05,0))--面漆
+			from @tmp
+			where accy=@accy and noa=@noa and pno=1
+			
+			update @tmp set x01=ISNULL(x01,0)+(@x01-@x01a)
+				,x02=ISNULL(x02,0)+(@x02-@x02a)
+				,x03=ISNULL(x03,0)+(@x03-@x03a)
+				,x04=ISNULL(x04,0)+(@x04-@x04a)
+				,x05=ISNULL(x05,0)+(@x05-@x05a)
+			from @tmp a
+			outer apply (select top 1 sel from @tmp where accy=a.accy and noa=a.noa and pno=1 order by accy,noa,noq) b
+			where a.accy=@accy and a.noa=@noa and a.pno=1
+			and b.sel is not null
 		end 
 		fetch next from cursor_table
 		into @accy,@noa,@totweight
 	end
 	close cursor_table
 	deallocate cursor_table
-	
-	
 	------------------------------------------------------------------------------------------------
 	update @tmp set 
 		 w04=ISNULL(b.weight4,0)
 		,w06=ISNULL(b.weight5,0)
-		,w07=ISNULL(b.para ,'')
+		,w07=ISNULL(b.para ,0)
 		,w10=ISNULL(b.weight6,0)+ISNULL(b.weight7,0)
 		,w11=ISNULL(b.weight8,0)
 		,w12=ISNULL(b.weight9,0)
 		,w13=ISNULL(b.weight10,0)
+		,w14=ISNULL(b.paraa,0)
 	from @tmp a
 	left join(
 		select a.cubno makeno
 			,SUM(cast(replace(a.para,',','') as float)) para
+			,SUM(cast(replace(a.paraa,',','') as float)) paraa
 			,SUM(ISNULL(a.weight4,0)) weight4
 			,SUM(ISNULL(a.weight5,0)) weight5
 			,SUM(ISNULL(a.weight6,0)) weight6
@@ -342,25 +336,25 @@ z_cub_rk02:--z_cub_rk02
 	---------------------------------------------------------------------------------------------------
 	---------------小計
 	insert into @tmp(gno,pno,w01,w02,w03,w04,w05,w06,w07
-		,w09,w10,w11,w12,w13
+		,w09,w10,w11,w12,w13,w14
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
 	select '2',2,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
-		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0)),sum(isnull(w14,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp
 	where pno=1
 	----------------------------------------------------------------------------------------------------
 	insert into @tmp(gno,pno,typea,w01,w02,w03,w04,w05,w06,w07
-		,w09,w10,w11,w12,w13
+		,w09,w10,w11,w12,w13,w14
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
 	select '3',3,isnull(typea,'')
 		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
-		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0))
+		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0)),sum(isnull(w14,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp a
@@ -421,12 +415,12 @@ z_cub_rk02:--z_cub_rk02
 		,w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,2) end--不良品損耗率	w11/w01
 		,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,2) end--尺寸損耗率	        w12/w01
 		,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,2) end---頭尾(廠內)損耗率	(w03+w04+w13)/w01
-		,w19=0--扣除求償損耗率	
+		,w19=case when ISNULL(w01,0)=0 then 0 else round((w14)/w01*100,2) end--扣除求償損耗率	
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 
 	update @tmp set w22=ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)--當月耗量(1+2+3)	  w09+w10
 	
-	update @tmp set w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)	
+	update @tmp set w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)-ISNULL(w19,0)	
 		,w23 = ISNULL(w02,0)+ISNULL(w05,0)-ISNULL(w09,0)-ISNULL(w10,0)
 			-ISNULL(w11,0)-ISNULL(w12,0)-ISNULL(w13,0)-ISNULL(w15,0)
 	
@@ -466,6 +460,7 @@ z_cub_rk02:--z_cub_rk02
 		,dbo.getComma(a.w23,-1) a29
 		,case when ISNULL(a.w24,0)=0 then '0%' else dbo.getComma(a.w24,2) +'%' end a30
 		,'' a31
+		,dbo.getComma(a.w14,-1) a32
 	from @tmp a
 	left join adpro b on a.typea=b.noa
 	outer apply(select top 1 * from view_cuts where cname=a.makeno) c
