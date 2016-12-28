@@ -404,7 +404,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 	where gno='1'
 	group by unit
 	
-	declare @t_pagecount int = 36 -- 一頁幾行
+	declare @t_pagecount int = 33 -- 一頁幾行
 	declare @t_endcount int = 14 --要保留14行印頁尾
 	set @n = 0
 	select @n=count(1) from @tmpb

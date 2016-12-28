@@ -19,7 +19,7 @@
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
             var q_readonlys = [];
             var bbmNum = [];
-            var bbsNum = [['txtPara', 10, 0, 1],['txtHours', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1]];
+            var bbsNum = [['txtPara', 10, 0, 1],['txtParaa', 10, 0, 1],['txtHours', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1]];
             var bbmMask = [];
             var bbsMask = [['txtBtime','99:99'],['txtEtime','99:99']];
             q_sqlCount = 6;
@@ -606,6 +606,7 @@
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
+					<td style="width:100px;"></td>
 					<td style="width:80px;"></td>
 				</tr>
 				<tr style='color:white; background:#003366;' >
@@ -632,6 +633,7 @@
 					<td rowspan="2">不良損耗</td>
 					<td rowspan="2">尺寸損耗</td>
 					<td rowspan="2">頭尾損耗</td>
+					<td rowspan="2">供應商<BR>求償</td>
 					<td rowspan="2">開始時間</td>
 					<td rowspan="2">結束時間</td>	
 					<td rowspan="2">施工工時(分)</td>
@@ -675,6 +677,7 @@
 					<td style="width:60px;"></td>
 					<td style="width:60px;"></td>
 					<td style="width:60px;"></td>
+					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
@@ -733,6 +736,7 @@
 					<td><input id="txtWeight8.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWeight9.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWeight10.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtParaa.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtBtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtEtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>

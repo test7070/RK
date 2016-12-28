@@ -16,7 +16,10 @@ z_vcc_rk03:--z_vcc_rk03  ref.z_vccst5
 	)
 	
 	insert into @tmp(gno,custno,[weight],[money],tax)
-	select '1',custno,SUM(ISNULL([weight],0)),SUM(ISNULL([money],0)),SUM(ISNULL([tax],0))
+	select '1',custno
+		,SUM(case when typea='1' then 1 else -1 end * ISNULL([weight],0))
+		,SUM(case when typea='1' then 1 else -1 end * ISNULL([money],0))
+		,SUM(case when typea='1' then 1 else -1 end * ISNULL([tax],0))
 	from view_vcc
 	where datea between @t_bdate and @t_edate 
 	group by custno
@@ -158,10 +161,15 @@ z_vcc_rk02:--z_vcc_rk02
 		,isnull(a.style,''),d.spec,null
 		,case when len(ISNULL(a.size,''))>0 then a.size else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*' + case when ISNULL(a.lengthb,0)>0 then CAST(a.lengthb as nvarchar) else 'COIL' end end
 		,a.spec,a.[class],d.zinc,a.rackno
-		,a.lengthc,a.mount,a.[weight],a.unit,a.price,a.total,a.ordeno,a.no2,a.uno
+		,a.lengthc
+		,case when b.typea='1' then 1 else -1 end * a.mount
+		,case when b.typea='1' then 1 else -1 end * a.[weight]
+		,a.unit,a.price
+		,case when b.typea='1' then 1 else -1 end * a.total
+		,a.ordeno,a.no2,a.uno
 		,b.invono,a.dime,a.radius,a.width,a.lengthb,a.mweight,b.coin,0,0,0,a.itemno
 		,a.memo,isnull(d.memo,''),a.checker
-		,case when isnull(b.floata,0)=0 then 0 else round(a.price*b.floata,4) end
+		,case when b.typea='1' then 1 else -1 end * case when isnull(b.floata,0)=0 then 0 else round(a.price*b.floata,4) end
 		,b.floata
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
