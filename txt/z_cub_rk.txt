@@ -90,7 +90,8 @@ z_cub_rk02:--z_cub_rk02
 		,w08 nvarchar(40)--成品規格	
 		,w09 float--(1)進倉成品	   cuts.weight
 
-		,w10 float--(3)樣品+報廢	cucs.weight6 + cucs.weight7 + cucs.waste
+		,w10a float--(3)樣品	cucs.weight6 + cucs.waste
+		,w10b float--(3)報廢    cucs.weight7 
 		,w11 float--不良品(b1)	cucs.wright8  + (cuds.weight1 ~ cuds.weight10)
 		,w12 float--尺寸損耗(b3)	cucs.wright9
 		,w13 float--頭尾(廠內)損耗(b4)	cucs.wright10
@@ -293,7 +294,8 @@ z_cub_rk02:--z_cub_rk02
 		 w04=ISNULL(b.weight4,0)
 		,w06=ISNULL(b.weight5,0)
 		,w07=ISNULL(b.para ,0)
-		,w10=ISNULL(b.weight6,0)+ISNULL(b.weight7,0)
+		,w10a=ISNULL(b.weight6,0)
+		,w10b=ISNULL(b.weight7,0)
 		,w11=ISNULL(b.weight8,0)
 		,w12=ISNULL(b.weight9,0)
 		,w13=ISNULL(b.weight10,0)
@@ -336,25 +338,25 @@ z_cub_rk02:--z_cub_rk02
 	---------------------------------------------------------------------------------------------------
 	---------------小計
 	insert into @tmp(gno,pno,w01,w02,w03,w04,w05,w06,w07
-		,w09,w10,w11,w12,w13,w14
+		,w09,w10a,w10b,w11,w12,w13,w14
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
 	select '2',2,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
-		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0)),sum(isnull(w14,0))
+		,sum(isnull(w09,0)),sum(isnull(w10a,0)),sum(isnull(w10b,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0)),sum(isnull(w14,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp
 	where pno=1
 	----------------------------------------------------------------------------------------------------
 	insert into @tmp(gno,pno,typea,w01,w02,w03,w04,w05,w06,w07
-		,w09,w10,w11,w12,w13,w14
+		,w09,w10a,w10b,w11,w12,w13,w14
 		,w15,w16,w17,w18,w19
 		,w21,w22,w23)
 	select '3',3,isnull(typea,'')
 		,sum(isnull(w01,0)),sum(isnull(w02,0)),sum(isnull(w03,0)),sum(isnull(w04,0))
 		,sum(isnull(w05,0)),sum(isnull(w06,0)),sum(isnull(w07,0))
-		,sum(isnull(w09,0)),sum(isnull(w10,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0)),sum(isnull(w14,0))
+		,sum(isnull(w09,0)),sum(isnull(w10a,0)),sum(isnull(w10b,0)),sum(isnull(w11,0)),sum(isnull(w12,0)),sum(isnull(w13,0)),sum(isnull(w14,0))
 		,sum(isnull(w15,0)),sum(isnull(w16,0)),sum(isnull(w17,0)),sum(isnull(w18,0)),sum(isnull(w19,0))
 		,sum(isnull(w21,0)),sum(isnull(w22,0)),sum(isnull(w23,0))
 	from @tmp a
@@ -418,10 +420,10 @@ z_cub_rk02:--z_cub_rk02
 		,w19=case when ISNULL(w01,0)=0 then 0 else round((w14)/w01*100,2) end--扣除求償損耗率	
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)--(3)本期損耗(a1+a2+b1+b2+b3+b4+b5)	 w03+w04+w11+w12+w13
 
-	update @tmp set w22=ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)--當月耗量(1+2+3)	  w09+w10
+	update @tmp set w22=ISNULL(w09,0)+ISNULL(w10a,0)+ISNULL(w10b,0)+ISNULL(w21,0)--當月耗量(1+2+3)	  w09+w10
 	
 	update @tmp set w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)-ISNULL(w19,0)	
-		,w23 = ISNULL(w02,0)+ISNULL(w05,0)-ISNULL(w09,0)-ISNULL(w10,0)
+		,w23 = ISNULL(w02,0)+ISNULL(w05,0)-ISNULL(w09,0)-ISNULL(w10a,0)-ISNULL(w10b,0)
 			-ISNULL(w11,0)-ISNULL(w12,0)-ISNULL(w13,0)-ISNULL(w15,0)
 	
 	select a.gno
@@ -434,7 +436,7 @@ z_cub_rk02:--z_cub_rk02
 		,a.cust a05
 		,a.uno a06
 		,a.kind a07
-		,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'C' else CAST(a.lengthb as nvarchar) end a08
+		,CAST(a.dime as nvarchar)+'*'+CAST(a.width as nvarchar) a08
 		,dbo.getComma(a.w01,-1) a09
 		,dbo.getComma(a.w02,-1) a10
 		,dbo.getComma(a.w03,-1) a11
@@ -444,7 +446,8 @@ z_cub_rk02:--z_cub_rk02
 		,dbo.getComma(a.w07,-1) a15
 		,CAST(c.dime as nvarchar)+'+'+CAST(c.radius as nvarchar)+'*'+CAST(c.width as nvarchar)+'*'+case when c.lengthb=0 then 'C' else CAST(c.lengthb as nvarchar) end a16
 		,dbo.getComma(a.w09,-1) a17
-		,dbo.getComma(a.w10,-1) a18
+		,dbo.getComma(a.w10a,-1) a18a
+		,dbo.getComma(a.w10b,-1) a18b
 		,dbo.getComma(a.w11,-1) a19
 		,dbo.getComma(a.w12,-1) a20
 		,dbo.getComma(a.w13,-1) a21

@@ -40,7 +40,7 @@ as begin
 		select case when f.noa is not null then 1 else 0 end sel  
 			,a.noa cubno,a.noq cubnoq
 			,b.datea,a.accy,a.ordeno noa,a.no2,a.makeno,a.uno,d.productno,d.product
-			,a.dime,a.width,a.lengthb,a.radius,d.unit
+			,a.dime,d.width,d.lengthb,a.radius,d.unit
 			,d.ucolor,d.[source]
 			,d.mount,d.[weight],d.price,d.memo
 			,a.custno,a.comp,1 cnt
