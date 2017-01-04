@@ -511,7 +511,8 @@
 					$('#txtWorker2').val(r_name);
 				sum();
                 var t_noa = trim($('#txtNoa').val());
-                var t_date = new Date();
+                var t_date = $('#txtOdate').val();
+                t_date = new Date((parseInt(t_date.substring(0,3))+1911)+t_date.substring(3,9));
                 var x_part = $('#txtPartno').val();
                 if (t_noa.length == 0 || t_noa == "AUTO")
                     q_gtnoa(q_name, (''+t_date.getFullYear()).slice(-2,4)+(x_part.length==0?'1':x_part)+('123456789ABC').substring(t_date.getMonth(),t_date.getMonth()+1),6);
