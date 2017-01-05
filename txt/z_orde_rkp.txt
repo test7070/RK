@@ -400,8 +400,8 @@ z_orde_rkp01:--z_orde_rkp01
 	declare @string nvarchar(max)
 	declare @n int,@m int
 	declare @curcount int
-	declare @pagecount int = 37 -- 一頁全部幾行   要奇數行(HEAD DETAIL 3個)
-	
+	declare @pagecount int = 36 -- 一頁全部幾行  
+		
 	declare @tmp table(
 		sel int identity(1,1),
 		xx int,
@@ -582,7 +582,7 @@ z_orde_rkp01:--z_orde_rkp01
 		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','電&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'話：'
 			,@tel,'經&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'辦：','')
 		insert into @tmp(pno,gno,aa,bb)values(8,'5','傳&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'真：',@fax)
-		insert into @tmp(pno,gno)values(8,'9')
+		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'9','','','','')
 		
 		--假如備註不能印在同一頁,那就換到下一頁印
 		select @n = count(1) from @tmp where pno='1'
