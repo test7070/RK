@@ -572,19 +572,17 @@ z_orde_rkp01:--z_orde_rkp01
 			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'註：' else '' end,@string)
 		end
 		---------------------------------------------------------
-		insert into @tmp(pno,gno)values(2,'4')
-		insert into @tmp(pno,gno)values(2,'4')
-		
-		insert into @tmp(pno,gno,aa,bb,cc,dd)values(2,'5','買&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'方：',@comp
-			,'賣&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'方：','聯琦金屬股份有限公司')
-		insert into @tmp(pno,gno,aa,bb)values(2,'5','統一編號：',@serial)
-		insert into @tmp(pno,gno,aa,bb,cc,dd)values(2,'5','代&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'表&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'人：',@boss
-			,'主&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'管：','')
-		insert into @tmp(pno,gno,aa,bb)values(2,'5','聯&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'絡&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'人：',@conn)
-		insert into @tmp(pno,gno,aa,bb,cc,dd)values(2,'5','電&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'話：'
-			,@tel,'經&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'辦：','')
-		insert into @tmp(pno,gno,aa,bb)values(2,'5','傳&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'真：',@fax)
 
+		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','買&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'方：',@comp
+			,'賣&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'方：','聯琦金屬股份有限公司')
+		insert into @tmp(pno,gno,aa,bb)values(8,'5','統一編號：',@serial)
+		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','代&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'表&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'人：',@boss
+			,'主&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'管：','')
+		insert into @tmp(pno,gno,aa,bb)values(8,'5','聯&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'絡&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'人：',@conn)
+		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','電&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'話：'
+			,@tel,'經&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'辦：','')
+		insert into @tmp(pno,gno,aa,bb)values(8,'5','傳&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'真：',@fax)
+		insert into @tmp(pno,gno)values(8,'9')
 		
 		--假如備註不能印在同一頁,那就換到下一頁印
 		select @n = count(1) from @tmp where pno='1'
@@ -624,7 +622,16 @@ z_orde_rkp01:--z_orde_rkp01
 	
 	select @n = CEILING( MAX(xx)/@pagecount)+1 from @tmp
 	update @tmp set yy=(xx/@pagecount)+1,zz=@n
-
+	
+	---
+	--補空白行
+	select @n = count(1) from @tmp
+	while @n%@pagecount!=0
+	begin
+		insert into @tmp(pno,gno)values(6,'5')
+		set @n=@n+1
+	end
+	
 	select gno,pno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(yy as nvarchar)+' / '+CAST(zz as nvarchar)+'</a>' ppage
 		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo

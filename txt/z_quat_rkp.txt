@@ -496,13 +496,13 @@ z_quat_rkp02:--z_quat_rkp02
 			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'註：' else '' end,@string)
 		end
 		---------------------------------------------------------
-		insert into @tmp(pno,gno)values(4,'5')
-		insert into @tmp(pno,gno)values(4,'5')
-		insert into @tmp(pno,gno)values(4,'5')
-		insert into @tmp(pno,gno,aa)values(4,'6','聯琦金屬股份有限公司')
-		insert into @tmp(pno,gno)values(4,'5')
-		insert into @tmp(pno,gno)values(4,'5')
-		insert into @tmp(pno,gno)values(4,'7')
+		insert into @tmp(pno,gno)values(8,'5')
+		insert into @tmp(pno,gno)values(8,'5')
+		insert into @tmp(pno,gno)values(8,'5')
+		insert into @tmp(pno,gno,aa)values(8,'6','聯琦金屬股份有限公司')
+		insert into @tmp(pno,gno)values(8,'5')
+		insert into @tmp(pno,gno)values(8,'5')
+		insert into @tmp(pno,gno)values(8,'7')
 		---------------------------------------------------------
 		--假如備註不能印在同一頁,那就換到下一頁印
 		select @n = count(1) from @tmp where pno='1'
@@ -541,7 +541,7 @@ z_quat_rkp02:--z_quat_rkp02
 	select @n = count(1) from @tmp
 	while @n%@pagecount!=0
 	begin
-		insert into @tmp(pno,gno)values(1,'5')
+		insert into @tmp(pno,gno)values(6,'5')
 		set @n=@n+1
 	end
 

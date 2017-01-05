@@ -390,12 +390,50 @@ z_vcc_rk01:--z_vcc_rk01
 		,custno nvarchar(20)
 		,cust nvarchar(50)
 		,[weight] float
+		,memo nvarchar(max)
 	)
 	insert into @tmpd(gno,pno,n,bdate,edate,vccno,datea,typea,adpro,custpro,custno,cust,[weight])
 	select '1',1,b.n,b.bdate,b.edate,a.vccno,a.datea,a.typea,a.adpro,a.custpro,a.custno,a.cust,a.[weight]
 	from @tmpc a
 	left join @tmpb b on a.datea between b.bdate and b.edate
+------------------------------ MEMO
+	declare @sel int
+	declare @vccno nvarchar(20)
+	declare @memo nvarchar(max)
+	declare @tmemo nvarchar(max)
 	
+	declare cursor_table cursor for
+	select sel,vccno from @tmpd 
+	open cursor_table
+	fetch next from cursor_table
+	into @sel,@vccno
+	while(@@FETCH_STATUS <> -1)
+	begin 
+		select @tmemo=''
+		
+		declare cursor_table2 cursor for
+		select memo from view_vccs where noa=@vccno order by accy,noa,noq
+		open cursor_table2
+		fetch next from cursor_table2
+		into @memo
+		while(@@FETCH_STATUS <> -1)
+		begin 
+			select @tmemo=@tmemo+isnull(@memo,'')
+			
+			fetch next from cursor_table2
+			into @memo
+		end
+		close cursor_table2
+		deallocate cursor_table2
+		
+		update @tmpd set memo=@tmemo where sel=@sel
+		
+		fetch next from cursor_table
+		into @sel,@vccno
+	end
+	close cursor_table
+	deallocate cursor_table
+-----------------------------------------------	
 	insert into @tmpd(gno,pno,n,[weight])
 	select '3',3,n,SUM(ISNULL([weight],0))
 	from @tmpd 
@@ -448,6 +486,6 @@ z_vcc_rk01:--z_vcc_rk01
 		,custpro a05
 		,cust a06
 		,dbo.getComma([weight],-1) a07
-		,'' a08
+		,memo a08
 	from @tmpd 
 	order by n,pno,sel;
