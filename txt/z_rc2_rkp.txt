@@ -416,7 +416,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 			set @n = @n + 1
 		end
 	end
-	else if @n%@t_pagecount > @t_endcount
+	else if @n%@t_pagecount > @t_pagecount-@t_endcount
 	begin
 		while @n%@t_pagecount!=0
 		begin
