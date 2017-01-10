@@ -55,7 +55,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 		,a.uno,a.productno,a.product,f.style,a.spec,a.class
 		,f.dime,f.radius,f.width,f.lengthb,f.size
 		,'','',a.memo
-		,null,isnull(a.mount,0),isnull(a.[weight],0)
+		,isnull(a.lengthc,0),isnull(a.mount,0),isnull(a.[weight],0)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa 
 	left join cust c on b.custno=c.noa
@@ -72,6 +72,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	order by a.noa,a.noq
 
 	update @tmp set ordeno=c.ordeno,no2=c.no2,ucolor=c.ucolor,rackno=c.rackno
+		,spec=c.spec,style=c.size
 	from @tmp a
 	left join view_inas b on a.uno=b.uno
 	left join view_vccs c on b.noa=c.noa and b.noq=c.noq
@@ -84,7 +85,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '*COIL' end 
 			+case when len(ucolor)>0 then ' '+ucolor else '' end
 			+case when len(rackno)>0 then ' '+rackno else '' end
-	
+
 	--insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
 	--select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
 	--from @tmp

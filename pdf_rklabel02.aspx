@@ -84,14 +84,16 @@
 		insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
 			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
 		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
-			,isnull(h.product,'')+case when len(isnull(h.product,''))>0 and len(isnull(a.size,''))>0 then ' / ' else '' end+a.size
+			,case when j.tablea='inas' then isnull(j.spec,'')+' '+isnull(j.size,'')
+				when j.tablea='rc2s' then j.productno 
+				else isnull(h.product,'')+case when len(isnull(h.product,''))>0 and len(isnull(a.size,''))>0 then ' / ' else '' end+ isnull(a.size,'') end
 			,case when e.noa is not null
 				then 
 				case when e.dime=0 and e.radius=0 and e.width=0 and e.lengthb=0 then ''
 				else CAST(e.dime as nvarchar)+'+'+cast(e.radius as nvarchar)+'*'+CAST(e.width as nvarchar)+'*'+case when e.lengthb=0 then 'COIL' else CAST(e.lengthb as nvarchar) end end
 			else
-				case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
-				else CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end end
+				case  when j.dime=0 and j.radius=0 and j.width=0 and j.lengthb=0 then ''
+				else CAST(j.dime as nvarchar)+'+'+cast(j.radius as nvarchar)+'*'+CAST(j.width as nvarchar)+'*'+case when j.lengthb=0 then 'COIL' else CAST(j.lengthb as nvarchar) end end
 			end
 			,a.uno,'',g.cname
 			,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
@@ -107,6 +109,7 @@
 		outer apply(select top 1 * from view_cuts where bno=e.uno) g
 		left join spec h on h.noa=a.spec
 		left join cust i on i.noa=b.custno
+		left join view_uccb j on a.uno=j.uno
 		where a.noa=@t_noa
 		and (len(@t_noq)=0 or a.noq=@t_noq)
 	end
