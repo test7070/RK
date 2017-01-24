@@ -228,36 +228,36 @@ z_quat_rkp03:--z_quat_rkp03
 	left join view_quat b on a.noa=b.noa 
 	
 	select gno 
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+aa+'</a>' aa
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+bb+'</a>' bb
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cc+'</a>' cc
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dd+'</a>' dd
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+aa+'</a>' aa
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+bb+'</a>' bb
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+cc+'</a>' cc
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dd+'</a>' dd
 		,recno rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'
 			+CAST(dime as nvarchar)
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
 			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end
 			+'</a>' size
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+' '+unit2+'</a>' mount
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+scolor+'</a>' scolor
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+classa+'</a>' classa
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+' '+unit2+'</a>' mount
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
 	from @tmp;
 
 
@@ -546,45 +546,45 @@ z_quat_rkp02:--z_quat_rkp02
 	end
 
 	select gno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">日　　期：'+dbo.AD2ChineseEraName(GETDATE())+'</a>' a05
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">電話號碼：'+tel+'</a>' a06
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">日　　期：'+dbo.AD2ChineseEraName(GETDATE())+'</a>' a05
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">電話號碼：'+tel+'</a>' a06
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(aa,"~#$","'")+'</a>' aa
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(bb,"~#$","'")+'</a>' bb
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(cc,"~#$","'")+'</a>' cc
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(aa,"~#$","'")+'</a>' aa
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(bb,"~#$","'")+'</a>' bb
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(cc,"~#$","'")+'</a>' cc
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
 		,recno rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+left(product,8)+'</a>' pp --品名要保留8個中文字的空間，若再加長可不顯示
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+left(product,8)+'</a>' pp --品名要保留8個中文字的空間，若再加長可不顯示
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'
 			+case when dime=0 and width=0 and lengthb=0 then''
 			else CAST(dime as nvarchar)
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
 			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
 			+'</a>' size
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' cspec
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' pvc
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' pveno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' pve
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+coin+'</a>' coin
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+'</a>' mount
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,-1)+'/'+unit+'</a>' price
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit2+'</a>' unit2
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' memo
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' cspec
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' pvc
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' pveno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' pve
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+coin+'</a>' coin
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or upper(unit2)='M' then weight else  mount end,-1)+'</a>' mount
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,-1)+'/'+unit+'</a>' price
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit2+'</a>' unit2
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' memo
 	from @tmp order by pno,sel;
 
 z_quat_rkp01:--z_quat_rkp01
@@ -886,42 +886,42 @@ z_quat_rkp01:--z_quat_rkp01
 	end
 	
 	select gno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+convert(nvarchar,getdate(),111)+'</a>' a05
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+tel+'</a>' a06
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+convert(nvarchar,getdate(),111)+'</a>' a05
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+tel+'</a>' a06
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC02'+CHAR(38)+'db='+@t_db+'"/>' logo
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(aa,"~#$","'")+'</a>' aa
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(bb,"~#$","'")+'</a>' bb
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(cc,"~#$","'")+'</a>' cc
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(aa,"~#$","'")+'</a>' aa
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(bb,"~#$","'")+'</a>' bb
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(cc,"~#$","'")+'</a>' cc
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
 		,recno rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'
 			+case when dime=0 and width=0 and lengthb=0 then''
 			else CAST(dime as nvarchar)
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
 			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
 			+'</a>' size
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' cspec
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' pvc
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' pveno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' pve
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+coin+'</a>' coin
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+'</a>' mount
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,-1)+'/'+unit+'</a>' price
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+unit2+'</a>' unit2
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' cspec
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' pvc
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' pveno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' pve
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+coin+'</a>' coin
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+'</a>' mount
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,-1)+'/'+unit+'</a>' price
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit2+'</a>' unit2
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
 	from @tmp a order by a.pno,a.sel;
