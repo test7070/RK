@@ -116,7 +116,7 @@
 					<td align="center" style="width:5%;">背面<br>處理</td>
 					<td align="center" style="width:5%;">保護膜(一)</td>
 					<td align="center" style="width:5%;">保護膜(二)</td>
-					<td align="center" style="width:5%;">數量<BR>重量</td>
+					<td align="center" style="width:5%;">數量<BR>重量/M</td>
 					<td align="center" style="width:8%;">備註</td>
 					<td align="center" style="width:5%;">已訂數量<BR>已訂重量</td>
 					<td align="center" style="width:5%;">未訂數量<BR>未訂重量</td>

@@ -691,7 +691,7 @@
 					<td style="width:100px;">保護膜(一)<br>編號<BR>名稱</td>
 					<td style="width:100px;">保護膜(二)<br>編號<BR>名稱</td>
 					<td style="width:80px;">數量</td>
-					<td style="width:80px;">重量</td>
+					<td style="width:80px;">重量/M</td>
 					<td style="width:60px;">計量<BR>單位</td>
 					<td style="width:80px;">單價</td>
 					<td style="width:60px;">計價<BR>單位</td>
