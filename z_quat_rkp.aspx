@@ -31,8 +31,39 @@
 						name : 'db',
 						value : q_db
 					},{
-						type : '6', //[3]
+						type : '6', //[3]      1
 						name : 'noa'
+					}, {
+						type : '1', //[4][5]   2
+						name : 'xdate'
+					}, {
+						type : '2', //[6][7]   3
+						name : 'xcust',
+						dbf : 'cust',
+						index : 'noa,comp',
+						src : 'cust_b.aspx'
+					}, {
+						type : '2', //[8][9]    4
+						name : 'xproduct',
+						dbf : 'ucc',
+						index : 'noa,product',
+						src : 'ucc_b.aspx'
+					}, {
+						type : '1', //[10][11]  5
+						name : 'xdime'
+					}, {
+						type : '1', //[12][13]  6
+						name : 'xradius'
+					}, {
+						type : '1', //[14][15]  7
+						name : 'xwidth'
+					}, {
+						type : '1', //[16][17]  8
+						name : 'xlengthb'
+					}, {
+						type : '5', //[18]  9
+						name : 'xcancel',
+						value : [q_getPara('report.all')].concat(new Array('1@Y', '0@N'))
 					}]
 				});
 				q_popAssign();
@@ -46,6 +77,11 @@
 	            }else{
 	            	$('#txtNoa').val(t_para.noa);
 	            }
+	            
+	            $('#txtXdate1').mask('999/99/99');
+				$('#txtXdate1').datepicker();
+				$('#txtXdate2').mask('999/99/99');
+				$('#txtXdate2').datepicker();
             }
 
 			function q_funcPost(t_func, result) {

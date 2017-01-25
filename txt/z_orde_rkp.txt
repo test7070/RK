@@ -407,10 +407,11 @@ z_orde_rkp01:--z_orde_rkp01
 		xx int,
 		yy int,
 		zz int,
-		
+
 		pno int,
 		gno nvarchar(10),
 		noa nvarchar(20),
+		datea nvarchar(20),
 		aa nvarchar(max),
 		bb nvarchar(max),
 		cc nvarchar(max),
@@ -536,8 +537,8 @@ z_orde_rkp01:--z_orde_rkp01
 		--備註
 		---------------------------------------------------------
 		insert into @tmp(pno,gno)values(2,'4')
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'交&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'貨&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'期：',@odate)
-		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'付款方式：',@paytype+@memo2)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'交貨日期：',@odate)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'付款方式：',@paytype+ case when len(isnull(@memo2,''))>0 then '('+@memo2+')' else '' end)
 		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'包裝方式：',@packtype)
 
 		set @string = 
@@ -563,25 +564,25 @@ z_orde_rkp01:--z_orde_rkp01
 		while CHARINDEX('chr(10)',@string)>0
 		begin
 			set @memo = LEFT(@string,CHARINDEX('chr(10)',@string)-1)
-			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'註：' else '' end,@memo)
+			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備　　註：' else '' end,@memo)
 			set @string = SUBSTRING(@string,len(@memo)+8,len(@string))
 			set @n = @n +1
 		end
 		if(len(@string)>0)
 		begin
-			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'註：' else '' end,@string)
+			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then '備　　註：' else '' end,@string)
 		end
 		---------------------------------------------------------
 
-		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','買&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'方：',@comp
-			,'賣&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'方：','聯琦金屬股份有限公司')
+		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','　買　方：',@comp
+			,'賣　方：','聯琦金屬股份有限公司')
 		insert into @tmp(pno,gno,aa,bb)values(8,'5','統一編號：',@serial)
-		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','代&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'表&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'人：',@boss
-			,'主&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'管：','')
-		insert into @tmp(pno,gno,aa,bb)values(8,'5','聯&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'絡&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'人：',@conn)
-		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','電&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'話：'
-			,@tel,'經&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'辦：','')
-		insert into @tmp(pno,gno,aa,bb)values(8,'5','傳&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)+'真：',@fax)
+		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','　代表人：',@boss
+			,'主　管：','')
+		insert into @tmp(pno,gno,aa,bb)values(8,'5','　聯絡人：',@conn)
+		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'5','　電　話：'
+			,@tel,'經　辦：','')
+		insert into @tmp(pno,gno,aa,bb)values(8,'5','　傳　真：',@fax)
 		insert into @tmp(pno,gno,aa,bb,cc,dd)values(8,'9','','','','')
 		
 		--假如備註不能印在同一頁,那就換到下一頁印
@@ -632,39 +633,42 @@ z_orde_rkp01:--z_orde_rkp01
 		set @n=@n+1
 	end
 	
+	update @tmp set datea=b.datea
+	from @tmp a
+	left join view_orde b on b.noa=@t_noa
+	
 	select gno,pno
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+CAST(yy as nvarchar)+' / '+CAST(zz as nvarchar)+'</a>' ppage
+		,CAST(yy as nvarchar)+' / '+CAST(zz as nvarchar) ppage
 		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+@t_noa+'</a>' xxxx
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+aa+'</a>' aa
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+bb+'</a>' bb
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+cc+'</a>' cc
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dd+'</a>' dd
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+tfax+'</a>' tfax
+		,@t_noa xxxx
+		,'日期：'+isnull(datea,'') yyyy
+		,aa aa
+		,bb bb
+		,cc cc
+		,dd dd
+		,tfax tfax
 		,recno rr
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pno
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+left(product,8)+'</a>' pp --品名要保留8個中文字的空間，若再加長可不顯示
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>'cspec
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'
-			+CAST(dime as nvarchar)
+		,productno pno
+		,left(product,8) pp --品名要保留8個中文字的空間，若再加長可不顯示
+		,cspec cspec
+		,CAST(dime as nvarchar)
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
-			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end
-			+'</a>' size
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end size
+		,spec spec
 		
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' pvc
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' pveno
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' pve
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pveno2+'</a>' pveno2
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pve2+'</a>' pve2
+		,pvcno pvcno
+		,pvc pvc
+		,pveno pveno
+		,pve pve
+		,pveno2 pveno2
+		,pve2 pve2
 		
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or UPPER(unit2)='M' then weight else  mount end,-1)+' '+unit2+'</a>' mount
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit+'</a>' price
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
-		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+		,ucolor ucolor
+		,dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or UPPER(unit2)='M' then weight else  mount end,-1)+' '+unit2 mount
+		,case when len(coin)>0 then coin+' ' else '' end+dbo.getComma(price,-1)+'/'+unit price
+		,unit unit
+		,po po
+		,pn pn
+		,@reportno  reportno
 	from @tmp order by pno,sel;
