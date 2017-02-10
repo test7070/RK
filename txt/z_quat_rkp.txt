@@ -143,7 +143,7 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @tel nvarchar(20)
 	declare @fax nvarchar(20)
 	declare @odate nvarchar(20)
-	declare @paytype nvarchar(20)
+	declare @paytype nvarchar(max)
 	declare @memo2 nvarchar(max)
 	declare @packtype nvarchar(20)
 	declare @chka1 bit
