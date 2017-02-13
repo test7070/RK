@@ -396,6 +396,10 @@ z_ucc_rk01:--z_ucc_rk01
 	
 	create table #z_ucc_rk01(
 		sel int identity(1,1)
+		,tablea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
 		,pno int
 		,gno nvarchar(10)
 		,kind nvarchar(20)
@@ -427,10 +431,12 @@ z_ucc_rk01:--z_ucc_rk01
 		,store nvarchar(20)
 		,place nvarchar(20)
 	)
-	insert into #z_ucc_rk01(pno,gno,kind,ckind,datea,uno,productno,product 
+	insert into #z_ucc_rk01(tablea,accy,noa,noq
+	,pno,gno,kind,ckind,datea,uno,productno,product 
 	,spec,cspec,size,dime,width,lengthb,radius 
 	,mount,[weight],price,uno2,storeno,store,place) 
-	select 1,'1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
+	select b.tablea,b.accy,b.noa,b.noq 
+	,1,'1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
 	,b.spec,d.product,isnull(b.size,''),b.dime,b.width,b.lengthb,b.radius 
 	,a.emount,a.[eweight],b.sprice,b.uno2
 	,b.storeno,e.store,b.place
@@ -466,6 +472,15 @@ z_ucc_rk01:--z_ucc_rk01
 	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
 	left join view_orde c on b.accy=c.accy and b.noa=c.noa
 	where b.noa is not null
+	
+	--由E9入庫客供品庫存表(E14)無客戶資料(帶E9表頭廠商欄位)
+	update #z_ucc_rk01 set custno=b.tggno,cust=c.nick
+	from #z_ucc_rk01 a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join cust c on b.tggno=c.noa
+	where a.tablea='inas'
+	and len(ISNULL(a.custno,''))=0
+
 	
 	if len(@t_cust)>0
 	begin
