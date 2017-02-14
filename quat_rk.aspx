@@ -114,7 +114,7 @@
                 	case 'txtCustno':
                 	
 						if ($('#txtCustno').val().length>0) {
-							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^ stop=100";
 							q_gt('custaddr', t_where, 0, 0, 0, "");
 						}else{
 							document.all.combAddr.options.length = 0;
@@ -278,7 +278,7 @@
                     return;
                 _btnModi();
                 if ($('#txtCustno').val().length>0) {
-					var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+					var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^ stop=100";
 					q_gt('custaddr', t_where, 0, 0, 0, "");
 				}else{
 					document.all.combAddr.options.length = 0;
