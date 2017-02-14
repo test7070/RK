@@ -1034,6 +1034,7 @@ z_cub_rk01:--z_cub_rk01
 	SET QUOTED_IDENTIFIER OFF
 	declare @t_mon nvarchar(max) = case when '#non' = [1] then '' else [1] end
 	-------------------------------------------------------------------------------------------------
+	-------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -1410,6 +1411,22 @@ z_cub_rk01:--z_cub_rk01
 	--原鋼材損耗率%
 	update @tmp set x07 = case when ISNULL(x01,0)=0 then 0 else round(x06*100/x01,2) end where recno2=1
 	-------------------------------------------------------------------
+	--2017/02/14  補齊資料  EXCEL  過濾用
+	update @tmp set productno3= case when len(ISNULL(a.productno3,''))=0 then b.productno3 else a.productno3 end
+		,product3= case when len(ISNULL(a.product3,''))=0 then b.product3 else a.product3 end
+		,size3= case when len(ISNULL(a.size3,''))=0 then b.size3 else a.size3 end
+		,productno2= case when len(ISNULL(a.productno2,''))=0 then b.productno2 else a.productno2 end
+		,product2= case when len(ISNULL(a.product2,''))=0 then b.product2 else a.product2 end
+		,size2= case when len(ISNULL(a.size2,''))=0 then b.size2 else a.size2 end
+		,uno= case when len(ISNULL(a.uno,''))=0 then b.uno else a.uno end
+		,spec= case when len(ISNULL(a.spec,''))=0 then b.spec else a.spec end
+		,dime= case when ISNULL(a.dime,0)=0 then b.dime else a.dime end
+		,width= case when ISNULL(a.width,0)=0 then b.width else a.width end
+		,size= case when len(ISNULL(a.size,''))=0 then b.size else a.size end
+	from @tmp a
+	outer apply(select * from @tmp where recno2=1 and accy=a.accy and noa=a.noa and noq=a.noq) b
+	
+	
 	select a.gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when b.recno=1 and len(a.datea)>0 then a.datea else '' end+'</a>' dd
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(a.recno as nvarchar) +'</a>' rr
