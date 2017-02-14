@@ -190,11 +190,11 @@
                 	var t_where ='';
                 	q_box("quat_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({ordeno:t_noa,custno:t_custno,page:'orde_rk'}), "quat_orde", "95%", "95%", '');
                 });
-                var t_where = "where=^^ 1=1 ^^";
+                var t_where = "where=^^ 1=0 ^^ stop=100";
 				q_gt('custaddr', t_where, 0, 0, 0, "");
 				$('#txtCustno').change(function() {
 					if (!emp($('#txtCustno').val())) {
-						var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+						var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^ stop=100";
 						q_gt('custaddr', t_where, 0, 0, 0, "");
 					}
 				});
@@ -214,7 +214,7 @@
                 switch(s1) {
                 	case 'txtCustno':
 						if (!emp($('#txtCustno').val())) {
-							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+							var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^ stop=100";
 							q_gt('custaddr', t_where, 0, 0, 0, "");
 						}
 						break;
@@ -423,7 +423,7 @@
                 if(!$('#chekQcopy').prop('checked'))
                 	$('#txtMemo').val(t_memo);
                 q_gt('acomp', '', 0, 0, 0, 'getAcomp', r_accy);
-				var t_where = "where=^^ 1=1 ^^";
+				var t_where = "where=^^ 1=0 ^^ stop=100";
 				q_gt('custaddr', t_where, 0, 0, 0, "");
             }
 

@@ -185,7 +185,7 @@
 					}else{
 						if($.trim($("#txtCustno").val())!=$(this).data('curCustno')){
 							$(this).data('curCustno',$.trim($("#txtCustno").val()));
-							var t_where = "where=^^ noa='"+$(this).data('curCustno')+"' ^^";
+							var t_where = "where=^^ noa='"+$(this).data('curCustno')+"' ^^ stop=100";
 							q_gt('custaddr', t_where, 0, 0, 0, "");	
 						}else if(document.all.combAddr.options.length>1){
 							$('#txtAddr2').val($('#combAddr').find("option:selected").text());
@@ -301,7 +301,7 @@
 
 				$('#txtCustno').change(function() {
 					if (!emp($('#txtCustno').val())) {
-						var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^";
+						var t_where = "where=^^ noa='" + $('#txtCustno').val() + "' ^^ stop=100";
 						q_gt('custaddr', t_where, 0, 0, 0, "");
 					}
 				});
