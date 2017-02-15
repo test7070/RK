@@ -23,10 +23,7 @@
 				$('#q_report').q_report({
 					fileName : 'z_cub_rk',
 					options : [{							
-						type : '6', //[1]
-						name : 'xmon'
-					},{							
-						type : '6', //[2]
+						type : '1', //[1][2]
 						name : 'xdate'
 					},{							
 						type : '6', //[3]
@@ -34,37 +31,36 @@
 					},{							
 						type : '6', //[4]
 						name : 'xspec'
-					},{							
-						type : '1', //[5,6]
-						name : 'xdime'
-					},{							
-						type : '1', //[7,8]
-						name : 'xwidth'
-					}
-					]
+					}]
 				});
 				q_langShow();
 				q_popAssign();
-				$('#txtXmon').mask('999/99');
-				$('#txtXdate').mask('999/99/99');
-				$('#txtXdate').datepicker();
+				$('#txtXdate1').mask('999/99/99');
+				$('#txtXdate1').datepicker();
+				$('#txtXdate2').mask('999/99/99');
+				$('#txtXdate2').datepicker();
 				
-				$('#txtXdime1').val(0);
-				$('#txtXdime2').val(99999);
-				$('#txtXwidth1').val(0);
-				$('#txtXwidth2').val(99999);
-				
-				var t_date, t_year, t_month, t_day;
+				var t_date,t_year,t_month,t_day;
 				t_date = new Date();
 				t_date.setDate(1);
-				t_year = t_date.getUTCFullYear() - 1911;
-				t_year = t_year > 99 ? t_year + '' : '0' + t_year;
-				t_month = t_date.getUTCMonth() + 1;
-				t_month = t_month > 9 ? t_month + '' : '0' + t_month;
+				t_year = t_date.getUTCFullYear()-1911;
+				t_year = t_year>99?t_year+'':'0'+t_year;
+				t_month = t_date.getUTCMonth()+1;
+				t_month = t_month>9?t_month+'':'0'+t_month;
 				t_day = t_date.getUTCDate();
-				t_day = t_day > 9 ? t_day + '' : '0' + t_day;
-				$('#txtXmon').val(t_year + '/' + t_month);
-				$('#txtXdate').val(q_date());
+				t_day = t_day>9?t_day+'':'0'+t_day;
+				$('#txtXdate1').val(t_year+'/'+t_month+'/'+t_day);
+				
+				t_date = new Date();
+				t_date.setDate(35);
+				t_date.setDate(0);
+				t_year = t_date.getUTCFullYear()-1911;
+				t_year = t_year>99?t_year+'':'0'+t_year;
+				t_month = t_date.getUTCMonth()+1;
+				t_month = t_month>9?t_month+'':'0'+t_month;
+				t_day = t_date.getUTCDate();
+				t_day = t_day>9?t_day+'':'0'+t_day;
+				$('#txtXdate2').val(t_year+'/'+t_month+'/'+t_day);
 					
 				q_getFormat();
 		
