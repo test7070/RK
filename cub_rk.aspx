@@ -19,7 +19,7 @@
 			var toIns = true;
 			var q_name = "cub";
 			var q_readonly = ['txtNoa','txtWorker','txtWorker2'];
-			var q_readonlys = ['txtNoq','txtMakeno','txtSize','txtDime','txtWidth','txtProductno','txtProduct'];
+			var q_readonlys = ['txtNoq','txtMakeno','txtSize','txtDime','txtWidth','txtProductno','txtProduct','txtPrice'];
 			var q_readonlyt = ['txtNoq','txtProductno','txtProduct'];
 			var bbmNum = [];
 			var bbsNum = [];
@@ -1034,7 +1034,7 @@
 						</td>
 						
 						<td title="廢料重量(KG)">
-							<input id="txtPrice.*" type="text" class="num" style="float:left;width:95%;"/>
+							<input id="txtPrice.*" type="text" class="num" style="float:left;width:95%;" title="由損耗月報表產生"/>
 						</td>
 						<td title="包裝數量/LOT">
 							<input id="txtMount.*" type="text" class="num" style="float:left;width:95%;"/>
