@@ -251,6 +251,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	declare @t_db nvarchar(max) = '[2]'
 	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	------------------------------------------------------------------------------------------------
+	------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
 		recno int,
@@ -290,7 +291,6 @@ z_vcc_rkp01:--z_vcc_rkp01
 		po nvarchar(max),
 		pn nvarchar(max)
 	)
-
 	insert into @tmp(pno,gno,accy,noa,noq,datea
 		,custno,comp,nick,tel,fax,conn
 		,ordeno,no2,productno,product,style,spec,class
@@ -299,7 +299,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,lengthc,mount,[weight])	
 	select '1','1',accy,noa,'',datea,custno,comp,nick,tel,fax,conn,ordeno,no2
 		,productno,product,style,spec,class,dime,radius,width,lengthb,size
-		,checker,'' itemno,memo,ordememo,lengthc,sum(isnull(mount,0)),sum(isnull([weight],0))
+		,checker,'' itemno,memo,ordememo,sum(isnull(lengthc,0)),sum(isnull(mount,0)),sum(isnull([weight],0))
 	from(
 	select a.accy,a.noa,b.datea
 		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
@@ -323,7 +323,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,a.checker,a.itemno,a.memo,c.memo) a
 	group by accy,noa,datea,custno,comp,nick,tel,fax,conn,ordeno,no2
 		,productno,product,style,spec,class,dime,radius,width,lengthb,size
-		,checker,memo,ordememo,lengthc,mount,[weight]
+		,checker,memo,ordememo,mount,[weight]
 	
 	update @tmp set po=LEFT(ordememo,CHARINDEX('chr(10)',ordememo)-1) where CHARINDEX('chr(10)',ordememo)>0
 	update @tmp set pn=right(ordememo,len(ordememo)-len(isnull(po,''))-7 ) where CHARINDEX('chr(10)',ordememo)>0
@@ -339,11 +339,11 @@ z_vcc_rkp01:--z_vcc_rkp01
 			+case when ISNULL(width,0)!=0 then '*'+cast(width as nvarchar) else '' end
 			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '*COIL' end 
 	
-	insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
-	select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
+	insert into @tmp(pno,gno,ordeno,lengthc,mount,[weight])
+	select '2','2',ordeno+CHAR(255),SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
 	from @tmp
 	where gno='1'
-	group by productno,spec,size
+	group by ordeno
 	
 	insert into @tmp(pno,gno,lengthc,mount,[weight])
 	select '3','3',SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
@@ -389,7 +389,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	update @tmp set recno=b.recno,noa=@noa,custno=@custno,comp=@comp,nick=@nick
 		,datea=@datea,tel=@tel,addr=@addr,conn=@conn,fax=@fax 
 	from @tmp a
-	left join (select ROW_NUMBER()over(order by case pno when '3' then 1 when '4' then 2 else 0 end,productno,spec,size,pno)recno,sel from @tmp) b on a.sel=b.sel
+	left join (select ROW_NUMBER()over(order by case pno when '3' then 1 when '4' then 2 else 0 end,ordeno,productno,spec,size,pno)recno,sel from @tmp) b on a.sel=b.sel
 	----------------------------------------------------------------------------------
 	declare @reportno nvarchar(max) = '表單編號：LC-16-00-08-02'
 	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
