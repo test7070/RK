@@ -6,6 +6,7 @@ z_cub_rk02:--z_cub_rk02
 	declare @t_pvcno nvarchar(max) = case when '#non' = [4] then '' else [4] end
 	declare @t_bcustno nvarchar(max) = case when '#non' = [5] then '' else [5] end
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
+	declare @t_chk nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	----------------------------------------------------------------------------------------------
 	----------------------------------------------------------------------------------------------------------
 	-------------------------------------------------------------------------------------------------
@@ -19,6 +20,7 @@ z_cub_rk02:--z_cub_rk02
 		,ordeaccy nvarchar(10)
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(10)
+		,datea nvarchar(20)
 		,typea nvarchar(20)
 		,custno nvarchar(20)
 		,cust nvarchar(50)
@@ -75,14 +77,14 @@ z_cub_rk02:--z_cub_rk02
 		,w24 float--完工總損耗率 w16+w17+w18+w19
 		,memo nvarchar(max)
 	)
-	insert into @tmpa(gno,accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount)
-	select '1',a.accy,a.noa,a.noq,a.makeno,a.accy,a.ordeno,a.no2,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
+	insert into @tmpa(gno,accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount)
+	select '1',a.accy,a.noa,a.noq,a.makeno,a.accy,a.ordeno,a.no2,b.datea,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
 	where b.noa is not null 
-	and b.datea between @t_bdate and @t_edate
-	
+	--and b.datea between @t_bdate and @t_edate
+	and b.datea <=@t_edate
 	-------------------------------------------------------------------------------
 	declare @sel int
 	declare @accy nvarchar(10)
@@ -189,10 +191,14 @@ z_cub_rk02:--z_cub_rk02
 		update @tmpb set xweight = round(@weight*[weight]/@totweight,0)
 		--尾差修正
 		select @diffweight = SUM(ISNULL([xweight],0)) from @tmpb
-		set @diffweight = @totweight - @diffweight
+
+		set @diffweight = @weight - @diffweight
 		if @diffweight!=0
 		begin
-			update @tmpb set xweight = xweight - @diffweight where sel = 1
+			update @tmpb set xweight = xweight + @diffweight 
+			from @tmpb a
+			left join (select sel,ROW_NUMBER()over(order by sel) rr from @tmpb) b on a.sel=b.sel
+			where b.rr=1 and b.sel is not null
 		end
 		
 		if @groupano='A01'
@@ -237,7 +243,7 @@ z_cub_rk02:--z_cub_rk02
 	close cursor_table
 	deallocate cursor_table
 	-------------------------------------------------------------------------
-	--條件過濾
+	--條件過濾1
 	if(len(@t_makeno)>0)
 		delete @tmpa where CHARINDEX(@t_makeno,makeno)=0
 	if(len(@t_pvcno)>0)	
@@ -309,6 +315,12 @@ z_cub_rk02:--z_cub_rk02
 	update @tmpa set w22=ISNULL(w08,0)+ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)
 		,w23 = ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0)
 		,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
+	-------------------------------------------------------------------------
+	--條件過濾2
+	if(LEN(@t_chk)=0)
+		delete @tmpa where datea<@t_bdate
+	else
+		delete @tmpa where datea<@t_bdate and w23=0
 	-------------------------------------------------------------------------------------------------------
 	insert into @tmpa(gno,w01,w02,w03,w04,w05,w06
 		,w08,w09,w10,w11,w12
@@ -358,6 +370,8 @@ z_cub_rk02:--z_cub_rk02
 	left join adpro b on a.typea=b.noa
 	outer apply(select top 1 * from view_cuts where cname=a.makeno) c
 	order by a.gno,a.accy,a.noa,a.noq;
+
+
 
 
 z_cub_rk01:--z_cub_rk01

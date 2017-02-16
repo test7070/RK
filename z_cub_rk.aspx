@@ -37,7 +37,11 @@
                         dbf : 'cust',
                         index : 'noa,comp',
                         src : 'cust_b.aspx'
-                    }]
+                    }, {
+						type : '8', //[7]
+						name : 'xchk',
+						value : ['all@前期庫存']
+					}]
 				});
 				q_langShow();
 				q_popAssign();
