@@ -4,6 +4,8 @@ z_cub_rk02:--z_cub_rk02
 	declare @t_edate nvarchar(max) = case when '#non' = [2] then char(255) else [2] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	declare @t_pvcno nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	declare @t_bcustno nvarchar(max) = case when '#non' = [5] then '' else [5] end
+	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	----------------------------------------------------------------------------------------------
 	----------------------------------------------------------------------------------------------------------
 	-------------------------------------------------------------------------------------------------
@@ -236,8 +238,11 @@ z_cub_rk02:--z_cub_rk02
 	deallocate cursor_table
 	-------------------------------------------------------------------------
 	--條件過濾
-	delete @tmpa where not(len(@t_makeno)=0 or CHARINDEX(@t_makeno,makeno)>0)
-	delete @tmpa where not(len(@t_pvcno)=0 or isnull(pvcno,'')=@t_pvcno)
+	if(len(@t_makeno)>0)
+		delete @tmpa where CHARINDEX(@t_makeno,makeno)=0
+	if(len(@t_pvcno)>0)	
+		delete @tmpa where isnull(pvcno,'')!=@t_pvcno
+	delete @tmpa where not(isnull(custno,'') between @t_bcustno and @t_ecustno)
 	-------------------------------------------------------------------------
 	--w01 總投入重量
 	update @tmpa set w01 = ISNULL([weight],0) + ISNULL([pvcweight],0) + ISNULL([pveweight],0) + ISNULL([x01],0) + ISNULL([x02],0) + ISNULL([x03],0) + ISNULL([x04],0) + ISNULL([x05],0)
@@ -361,6 +366,8 @@ z_cub_rk01:--z_cub_rk01
 	declare @t_edate nvarchar(max) = case when '#non' = [2] then char(255) else [2] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	declare @t_pvcno nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	declare @t_bcustno nvarchar(max) = case when '#non' = [5] then '' else [5] end
+	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	-------------------------------------------------------------------------------------------------
 	-------------------------------------------------------------------------------------------------
 	declare @tmp table(
@@ -675,8 +682,12 @@ z_cub_rk01:--z_cub_rk01
 	deallocate cursor_table
 	------------------------------------------------------------------------
 	--條件過濾
-	delete @tmp where not(len(@t_makeno)=0 or CHARINDEX(@t_makeno,makeno)>0)
-	delete @tmp where not(len(@t_pvcno)=0 or isnull(productno2,'')=@t_pvcno)
+	if(len(@t_makeno)>0)
+		delete @tmp where CHARINDEX(@t_makeno,makeno)=0
+	if(len(@t_pvcno)>0)	
+		delete @tmp where isnull(productno2,'')!=@t_pvcno
+		
+	delete @tmp where not(isnull(custno,'') between @t_bcustno and @t_ecustno)
 	------------------------------------------------------------------------
 	declare cursor_table cursor for
 	select accy,noa,noq,count(1) from @tmp group by accy,noa,noq

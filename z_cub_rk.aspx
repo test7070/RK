@@ -31,7 +31,13 @@
 					},{							
 						type : '6', //[4]
 						name : 'xspec'
-					}]
+					}, {
+                        type : '2',  //[5][6]
+                        name : 'xcust',
+                        dbf : 'cust',
+                        index : 'noa,comp',
+                        src : 'cust_b.aspx'
+                    }]
 				});
 				q_langShow();
 				q_popAssign();
