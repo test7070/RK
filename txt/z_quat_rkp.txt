@@ -57,7 +57,7 @@ z_quat_rkp03:--z_quat_rkp03  ref. z_orde_rk01
 	)
 	insert into @tmp(gno,accy,noa,no2,datea,odate,productno,product,dime,radius,width,lengthb,scolor,[class]
 		,ucolor,zinc,[source],spec,unit,price,mount,[weight],total,memo,enda,cancel,custno,cust,coin,floata)
-	select '1',a.accy,a.noa,a.no2,b.datea,b.odate,a.productno,a.product,a.dime,a.radius,a.width,a.lengthb,a.scolor,a.[class]
+	select '1',a.accy,a.noa,a.no3,b.datea,b.odate,a.productno,a.product,a.dime,a.radius,a.width,a.lengthb,a.scolor,a.[class]
 		,a.ucolor,a.zinc,a.[source],a.spec,a.unit,a.price,a.mount,a.[weight],a.total,a.memo
 		,case when ISNULL(a.enda,0)=0 and ISNULL(b.enda,0)=0 then 0 else 1 end
 		,case when ISNULL(a.cancel,0)=0 and ISNULL(b.cancel,0)=0 then 0 else 1 end 
@@ -76,6 +76,8 @@ z_quat_rkp03:--z_quat_rkp03  ref. z_orde_rk01
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
 	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
 	order by a.noa,a.no2
+	
+	update @tmp set total = case when len(unit)=0 or unit='KG' or unit='M2' or unit = N'M²' or unit = 'M' or unit = '批' or unit = '公斤' or unit='噸' or unit='頓' then round(ISNULL([weight],0)*ISNULL(price,0),2) else round(ISNULL([mount],0)*ISNULL(price,0),2) end
 	
 	update @tmp set cspec=ISNULL(b.product,'')
 	from @tmp a
