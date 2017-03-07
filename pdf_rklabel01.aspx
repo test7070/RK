@@ -10,7 +10,7 @@
         public class Para
         {
             public string accy,noa,noq;
-            public string type,productno,product,size,date,comp,uno,shelflife,unit;
+            public string type,productno,product,size,date,comp,uno,shelflife,unit,memo;
             public float mount, hard;
         }
         
@@ -79,14 +79,15 @@
 		,hard float
 		,uno nvarchar(30)
 		,shelflife nvarchar(20)
+		,memo nvarchar(max)
 	)
 	
 	insert into @tmp(accy,noa,noq,typea,productno,product,size,mount,unit,datea,tggno,tgg,hard,uno,shelflife
-		,dime,width,lengthb,specno,spec)
+		,dime,width,lengthb,specno,spec,memo)
 	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size
 		,case when a.unit='KG' or a.unit='M' then a.[weight] else a.mount end,a.unit
 		,b.datea,b.tggno,b.nick,a.hard,a.uno,a.errmemo
-		,a.dime,a.width,a.lengthb,a.spec,e.product
+		,a.dime,a.width,a.lengthb,a.spec,e.product,a.memo
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on a.productno=c.noa
@@ -105,7 +106,7 @@
 	left join spec b on a.specno=b.noa
 	where len(isnull(a.size,''))=0 and (a.dime=0 and a.width=0)
 	
-	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife
+	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife,memo
 	 from @tmp order by sel;";
                 System.Data.SqlClient.SqlCommand cmd = new System.Data.SqlClient.SqlCommand(queryString, connSource);
                 cmd.Parameters.AddWithValue("@t_noa", item.noa);
@@ -133,7 +134,7 @@
                 pa.hard = System.DBNull.Value.Equals(r.ItemArray[11]) ? 0 : (float)(System.Double)r.ItemArray[11];
                 pa.uno = System.DBNull.Value.Equals(r.ItemArray[12]) ? "" : (System.String)r.ItemArray[12];
                 pa.shelflife = System.DBNull.Value.Equals(r.ItemArray[13]) ? "" : (System.String)r.ItemArray[13];
-
+				pa.memo = System.DBNull.Value.Equals(r.ItemArray[14]) ? "" : (System.String)r.ItemArray[14];
                 rc2Label.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -226,6 +227,7 @@
                      cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)rc2Label[i]).shelflife, 360, 88, 0);
 
                      cb.SetFontAndSize(bfChinese, 10);
+                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)rc2Label[i]).memo, 100, 18, 0);
                      cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_RIGHT, "表單編號：LC-14-00-02-01", 407, 18, 0);
 
                     
