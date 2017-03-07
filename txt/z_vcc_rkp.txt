@@ -251,6 +251,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	declare @t_db nvarchar(max) = '[2]'
 	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	------------------------------------------------------------------------------------------------
+	------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
 		recno int,
@@ -319,12 +320,10 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,b.custno,b.comp,b.nick,b.tel,b.fax,e.conn
 		,a.ordeno,a.no2,a.productno,a.product,a.style,a.spec,a.class
 		,a.dime,a.radius,a.width,a.lengthb,a.size
-		,a.checker,a.itemno,a.memo,c.memo) a
+		,a.checker,a.itemno,a.memo,c.memo,CAST(isnull(a.[weight],0) as nvarchar)) a
 	group by accy,noa,datea,custno,comp,nick,tel,fax,conn,ordeno,no2
 		,productno,product,style,spec,class,dime,radius,width,lengthb,size
 		,checker,memo,ordememo,mount,[weight]
-
-
 	
 	update @tmp set po=LEFT(ordememo,CHARINDEX('chr(10)',ordememo)-1) where CHARINDEX('chr(10)',ordememo)>0
 	update @tmp set pn=right(ordememo,len(ordememo)-len(isnull(po,''))-7 ) where CHARINDEX('chr(10)',ordememo)>0
