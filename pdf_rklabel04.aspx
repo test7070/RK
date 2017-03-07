@@ -100,6 +100,11 @@
 	--where len(isnull(size,''))=0 and not(dime=0 and width=0)
 	where not(dime=0 and width=0)
 	
+	update @tmp set size=isnull(b.product,'')
+	from @tmp a
+	left join spec b on a.specno=b.noa
+	where len(isnull(a.size,''))=0 and (a.dime=0 and a.width=0)
+	
 	update @tmp set tgg =b.nick
 	from @tmp a
 	left join cust b on a.tggno=b.noa 

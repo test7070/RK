@@ -97,8 +97,13 @@
 	order by a.noa,a.noq
 	
 	update @tmp set size= case when spec='mm' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm' 
-		else CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+case when lengthb>0 then '*'+CAST(lengthb as nvarchar) else '' end end
+		else (CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+case when lengthb>0 then '*'+CAST(lengthb as nvarchar) else '' end) end
 	where len(isnull(size,''))=0 and not(dime=0 and width=0)
+	
+	update @tmp set size=isnull(b.product,'')
+	from @tmp a
+	left join spec b on a.specno=b.noa
+	where len(isnull(a.size,''))=0 and (a.dime=0 and a.width=0)
 	
 	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife
 	 from @tmp order by sel;";

@@ -384,7 +384,7 @@ z_orde_rkp01:--z_orde_rkp01
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
 			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
-		,cmount=dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or upper(unit2)='M' then weight else  mount end,-1)+' '+unit
+		,cmount=dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or upper(unit2)='M' then weight else  mount end,-1)+' '+unit2
 		,cprice=ISNULL(coin,'')+' '+dbo.getComma(price,-1)+'/'+unit
 	-----------------------------------------------------------------------------------------------------------
 	update @tmpa set cspec=ISNULL(b.product,'')
@@ -539,7 +539,7 @@ z_orde_rkp01:--z_orde_rkp01
 	where a.noa=@t_noa
 	
 	insert into @tmpb(gno,aa,bb)
-	select '7','交貨地點：',addr from view_orde where noa=@t_noa
+	select '7','交貨地點：',case when len(addr2)>0 then addr2 else addr end from view_orde where noa=@t_noa
 	
 	insert into @tmpb(gno,aa,bb)
 	select '7','交貨公差：',b.tolerance 

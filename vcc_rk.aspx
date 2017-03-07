@@ -47,6 +47,7 @@
 				,['txtStoreno2_', 'btnStoreno2_', 'store', 'noa,store', 'txtStoreno2_,txtStore2_', 'store_b.aspx']
 			);
 			brwCount2 = 12;
+			q_copy = 1;
 			
 			t_coin = '';
 			$(document).ready(function() {

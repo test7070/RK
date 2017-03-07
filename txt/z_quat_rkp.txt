@@ -176,7 +176,7 @@ z_quat_rkp02:--z_quat_rkp02
 			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
 			+'*'+CAST(width as nvarchar)
 			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
-		,cmount=dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or upper(unit2)='M' then weight else  mount end,-1)+' '+unit
+		,cmount=dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or upper(unit2)='M' then weight else  mount end,-1)+' '+unit2
 		,cprice=ISNULL(coin,'')+' '+dbo.getComma(price,-1)+'/'+unit
 	-----------------------------------------------------------------------------------------------------------
 	update @tmpa set cspec=ISNULL(b.product,'')

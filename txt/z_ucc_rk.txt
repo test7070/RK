@@ -43,7 +43,7 @@ z_ucc_rk02:--z_ucc_rk02
 	declare @t_place nvarchar(max) = case when '#non'=[18] then '' else [18] end 
 	
 	declare @t_uno nvarchar(max) = case when '#non'=[19] then '' else [19] end 
-	declare @t_cust nvarchar(max) = case when '#non'=[20] then '' else [20] end 
+	declare @t_cust nvarchar(max) = case when '#non'=N[20] then '' else N[20] end 
 	------------------------------------------------------------------------
 	--  一個批號只會有一個倉庫一個儲位
 	IF OBJECT_ID('tempdb..#z_ucc_rk02_a')is not null
@@ -304,7 +304,7 @@ z_ucc_rk02:--z_ucc_rk02
 	
 	if len(@t_cust)>0
 	begin
-		delete #z_ucc_rk02_b where not CHARINDEX(@t_cust,cust)>0
+		delete #z_ucc_rk02_b where CHARINDEX(@t_cust,cust)=0
 	end
 	
 	update #z_ucc_rk02_b set size=case kind when 'A1' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
@@ -386,7 +386,7 @@ z_ucc_rk01:--z_ucc_rk01
 	declare @t_place nvarchar(max) = case when '#non'=[18] then '' else [18] end  
 	
 	declare @t_uno nvarchar(max) = case when '#non'=[19] then '' else [19] end 
-	declare @t_cust nvarchar(max) = case when '#non'=[20] then '' else [20] end 
+	declare @t_cust nvarchar(max) = case when '#non'=N[20] then '' else N[20] end 
 	------------------------------------------------------------------
 	------------------------------------------------------------------
 	IF OBJECT_ID('tempdb..#z_ucc_rk01')is not null
@@ -474,17 +474,21 @@ z_ucc_rk01:--z_ucc_rk01
 	where b.noa is not null
 	
 	--由E9入庫客供品庫存表(E14)無客戶資料(帶E9表頭廠商欄位)
-	update #z_ucc_rk01 set custno=b.tggno,cust=c.nick
+	update #z_ucc_rk01 set custno=b.custno,cust=c.nick
 	from #z_ucc_rk01 a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
-	left join cust c on b.tggno=c.noa
+	left join cust c on b.custno=c.noa
 	where a.tablea='inas'
 	and len(ISNULL(a.custno,''))=0
 
+	update #z_ucc_rk01 set custno=b.custno,cust=b.comp,ordeno=b.ordeno,ordeno2=b.no2
+	from #z_ucc_rk01 a
+	left join view_cuts b on a.uno=b.bno
+	where b.noa is not null
 	
 	if len(@t_cust)>0
 	begin
-		delete #z_ucc_rk01 where not CHARINDEX(@t_cust,cust)>0
+		delete #z_ucc_rk01 where CHARINDEX(@t_cust,cust)=0
 	end
 	
 	update #z_ucc_rk01 set size=case kind when 'A1' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
@@ -502,11 +506,6 @@ z_ucc_rk01:--z_ucc_rk01
 	
 	insert into #z_ucc_rk01(pno,gno,mount,[weight],total)
 	select 3,'3',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from #z_ucc_rk01 where gno='1'
-	
-	update #z_ucc_rk01 set custno=b.custno,cust=b.comp,ordeno=b.ordeno,ordeno2=b.no2
-	from #z_ucc_rk01 a
-	left join view_cuts b on a.uno=b.bno
-	where b.noa is not null
 	
 	select row_number()over(order by gno,productno,zspec,size,datea,uno) rr
 		,* 
