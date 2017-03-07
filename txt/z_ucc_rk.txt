@@ -430,6 +430,8 @@ z_ucc_rk01:--z_ucc_rk01
 		,storeno nvarchar(20)
 		,store nvarchar(20)
 		,place nvarchar(20)
+		,po nvarchar(max)
+		,pn nvarchar(max)
 	)
 	insert into #z_ucc_rk01(tablea,accy,noa,noq
 	,pno,gno,kind,ckind,datea,uno,productno,product 
@@ -467,7 +469,10 @@ z_ucc_rk01:--z_ucc_rk01
 	left join view_cuts b on b.bno=a.uno
 	where b.noa is not null
 	
-	update #z_ucc_rk01 set [contract]=replace(b.memo,'chr(10)',' '),custno=c.custno,cust=c.nick
+	update #z_ucc_rk01 set [contract]=replace(b.memo,'chr(10)',' ')
+		,po = case when CHARINDEX('chr(10)',b.memo)>0 then LEFT(b.memo,CHARINDEX('chr(10)',b.memo)-1) else '' end
+		,pn = case when CHARINDEX('chr(10)',b.memo)>0 then substring(b.memo,CHARINDEX('chr(10)',b.memo)+7,len(b.memo)) else '' end
+		,custno=c.custno,cust=c.nick
 	from #z_ucc_rk01 a
 	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
 	left join view_orde c on b.accy=c.accy and b.noa=c.noa
