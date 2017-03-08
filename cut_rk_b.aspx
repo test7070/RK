@@ -43,6 +43,7 @@
 				$('#checkAllCheckbox').click(function(e){
 					$('.ccheck').prop('checked',$(this).prop('checked'));
 				});
+				
 			}
             function q_gtPost(t_name) {
 				switch (t_name) {
@@ -58,6 +59,11 @@
 
             function refresh() {
                 _refresh();
+                $('#tbbs').find('tr.data').children().hover(function(e){
+					$(this).parent().css('background','yellow');
+				},function(e){
+					$(this).parent().css('background','#cad3ff');
+				});
             }
 		</script>
 		<style type="text/css">
@@ -111,7 +117,7 @@
 					<td align="center" style="width:5%;">重量</td>
 					<td align="center" style="width:5%;">單價</td>
 				</tr>
-				<tr style='background:#cad3ff;'>
+				<tr class="data" style='background:#cad3ff;'>
 					<td style="width:2%;"><input type="checkbox" class="ccheck" id="chkSel.*"/></td>
 					<td style="width:10%;">
 						<input id="txtAccy.*" type="text" style="display:none;"  readonly="readonly" />
