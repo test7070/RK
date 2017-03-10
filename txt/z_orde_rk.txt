@@ -413,8 +413,8 @@ z_orde_rk01:--z_orde_rk01
 		,adpro)
 	select '1',a.accy,a.noa,a.no2,b.datea,b.odate,a.productno,a.product,a.dime,a.radius,a.width,a.lengthb,a.scolor,a.[class]
 		,a.ucolor,a.zinc,a.[source],a.spec,a.unit,a.price,a.mount,a.[weight],a.total,a.memo
-		,case when ISNULL(a.enda,0)=0 and ISNULL(b.enda,0)=0 then 0 else 1 end
-		,case when ISNULL(a.cancel,0)=0 and ISNULL(b.cancel,0)=0 then 0 else 1 end 
+		,case when ISNULL(a.enda,0)=1 and ISNULL(b.enda,0)=1 then 1 else 0 end
+		,case when ISNULL(a.cancel,0)=1 and ISNULL(b.cancel,0)=1 then 1 else 0 end 
 		,b.custno
 		,b.nick
 		,b.coin
@@ -433,11 +433,9 @@ z_orde_rk01:--z_orde_rk01
 	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and (len(@t_enda)=0 or ISNULL(b.enda,0)=@t_enda)
-	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
+	and (len(@t_enda)=0 or case when ISNULL(a.enda,0)=1 and ISNULL(b.enda,0)=1 then 1 else 0 end=@t_enda)
+	and (len(@t_cancel)=0 or case when ISNULL(a.cancel,0)=1 and ISNULL(b.cancel,0)=1 then 1 else 0 end =@t_cancel)
 	order by a.noa,a.no2
-	
-
 	
 	update @tmp set cspec=ISNULL(b.product,'')
 	from @tmp a
