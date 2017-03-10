@@ -841,6 +841,8 @@
 					<td style="width:60px;">計價<BR>單位</td>
 					<td style="width:80px;">金額</td>
 					<td style="width:200px;">P/O<br>P/N</td>
+					<td style="width:40px;">結<br>案</td>
+					<td style="width:40px;">取<br>消</td>
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
@@ -886,6 +888,8 @@
 					<td><input id="txtUnit.*" type="text" class="txt c1"/></td>
 					<td><input id="txtTotal.*" type="text" class="txt c1 num"/></td>
 					<td><textarea id="txtMemo.*" rows="2" class="txt c1"> </textarea></td>
+					<td><input type="checkbox" id="chkEnda.*"  class="txt c1"/></td>
+					<td><input type="checkbox" id="chkCancel.*"  class="txt c1"/></td>
 				</tr>
 			</table>
 		</div>

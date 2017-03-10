@@ -82,9 +82,9 @@
         ,memo nvarchar(max)
 	)
 	--驗收單廠商及標籤供應商欄位要抓客戶名稱
-	insert into @tmp(accy,noa,noq,typea,productno,product,size,mount,unit,datea,tggno,hard,uno
+	insert into @tmp(accy,noa,noq,typea,productno,product,size,mount,unit,datea,tggno,tgg,hard,uno
 		,shelflife,dime,width,lengthb,specno,spec,memo)
-	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.[weight],a.unit,b.datea,b.custno,a.brand,a.uno
+	select a.accy,a.noa,a.noq,d.item,a.productno,a.product,a.size,a.[weight],a.unit,b.datea,b.tggno,b.comp,a.brand,a.uno
 		,a.descr,a.dime,a.width,a.lengthb,a.spec,e.product,a.memo
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
@@ -104,10 +104,6 @@
 	from @tmp a
 	left join spec b on a.specno=b.noa
 	where len(isnull(a.size,''))=0 and (a.dime=0 and a.width=0)
-	
-	update @tmp set tgg =b.nick
-	from @tmp a
-	left join cust b on a.tggno=b.noa 
 	
 	select accy,noa,noq,typea,productno,product,size,mount,unit,datea,tgg,hard,uno,shelflife,memo
 	 from @tmp order by sel;";
