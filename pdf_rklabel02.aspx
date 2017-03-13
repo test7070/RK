@@ -11,7 +11,7 @@
         {
             public string accy,noa,noq;
             public string productno,product,engpro,typea,spec,uno,pallet,makeno,pdate,custno,cust,ordeno,ordenoq;
-            public float nweight,gweight,mount;
+            public float nweight,gweight,mount,lengthb;
             public string unit,datea,ordepo,po,pn,indate;
         }
         
@@ -78,11 +78,12 @@
 		,po nvarchar(max)
 		,pn nvarchar(max)
 		,indate nvarchar(20)
+		,lengthb float
 	)
 	if ISNULL(@t_table,'') = 'get'
 	begin
 		insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
-			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
+			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo,lengthb)
 		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
 			,case when j.tablea='inas' then isnull(j.spec,'')+' '+isnull(j.size,'')
 				when j.tablea='rc2s' then j.productno 
@@ -100,6 +101,7 @@
 			,b.custno,i.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
 			,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
 			,f.memo
+			,isnull(j.lengthb,0)
 		from view_gets a
 		left join view_get b on a.accy=b.accy and a.noa=b.noa
 		left join ucc c on a.productno=c.noa
@@ -116,7 +118,7 @@
 	else
 	begin
 		insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
-			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo)
+			,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo,lengthb)
 		select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
 			,a.spec+case when len(a.spec)>0 and len(a.size)>0 then ' / ' else '' end+a.size
 			,case when a.dime=0 and a.radius=0 and a.width=0 and a.lengthb=0 then ''
@@ -126,6 +128,7 @@
 			,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
 			,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
 			,d.memo
+			,ISNULL(a.lengthb,0)
 		from view_vccs a
 		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 		left join ucc c on a.productno=c.noa
@@ -186,6 +189,7 @@
                 pa.po = System.DBNull.Value.Equals(r.ItemArray[23]) ? "" : (System.String)r.ItemArray[23];
                 pa.pn = System.DBNull.Value.Equals(r.ItemArray[24]) ? "" : (System.String)r.ItemArray[24];
                 pa.indate = System.DBNull.Value.Equals(r.ItemArray[25]) ? "" : (System.String)r.ItemArray[25];
+                pa.lengthb = System.DBNull.Value.Equals(r.ItemArray[26]) ? 0 : (float)(System.Double)r.ItemArray[26];
                 vccLabel.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -317,7 +321,7 @@
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).nweight.ToString() + " KG", 360, 145, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).gweight.ToString() + " KG", 360, 115, 0);
                     //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " " + ((Para)vccLabel[i]).unit, 360, 85, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + " 片", 360, 85, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).mount.ToString() + (((Para)vccLabel[i]).lengthb==0?" C":" 片"), 360, 85, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, ((Para)vccLabel[i]).datea, 360, 55, 0);
                     
                     cb.EndText();

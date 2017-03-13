@@ -331,7 +331,7 @@
                         if (b_ret != null) {
                         	as = b_ret;
                     		q_gridAddRow(bbsHtm, 'tbbs', 'txtOrdeno,txtNo2,txtUno,txtProductno,txtProduct,txtDime,txtRadius,txtWidth,txtLengthb,txtSpec,txtSize,txtClass,txtUcolor,txtRackno,txtUnit,txtPrice,txtLengthc,txtMount,txtWeight,txtItemno'
-                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,size,class,ucolor,source,unit,price,lengthc,mount,weight,special', '','');             	
+                        	, as.length, as, 'noa,no2,uno,productno,product,dime,radius,width,lengthb,spec,size,class,ucolor,source,unit,price,lengthc,mount,weight,special', 'txtOrdeno','');             	
                         	//訂單資料
                         	var t_ordeno = $('#txtOrdeno_0').length>0?$('#txtOrdeno_0').val():'';
                     		q_gt('view_orde', "where=^^ noa='"+t_ordeno+"' ^^", 0, 0, 0, JSON.stringify({action:'importOrde'}));

@@ -403,30 +403,30 @@ z_vcc_rkp01:--z_vcc_rkp01
 
 	select gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">No&nbsp'+char(59)+'&nbsp'+char(59)+noa +'</a>' b00
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+custno +'</a>' b01
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+nick +'</a>' b02
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+datea +'</a>' b03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+tel +'</a>' b04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+addr +'</a>' b05
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+conn +'</a>' b06
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+fax +'</a>' b07
+		,'<a>'+@reportno +'</a>' reportno
+		,'<a>No&nbsp'+char(59)+'&nbsp'+char(59)+noa +'</a>' b00
+		,'<a>'+custno +'</a>' b01
+		,'<a>'+nick +'</a>' b02
+		,'<a>'+datea +'</a>' b03
+		,'<a>'+tel +'</a>' b04
+		,'<a>'+addr +'</a>' b05
+		,'<a>'+conn +'</a>' b06
+		,'<a>'+fax +'</a>' b07
 		
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(recno as nvarchar) +'</a>' rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+ordeno+'-'+no2 +'</a>' a01
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+product +'</a>' a02
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+spec +'</a>' a03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+size +'</a>' a04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+checker +'</a>' a05
+		,'<a>'+cast(recno as nvarchar) +'</a>' rr
+		,'<a>'+ordeno+'-'+no2 +'</a>' a01
+		,'<a>'+product +'</a>' a02
+		,'<a>'+dbo.qleft(spec+space(8),8) +'</a>' a03
+		,'<a>'+size +'</a>' a04
+		,'<a>'+checker +'</a>' a05
 		,case when lengthc=0 then '' else  dbo.getComma(lengthc,0) end a06
 		,dbo.getComma(mount,0) a07
 		,dbo.getComma([weight],-1) a08
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+po+'</a>' a09
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c1+'</a>' c01
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c2+'</a>' c02
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c3+'</a>' c03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c4+'</a>' c04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@c5+'</a>' c05
+		,'<a>'+po+'</a>' a09
+		,'<a>'+@c1+'</a>' c01
+		,'<a>'+@c2+'</a>' c02
+		,'<a>'+@c3+'</a>' c03
+		,'<a>'+@c4+'</a>' c04
+		,'<a>'+@c5+'</a>' c05
 	from @tmp
 	order by case when recno is null then 'z' else '' end,recno;
