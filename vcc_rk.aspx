@@ -498,6 +498,11 @@
 				}
 				_bbsAssign();
 				refreshBbs();
+				$('#tbbs').find('tr.data').children().hover(function(e){
+					$(this).parent().css('background','yellow');
+				},function(e){
+					$(this).parent().css('background','#cad3ff');
+				});
 			}
 
 			function btnIns() {
@@ -983,7 +988,7 @@
 					<td style="width:200px;">備註</td>
 					<td style="width:200px;">訂單編號</td>
 				</tr>
-				<tr style='background:#cad3ff;'>
+				<tr class="data" style='background:#cad3ff;'>
 					<td align="center">
 						<input id="btnMinus.*" type="button" style="font-size: medium; font-weight: bold;" value="－"/>
 						<input id="txtNoq.*" type="text" style="display: none;"/>

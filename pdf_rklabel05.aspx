@@ -11,8 +11,8 @@
         {
             public string accy,noa,noq;
             public string productno,product,engpro,typea,spec,uno,pallet,makeno,pdate,custno,cust,ordeno,ordenoq;
-            public float nweight,gweight,mount;
-            public string unit,datea,ordepo,po,pn,indate,pvcno,memo;
+            public float nweight,gweight,mount,lengthc;
+            public string unit,datea,ordepo,po,pn,indate,pvcno,memo,uno2,uno3;
         }
         
         System.IO.MemoryStream stream = new System.IO.MemoryStream();
@@ -74,9 +74,12 @@
 		,indate nvarchar(20)
         ,pvcno nvarchar(20)
         ,memo nvarchar(max)
+        ,lengthc float
+        ,uno2 nvarchar(30)
+		,uno3 nvarchar(30)
 	)
 	insert into @tmp(accy,noa,noq,productno,product,engpro,typea,spec,uno,pallet,makeno,pdate
-		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo,pvcno,memo)
+		,custno,cust,ordeno,ordenoq,nweight,gweight,mount,unit,datea,ordepo,pvcno,memo,lengthc)
 	select a.accy,a.noa,a.noq,a.productno,a.product,c.engpro
 		,a.spec+case when len(a.spec)>0 and len(a.size)>0 then ' / ' else '' end+a.size
 		,CAST(a.dime as nvarchar)+'+'+cast(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+case when a.lengthb=0 then 'COIL' else CAST(a.lengthb as nvarchar) end
@@ -84,7 +87,7 @@
 		,convert(nvarchar,dbo.ChineseEraName2AD(e.datea),111)
 		,b.custno,b.nick,a.ordeno,a.no2,a.[weight],a.mweight,a.mount,a.unit
 		,convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
-		,d.memo,a.spec,a.memo
+		,d.memo,a.spec,a.memo,a.lengthc
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join ucc c on a.productno=c.noa
@@ -93,6 +96,54 @@
 	outer apply(select top 1 * from view_cubs where makeno=e.cname) f
 	where a.noa=@t_noa
     and (len(@t_noq)=0 or a.noq=@t_noq)
+	
+	--合併明細
+	declare @sel int
+	declare @uno nvarchar(30)
+	declare @nweight float
+	declare @gweight float
+	declare @mount float
+	
+	declare @bsel int
+	
+	declare cursor_table cursor for
+	select sel,uno,nweight,gweight,mount 
+	from @tmp
+	where isnull(lengthc,0)=0
+	open cursor_table
+	fetch next from cursor_table
+	into @sel,@uno,@nweight,@gweight,@mount
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		set @bsel = -1
+		select top 1 @bsel = sel from @tmp where isnull(lengthc,0)>0 and sel<@sel order by sel desc
+		if @bsel>0
+		begin
+			if exists(select * from @tmp where len(ISNULL(uno2,''))=0)
+			begin
+				update @tmp set uno2=@uno
+					,nweight=ISNULL(nweight,0)+ISNULL(@nweight,0)
+					,gweight=ISNULL(gweight,0)+ISNULL(@gweight,0)
+					,mount=ISNULL(mount,0)+ISNULL(@mount,0)
+					where sel=@bsel
+					delete @tmp where sel=@sel
+			end
+			else if exists(select * from @tmp where len(ISNULL(uno3,''))=0)
+			begin
+				update @tmp set uno3=@uno
+					,nweight=ISNULL(nweight,0)+ISNULL(@nweight,0)
+					,gweight=ISNULL(gweight,0)+ISNULL(@gweight,0)
+					,mount=ISNULL(mount,0)+ISNULL(@mount,0)
+					where sel=@bsel
+					delete @tmp where sel=@sel
+			end
+		end
+		
+		fetch next from cursor_table
+		into @sel,@uno,@nweight,@gweight,@mount
+	end
+	close cursor_table
+	deallocate cursor_table
 	
 	update @tmp set indate = convert(nvarchar,dbo.ChineseEraName2AD(b.datea),111)
 	from @tmp a
@@ -145,6 +196,9 @@
                 pa.indate = System.DBNull.Value.Equals(r.ItemArray[25]) ? "" : (System.String)r.ItemArray[25];
                 pa.pvcno = System.DBNull.Value.Equals(r.ItemArray[26]) ? "" : (System.String)r.ItemArray[26];
                 pa.memo = System.DBNull.Value.Equals(r.ItemArray[27]) ? "" : (System.String)r.ItemArray[27];
+                pa.lengthc = System.DBNull.Value.Equals(r.ItemArray[28]) ? 0 : (float)(System.Double)r.ItemArray[28];
+                pa.uno2 = System.DBNull.Value.Equals(r.ItemArray[29]) ? "" : (System.String)r.ItemArray[29];
+                pa.uno3 = System.DBNull.Value.Equals(r.ItemArray[30]) ? "" : (System.String)r.ItemArray[30];
                 vccLabel.Add(pa);
             }
             //-----PDF--------------------------------------------------------------------------------------------------
@@ -207,7 +261,8 @@
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "合約編號：" + ((Para)vccLabel[i]).ordeno, 220, 125, 0);  
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "出貨日期：" + ((Para)vccLabel[i]).datea, 220, 100, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "追蹤序號：" + ((Para)vccLabel[i]).uno, 220, 75, 0);
-                    
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "　　　　　" + ((Para)vccLabel[i]).uno2, 220, 50, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "　　　　　" + ((Para)vccLabel[i]).uno3, 220, 25, 0);
                       
                     cb.EndText();
                 }
