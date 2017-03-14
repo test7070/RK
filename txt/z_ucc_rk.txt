@@ -432,6 +432,7 @@ z_ucc_rk01:--z_ucc_rk01
 		,place nvarchar(20)
 		,po nvarchar(max)
 		,pn nvarchar(max)
+		,special nvarchar(20) --棧板編號
 	)
 	insert into #z_ucc_rk01(tablea,accy,noa,noq
 	,pno,gno,kind,ckind,datea,uno,productno,product 
@@ -477,6 +478,12 @@ z_ucc_rk01:--z_ucc_rk01
 	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
 	left join view_orde c on b.accy=c.accy and b.noa=c.noa
 	where b.noa is not null
+	
+	--CUTS 代入棧板號碼
+	update #z_ucc_rk01 set special= ISNULL(b.special,'') 
+	from #z_ucc_rk01 a 
+	left join view_cuts b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+	where  (b.noa is not null) and a.tablea='cuts' 
 	
 	--由E9入庫客供品庫存表(E14)無客戶資料(帶E9表頭廠商欄位)
 	update #z_ucc_rk01 set custno=b.custno,cust=c.nick
