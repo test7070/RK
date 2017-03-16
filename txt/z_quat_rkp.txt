@@ -380,7 +380,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,@t_noa xxxx
 		,@reportno reportno
 		,*
-	from @tmpb;
+	from @tmpb order by sel;
 
 z_quat_rkp01:--z_quat_rkp01
 	SET QUOTED_IDENTIFIER OFF
