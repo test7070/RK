@@ -8,8 +8,6 @@ z_cub_rk02:--z_cub_rk02
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	declare @t_chk nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	----------------------------------------------------------------------------------------------
-	----------------------------------------------------------------------------------------------------------
-	-------------------------------------------------------------------------------------------------
 	declare @tmpa table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -99,7 +97,7 @@ z_cub_rk02:--z_cub_rk02
 	
 	-- PVC 皮膜
 	declare cursor_table cursor for
-	select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[weight],0)),sum(isnull(a.mount,0))
+	select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[wweight],0)),sum(isnull(a.[weight],0))
 	from view_cubt a
 	left join @tmpa b on a.accy=b.accy and a.noa=b.noa and a.nor=b.noq
 	where b.noa is not null
@@ -126,7 +124,7 @@ z_cub_rk02:--z_cub_rk02
 	-------------------------------------------------------------------------------
 	-- PVE 保護膜
 	declare cursor_table cursor for
-	select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[weight],0)),sum(isnull(a.mount,0))
+	select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[wweight],0)),sum(isnull(a.[weight],0))
 	from view_cubt a
 	left join @tmpa b on a.accy=b.accy and a.noa=b.noa and a.nor=b.noq
 	where b.noa is not null
