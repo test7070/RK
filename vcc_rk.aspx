@@ -78,7 +78,7 @@
 				$('#txtTax').css('background-color', 'rgb(237,237,238)').css('color', 'green');
 				$('#txtTotal').css('background-color', 'rgb(237,237,238)').css('color', 'green');
 
-				var t_mount = 0, t_price = 0, t_money = 0, t_moneyus = 0, t_weight = 0, t_total = 0, t_tax = 0;
+				var t_mount = 0, t_price = 0, t_money = 0, t_moneyus = 0, t_weight = 0, t_total = 0, t_tax = 0,t_totalus=0;
 				var t_mounts = 0, t_prices = 0, t_moneys = 0, t_weights = 0;
 				var t_unit = '';
 				var t_float = q_float('txtFloata');
@@ -94,13 +94,13 @@
 						$('#txtUnit_' + j).val(t_unit);
 					}
 					t_weights = q_float('txtWeight_' + j);
+					t_count = (t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓')?q_float('txtWeight_'+j):q_float('txtMount_'+j);
+					t_totalus = q_add(t_totalus,round(q_mul(q_float('txtPrice_'+j),t_count),2));
 					if($('#chkAprice_'+j).prop('checked')){
 						t_moneys = q_float('txtTotal_' + j);
 					}
 					else{
 						t_prices = q_float('txtPrice_' + j);
-						t_count = (t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓')?q_float('txtWeight_'+j):q_float('txtMount_'+j);
-
 						if (t_float == 0) {
 							t_moneys = round(q_mul(q_float('txtPrice_'+j),t_count),0);
 						} else {
@@ -115,6 +115,7 @@
 					if (!(t_unos == '' && t_dimes == 0))
 						t_weight = q_add(t_weight, t_weights);
 					t_money = q_add(t_money, t_moneys);
+					
 				}
 				t_total = t_money;
 				t_tax = 0;
@@ -162,6 +163,8 @@
 				$('#txtMoney').val(t_money);
 				$('#txtTax').val(t_tax);
 				$('#txtTotal').val(t_total);
+				if (t_float != 0)
+					$('#txtTotalus').val(t_totalus);
 			}
 
 			function mainPost() {// 載入資料完，未 refresh 前
@@ -905,12 +908,7 @@
 						<td><span> </span><a id='lblCarno' class="lbl"> </a></td>
 						<td colspan="2"><input id="txtCarno" type="text" class="txt c1" /></td>
 					</tr>
-					<tr style="display:none;">
-						<td><span> </span><a id='lblTotalus' class="lbl"> </a></td>
-						<td><input id="txtTotalus" type="text" class="txt num c1" /></td>
-						
-						
-					</tr>
+					
 					<tr>
 						<td><span> </span><a id='lblFloata' class="lbl"> </a></td>
 						<td>
@@ -928,6 +926,10 @@
 						</td>
 						<td><span> </span><a id='lblTotal' class="lbl istax"> </a></td>
 						<td><input id="txtTotal" type="text" class="txt num c1 istax" /></td>
+					</tr>
+					<tr style="display:noxne;">
+						<td><span> </span><a id='lblTotalus' class="lbl"> </a></td>
+						<td><input id="txtTotalus" type="text" class="txt num c1" /></td>
 					</tr>
 					<tr>
 						<td><span> </span><a id='lblWeight' class="lbl"> </a></td>
