@@ -200,7 +200,7 @@
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "品　　名", 47, 168, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "規　　格", 47, 128, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "數　　量", 47, 88, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "入庫日期", 47, 48, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "進貨日期", 47, 48, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "備　　註", 47, 17, 0);
 
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_CENTER, "供 應 商", 270, 208, 0);
@@ -232,7 +232,7 @@
                     cb.SetFontAndSize(iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLDOBLIQUE).BaseFont, 25);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 15, 243, 0);
                     cb.SetFontAndSize(bfChinese, 20);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "聯琦金屬股份有限公司 － 入庫標籤", 90, 243, 0);
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "聯琦金屬股份有限公司 － 進貨標籤", 90, 243, 0);
                     cb.EndText();
                 }
             }
