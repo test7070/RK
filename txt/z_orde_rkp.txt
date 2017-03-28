@@ -335,7 +335,7 @@ z_orde_rkp01:--z_orde_rkp01
 	------------------------------------------------------------------------------------------------
 	declare @t_quatno nvarchar(max) = ''
 	
-	declare @reportno nvarchar(max) = '表單編號：LC-10-00-03-06'
+	declare @reportno nvarchar(max) = '表單編號：LC-10-00-07-07'
 	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
 	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
 	
@@ -502,7 +502,7 @@ z_orde_rkp01:--z_orde_rkp01
 	end
 	--只有一筆明細時,全部印在同一頁
 	--否則 "交貨日期~簽名印在最後一頁"
-	if (select count(1) from @tmpa)>1
+	/*if (select count(1) from @tmpa)>1
 	begin
 		--補空白行
 		while @n%@pagecount!=0
@@ -510,7 +510,7 @@ z_orde_rkp01:--z_orde_rkp01
 			insert into @tmpb(gno)values('6')
 			set @n = @n + 1
 		end
-	end
+	end*/
 	-------------------------------------------------------------------------
 	--備註
 	insert into @tmpb(gno,aa,bb)
