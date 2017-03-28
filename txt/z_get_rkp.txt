@@ -83,8 +83,9 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 			+case when ISNULL(radius,0)!=0 then '+'+cast(radius as nvarchar) else '' end
 			+case when ISNULL(width,0)!=0 then '*'+cast(width as nvarchar) else '' end
 			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '*COIL' end 
-			+case when len(ucolor)>0 then ' '+ucolor else '' end
-			+case when len(rackno)>0 then ' '+rackno else '' end
+			--領料作業-交運單：規格後面0***是什麼，不需要顯示。  2017/03/28
+			--+case when len(ucolor)>0 then ' '+ucolor else '' end
+			--+case when len(rackno)>0 then ' '+rackno else '' end
 
 	--insert into @tmp(pno,gno,productno,spec,size,lengthc,mount,[weight])
 	--select '2','2',productno,spec,size,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))

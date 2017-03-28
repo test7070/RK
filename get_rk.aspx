@@ -646,7 +646,7 @@
 					<td align="center" style="width:50px;">單位</td>
 					<td align="center" style="width:50px;">件數</td>
 					<td align="center" style="width:80px;">數量<BR>重量</td>
-					<td align="center" style="display:none;">實際<BR>數量<BR>重量/M</td>
+					<td align="center" style="width:80px;">毛重</td>
 					<td align="center" style="width:200px;">備註</td>
 					<td align="center" style="width:120px;">訂單編號</td>
 				</tr>
@@ -671,8 +671,8 @@
 						<input id="txtGmount.*" type="text" style="display:none;"/>
 						<input id="txtGweight.*" type="text" style="display:none;"/>
 					</td>
-					<td style="display:none;">
-						<input class="txt num" id="txtEweight.*" type="text" style="width:95%;"/>
+					<td>
+						<input class="txt num" id="txtEweight.*" type="text" style="width:95%;display:none;"/>
 						<input class="txt num" id="txtMweight.*" type="text" style="width:95%;"/>
 					</td>
 					<td>

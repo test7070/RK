@@ -1425,27 +1425,39 @@ z_cub_rkp10:--z_cub_rkp10
 	declare @total float
 	
 	declare cursor_table cursor for
+	select a.vccno from @tmp a
+	open cursor_table
+	fetch next from cursor_table
+	into @vccno
+	while(@@FETCH_STATUS <> -1)
+	begin
+	
+		select @ordeno='',@stype=''
+		
+		select top 1 @ordeno=a.ordeno
+			,@stype=case b.stype when '1' then '內銷' when '3' then '外銷' else b.stype end
+		from view_vccs a
+		left join view_orde b on a.ordeno=b.noa
+		where a.noa=@vccno and len(ISNULL(a.ordeno,''))>0
+		order by a.noq
+		update @tmp set ordeno=@ordeno,stype=@stype where vccno=@vccno
+	
+		fetch next from cursor_table
+		into @vccno
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	declare cursor_table cursor for
 	select a.vccno,b.chgitem,isnull(b.total,0)
 	from @tmp a
 	left join paybs b on a.vccno=b.payno
-	where b.noa is not null
+	where b.noa is not null  and a.vccno='D1060309003'
 	open cursor_table
 	fetch next from cursor_table
 	into @vccno,@chgitem,@total
 	while(@@FETCH_STATUS <> -1)
 	begin
-		if not exists(select * from @tmp where vccno=@vccno and len(ISNULL(ordeno,''))>0)
-		begin
-			select @ordeno='',@stype=''
-			
-			select top 1 @ordeno=a.ordeno,@stype=b.stype
-			from view_vccs a
-			left join view_orde b on a.ordeno=b.noa
-			where a.noa=@vccno and len(ISNULL(a.ordeno,''))>0
-			order by a.noq desc
-		
-			update @tmp set ordeno=@ordeno,stype=@stype where vccno=@vccno
-		end
 		if CHARINDEX('包裝',@chgitem)>0
 		begin
 			update @tmp set m01=ISNULL(m01,0)+@total where vccno=@vccno
@@ -1484,6 +1496,7 @@ z_cub_rkp10:--z_cub_rkp10
 	end
 	close cursor_table
 	deallocate cursor_table
+	
 	----------------------------------------------------------------------------------------
 	update @tmp set custtype=b.typea,ccusttype=c.namea
 		,cust=b.comp,nick=b.nick
@@ -1501,7 +1514,7 @@ z_cub_rkp10:--z_cub_rkp10
 	update @tmp set total=ISNULL(m01,0)+ISNULL(m02,0)+ISNULL(m03,0)+ISNULL(m04,0)
 		+ISNULL(m05,0)+ISNULL(m06,0)+ISNULL(m07,0)+ISNULL(m08,0)
 	update @tmp set rate = case when ISNULL([weight],0)=0 then 0 else ROUND(total/[weight]*100,2) end
-	
+
 	select gno
 		,ROW_NUMBER()over(order by gno,datea,vccno) rr
 		,vccno a01
@@ -1519,6 +1532,7 @@ z_cub_rkp10:--z_cub_rkp10
 		,dbo.getComma(m07,-1) a13
 		,dbo.getComma(total,-1) a14	
 		,dbo.getComma(rate,-1) a15
+		,stype a16
 	from @tmp
 	order by gno,datea,vccno;
 

@@ -364,7 +364,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,@datea=datea,@tel=tel,@addr=addr,@conn=conn,@fax=fax 
 	from @tmp where sel=1
 	
-	declare @pagecount int = 17
+	declare @pagecount int = 23
 	declare @n int
 	
 	declare cursor_table cursor for
