@@ -90,7 +90,8 @@ z_ordc_rk01:--z_ordc_rk01
 		,datea a01
 		,noa+'-'+noq a02
 		,tgg a03
-		,product a04
+		,isnull(productno,'') a04a
+		,isnull(product,'') a04b
 		,cspec a05
 		,size a06
 		,unit a07

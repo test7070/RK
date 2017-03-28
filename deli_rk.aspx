@@ -631,7 +631,10 @@
                 for (var j = 0; j < q_bbsCount; j++) {
                     $('#lblNo_' + j).text(j + 1);
                     if (!$('#btnMinus_' + j).hasClass('isAssign')) {
-                    	$('#chkAprice_'+j).click(function(e){refreshBbs();});
+                    	$('#chkAprice_'+j).click(function(e){
+                			refreshBbs();
+                			sum();
+            			});
                         $('#txtStoreno_' + j).bind('contextmenu', function(e) {
                             /*滑鼠右鍵*/
                             e.preventDefault();
@@ -713,6 +716,7 @@
                     return;
                 _btnModi();
                 $('#txtProduct').focus();
+                refreshBbs();
             }
 
             function btnPrint() {
