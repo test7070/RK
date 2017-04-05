@@ -174,8 +174,9 @@
 			function q_stPost() {
 				if (!(q_cur == 1 || q_cur == 2))
 					return false;
-				
-				is_btnOk = 1; 
+				qbtnOk();
+                parent.$.fn.colorbox.close();
+				/*is_btnOk = 1; 
 				var t_key = q_getHref();
 				currentNoa = t_key[1];
 				if(currentNoa.length>0){
@@ -186,7 +187,7 @@
 					//alert('error');
                     qbtnOk();
                     parent.$.fn.colorbox.close();
-				}
+				}*/
 			}
 			
 			function refresh() {

@@ -244,16 +244,16 @@
 			}
 
 			function q_stPost() {
-				if (q_cur == 1 || q_cur == 2){
+				/*if (q_cur == 1 || q_cur == 2){
 					t_noa = $('#txtNoa').val();
 					if(t_noa.length>0){
 						q_func('qtxt.query.cub2get1', 'cub.txt,cub2get,'+t_noa+';0');
 					}
-				}
-				if(q_cur==3){
+				}*/
+				/*if(q_cur==3){
 					//alert('q_stPost:'+currentNoa);
 					q_gt('view_get', "where=^^noa='" + currentNoa + "'^^", 0, 0, 0, "isexist_get_dele",1);				
-				}
+				}*/
 			}
 			function q_funcPost(t_func, result) {
                 switch(t_func) {

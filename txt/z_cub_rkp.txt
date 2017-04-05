@@ -1452,7 +1452,7 @@ z_cub_rkp10:--z_cub_rkp10
 	select a.vccno,b.chgitem,isnull(b.total,0)
 	from @tmp a
 	left join paybs b on a.vccno=b.payno
-	where b.noa is not null  and a.vccno='D1060309003'
+	where b.noa is not null
 	open cursor_table
 	fetch next from cursor_table
 	into @vccno,@chgitem,@total
