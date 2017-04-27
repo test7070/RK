@@ -500,9 +500,11 @@ z_orde_rkp01:--z_orde_rkp01
 		close cursor_table
 		deallocate cursor_table
 	end
-	--只有一筆明細時,全部印在同一頁
-	--否則 "交貨日期~簽名印在最後一頁"
-	/*if (select count(1) from @tmpa)>1
+	--2頁以上,"交貨日期~簽名印在最後一頁"
+	--耍再改,  備註的行數不一定
+	set @n = 0
+	select @n = count(1) from @tmpb
+	if(@n%@pagecount+18)>@pagecount
 	begin
 		--補空白行
 		while @n%@pagecount!=0
@@ -510,7 +512,7 @@ z_orde_rkp01:--z_orde_rkp01
 			insert into @tmpb(gno)values('6')
 			set @n = @n + 1
 		end
-	end*/
+	end
 	-------------------------------------------------------------------------
 	--備註
 	insert into @tmpb(gno,aa,bb)
@@ -632,4 +634,5 @@ z_orde_rkp01:--z_orde_rkp01
 		,'日期：'+isnull(datea,'') yyyy
 		,@reportno reportno
 		,*
-	from @tmpb;
+	from @tmpb
+	order by sel;

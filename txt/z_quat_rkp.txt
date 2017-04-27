@@ -279,6 +279,9 @@ z_quat_rkp02:--z_quat_rkp02
 		close cursor_table
 		deallocate cursor_table
 	end
+	
+	--耍再改, 改和  訂單一樣
+	
 	--只有一筆明細時,全部印在同一頁
 	--否則 "交貨日期~簽名印在最後一頁"
 	/*if (select count(1) from @tmpa)>1
