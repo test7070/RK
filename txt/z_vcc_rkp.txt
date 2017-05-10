@@ -267,7 +267,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 		tel nvarchar(50),
 		fax nvarchar(50),
 		addr nvarchar(max),
-		conn nvarchar(20),
+		conn nvarchar(50),
 		
 		ordeno nvarchar(20),
 		no2 nvarchar(10),
