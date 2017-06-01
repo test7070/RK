@@ -209,11 +209,25 @@ z_get_rkp01:--z_get_rkp01
 		,productno,product,size,unit,mount,[weight],eweight,mweight,memo)	
 	select ROW_NUMBER()over(order by a.noa,a.noq),'1'
 		,b.datea,b.typea,a.accy,a.noa,a.noq
-		,a.productno,a.product,ISNULL(c.product,a.spec),a.unit
+		,a.productno,a.product
+		--,ISNULL(c.product,a.spec)
+			,case when e.noa is not null
+				then 
+				case when e.dime=0 and e.radius=0 and e.width=0 and e.lengthb=0 then ''
+				else CAST(e.dime as nvarchar)+'+'+cast(e.radius as nvarchar)+'*'+CAST(e.width as nvarchar)+'*'+case when e.lengthb=0 then 'COIL' else CAST(e.lengthb as nvarchar) end end
+			else
+				case  when j.dime=0 and j.radius=0 and j.width=0 and j.lengthb=0 then ''
+				else CAST(j.dime as nvarchar)+'+'+cast(j.radius as nvarchar)+'*'+CAST(j.width as nvarchar)+'*'+case when j.lengthb=0 then 'COIL' else CAST(j.lengthb as nvarchar) end end
+			end
+		,a.unit
 		,a.mount,a.[weight],a.eweight,a.mweight,a.memo
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	left join spec c on a.spec=c.noa
+	outer apply(select top 1 * from view_inas where uno=a.uno) d
+	left join view_vccs e on d.noa=e.noa and d.noq=e.noq
+	left join spec h on h.noa=a.spec
+	left join view_uccb j on a.uno=j.uno
 	where b.noa is not null
 	and a.noa = @t_noa
 	
