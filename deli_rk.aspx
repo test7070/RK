@@ -56,7 +56,10 @@
             function sum() {
             	if(q_float('txtFloata')==0)
             		$('#txtFloata').val(1);
+            	var t_weight = 0;	
             	for(var i=0;i<q_bbsCount;i++){
+            		t_weight = q_add(t_weight,q_float('txtWeight_'+i));
+            		
             		if(!$('#chkAprice_'+i).prop('checked')){
         				//進貨金額(重量*單價)
             			$('#txtMoney_'+i).val(round(q_mul(q_float('txtWeight_'+i),q_float('txtPrice_'+i)),2));
@@ -74,6 +77,8 @@
             		//本幣營業稅基 = 本幣完稅價格 + 本幣關稅 + 推廣貿易費 + 貨物稅額  + (原幣運費+原幣保險費+原幣加減費用   分攤,表下來會算)
             		$('#txtVatbase_'+i).val(q_float('txtTotal_'+i)+q_float('txtTariff_'+i)+q_float('txtTrade_'+i)+q_float('txtCommoditytax_'+i));
             	}
+            	
+            	$('#txtWeight').val(t_weight);
             	//分攤方式
             	//1@依進貨金額,2@依進貨數量,3@依進貨重量
             	var total = 0;
@@ -1119,11 +1124,9 @@
 						<input id="txtCaseyard"  type="text"  class="txt c1"/>
 						</td>
 						<td><span> </span><a id="lblWarehousedate" class="lbl"> </a></td>
-						<td>
-						<input id="txtWarehousedate" type="text"  class="txt c1"/>
-						</td>
-						<td></td>
-						<td></td>
+						<td><input id="txtWarehousedate" type="text"  class="txt c1"/></td>
+						<td><span> </span><a id="lblWeight" class="lbl">重量</a></td>
+						<td><input id="txtWeight" type="text"  class="txt c1"/></td>
 					</tr>
 
 					<tr class="tr6 retire">
