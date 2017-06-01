@@ -230,7 +230,8 @@
 
                     
                     cb.SetFontAndSize(iTextSharp.text.FontFactory.GetFont(iTextSharp.text.FontFactory.HELVETICA_BOLDOBLIQUE).BaseFont, 25);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 15, 243, 0);
+                    //標籤列印請將左上角【LCM】刪除    2017/05/02
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LCM", 15, 243, 0);
                     cb.SetFontAndSize(bfChinese, 20);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "聯琦金屬股份有限公司 － 進貨標籤", 90, 243, 0);
                     cb.EndText();
