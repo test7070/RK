@@ -402,7 +402,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	declare @c5 nvarchar(max) = N'3.出貨前確認事項：'+@sign2+N'煙燻章'+@sign2+N'外觀包裝 <a style="font-weight:bolder">確認者：</a>'
 
 	select gno
-		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a>'+@reportno +'</a>' reportno
 		,'<a>No&nbsp'+char(59)+'&nbsp'+char(59)+noa +'</a>' b00
 		,'<a>'+custno +'</a>' b01
