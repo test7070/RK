@@ -1426,6 +1426,9 @@ z_cub_rkp10:--z_cub_rkp10
 	declare @chgitem nvarchar(50)
 	declare @total float
 	
+	declare @custtype nvarchar(20)
+	declare @ccusttype nvarchar(20)
+	
 	declare cursor_table cursor for
 	select a.vccno from @tmp a
 	open cursor_table
@@ -1434,15 +1437,19 @@ z_cub_rkp10:--z_cub_rkp10
 	while(@@FETCH_STATUS <> -1)
 	begin
 	
-		select @ordeno='',@stype=''
+		select @ordeno='',@stype='',@custtype='',@ccusttype=''
 		
 		select top 1 @ordeno=a.ordeno
 			,@stype=case b.stype when '1' then '內銷' when '3' then '外銷' else b.stype end
+			,@custtype=c.custpro
+			,@ccusttype=d.namea
 		from view_vccs a
 		left join view_orde b on a.ordeno=b.noa
+		outer apply(select top 1 * from view_ordes where noa=a.ordeno and no2=a.no2) c
+		left join custtype d on c.custpro=d.noa
 		where a.noa=@vccno and len(ISNULL(a.ordeno,''))>0
 		order by a.noq
-		update @tmp set ordeno=@ordeno,stype=@stype where vccno=@vccno
+		update @tmp set ordeno=@ordeno,stype=@stype,custtype=@custtype,ccusttype=@ccusttype where vccno=@vccno
 	
 		fetch next from cursor_table
 		into @vccno
@@ -1500,11 +1507,11 @@ z_cub_rkp10:--z_cub_rkp10
 	deallocate cursor_table
 	
 	----------------------------------------------------------------------------------------
-	update @tmp set custtype=b.typea,ccusttype=c.namea
-		,cust=b.comp,nick=b.nick
+	update @tmp set cust=b.comp,nick=b.nick
+		--,custtype=b.typea,ccusttype=c.namea
 	from @tmp a
 	left join cust b on a.custno=b.noa
-	left join custtype c on b.typea=c.noa
+--	left join custtype c on b.typea=c.noa
 	----------------------------------------------------------------------------------------
 	insert into @tmp(gno,[weight],m01,m02,m03,m04,m05,m06,m07,m08)
 	select '2',SUM(ISNULL([weight],0))
