@@ -149,7 +149,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	declare @c5 nvarchar(max) = N'3.出貨前確認事項：'+@sign2+N'煙燻章'+@sign2+N'外觀包裝 <a style="font-weight:bolder">確認者：</a>'
 
 	select gno
-		,'<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">No&nbsp'+char(59)+'&nbsp'+char(59)+noa +'</a>' b00
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+custno +'</a>' b01
@@ -266,7 +266,7 @@ z_get_rkp01:--z_get_rkp01
 	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
 	
 	select gno
-		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+typea +'</a>' title
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+left(typea,2) +'數量</a>' field
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno

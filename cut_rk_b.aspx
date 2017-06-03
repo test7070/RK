@@ -78,7 +78,7 @@
 				<tr style='color:white; background:#003366;' >
 					<th align="center" style="width:2%;" rowspan="2"><input type="checkbox" id="checkAllCheckbox"/></th>
 					<td align="center" style="width:10%;" rowspan="2">單號</td>
-					<td align="center" style="width:20%;" rowspan="2">品名</td>
+					<td align="center" style="width:20%;" rowspan="2">批號<BR>品名</td>
 					<td align="center" style="width:5%;" rowspan="1">厚</td>
 					<td align="center" style="width:5%;" rowspan="1">皮膜厚</td>
 					<td align="center" style="width:5%;" rowspan="1">寬</td>
@@ -103,7 +103,7 @@
 				<tr style="display:none;">
 					<th align="center" style="width:2%;"></th>
 					<td align="center" style="width:10%;">單號</td>
-					<td align="center" style="width:20%;">品名</td>
+					<td align="center" style="width:20%;">批號<BR>品名</td>
 					<td align="center" style="width:5%;">厚</td>
 					<td align="center" style="width:5%;">皮膜厚</td>
 					<td align="center" style="width:5%;">寬</td>
@@ -125,6 +125,7 @@
 						<input id="txtNo2.*" type="text" style="float:left;width:25%;"  readonly="readonly" />
 					</td>
 					<td style="width:20%;">
+						<input id="txtUno.*" type="text" style="float:left;width:95%;"  readonly="readonly" />
 						<input id="txtProductno.*" type="text" style="float:left;width:45%;"  readonly="readonly" />
 						<input id="txtProduct.*" type="text" style="float:left;width:55%;"  readonly="readonly" />
 					</td>
