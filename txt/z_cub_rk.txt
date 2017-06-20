@@ -287,12 +287,17 @@ z_cub_rk02:--z_cub_rk02
 		,SUM(ISNULL(cast(paraa as float),0)) [paraa] 
 		from view_cucs group by cubno) b on a.makeno=b.makeno
 	--w03 生產線廢料(a1)   w01 - w02 - w04         要回寫到cubs.price   
-	update @tmpa set w03 = ISNULL(w01,0)-ISNULL(w02,0)-ISNULL(w04,0)
+	update @tmpa set w03 = cast(ISNULL(w01,0) as decimal(12,3))
+		-cast(ISNULL(w02,0) as decimal(12,3))
+		-cast(ISNULL(w04,0) as decimal(12,3))
 	
 	--w08 進倉成品 cuts.weight
 	update @tmpa set w08=ISNULL(b.[weight],0)
 	from @tmpa a
-	left join (select cname makeno,SUM(ISNULL([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.makeno
+	left join (select a.cname makeno,SUM(ISNULL(a.[weight],0)) [weight] 
+		from view_cuts a 
+		left join view_cut b on a.noa=b.noa
+		where b.datea<=@t_edate group by cname) b on a.makeno=b.makeno
 	-------------------------------------------------------------------------------
 	--w15 原物料損耗  ???
 	--w16 不良品損耗率	w11/w01
@@ -368,7 +373,6 @@ z_cub_rk02:--z_cub_rk02
 	left join adpro b on a.typea=b.noa
 	outer apply(select top 1 * from view_cuts where cname=a.makeno) c
 	order by a.gno,a.accy,a.noa,a.noq;
-
 
 
 

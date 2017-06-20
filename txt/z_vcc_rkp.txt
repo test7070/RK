@@ -253,6 +253,170 @@ z_vcc_rkp01:--z_vcc_rkp01
 	------------------------------------------------------------------------------------------------
 	------------------------------------------------------------------------------------------------
 	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(20)
+		,pno int
+		
+		,recno int 
+		,noa nvarchar(20)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,datea nvarchar(20)
+		,tel nvarchar(50)
+		,fax nvarchar(50)
+		,addr nvarchar(100)
+		,conn nvarchar(50)
+		
+		,itemno nvarchar(20) --棧板編號
+		,ordeno nvarchar(20)  --合約單號
+		,ordenoq nvarchar(10)
+		,product nvarchar(50) --品名
+		,pvcno nvarchar(50)   --皮膜    (皮膜去CUTS抓)
+		,size nvarchar(100)--規格
+		,lengthc float--件數
+		,mount float--數量
+		,[weight] float--重量
+		,memo nvarchar(max)--備註    (訂單PO)
+	)
+	insert into @tmp(gno,pno,noa,custno,cust,datea,tel,fax,addr,conn
+		,itemno,ordeno,ordenoq,product,pvcno
+		,size,lengthc,mount,[weight],memo)
+	select '1',1,b.noa,b.custno,b.nick,b.datea,b.tel,b.fax,b.addr2,e.conn
+		,a.itemno,a.ordeno,a.no2,a.product
+		,case when len(ISNULL(f.spec,''))>0 then f.spec else a.spec end pvcno
+		,ISNULL(a.size,'')+' '+case when len(isnull(a.style,''))>0 then a.style+' ' else '' end
+			+case when ISNULL(a.dime,0)!=0 then cast(a.dime as nvarchar) else '' end
+			+case when ISNULL(a.radius,0)!=0 then '+'+cast(a.radius as nvarchar) else '' end
+			+case when ISNULL(a.width,0)!=0 then '*'+cast(a.width as nvarchar) else '' end
+			+case when ISNULL(a.lengthb,0)!=0 then '*'+cast(a.lengthb as nvarchar) 
+				when a.dime=0 and a.width=0 and a.radius=0 and a.lengthb=0 then '' else '*COIL' end
+		,SUM(ISNULL(a.lengthc,0))
+		,SUM(ISNULL(a.[mount],0))
+		,SUM(ISNULL(a.[weight],0))
+		,case when CHARINDEX('chr(10)',c.memo)>0 then LEFT(c.memo,CHARINDEX('chr(10)',c.memo)-1) else '' end memo
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
+	left join view_orde d on c.accy=d.accy and c.noa=d.noa
+	left join view_quat e on d.quatno=e.noa
+	left join view_cuts f on a.uno=f.bno
+	where b.noa is not null
+	and (len(@t_noa)=0 or a.noa=@t_noa)
+	and charindex('運費',a.product)=0
+	and charindex('包裝',a.product)=0
+	group by b.noa,b.custno,b.nick,b.datea,b.tel,b.fax,b.addr2,e.conn
+		,a.itemno,a.ordeno,a.no2,a.product
+		,case when len(ISNULL(f.spec,''))>0 then f.spec else a.spec end
+		,ISNULL(a.size,'')+' '+case when len(isnull(a.style,''))>0 then a.style+' ' else '' end
+			+case when ISNULL(a.dime,0)!=0 then cast(a.dime as nvarchar) else '' end
+			+case when ISNULL(a.radius,0)!=0 then '+'+cast(a.radius as nvarchar) else '' end
+			+case when ISNULL(a.width,0)!=0 then '*'+cast(a.width as nvarchar) else '' end
+			+case when ISNULL(a.lengthb,0)!=0 then '*'+cast(a.lengthb as nvarchar) 
+				when a.dime=0 and a.width=0 and a.radius=0 and a.lengthb=0 then '' else '*COIL' end
+		,case when CHARINDEX('chr(10)',c.memo)>0 then LEFT(c.memo,CHARINDEX('chr(10)',c.memo)-1) else '' end
+	---------------------------------------------------------------------------------------------------------
+	update @tmp set recno=b.recno
+	from @tmp a
+	left join (select sel,ROW_NUMBER()over(order by ordeno,ordenoq,itemno,sel) recno from @tmp ) b on a.sel=b.sel
+	
+	insert into @tmp(pno,gno,ordeno,ordenoq,lengthc,mount,[weight])
+	select '2','2',ordeno,ordenoq,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
+	from @tmp
+	where gno='1'
+	group by ordeno,ordenoq
+	
+	insert into @tmp(pno,gno,ordeno,ordenoq,lengthc,mount,[weight])
+	select '3','3',CHAR(255),CHAR(255),SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
+	from @tmp
+	where gno='1'
+	------------------------------------------------------------------------------------
+	declare @noa nvarchar(20) = ''
+	declare @custno nvarchar(20) = ''
+	declare @cust nvarchar(50) = ''
+	declare @datea nvarchar(20) = ''
+	declare @tel nvarchar(50) = ''
+	declare @addr nvarchar(max) = ''
+	declare @conn nvarchar(20) = ''
+	declare @fax nvarchar(50) = ''
+	
+	select @noa=noa,@custno=custno,@custno=cust
+		,@datea=datea,@tel=tel,@addr=addr,@conn=conn,@fax=fax 
+	from @tmp where sel=1
+	
+	declare @pagecount int = 23
+	declare @n int
+	
+	declare cursor_table cursor for
+	select count(1) from @tmp
+	open cursor_table
+	fetch next from cursor_table
+	into @n
+	while(@@FETCH_STATUS <> -1)
+	begin
+		while @n%@pagecount !=0
+		begin
+			insert into @tmp(pno,gno,ordeno,ordenoq)
+			values('4','4',CHAR(255),CHAR(255))
+			set @n = @n +1
+		end
+		fetch next from cursor_table
+		into @n
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update @tmp set noa=@noa,custno=@custno,cust=@cust
+		,datea=@datea,tel=@tel,addr=@addr,conn=@conn,fax=@fax 
+	from @tmp a
+
+	----------------------------------------------------------------------------------
+	declare @reportno nvarchar(max) = '表單編號：LC-16-00-08-02'
+	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
+	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
+	declare @c1 nvarchar(max) = @sign2+N'A.我方拖運'
+	declare @c2 nvarchar(max) = @sign2+N'B.客戶自運'
+	declare @c3 nvarchar(max) = N'1.貨物及重量如有錯誤或須退回請於一星期內告知，逾期視同無誤。'
+	declare @c4 nvarchar(max) = N'2.出貨應加蓋雨帆，如淋雨或損毀由承運者負責賠償。'
+	declare @c5 nvarchar(max) = N'3.出貨前確認事項：'+@sign2+N'煙燻章'+@sign2+N'外觀包裝 <a style="font-weight:bolder">確認者：</a>'
+
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'<a>'+@reportno +'</a>' reportno
+		,'<a>No&nbsp'+char(59)+'&nbsp'+char(59)+noa +'</a>' b00
+		,'<a>'+custno +'</a>' b01
+		,'<a>'+cust +'</a>' b02
+		,'<a>'+datea +'</a>' b03
+		,'<a>'+tel +'</a>' b04
+		,'<a>'+addr +'</a>' b05
+		,'<a>'+conn +'</a>' b06
+		,'<a>'+fax +'</a>' b07
+		
+		,'<a>'+cast(recno as nvarchar) +'</a>' rr
+		,'<a>'+ordeno+'-'+ordenoq +'</a>' a01
+		,'<a>'+product +'</a>' a02
+		,'<a>'+dbo.qleft(pvcno+space(8),8) +'</a>' a03
+		,'<a>'+size +'</a>' a04
+		
+		,case when lengthc=0 then '' else  dbo.getComma(lengthc,0) end a06
+		,dbo.getComma(mount,0) a07
+		,dbo.getComma([weight],-1) a08
+		,'<a>'+memo+'</a>' a09
+		,'<a>'+@c1+'</a>' c01
+		,'<a>'+@c2+'</a>' c02
+		,'<a>'+@c3+'</a>' c03
+		,'<a>'+@c4+'</a>' c04
+		,'<a>'+@c5+'</a>' c05
+	from @tmp
+	order by ordeno,ordenoq,pno,itemno,sel;
+	
+z_vcc_rkp01_old:--z_vcc_rkp01_old 
+	SET QUOTED_IDENTIFIER OFF 
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
+	------------------------------------------------------------------------------------------------
+	------------------------------------------------------------------------------------------------
+	declare @tmp table(
 		sel int identity(1,1),
 		recno int,
 		pno nvarchar(10),
