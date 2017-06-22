@@ -251,7 +251,6 @@ z_vcc_rkp01:--z_vcc_rkp01
 	declare @t_db nvarchar(max) = '[2]'
 	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	------------------------------------------------------------------------------------------------
-	------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -282,7 +281,8 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,itemno,ordeno,ordenoq,product,pvcno
 		,size,lengthc,mount,[weight],memo)
 	select '1',1,b.noa,b.custno,b.nick,b.datea,b.tel,b.fax,b.addr2,e.conn
-		,a.itemno,a.ordeno,a.no2,a.product
+		,case when len(isnull(a.itemno,''))>0 then a.itemno else 'YYY'+a.noq+'XXX' end  --棧板編號空白的不要合併  2017/06/22  胡
+		,a.ordeno,a.no2,a.product
 		,case when len(ISNULL(f.spec,''))>0 then f.spec else a.spec end pvcno
 		,ISNULL(a.size,'')+' '+case when len(isnull(a.style,''))>0 then a.style+' ' else '' end
 			+case when ISNULL(a.dime,0)!=0 then cast(a.dime as nvarchar) else '' end
@@ -305,7 +305,8 @@ z_vcc_rkp01:--z_vcc_rkp01
 	and charindex('運費',a.product)=0
 	and charindex('包裝',a.product)=0
 	group by b.noa,b.custno,b.nick,b.datea,b.tel,b.fax,b.addr2,e.conn
-		,a.itemno,a.ordeno,a.no2,a.product
+		,case when len(isnull(a.itemno,''))>0 then a.itemno else 'YYY'+a.noq+'XXX' end
+		,a.ordeno,a.no2,a.product
 		,case when len(ISNULL(f.spec,''))>0 then f.spec else a.spec end
 		,ISNULL(a.size,'')+' '+case when len(isnull(a.style,''))>0 then a.style+' ' else '' end
 			+case when ISNULL(a.dime,0)!=0 then cast(a.dime as nvarchar) else '' end
@@ -318,6 +319,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by ordeno,ordenoq,itemno,sel) recno from @tmp ) b on a.sel=b.sel
+	
 	
 	insert into @tmp(pno,gno,ordeno,ordenoq,lengthc,mount,[weight])
 	select '2','2',ordeno,ordenoq,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
