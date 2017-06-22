@@ -274,18 +274,21 @@ z_cub_rk02:--z_cub_rk02
 		,w13=ISNULL(b.[weight10],0)
 		,w14=ISNULL(b.[paraa],0)
 	from @tmpa a
-	left join(select cubno makeno
-		,SUM(ISNULL(weight4,0)) [weight4] 
-		,SUM(ISNULL(weight5,0)) [weight5] 
-		,SUM(ISNULL(weight6,0)) [weight6] 
-		,SUM(ISNULL(weight7,0)) [weight7]
-		,SUM(ISNULL(weight8,0)) [weight8]
-		,SUM(ISNULL(weight9,0)) [weight9]
-		,SUM(ISNULL(weight10,0)) [weight10]
-		,SUM(ISNULL(waste,0)) [waste] 
-		,SUM(ISNULL(cast(para as float),0)) [para] 
-		,SUM(ISNULL(cast(paraa as float),0)) [paraa] 
-		from view_cucs group by cubno) b on a.makeno=b.makeno
+	left join(select a.cubno makeno
+		,SUM(ISNULL(a.weight4,0)) [weight4] 
+		,SUM(ISNULL(a.weight5,0)) [weight5] 
+		,SUM(ISNULL(a.weight6,0)) [weight6] 
+		,SUM(ISNULL(a.weight7,0)) [weight7]
+		,SUM(ISNULL(a.weight8,0)) [weight8]
+		,SUM(ISNULL(a.weight9,0)) [weight9]
+		,SUM(ISNULL(a.weight10,0)) [weight10]
+		,SUM(ISNULL(a.waste,0)) [waste] 
+		,SUM(ISNULL(cast(a.para as float),0)) [para] 
+		,SUM(ISNULL(cast(a.paraa as float),0)) [paraa] 
+		from view_cucs a 
+		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+		where b.datea<=@t_edate
+		group by a.cubno) b on a.makeno=b.makeno
 	--w03 生產線廢料(a1)   w01 - w02 - w04         要回寫到cubs.price   
 	update @tmpa set w03 = cast(ISNULL(w01,0) as decimal(12,3))
 		-cast(ISNULL(w02,0) as decimal(12,3))

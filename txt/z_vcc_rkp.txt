@@ -299,7 +299,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
 	left join view_orde d on c.accy=d.accy and c.noa=d.noa
 	left join view_quat e on d.quatno=e.noa
-	left join view_cuts f on a.uno=f.bno
+	left join view_cuts f on len(isnull(a.uno,''))>0 and a.uno=f.bno
 	where b.noa is not null
 	and (len(@t_noa)=0 or a.noa=@t_noa)
 	and charindex('運費',a.product)=0
@@ -324,6 +324,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 	from @tmp
 	where gno='1'
 	group by ordeno,ordenoq
+	having count(1)>1
 	
 	insert into @tmp(pno,gno,ordeno,ordenoq,lengthc,mount,[weight])
 	select '3','3',CHAR(255),CHAR(255),SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
