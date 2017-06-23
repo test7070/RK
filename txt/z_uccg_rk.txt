@@ -656,6 +656,13 @@ z_uccg_rk01:
 		group by uno) b on a.uno=b.uno
 	where b.uno is not null
 	--------------------------------------------------------------------------------------
+	delete @tmp where ISNULL(weight01,0)=0 and ISNULL(weight02,0)=0 and ISNULL(weight03,0)=0 and ISNULL(weight04,0)=0
+		and ISNULL(weight05,0)=0 and ISNULL(weight06,0)=0 and ISNULL(weight07,0)=0 and ISNULL(weight08,0)=0
+		and ISNULL(weight09,0)=0 and ISNULL(weight10,0)=0 and ISNULL(weight11,0)=0 
+		and ISNULL(total01,0)=0 and ISNULL(total02,0)=0 and ISNULL(total03,0)=0 and ISNULL(total04,0)=0
+		and ISNULL(total05,0)=0 and ISNULL(total06,0)=0 and ISNULL(total07,0)=0 and ISNULL(total08,0)=0
+		and ISNULL(total09,0)=0 and ISNULL(total10,0)=0 and ISNULL(total11,0)=0 
+	
 	--期末存貨 = 期初存貨 + 盤點調整 + 本期購入 - 本期耗料 - 本期領料 
 	--        + 本期自調入 - 本期自調用料 - 本期銷貨 + 本期銷貨退回	- 本期報廢 - 本期退料
 	update @tmp set mount12 = isnull(mount01,0) + isnull(mount02,0) + isnull(mount03,0) - isnull(mount04,0) - isnull(mount05,0)
@@ -695,6 +702,22 @@ z_uccg_rk01:
 		,SUM(ISNULL(mount12,0)),SUM(ISNULL(weight12,0)),SUM(ISNULL(total12,0))
 	from @tmp
 	where pno=1
+	
+	-- 尾差
+	update @tmp set total12=0 where weight12=0 and total12 between -2 and 0
+
+	update @tmp set price01 = round(total01/weight01,3) where weight01!=0
+	update @tmp set price02 = round(total02/weight02,3) where weight02!=0
+	update @tmp set price03 = round(total03/weight03,3) where weight03!=0
+	update @tmp set price04 = round(total04/weight04,3) where weight04!=0
+	update @tmp set price05 = round(total05/weight05,3) where weight05!=0
+	update @tmp set price06 = round(total06/weight06,3) where weight06!=0
+	update @tmp set price07 = round(total07/weight07,3) where weight07!=0
+	update @tmp set price08 = round(total08/weight08,3) where weight08!=0
+	update @tmp set price09 = round(total09/weight09,3) where weight09!=0
+	update @tmp set price10 = round(total10/weight10,3) where weight10!=0
+	update @tmp set price11 = round(total11/weight11,3) where weight11!=0
+	update @tmp set price12 = round(total12/weight12,3) where weight12!=0
 	
 	select	ROW_NUMBER()over(order by a.pno,a.uno) rr
 		,a.gno
