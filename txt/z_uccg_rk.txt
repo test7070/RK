@@ -8,491 +8,739 @@ z_uccg_rk01:
 	declare @t_edate nvarchar(10) = case when '#non'=[4] then char(255) else [4] end
 	declare @t_bproductno nvarchar(30) = case when '#non'=[5] then '' else [5] end
 	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then char(255) else [6] end
-	declare @t_kind nvarchar(max) = case when '#non'=[8] then '' else [8] end
+	declare @t_kind nvarchar(max) = case when '#non'=[10] then '' else [10] end
 	-----------------------------------------------------------------------------------------------------
-	IF OBJECT_ID('tempdb..#z_uccg_rk01')is not null
-	BEGIN
-		drop table #z_uccg_rk01
-	END
-	create table #z_uccg_rk01(
+	declare @tmp table(
 		sel int identity(1,1)
-		,gno nvarchar(10)
-		,recno int
-		,productno nvarchar(30)
-		,product nvarchar(100)
-		,dime float
-		,width float
-		,lengthb float
-		,radius float
-		,uno nvarchar(30)
-		,kind nvarchar(20)
+		,gno nvarchar(20)
+		,pno int
+		,uno nvarchar(20)
 		--期初存貨
-		,mount01 float
-		,price01 float
-		,money01 float
-		--盤點調整	
-		,mount02 float
-		,price02 float
-		,money02 float		
-		--本期購入	tmpa  
-		,mount03 float
-		,price03 float
-		,money03 float		
-		--本期耗料	
-		,mount04 float
-		,price04 float
-		,money04 float		
-		--本期領用	tmpb   tmpc		
-		,mount05 float
-		,price05 float
-		,money05 float
-		--本期銷貨	tmpf	
-		,mount06 float
-		,price06 float
-		,money06 float	
+		,mount01 decimal(20,5)
+		,weight01 decimal(20,5)
+		,price01 decimal(20,5)
+		,total01 decimal(20,5)
+		--盤點調整   
+		,mount02 decimal(20,5)
+		,weight02 decimal(20,5)
+		,price02 decimal(20,5)
+		,total02 decimal(20,5)
+		--本期購入  
+		,mount03 decimal(20,5)
+		,weight03 decimal(20,5)
+		,price03 decimal(20,5)
+		,total03 decimal(20,5)
+		--本期耗料
+		,mount04 decimal(20,5)
+		,weight04 decimal(20,5)
+		,price04 decimal(20,5)
+		,total04 decimal(20,5)	
+		--本期領料	
+		,mount05 decimal(20,5)
+		,weight05 decimal(20,5)
+		,price05 decimal(20,5)
+		,total05 decimal(20,5)
+		--本期自調入
+		,mount06 decimal(20,5)
+		,weight06 decimal(20,5)
+		,price06 decimal(20,5)
+		,total06 decimal(20,5)
+		--本期自調用料
+		,mount07 decimal(20,5)
+		,weight07 decimal(20,5)
+		,price07 decimal(20,5)
+		,total07 decimal(20,5)
+		--本期銷貨
+		,mount08 decimal(20,5)
+		,weight08 decimal(20,5)
+		,price08 decimal(20,5)
+		,total08 decimal(20,5)
+		--本期銷貨退回	
+		,mount09 decimal(20,5)
+		,weight09 decimal(20,5)
+		,price09 decimal(20,5)
+		,total09 decimal(20,5)
 		--本期報廢	
-		,mount07 float
-		,price07 float
-		,money07 float		
-		--本期退料	
-		,mount08 float
-		,price08 float
-		,money08 float		
-		--其他  tmpd tmpe
-		,mount09 float
-		,price09 float
-		,money09 float
+		,mount10 decimal(20,5)
+		,weight10 decimal(20,5)
+		,price10 decimal(20,5)
+		,total10 decimal(20,5)
+		--本期退料
+		,mount11 decimal(20,5)
+		,weight11 decimal(20,5)
+		,price11 decimal(20,5)
+		,total11 decimal(20,5)	
 		--期末存貨
-		,mount10 float
-		,price10 float
-		,money10 float
+		,mount12 decimal(20,5)
+		,weight12 decimal(20,5)
+		,price12 decimal(20,5)
+		,total12 decimal(20,5)	
 	)
-	declare @uno nvarchar(30)
-	declare @weight float
-	declare @money float
-	--tmpa
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='a' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount01 = ISNULL(mount01,0) + @weight 
-				,money01 = ISNULL(money01,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-	--tmpb
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='b' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		--領用  扣
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,-@weight,-@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount01 = ISNULL(mount01,0) - @weight 
-				,money01 = ISNULL(money01,0) - @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-	--tmpc
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='c' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		--領用  扣
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,-@weight,-@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount01 = ISNULL(mount01,0) - @weight 
-				,money01 = ISNULL(money01,0) - @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-	--tmpd
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='d' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount01 = ISNULL(mount01,0) + @weight 
-				,money01 = ISNULL(money01,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table
-	--tmpe
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='e' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount01 = ISNULL(mount01,0) + @weight 
-				,money01 = ISNULL(money01,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table
-	--tmpf
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='f' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		--銷貨  扣
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount01,money01)values(@uno,-@weight,-@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount01 = ISNULL(mount01,0) - @weight 
-				,money01 = ISNULL(money01,0) - @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-				
-	
-	--------------------------------------------------------------------------------------------------------
-	---==================================================================================================
-	--------------------------------------------------------------------------------------------------------
-	--本期
-	--tmpa
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='a' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount03,money03)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount03 = ISNULL(mount03,0) + @weight 
-				,money03 = ISNULL(money03,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-	--tmpb
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='b' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		--領用  扣
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount05,money05)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount05 = ISNULL(mount05,0) + @weight 
-				,money05 = ISNULL(money05,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-	--tmpc
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='c' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		--領用  扣
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount05,money05)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount05 = ISNULL(mount05,0) + @weight 
-				,money05 = ISNULL(money05,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-	--tmpd
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='d' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount09,money09)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount09 = ISNULL(mount09,0) + @weight 
-				,money09 = ISNULL(money09,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table
-	--tmpe
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='e' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount09,money09)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount09 = ISNULL(mount09,0) + @weight 
-				,money09 = ISNULL(money09,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table
-	--tmpf
-	declare cursor_table cursor for 
-	select uno,sum(isnull([weight],0)),sum(isnull([money],0)) 
-	from z_uccg_rk 
-	where id='f' and datea<@t_bdate
-	group by uno
-	open cursor_table 
-	fetch next from cursor_table 
-	into @uno,@weight,@money
-	while(@@FETCH_STATUS <> -1) 
-	begin 
-		--銷貨  扣
-		if not exists(select * from #z_uccg_rk01 where uno=@uno)
-		begin
-			insert into #z_uccg_rk01(uno,mount06,money06)values(@uno,@weight,@money)
-		end
-		else
-		begin
-			update #z_uccg_rk01 set mount06 = ISNULL(mount06,0) + @weight 
-				,money06 = ISNULL(money06,0) + @money
-			where uno=@uno
-		end
-		fetch next from cursor_table 
-		into @uno,@weight,@money
-	end 
-	close cursor_table 
-	deallocate cursor_table 
-	------------------------------------------------------------------------------------------
-	update #z_uccg_rk01 set productno=b.productno
-		,product=b.product
-		,dime=b.dime
-		,width=b.width
-		,lengthb=b.lengthb
-		,radius=b.radius
-		,kind=b.kind
-	from #z_uccg_rk01 a
-	left join view_uccb b on a.uno=b.uno
-	
-	--A1 金屬底材
-	--A4 皮膜
-	--A5 保護膜
-	--A6 物料
-	--A7 成品
-	--A8 溶劑
-	
-	if len(@t_kind)>0
-	begin
-		delete #z_uccg_rk01 where not CHARINDEX(kind,@t_kind)>0
-	end
-	delete #z_uccg_rk01 where not ISNULL(productno,'') between @t_bproductno and @t_eproductno
-	
-	
-	update #z_uccg_rk01 set gno = '1'
-	insert into #z_uccg_rk01(gno
-		,mount01,mount02,mount03,mount04,mount05,mount06,mount07,mount08,mount09
-		,money01,money02,money03,money04,money05,money06,money07,money08,money09)
-	select '2',SUM(ISNULL(mount01,0)),SUM(ISNULL(mount02,0)),SUM(ISNULL(mount03,0)),SUM(ISNULL(mount04,0))
-		,SUM(ISNULL(mount05,0)),SUM(ISNULL(mount06,0)),SUM(ISNULL(mount07,0)),SUM(ISNULL(mount08,0)),SUM(ISNULL(mount09,0))
-		,SUM(ISNULL(money01,0)),SUM(ISNULL(money02,0)),SUM(ISNULL(money03,0)),SUM(ISNULL(money04,0))
-		,SUM(ISNULL(money05,0)),SUM(ISNULL(money06,0)),SUM(ISNULL(money07,0)),SUM(ISNULL(money08,0)),SUM(ISNULL(money09,0))
-	from #z_uccg_rk01
-	where gno='1'
-	
-	update #z_uccg_rk01 set mount10 = ISNULL(mount01,0)+ISNULL(mount02,0)+ISNULL(mount03,0)
-		-ISNULL(mount04,0)-ISNULL(mount05,0)-ISNULL(mount06,0)-ISNULL(mount07,0)-ISNULL(mount08,0)
-		+ISNULL(mount09,0)
-		,money10 = ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
-		-ISNULL(money04,0)-ISNULL(money05,0)-ISNULL(money06,0)-ISNULL(money07,0)-ISNULL(money08,0)
-		+ISNULL(money09,0)
-			
-	update #z_uccg_rk01 set price01 = case when isnull(mount01,0)=0 then 0 else ROUND(money01/mount01,2) end
-	update #z_uccg_rk01 set price02 = case when isnull(mount02,0)=0 then 0 else ROUND(money02/mount02,2) end
-	update #z_uccg_rk01 set price03 = case when isnull(mount03,0)=0 then 0 else ROUND(money03/mount03,2) end
-	update #z_uccg_rk01 set price04 = case when isnull(mount04,0)=0 then 0 else ROUND(money04/mount04,2) end
-	update #z_uccg_rk01 set price05 = case when isnull(mount05,0)=0 then 0 else ROUND(money05/mount05,2) end
-	update #z_uccg_rk01 set price06 = case when isnull(mount06,0)=0 then 0 else ROUND(money06/mount06,2) end
-	update #z_uccg_rk01 set price07 = case when isnull(mount07,0)=0 then 0 else ROUND(money07/mount07,2) end
-	update #z_uccg_rk01 set price08 = case when isnull(mount08,0)=0 then 0 else ROUND(money08/mount08,2) end
-	update #z_uccg_rk01 set price09 = case when isnull(mount09,0)=0 then 0 else ROUND(money09/mount09,2) end
-	update #z_uccg_rk01 set price10 = case when isnull(mount10,0)=0 then 0 else ROUND(money10/mount10,2) end		
+	--===============================================================================================
+	--期初存貨
+	declare @tmpa table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)
+	---------- 進
+	---- RC2
+	insert into @tmpa(uno,mount,[weight],total)	
+	select a.uno
+		,case when b.typea='1' then 1 else -1 end * ISNULL(a.mount,0)
+		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0)
+		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[total],0)
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea<@t_bdate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- INA
+	insert into @tmpa(uno,mount,[weight],total)	
+	select a.uno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,ISNULL(a.[total],0)
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea<@t_bdate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- CUTS 
+	insert into @tmpa(uno,mount,[weight],total)	
+	select a.bno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,round(c.sprice*ISNULL(a.[weight],0),5)
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.bno=c.uno
+	where b.datea<@t_bdate
+	and len(a.bno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 
-	update #z_uccg_rk01 set recno=b.recno
-	from #z_uccg_rk01 a
-	left join (select sel,ROW_NUMBER()over(order by gno,isnull(productno,''),isnull(dime,0),isnull(width,0),uno) recno from #z_uccg_rk01) b on a.sel=b.sel
+	---- CUBU 沒有CUBU
+	--==============================
+	---------- 出
+	---- VCC
+	insert into @tmpa(uno,mount,[weight],total)	
+	select a.uno
+		,case when b.typea='1' then -1 else 1 end * case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when b.typea='1' then -1 else 1 end * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when b.typea='1' then -1 else 1 end * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea<@t_bdate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- GET
+	insert into @tmpa(uno,mount,[weight],total)	
+	select a.uno
+		,-1 * case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,-1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * -1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea<@t_bdate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- CUBT    皮膜、保護膜  都是看M  (weight)
+	insert into @tmpa(uno,mount,[weight],total)	
+	select a.uno
+		,0
+		,-1 *ISNULL(a.[weight],0)
+		,round(c.sprice * -1 * ISNULL(a.[weight],0),5)
+	from view_cubt a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea<@t_bdate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================
+	--盤點調整  
+	declare @tmpb table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)
+	---- INA
+	insert into @tmpb(uno,mount,[weight],total)	
+	select a.uno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,ISNULL(a.[total],0)
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)>0
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- GET
+	insert into @tmpb(uno,mount,[weight],total)	
+	select a.uno
+		,-1 * case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,-1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * -1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)>0
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--=============================================================================================== 
+	--本期購入 
+	declare @tmpc table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)
+	---- RC2
+	insert into @tmpc(uno,mount,[weight],total)	
+	select a.uno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,ISNULL(a.[total],0)
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and a.typea='1'
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- INA
+	insert into @tmpb(uno,mount,[weight],total)	
+	select a.uno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,ISNULL(a.[total],0)
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	left join view_get d on a.noa=d.noa
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)=0
+	and d.noa is null --排除領料轉來的
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- CUTS 
+	insert into @tmpb(uno,mount,[weight],total)	
+	select a.bno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,round(c.sprice*ISNULL(a.[weight],0),5)
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.bno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.bno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--=============================================================================================== 
+	--本期耗料
+	declare @tmpd table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)
+	---- CUBT
+	insert into @tmpd(uno,mount,[weight],total)	
+	select a.uno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,round(c.sprice * ISNULL(a.[weight],0),5)
+	from view_cubt a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- GET
+	insert into @tmpd(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	left join view_cub d on a.noa=d.noa
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)=0 
+	and CHARINDEX('退料',b.typea)=0 
+	and CHARINDEX('報廢',b.typea)=0 
+	and len(ISNULL(b.idno,''))=0  -- 沒有入庫批號的
+	and d.noa is not null -- 生產作業轉來的
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--本期領料
+	declare @tmpe table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)
+	---- GET
+	insert into @tmpe(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	left join view_cub d on a.noa=d.noa
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)=0
+	and CHARINDEX('退料',b.typea)=0 
+	and CHARINDEX('報廢',b.typea)=0 
+	and len(ISNULL(b.idno,''))=0  -- 沒有入庫批號的
+	and d.noa is null -- 排除生產作業轉來的
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--本期自調入
+	declare @tmpf table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)
+	insert into @tmpf(uno,mount,[weight],total)	
+	select a.uno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,ISNULL(a.[total],0)
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	left join view_get d on a.noa=d.noa
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)=0
+	and CHARINDEX('退料',b.typea)=0 
+	and CHARINDEX('報廢',b.typea)=0 
+	and d.noa is not null --領料轉來的都算
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--本期自調用料
+	declare @tmpg table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)
+	---- GET
+	insert into @tmpg(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)=0
+	and CHARINDEX('退料',b.typea)=0 
+	and CHARINDEX('報廢',b.typea)=0 
+	and len(ISNULL(b.idno,''))>0  -- 有入庫批號的
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--本期銷貨
+	declare @tmph table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)	
+	---- VCC
+	insert into @tmph(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and b.typea='1'
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--本期銷貨退回
+	declare @tmpi table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)	
+	---- VCC
+	insert into @tmpi(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and b.typea='2'
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--本期報廢
+	declare @tmpj table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)	
+	---- GET
+	insert into @tmpi(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('報廢',b.typea)>0 
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--本期退料
+	declare @tmpk table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,mount decimal(20,5)
+		,[weight] decimal(20,5)
+		,price decimal(20,5)
+		,total decimal(20,5)
+	)	
+	---- RC2
+	insert into @tmpk(uno,mount,[weight],total)	
+	select a.uno
+		,ISNULL(a.mount,0)
+		,ISNULL(a.[weight],0)
+		,ISNULL(a.[total],0)
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and a.typea='2'
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- GET
+	insert into @tmpi(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('報廢',b.typea)>0 
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	--===============================================================================================	
+	--期末存貨
 
-	select gno
-		,recno rr
-		,product a01
-		,dime a02
-		,width a03
-		,uno a04
+	--------------------------------------------------------------------------------------------------
+	-- tmpa 01
+	insert into @tmp(uno,mount01,weight01,total01)
+	select uno,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0))
+	from @tmpa 
+	group by uno
+	
+	-- tmpb 02
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpb group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount02=b.mount,weight02=b.[weight],total02=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpb
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	
+	-- tmpc 03
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpc group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount03=b.mount,weight03=b.[weight],total03=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpc
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	
+	-- tmpd 04
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpd group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount04=b.mount,weight04=b.[weight],total04=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpd
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	
+	-- tmpe 05
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpe group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount05=b.mount,weight05=b.[weight],total05=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpe
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	
+	-- tmpf 06
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpf group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount06=b.mount,weight06=b.[weight],total06=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpf
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	
+	-- tmpg 07
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpg group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount07=b.mount,weight07=b.[weight],total07=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpg
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
 		
-		,mount01 b01
-		,price01 b02
-		,money01 b03
-		,mount02 b04
-		,price02 b05
-		,money02 b06
-		,mount03 b07
-		,price03 b08
-		,money03 b09
-		,mount04 b10
-		,price04 b11
-		,money04 b12
-		,mount05 b13
-		,price05 b14
-		,money05 b15
-		,mount06 b16
-		,price06 b17
-		,money06 b18
-		,mount07 b19
-		,price07 b20
-		,money07 b21
-		,mount08 b22
-		,price08 b23
-		,money08 b24
-		,mount09 b25
-		,price09 b26
-		,money09 b27
-		,mount10 b28
-		,price10 b29
-		,money10 b30
-	from #z_uccg_rk01 
-	order by recno
+	-- tmph 08
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmph group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount08=b.mount,weight08=b.[weight],total08=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmph
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
 	
-	drop table #z_uccg_rk01;
+	-- tmpi 09
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpi group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount09=b.mount,weight09=b.[weight],total09=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpi
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	
+	-- tmpj 10
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpj group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount10=b.mount,weight10=b.[weight],total10=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpj
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	
+	-- tmpk 11
+	insert into @tmp(uno)
+	select a.uno
+	from(select uno from @tmpk group by uno) a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	update @tmp set mount11=b.mount,weight11=b.[weight],total11=b.total
+	from @tmp a
+	left join (select uno,SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight],SUM(ISNULL([total],0)) [total]
+		from @tmpk
+		group by uno) b on a.uno=b.uno
+	where b.uno is not null
+	--------------------------------------------------------------------------------------
+	--期末存貨 = 期初存貨 + 盤點調整 + 本期購入 - 本期耗料 - 本期領料 
+	--        + 本期自調入 - 本期自調用料 - 本期銷貨 + 本期銷貨退回	- 本期報廢 - 本期退料
+	update @tmp set mount12 = isnull(mount01,0) + isnull(mount02,0) + isnull(mount03,0) - isnull(mount04,0) - isnull(mount05,0)
+		 + isnull(mount06,0) - isnull(mount07,0) - isnull(mount08,0) + isnull(mount09,0) - isnull(mount10,0) - isnull(mount11,0)
+		,weight12 = isnull(weight01,0) + isnull(weight02,0) + isnull(weight03,0) - isnull(weight04,0) - isnull(weight05,0)
+		 + isnull(weight06,0) - isnull(weight07,0) - isnull(weight08,0) + isnull(weight09,0) - isnull(weight10,0) - isnull(weight11,0)
+		,total12 = isnull(total01,0) + isnull(total02,0) + isnull(total03,0) - isnull(total04,0) - isnull(total05,0)
+		 + isnull(total06,0) - isnull(total07,0) - isnull(total08,0) + isnull(total09,0) - isnull(total10,0) - isnull(total11,0)
+	
+	update @tmp set gno='1',pno=1
+	
+	insert into @tmp(gno,pno
+		,mount01,weight01,total01
+		,mount02,weight02,total02
+		,mount03,weight03,total03
+		,mount04,weight04,total04
+		,mount05,weight05,total05
+		,mount06,weight06,total06
+		,mount07,weight07,total07
+		,mount08,weight08,total08
+		,mount09,weight09,total09
+		,mount10,weight10,total10
+		,mount11,weight11,total11
+		,mount12,weight12,total12)
+	select '2',2
+		,SUM(ISNULL(mount01,0)),SUM(ISNULL(weight01,0)),SUM(ISNULL(total01,0))
+		,SUM(ISNULL(mount02,0)),SUM(ISNULL(weight02,0)),SUM(ISNULL(total02,0))
+		,SUM(ISNULL(mount03,0)),SUM(ISNULL(weight03,0)),SUM(ISNULL(total03,0))
+		,SUM(ISNULL(mount04,0)),SUM(ISNULL(weight04,0)),SUM(ISNULL(total04,0))
+		,SUM(ISNULL(mount05,0)),SUM(ISNULL(weight05,0)),SUM(ISNULL(total05,0))
+		,SUM(ISNULL(mount06,0)),SUM(ISNULL(weight06,0)),SUM(ISNULL(total06,0))
+		,SUM(ISNULL(mount07,0)),SUM(ISNULL(weight07,0)),SUM(ISNULL(total07,0))
+		,SUM(ISNULL(mount08,0)),SUM(ISNULL(weight08,0)),SUM(ISNULL(total08,0))
+		,SUM(ISNULL(mount09,0)),SUM(ISNULL(weight09,0)),SUM(ISNULL(total09,0))
+		,SUM(ISNULL(mount10,0)),SUM(ISNULL(weight10,0)),SUM(ISNULL(total10,0))
+		,SUM(ISNULL(mount11,0)),SUM(ISNULL(weight11,0)),SUM(ISNULL(total11,0))
+		,SUM(ISNULL(mount12,0)),SUM(ISNULL(weight12,0)),SUM(ISNULL(total12,0))
+	from @tmp
+	where pno=1
+	
+	select	ROW_NUMBER()over(order by a.pno,a.uno) rr
+		,a.gno
+		,a.uno
+		,dbo.getComma(weight01,-1) w01
+		,dbo.getComma(price01,-1) p01
+		,dbo.getComma(total01,-1) t01
+		,dbo.getComma(weight02,-1) w02
+		,dbo.getComma(price02,-1) p02
+		,dbo.getComma(total02,-1) t02
+		,dbo.getComma(weight03,-1) w03
+		,dbo.getComma(price03,-1) p03
+		,dbo.getComma(total03,-1) t03
+		,dbo.getComma(weight04,-1) w04
+		,dbo.getComma(price04,-1) p04
+		,dbo.getComma(total04,-1) t04
+		,dbo.getComma(weight05,-1) w05
+		,dbo.getComma(price05,-1) p05
+		,dbo.getComma(total05,-1) t05
+		,dbo.getComma(weight06,-1) w06
+		,dbo.getComma(price06,-1) p06
+		,dbo.getComma(total06,-1) t06
+		,dbo.getComma(weight07,-1) w07
+		,dbo.getComma(price07,-1) p07
+		,dbo.getComma(total07,-1) t07
+		,dbo.getComma(weight08,-1) w08
+		,dbo.getComma(price08,-1) p08
+		,dbo.getComma(total08,-1) t08
+		,dbo.getComma(weight09,-1) w09
+		,dbo.getComma(price09,-1) p09
+		,dbo.getComma(total09,-1) t09
+		,dbo.getComma(weight10,-1) w10
+		,dbo.getComma(price10,-1) p10
+		,dbo.getComma(total10,-1) t10
+		,dbo.getComma(weight11,-1) w11
+		,dbo.getComma(price11,-1) p11
+		,dbo.getComma(total11,-1) t11
+		,dbo.getComma(weight12,-1) w12
+		,dbo.getComma(price12,-1) p12
+		,dbo.getComma(total12,-1) t12
+		,b.productno pp01,b.product pp02
+		,case when isnull(b.dime,'')=0 then '' else cast(b.dime as nvarchar) end pp03
+		,case when isnull(b.width,'')=0 then '' else cast(b.width as nvarchar) end pp04
+	from @tmp a
+	left join view_uccb b on a.uno=b.uno
+	order by a.pno,a.uno;
 
 z_uccg_rk:	
 	declare @t_edate nvarchar(20) = [1]

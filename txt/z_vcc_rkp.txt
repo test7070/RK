@@ -320,13 +320,12 @@ z_vcc_rkp01:--z_vcc_rkp01
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by ordeno,ordenoq,itemno,sel) recno from @tmp ) b on a.sel=b.sel
 	
-	
+	--就算只有一筆明細,也照樣顯示小計
 	insert into @tmp(pno,gno,ordeno,ordenoq,lengthc,mount,[weight])
 	select '2','2',ordeno,ordenoq,SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
 	from @tmp
 	where gno='1'
 	group by ordeno,ordenoq
-	having count(1)>1
 	
 	insert into @tmp(pno,gno,ordeno,ordenoq,lengthc,mount,[weight])
 	select '3','3',CHAR(255),CHAR(255),SUM(ISNULL(lengthc,0)),SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0))
