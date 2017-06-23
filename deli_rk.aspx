@@ -299,9 +299,12 @@
             	for (var i = 0; i < q_bbsCount; i++) {
                     $('#txtCost_'+i).val(q_add(q_add(q_add(q_float('txtVatbase_'+i),q_float('txtVat_'+i)),q_float('txtLcmoney_'+i)),q_float('txtOthfee_'+i)));
                 }
-            	//成本單價 = 進貨總成本/ 重量
+            	//成本單價 = 進貨總成本/ 重量     
+            	// 2017/06/22 sprice 單位統一(NTD/KG)
+            	// txtCost_ 進貨總成本 (NTD)
             	for (var i = 0; i < q_bbsCount; i++) {
-                    $('#txtSprice_'+i).val(q_float('txtWeight_'+i)==0?0:round(q_div(q_float('txtCost_'+i),q_float('txtWeight_'+i)),2));
+            		var tt = q_float('txtWeight_'+i)==0?0:round(q_div(q_float('txtCost_'+i),q_float('txtWeight_'+i)),3);
+                    $('#txtSprice_'+i).val(tt);
                 }
             	
             	//BBM
@@ -325,7 +328,6 @@
             		xCommoditytax = q_add(xCommoditytax,q_float('txtCommoditytax_'+i));
             		xLctotal = q_add(xLctotal,q_float('txtLcmoney'+i));
             		
-            		$('#txtSprice_'+i).val(q_float('txtWeight_'+i)==0?0:round(q_div(q_float('txtCost_'+i),q_float('txtWeight_'+i)),2));
             	}
             	$('#txtCoinretiremoney').val(xCoinretiremoney);
             	$('#txtCointotal').val(xCointotal);

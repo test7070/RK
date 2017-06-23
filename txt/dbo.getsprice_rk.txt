@@ -20,28 +20,7 @@ begin
 	end
 	else
 	begin
-		if exists(select * from view_uccb where uno=@t_uno and tablea='rc2s')
-		begin
-			--SPRICE  外幣要換成台幣
-			declare @accy nvarchar(20) = ''
-			declare @noa nvarchar(20) = ''
-			declare @noq nvarchar(10) = ''
-			select @accy=accy,@noa=noa,@noq=noq from view_uccb where uno=@t_uno
-			declare @floata float = 0
-			select @floata = floata from view_rc2 where accy=@accy and noa=@noa
-			if(@floata=0 or @floata=1)
-			begin
-				select @sprice=isnull(sprice,0) from view_rc2s where @accy=accy and @noa=noa and @noq=noq
-			end
-			else 
-			begin
-				select @sprice=round(isnull(sprice,0)*@floata,5) from view_rc2s where @accy=accy and @noa=noa and @noq=noq
-			end
-		end
-		else
-		begin
-			select @sprice=isnull(sprice,0) from view_uccb where uno=@t_uno
-		end
+		select @sprice=isnull(sprice,0) from view_uccb where uno=@t_uno
 	end
 	return @sprice
 end	
