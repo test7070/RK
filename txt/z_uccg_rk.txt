@@ -10,6 +10,7 @@ z_uccg_rk01:
 	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then char(255) else [6] end
 	declare @t_kind nvarchar(max) = case when '#non'=[10] then '' else [10] end
 	-----------------------------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -136,8 +137,8 @@ z_uccg_rk01:
 	---- VCC
 	insert into @tmpa(uno,mount,[weight],total)	
 	select a.uno
-		,case when b.typea='1' then -1 else 1 end * case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when b.typea='1' then -1 else 1 end * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when b.typea='1' then -1 else 1 end * case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when b.typea='1' then -1 else 1 end * case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when b.typea='1' then -1 else 1 end * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
@@ -150,8 +151,8 @@ z_uccg_rk01:
 	---- GET
 	insert into @tmpa(uno,mount,[weight],total)	
 	select a.uno
-		,-1 * case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,-1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,-1 * case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,-1 * case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * -1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
@@ -175,6 +176,9 @@ z_uccg_rk01:
 	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+		
+	-- 重量為0 就當作庫存也沒有了
+	update @tmpa set mount=0,total=0 where [weight] = 0
 	--===============================================================================================
 	--盤點調整  
 	declare @tmpb table(
@@ -203,8 +207,8 @@ z_uccg_rk01:
 	---- GET
 	insert into @tmpb(uno,mount,[weight],total)	
 	select a.uno
-		,-1 * case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,-1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,-1 * case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,-1 * case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * -1 * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
@@ -298,8 +302,8 @@ z_uccg_rk01:
 	---- GET
 	insert into @tmpd(uno,mount,[weight],total)	
 	select a.uno
-		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
@@ -328,8 +332,8 @@ z_uccg_rk01:
 	---- GET
 	insert into @tmpe(uno,mount,[weight],total)	
 	select a.uno
-		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
@@ -386,8 +390,8 @@ z_uccg_rk01:
 	---- GET
 	insert into @tmpg(uno,mount,[weight],total)	
 	select a.uno
-		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
@@ -414,8 +418,8 @@ z_uccg_rk01:
 	---- VCC
 	insert into @tmph(uno,mount,[weight],total)	
 	select a.uno
-		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
@@ -439,8 +443,8 @@ z_uccg_rk01:
 	---- VCC
 	insert into @tmpi(uno,mount,[weight],total)	
 	select a.uno
-		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
@@ -464,8 +468,8 @@ z_uccg_rk01:
 	---- GET
 	insert into @tmpi(uno,mount,[weight],total)	
 	select a.uno
-		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
@@ -504,8 +508,8 @@ z_uccg_rk01:
 	---- GET
 	insert into @tmpi(uno,mount,[weight],total)	
 	select a.uno
-		,case when isnull(a.gmount,0)=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
-		,case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,round(c.sprice * case when isnull(a.[gweight],0)=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end,5)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
@@ -525,7 +529,8 @@ z_uccg_rk01:
 	select uno,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0))
 	from @tmpa 
 	group by uno
-	
+	--重量0   數量 金額都歸0
+	update @tmp set mount01=0,total01=0 where weight01=0
 	-- tmpb 02
 	insert into @tmp(uno)
 	select a.uno
@@ -662,7 +667,7 @@ z_uccg_rk01:
 		and ISNULL(total01,0)=0 and ISNULL(total02,0)=0 and ISNULL(total03,0)=0 and ISNULL(total04,0)=0
 		and ISNULL(total05,0)=0 and ISNULL(total06,0)=0 and ISNULL(total07,0)=0 and ISNULL(total08,0)=0
 		and ISNULL(total09,0)=0 and ISNULL(total10,0)=0 and ISNULL(total11,0)=0 
-	
+
 	--期末存貨 = 期初存貨 + 盤點調整 + 本期購入 - 本期耗料 - 本期領料 
 	--        + 本期自調入 - 本期自調用料 - 本期銷貨 + 本期銷貨退回	- 本期報廢 - 本期退料
 	update @tmp set mount12 = isnull(mount01,0) + isnull(mount02,0) + isnull(mount03,0) - isnull(mount04,0) - isnull(mount05,0)
@@ -671,6 +676,9 @@ z_uccg_rk01:
 		 + isnull(weight06,0) - isnull(weight07,0) - isnull(weight08,0) + isnull(weight09,0) - isnull(weight10,0) - isnull(weight11,0)
 		,total12 = isnull(total01,0) + isnull(total02,0) + isnull(total03,0) - isnull(total04,0) - isnull(total05,0)
 		 + isnull(total06,0) - isnull(total07,0) - isnull(total08,0) + isnull(total09,0) - isnull(total10,0) - isnull(total11,0)
+		 
+	-- 重量為0 就當作庫存也沒有了
+	update @tmp set mount12=0,total12=0 where weight12 = 0
 	
 	update @tmp set gno='1',pno=1
 	
@@ -718,6 +726,13 @@ z_uccg_rk01:
 	update @tmp set price10 = round(total10/weight10,3) where weight10!=0
 	update @tmp set price11 = round(total11/weight11,3) where weight11!=0
 	update @tmp set price12 = round(total12/weight12,3) where weight12!=0
+
+
+--delete stbk.dbo._tmp01
+--insert into stbk.dbo._tmp01(uno,mount,weight,price,total)
+--select uno,mount01,weight01,price01,total01 from @tmp a order by a.pno,a.uno
+--return
+	
 	
 	select	ROW_NUMBER()over(order by a.pno,a.uno) rr
 		,a.gno

@@ -8,23 +8,23 @@ z_ucc_rk02:--z_ucc_rk02
 	declare @t_bproductno nvarchar(30) = case when '#non'=[5] then '' else [5] end 
 	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then char(255) else [6] end 
 	
-	declare @t_bradius float = 0
-	declare @t_eradius float = 999999
-	declare @t_bdime float = 0
-	declare @t_edime float = 999999
-	declare @t_bwidth float = 0
-	declare @t_ewidth float = 999999
-	declare @t_blengthb float = 0
-	declare @t_elengthb float = 999999
+	declare @t_bradius decimal(25,8) = 0
+	declare @t_eradius decimal(25,8) = 999999
+	declare @t_bdime decimal(25,8) = 0
+	declare @t_edime decimal(25,8) = 999999
+	declare @t_bwidth decimal(25,8) = 0
+	declare @t_ewidth decimal(25,8) = 999999
+	declare @t_blengthb decimal(25,8) = 0
+	declare @t_elengthb decimal(25,8) = 999999
 	begin try
-		set @t_bradius = case when '#non'=[7] then 0 else cast([7] as float) end 
-		set @t_eradius = case when '#non'=[8] then 99999 else cast([8] as float) end 
-		set @t_bdime = case when '#non'=[9] then 0 else cast([9] as float) end 
-		set @t_edime = case when '#non'=[10] then 99999 else cast([10] as float) end 
-		set @t_bwidth = case when '#non'=[11] then 0 else cast([11] as float) end 
-		set @t_ewidth = case when '#non'=[12] then 99999 else cast([12] as float) end 
-		set @t_blengthb = case when '#non'=[13] then 0 else cast([13] as float) end 
-		set @t_elengthb = case when '#non'=[14] then 99999 else cast([14] as float) end 
+		set @t_bradius = case when '#non'=[7] then 0 else cast([7] as decimal(25,8)) end 
+		set @t_eradius = case when '#non'=[8] then 99999 else cast([8] as decimal(25,8)) end 
+		set @t_bdime = case when '#non'=[9] then 0 else cast([9] as decimal(25,8)) end 
+		set @t_edime = case when '#non'=[10] then 99999 else cast([10] as decimal(25,8)) end 
+		set @t_bwidth = case when '#non'=[11] then 0 else cast([11] as decimal(25,8)) end 
+		set @t_ewidth = case when '#non'=[12] then 99999 else cast([12] as decimal(25,8)) end 
+		set @t_blengthb = case when '#non'=[13] then 0 else cast([13] as decimal(25,8)) end 
+		set @t_elengthb = case when '#non'=[14] then 99999 else cast([14] as decimal(25,8)) end 
 	end try
 	begin catch
 		set @t_bradius = 0
@@ -55,8 +55,8 @@ z_ucc_rk02:--z_ucc_rk02
 		,uno nvarchar(30)
 		,productno nvarchar(20)
 		
-		,mount float
-		,[weight] float
+		,mount decimal(25,8)
+		,[weight] decimal(25,8)
 		
 		,storeno nvarchar(20)
 		,place nvarchar(20)
@@ -68,8 +68,8 @@ z_ucc_rk02:--z_ucc_rk02
 		,noq nvarchar(10)
 		,datea nvarchar(20)
 		
-		,emount float
-		,eweight float
+		,emount decimal(25,8)
+		,eweight decimal(25,8)
 		,isLast int
 	)
 	--進貨(退貨不算)
@@ -178,10 +178,10 @@ z_ucc_rk02:--z_ucc_rk02
 	close cursor_table
 	deallocate cursor_table
 	-----------------------------------------------------------------
-	declare @mount float
-	declare @weight float
-	declare @emount float
-	declare @eweight float
+	declare @mount decimal(25,8)
+	declare @weight decimal(25,8)
+	declare @emount decimal(25,8)
+	declare @eweight decimal(25,8)
 	declare @isLast int
 	
 	declare cursor_table cursor for
@@ -249,10 +249,10 @@ z_ucc_rk02:--z_ucc_rk02
 		,width float
 		,lengthb float
 		,radius float
-		,mount float
-		,[weight] float
-		,price float
-		,total float
+		,mount decimal(25,8)
+		,[weight] decimal(25,8)
+		,price decimal(25,8)
+		,total decimal(25,8)
 		,uno2 nvarchar(30)
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(20)
@@ -332,9 +332,9 @@ z_ucc_rk02:--z_ucc_rk02
 	
 	select row_number()over(order by gno,productno,size,datea,uno) rr
 		,* 
-		,dbo.getComma(mount,-1) cmount
-		,dbo.getComma([weight],-1) cweight
-		,dbo.getComma(total,0) ctotal
+		,dbo.getComma(cast(mount as float),-1) cmount
+		,dbo.getComma(cast([weight] as float),-1) cweight
+		,dbo.getComma(cast(total as float),-1) ctotal
 	from #z_ucc_rk02_b 
 	order by pno,productno,zspec,size,gno,datea,uno
 	
@@ -351,23 +351,23 @@ z_ucc_rk01:--z_ucc_rk01
 	declare @t_bproductno nvarchar(30) = case when '#non'=[5] then '' else [5] end 
 	declare @t_eproductno nvarchar(30) = case when '#non'=[6] then char(255) else [6] end 
 	
-	declare @t_bradius float = 0
-	declare @t_eradius float = 999999
-	declare @t_bdime float = 0
-	declare @t_edime float = 999999
-	declare @t_bwidth float = 0
-	declare @t_ewidth float = 999999
-	declare @t_blengthb float = 0
-	declare @t_elengthb float = 999999
+	declare @t_bradius decimal(25,8) = 0
+	declare @t_eradius decimal(25,8) = 999999
+	declare @t_bdime decimal(25,8) = 0
+	declare @t_edime decimal(25,8) = 999999
+	declare @t_bwidth decimal(25,8) = 0
+	declare @t_ewidth decimal(25,8) = 999999
+	declare @t_blengthb decimal(25,8) = 0
+	declare @t_elengthb decimal(25,8) = 999999
 	begin try
-		set @t_bradius = case when '#non'=[7] then 0 else cast([7] as float) end 
-		set @t_eradius = case when '#non'=[8] then 99999 else cast([8] as float) end 
-		set @t_bdime = case when '#non'=[9] then 0 else cast([9] as float) end 
-		set @t_edime = case when '#non'=[10] then 99999 else cast([10] as float) end 
-		set @t_bwidth = case when '#non'=[11] then 0 else cast([11] as float) end 
-		set @t_ewidth = case when '#non'=[12] then 99999 else cast([12] as float) end 
-		set @t_blengthb = case when '#non'=[13] then 0 else cast([13] as float) end 
-		set @t_elengthb = case when '#non'=[14] then 99999 else cast([14] as float) end 
+		set @t_bradius = case when '#non'=[7] then 0 else cast([7] as decimal(25,8)) end 
+		set @t_eradius = case when '#non'=[8] then 99999 else cast([8] as decimal(25,8)) end 
+		set @t_bdime = case when '#non'=[9] then 0 else cast([9] as decimal(25,8)) end 
+		set @t_edime = case when '#non'=[10] then 99999 else cast([10] as decimal(25,8)) end 
+		set @t_bwidth = case when '#non'=[11] then 0 else cast([11] as decimal(25,8)) end 
+		set @t_ewidth = case when '#non'=[12] then 99999 else cast([12] as decimal(25,8)) end 
+		set @t_blengthb = case when '#non'=[13] then 0 else cast([13] as decimal(25,8)) end 
+		set @t_elengthb = case when '#non'=[14] then 99999 else cast([14] as decimal(25,8)) end 
 	end try
 	begin catch
 		set @t_bradius = 0
@@ -417,10 +417,10 @@ z_ucc_rk01:--z_ucc_rk01
 		,width float
 		,lengthb float
 		,radius float
-		,mount float
-		,[weight] float
-		,price float
-		,total float
+		,mount decimal(25,8)
+		,[weight] decimal(25,8)
+		,price decimal(25,8)
+		,total decimal(25,8)
 		,uno2 nvarchar(30)
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(20)
@@ -521,9 +521,9 @@ z_ucc_rk01:--z_ucc_rk01
 	
 	select row_number()over(order by gno,productno,zspec,size,datea,uno) rr
 		,* 
-		,dbo.getComma(mount,-1) cmount
-		,dbo.getComma([weight],-1) cweight
-		,dbo.getComma(total,0) ctotal
+		,dbo.getComma(cast(mount as float),-1) cmount
+		,dbo.getComma(cast([weight] as float),-1) cweight
+		,dbo.getComma(cast(total as float),-1) ctotal
 	from #z_ucc_rk01 
 	order by pno,productno,zspec,size,gno,datea,uno
 	
