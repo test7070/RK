@@ -245,10 +245,10 @@ z_ucc_rk02:--z_ucc_rk02
 		,cspec nvarchar(50)
 		,zspec nvarchar(50)
 		,size nvarchar(50)
-		,dime float
-		,width float
-		,lengthb float
-		,radius float
+		,dime decimal(25,8)
+		,width decimal(25,8)
+		,lengthb decimal(25,8)
+		,radius decimal(25,8)
 		,mount decimal(25,8)
 		,[weight] decimal(25,8)
 		,price decimal(25,8)
@@ -318,7 +318,13 @@ z_ucc_rk02:--z_ucc_rk02
 	where len(ISNULL(a.product,''))=0
 	
 	update #z_ucc_rk02_b set total = round(weight*price,0)
-	
+
+----================================================	
+--delete stbk.dbo._tmp02
+--insert into stbk.dbo._tmp02(uno,mount,weight,price,total)
+--select uno,mount,weight,price,total from #z_ucc_rk02_b
+--return	
+----================================================	
 	insert into #z_ucc_rk02_b(pno,gno,productno,zspec,size,mount,[weight],total)
 	select 1,'2',productno,zspec,size,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL([total],0)) from #z_ucc_rk02_b where gno='1' group by productno,zspec,size
 	
@@ -332,9 +338,10 @@ z_ucc_rk02:--z_ucc_rk02
 	
 	select row_number()over(order by gno,productno,size,datea,uno) rr
 		,* 
+		,dbo.getComma(cast(price as float),-1) cprice
 		,dbo.getComma(cast(mount as float),-1) cmount
 		,dbo.getComma(cast([weight] as float),-1) cweight
-		,dbo.getComma(cast(total as float),-1) ctotal
+		,dbo.getComma(cast(total as float),0) ctotal
 	from #z_ucc_rk02_b 
 	order by pno,productno,zspec,size,gno,datea,uno
 	
