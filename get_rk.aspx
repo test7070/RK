@@ -518,7 +518,7 @@
             input[type="text"], input[type="button"] {
                 font-size: medium;
             }
-            .dbbs{width: 1200px;}
+            .dbbs{width: 1280px;}
             .tbbs {
                 margin: 0;
                 padding: 2px;
@@ -647,6 +647,7 @@
 					<td align="center" style="width:50px;">件數</td>
 					<td align="center" style="width:80px;">數量<BR>重量</td>
 					<td align="center" style="width:80px;">毛重</td>
+					<td align="center" style="width:80px;">領料成本</td>
 					<td align="center" style="width:200px;">備註</td>
 					<td align="center" style="width:120px;">訂單編號</td>
 				</tr>
@@ -674,6 +675,9 @@
 					<td>
 						<input class="txt num" id="txtEweight.*" type="text" style="width:95%;display:none;"/>
 						<input class="txt num" id="txtMweight.*" type="text" style="width:95%;"/>
+					</td>
+					<td>
+						<input class="txt num" id="txtScost.*" type="text" style="width:95%;"/>
 					</td>
 					<td>
 						<input class="txt" id="txtMemo.*" type="text" style="width:95%;"/>
