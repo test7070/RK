@@ -93,7 +93,8 @@
 				$('#txtDate2').val(t_year + '/' + t_month + '/' + t_day);
 				$('#txtEdate').val(t_year + '/' + t_month + '/' + t_day);
 				
-				$('#btnOk').before($('#btnOk').clone().attr('id', 'btnOk2').show()).hide();
+				//暫時先不用
+				/*$('#btnOk').before($('#btnOk').clone().attr('id', 'btnOk2').show()).hide();
 				$('#btnOk2').click(function() {
 					switch($('#q_report').data('info').radioIndex) {
                         case 2:
@@ -135,7 +136,7 @@
                            	$('#btnOk').click();
                             break;
                     }
-				});
+				});*/
             }
 
             function q_boxClose(s2) {
