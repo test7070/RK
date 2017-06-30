@@ -318,7 +318,7 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 	
 	if len(@t_cust)>0
 	begin
-		delete #z_ucc_rk02_b where CHARINDEX(@t_cust,cust)=0
+		delete #z_ucc_rk02_b where not(CHARINDEX(@t_cust,cust)>0 or @t_cust=custno)
 	end
 	
 	update #z_ucc_rk02_b set size=case kind when 'A1' then CAST(cast(dime as float) as nvarchar)+'*'+CAST(cast(width as float) as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(cast(lengthb as float) as nvarchar) else 'COIL' end
@@ -519,7 +519,7 @@ z_ucc_rk01:--z_ucc_rk01
 	
 	if len(@t_cust)>0
 	begin
-		delete #z_ucc_rk01 where CHARINDEX(@t_cust,cust)=0
+		delete #z_ucc_rk01 where not(CHARINDEX(@t_cust,cust)>0 or @t_cust=custno)
 	end
 	
 	update #z_ucc_rk01 set size=case kind when 'A1' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(lengthb as nvarchar) else 'COIL' end
