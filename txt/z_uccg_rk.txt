@@ -602,7 +602,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 		
 	-- 重量為0 就當作庫存也沒有了
-	update @tmpa set mount=0,total=0 where [weight] = 0
+	---update @tmpa set mount=0,total=0 where [weight] = 0
 	
 	--===============================================================================================
 	--盤點調整  
@@ -940,7 +940,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	from @tmpa 
 	group by uno
 	--重量0   數量 金額都歸0
-	update @tmp set mount01=0,total01=0 where weight01=0
+	---update @tmp set mount01=0,total01=0 where weight01=0
 	-- tmpb 02
 	insert into @tmp(uno)
 	select a.uno
@@ -1088,7 +1088,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 		 + isnull(total06,0) - isnull(total07,0) - isnull(total08,0) + isnull(total09,0) - isnull(total10,0) - isnull(total11,0)
 		 
 	-- 重量為0 就當作庫存也沒有了
-	update @tmp set mount12=0,total12=0 where weight12 = 0
+	-----update @tmp set mount12=0,total12=0 where weight12 = 0
 	
 	update @tmp set gno='1',pno=1
 	
