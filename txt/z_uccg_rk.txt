@@ -11,7 +11,93 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	--declare @t_kind nvarchar(max) = case when '#non'=[10] then '' else [10] end	
 	declare @uno nvarchar(30) = ''
 	-------------------------------------------------------------------------------------
-	-- 原則上調料後的東西不能再次調料
+	-- 計算sprice
+	-- 當進貨退回時,成本單價將會變動
+	declare @tmp_01 table(
+		uno nvarchar(30)
+	)
+	--先列出會異動到的批號
+	insert into @tmp_01(uno)
+	select a.uno
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	where len(isnull(a.uno,''))>0
+	and b.datea between @bdate and @edate
+	group by a.uno
+	---
+	declare @tmp_02 table(
+		uno nvarchar(30)
+		,datea nvarchar(20)
+		,[weight] float
+		,[total] float
+	)
+	insert into @tmp_02(uno,datea,[weight],total)
+	select a.uno,c.datea
+		,sum(case when c.typea='1' then 1 else -1 end * isnull(b.[weight],0))
+		,sum(case when c.typea='1' then 1 else -1 end * isnull(b.[total],0))
+	from @tmp_01 a
+	left join view_rc2s b on a.uno=b.uno
+	left join view_rc2 c on b.accy=c.accy and b.noa=c.noa
+	group by a.uno,c.datea
+	---
+	declare @tmp_03 table(
+		uno nvarchar(30)
+		,datea nvarchar(20)
+		,price float
+	)
+	declare @xuno nvarchar(30)
+	declare @xdate nvarchar(20)
+	declare @xweight float
+	declare @xtotal float
+	
+	declare @zweight float
+	declare @ztotal float
+	
+	declare cursor_table cursor for 
+	select uno from @tmp_01 order by uno
+	open cursor_table 
+	fetch next from cursor_table 
+	into @xuno
+	while(@@FETCH_STATUS <> -1) 
+	begin 
+		select @zweight = 0, @ztotal = 0
+		
+		declare cursor_table2 cursor for 
+		select datea,[weight],total from @tmp_02 where uno=@xuno order by datea
+		open cursor_table2 
+		fetch next from cursor_table2 
+		into @xdate,@xweight,@xtotal
+		while(@@FETCH_STATUS <> -1) 
+		begin 
+			set @zweight = @zweight + @xweight
+			set @ztotal = @ztotal + @xtotal 
+			
+			insert into @tmp_03(uno,datea,price)
+			select @xuno,@xdate,case when isnull(@zweight,0) !=0 then round(@ztotal/@zweight,5) else 0 end
+		
+			fetch next from cursor_table2 
+			into @xdate,@xweight,@xtotal
+		end 
+		close cursor_table2 
+		deallocate cursor_table2
+		
+	
+		fetch next from cursor_table 
+		into @xuno
+	end 
+	close cursor_table 
+	deallocate cursor_table 
+	
+	--- 寫入SPRICE
+	delete sprice 
+	from sprice a
+	left join @tmp_01 b on a.uno=b.uno
+	where b.uno is not null
+	
+	insert into sprice(datea,sprice,uno,tablea)
+	select datea,price,uno,'rc2s'
+	from @tmp_03
+
 	----===================================================================================
 	declare @tmp table(
 		gno nvarchar(10)
@@ -125,17 +211,19 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	--======================================================================================
 	--計算成本  
 	----(盤點的由人工輸入,故忽略)
-	update #z_uccg_rk set scost = ROUND(a.[weight]*b.sprice,0)
+	---- 進貨成本單價要依 TABLE SPRICE的資料來判斷
+	update #z_uccg_rk set scost = ROUND(a.[weight]* case when c.uno is null then b.sprice else isnull(c.sprice,0) end,0)
 	from #z_uccg_rk a
 	left join view_uccb b on a.uno=b.uno
+	outer apply(select top 1 * from sprice where b.tablea=tablea and a.uno=uno and a.datea>=datea order by datea desc) c
 	where isnull(a.isucce,0)!=1
-	
+
 	--先計算不是領料組合的
-	declare @xuno nvarchar(30)
+--	declare @xuno nvarchar(30)
 	declare @weight float --進貨、入庫重量
 	declare @money float --進貨、入庫成本
 	
-	declare @xweight float -- 領料重量
+--	declare @xweight float -- 領料重量
 	declare @xcost float -- 領料成本
 	declare @diff float
 	
