@@ -70,6 +70,12 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,coin nvarchar(20)
 	)
 	---------------------------------------------------------------------------------------------
+	declare @tmpa table(
+		gno nvarchar(20)
+	)
+	insert into @tmpa(gno)values('1')
+	insert into @tmpa(gno)values('2')
+	
 	insert into @tmp(gno,pno,accy,noa,noq,cno,acomp,odate,paytype,trantype
 		,salesno,sales
 		,tggno,tgg,tel,fax,post,addr,post2,addr2,conn
@@ -77,7 +83,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 		,kind, productno,product,dime,width,lengthb,radius,sizea,spec,cspec
 		,unit,mount,[weight],price,totals,rdate,memo,coin
 	)
-	select '1',1,a.accy,a.noa,b.no2,a.cno,a.acomp,a.odate,a.paytype,a.trantype
+	select e.gno,1,a.accy,a.noa,b.no2,a.cno,a.acomp,a.odate,a.paytype,a.trantype
 		,a.salesno,a.sales
 		,a.tggno,a.tgg,a.tel,a.fax,a.post,a.addr,a.post2,a.addr2,c.namea
 		,a.[money],a.tax,a.total
@@ -87,6 +93,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 	left join view_ordcs b on a.accy=b.accy and a.noa=b.noa
 	outer apply(select top 1 * from conn where noa=a.tggno and len(ISNULL(namea,''))>0)c
 	left join spec d on b.spec=d.noa
+	left join @tmpa e on 1=1
 	where a.noa=@t_noa
 
 	update @tmp set sizea = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
@@ -98,6 +105,7 @@ z_ordc_rkp01:--z_ordc_rkp01
 		+case when len(cspec)>0 then ' '+cspec else '' end
 	from @tmp a
 	where len(ISNULL(sizea,''))=0
+
 	
 	-- 頁尾要保留7行
 	declare @memo nvarchar(max) =''
@@ -135,13 +143,13 @@ z_ordc_rkp01:--z_ordc_rkp01
 	end
 	
 	
-	insert into @tmp(gno,pno)values('4',4)
-	insert into @tmp(gno,pno,memo)values('5',5,@memo1)
-	insert into @tmp(gno,pno,memo)values('6',6,@memo2)
-	insert into @tmp(gno,pno,memo)values('7',7,@memo3)
-	insert into @tmp(gno,pno)values('8',8)
+	insert into @tmp(gno,pno)values('5',5)
+	insert into @tmp(gno,pno,memo)values('6',6,@memo1)
+	insert into @tmp(gno,pno,memo)values('7',7,@memo2)
+	insert into @tmp(gno,pno,memo)values('8',8,@memo3)
 	insert into @tmp(gno,pno)values('9',9)
 	insert into @tmp(gno,pno)values('10',10)
+	insert into @tmp(gno,pno)values('11',11)
 	
 	-------------------------------------------------------------------------------
 	declare @line int = 35 -- 一頁35行
@@ -150,12 +158,12 @@ z_ordc_rkp01:--z_ordc_rkp01
 	
 	if @n%@line != 0
 	begin
-		insert into @tmp(gno,pno,memo)values('2',2,'---&nbsp'+CHAR(59)+'以下空白&nbsp'+CHAR(59)+'---')
+		insert into @tmp(gno,pno,memo)values('3',3,'---&nbsp'+CHAR(59)+'以下空白&nbsp'+CHAR(59)+'---')
 		set @n = @n +1
 	end
 	while @n%@line!=0
 	begin
-		insert into @tmp(gno,pno)values('3',3)
+		insert into @tmp(gno,pno)values('4',4)
 		set @n = @n +1
 	end
 	-----------------------------------------------------------------------------------------------
