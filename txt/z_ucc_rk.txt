@@ -99,7 +99,7 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 	--CUTS  成品進倉
 	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money]
 		,storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.bno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0),ROUND(ISNULL(a.sprice,0)*isnull(a.[weight],0),0)
+	select a.bno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0),ISNULL(a.total,0)
 		,isnull(a.storeno,''),isnull(a.place,'')
 		,'03','cut',a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
 	from view_cuts a

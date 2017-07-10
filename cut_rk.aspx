@@ -19,7 +19,7 @@
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
             var q_readonlys = ['txtCname'];
             var bbmNum = [];
-            var bbsNum = [['txtHours', 10, 0, 1], ['txtHweight', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 1, 1]];
+            var bbsNum = [['txtHours', 10, 0, 1], ['txtHweight', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 1, 1], ['txtSprice'], ['txtTotal']];
             var bbmMask = [];
             var bbsMask = [];
             q_sqlCount = 6;
@@ -700,6 +700,8 @@
 					<td align="center" style="width:100px;">開始時間</td>
 					<td align="center" style="width:100px;">結束時間</td>	
 					<td align="center" style="width:80px;">施工工時(分)</td>
+					<td style="width:100px;">單價</td>
+					<td style="width:100px;">金額</td>
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
@@ -748,6 +750,8 @@
 					<td><input id="txtBtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtEtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtSprice.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtTotal.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 				</tr>
 			</table>
 		</div>

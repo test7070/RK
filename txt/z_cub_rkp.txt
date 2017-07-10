@@ -2585,18 +2585,12 @@ z_cub_rkp03:--z_cub_rkp03
 	--[6]
 	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end	
 	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end	
-	--------------------------------------------------------------
-	IF OBJECT_ID('tempdb..#z_cub_rkp03')is not null
-		BEGIN
-			drop table #z_cub_rkp03
-		END
-		select * into #z_cub_rkp03 from dbo.makeno(@t_edate,0)
-	
+	------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
-		,gno nvarchar(10)
+		,gno nvarchar(20)
+		,pno int
 		,recno int
-		,isCut int --判斷是否已轉為成品
 		,makeno nvarchar(30)
 		,dime float
 		,width float
@@ -2607,72 +2601,91 @@ z_cub_rkp03:--z_cub_rkp03
 		,custno nvarchar(20)
 		,cust nvarchar(50)
 		,size nvarchar(20)
-		,datea nvarchar(20)
-		,[weight] float
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(10)
-		,weight01 float --期初存貨       cubs.hweight  依日期判斷是前期還本期
+		
+		,date_cub nvarchar(20) -- cub date
+		,[weight] float
+		,price float
+		,total float
+		
+		,date_cut nvarchar(20) -- cut date
+		--期初存貨
+		,weight01 float
 		,price01 float
-		,money01 float
-		,weight02 float --本期完工投入   cubs.hweight  依日期判斷是前期還本期 
+		,total01 float			
+		--盤點調整	
+		,weight02 float
 		,price02 float
-		,money02 float
-		,weight03 float --本期耗料(假如有成品入庫就當做已經由半成品變為成品)
+		,total02 float			
+		--本期完工投入	
+		,weight03 float
 		,price03 float
-		,money03 float
-		,weight04 float--期末存貨
+		,total03 float			
+		--本期耗料	
+		,weight04 float
 		,price04 float
-		,money04 float
+		,total04 float			
+		--本期樣品	
+		,weight05 float
+		,price05 float
+		,total05 float			
+		--本期報廢	
+		,weight06 float
+		,price06 float
+		,total06 float			
+		--期末存貨	
+		,weight07 float
+		,price07 float
+		,total07 float	
 	)
-	insert into @tmp(gno,makeno,dime,width,lengthb,radius,datea,[weight],isCut,ordeno,ordeno2
-		,custno,cust,size)
-	select '1',a.makeno,a.dime,a.width,a.lengthb,a.radius,b.datea,isnull(a.hweight,0),0,a.ordeno,a.no2
-		,a.custno,a.comp,a.size
+	insert into @tmp(gno,pno,makeno,date_cub,[weight],total
+		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size)
+	select '1',1,a.makeno,b.datea,a.hweight,a.total
+		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
-	where ISNULL(b.datea,'') <= @t_edate
+	where b.datea<=@t_edate
 	
 	update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
 	from @tmp a
 	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
 	
-	update @tmp set isCut=1
-	from @tmp a
-	left join view_cuts b on a.makeno=b.cname
-	where b.noa is not null
+	update @tmp set price = case when [weight]!=0 then round(total/[weight],3) else 0 end
 	
-	update @tmp set
-		weight01=case when a.datea<@t_bdate then a.weight else 0 end
-		,money01=case when a.datea<@t_bdate then b.totmoney1 else 0 end
-		,weight02=case when a.datea<@t_bdate then 0 else a.weight end
-		,money02=case when a.datea<@t_bdate then 0 else b.totmoney1 end
-		,weight03=case when a.isCut=1 then a.weight else 0 end
-		,money03=case when a.isCut=1 then b.totmoney1 else 0 end
+	update @tmp set date_cut=ISNULL(b.datea,'')
 	from @tmp a
-	left join #z_cub_rkp03 b on a.makeno=b.makeno
+	outer apply(select top 1 * from view_cuts where a.makeno=cname order by datea) b
+	------------------------------------------------------------------------------------------
+	-- 只留下  有庫存 及 本期轉為成品的
+	delete @tmp where len(date_cut)>0 and date_cut<@t_bdate
 	
-	-- 只顯示尚未轉為成品的,以及 本期轉為成品的
-	delete @tmp where not(isCut=0 or (isCut=1 and weight02>0))
+	update @tmp set weight01=[weight],price01=price,total01=total where date_cub<@t_bdate
+	update @tmp set weight03=[weight],price03=price,total03=total where date_cub>=@t_bdate
+	update @tmp set weight04=[weight],price04=price,total04=total where date_cut between @t_bdate and @t_edate
+	update @tmp set weight07=ISNULL(weight01,0)+ISNULL(weight03,0)-ISNULL(weight04,0)
+		,total07=ISNULL(total01,0)+ISNULL(total03,0)-ISNULL(total04,0)
 	
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
 	
-	update @tmp set weight04 = ISNULL(weight01,0)+ISNULL(weight02,0)-ISNULL(weight03,0)
-		,money04 = ISNULL(money01,0)+ISNULL(money02,0)-ISNULL(money03,0)
+	insert into @tmp(gno,pno,weight01,weight02,weight03,weight04,weight05,weight06,weight07
+		,total01,total02,total03,total04,total05,total06,total07)
+	select '2',2
+		,sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(weight03,0)),sum(isnull(weight04,0))
+		,sum(isnull(weight05,0)),sum(isnull(weight06,0)),sum(isnull(weight07,0))
+		,sum(isnull(total01,0)),sum(isnull(total02,0)),sum(isnull(total03,0)),sum(isnull(total04,0))
+		,sum(isnull(total05,0)),sum(isnull(total06,0)),sum(isnull(total07,0))
+	from @tmp	
 	
-	insert into @tmp(gno,weight01,money01,weight02,money02,weight03,money03,weight04,money04)
-	select '2' 
-		,SUM(ISNULL(weight01,0)),SUM(ISNULL(money01,0))
-		,SUM(ISNULL(weight02,0)),SUM(ISNULL(money02,0))
-		,SUM(ISNULL(weight03,0)),SUM(ISNULL(money03,0))
-		,SUM(ISNULL(weight04,0)),SUM(ISNULL(money04,0))
-	from @tmp
-	
-	update @tmp set price01 = case when weight01=0 then 0 else ROUND(money01/weight01,2) end
-		,price02 = case when weight02=0 then 0 else ROUND(money02/weight02,2) end
-		,price03 = case when weight03=0 then 0 else ROUND(money03/weight03,2) end
-		,price04 = case when weight04=0 then 0 else ROUND(money04/weight04,2) end
+	update @tmp set price01 = case when ISNULL(weight01,0) = 0 then 0 else round(total01/weight01,2) end
+		,price02 = case when ISNULL(weight02,0) = 0 then 0 else round(total02/weight02,2) end
+		,price03 = case when ISNULL(weight03,0) = 0 then 0 else round(total03/weight03,2) end
+		,price04 = case when ISNULL(weight04,0) = 0 then 0 else round(total04/weight04,2) end
+		,price05 = case when ISNULL(weight05,0) = 0 then 0 else round(total05/weight05,2) end
+		,price06 = case when ISNULL(weight06,0) = 0 then 0 else round(total06/weight06,2) end
+		,price07 = case when ISNULL(weight07,0) = 0 then 0 else round(total07/weight07,2) end
 	
 	select gno
 		,recno rr
@@ -2688,19 +2701,19 @@ z_cub_rkp03:--z_cub_rkp03
 
 		,dbo.getComma(weight01,-1) a09
 		,dbo.getComma(price01,-1) a10
-		,dbo.getComma(money01,-1) a11
+		,dbo.getComma(total01,-1) a11
 		--盤點調整			
 		,'' a12
 		,'' a13
 		,'' a14
 		--本期完工投入
-		,dbo.getComma(weight02,-1) a15
-		,dbo.getComma(price02,-1) a16
-		,dbo.getComma(money02,-1) a17			
+		,dbo.getComma(weight03,-1) a15
+		,dbo.getComma(price03,-1) a16
+		,dbo.getComma(total03,-1) a17			
 		--本期耗料
-		,dbo.getComma(weight03,-1) a18
-		,dbo.getComma(price03,-1) a19
-		,dbo.getComma(money03,-1) a20			
+		,dbo.getComma(weight04,-1) a18
+		,dbo.getComma(price04,-1) a19
+		,dbo.getComma(total04,-1) a20			
 		--本期樣品 
 		,'' a21
 		,'' a22
@@ -2710,10 +2723,10 @@ z_cub_rkp03:--z_cub_rkp03
 		,'' a25
 		,'' a26	
 		--期末存貨
-		,dbo.getComma(weight04,-1) a27
-		,dbo.getComma(price04,-1) a28
-		,dbo.getComma(money04,-1) a29
-	from @tmp order by gno,recno;
+		,dbo.getComma(weight07,-1) a27
+		,dbo.getComma(price07,-1) a28
+		,dbo.getComma(total07,-1) a29
+	from @tmp order by pno,recno;
 
 z_cub_rkp01:--z_cub_rkp01	
 	SET QUOTED_IDENTIFIER OFF
