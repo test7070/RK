@@ -938,7 +938,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- INA
-	insert into @tmpb(uno,mount,[weight],total)	
+	insert into @tmpc(uno,mount,[weight],total)	
 	select a.uno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
@@ -955,7 +955,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- CUTS 
-	insert into @tmpb(uno,mount,[weight],total)	
+	insert into @tmpc(uno,mount,[weight],total)	
 	select a.bno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
@@ -966,6 +966,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	where b.datea between @t_bdate and @t_edate
 	and len(a.bno)>0
 	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('盤點',b.typea)=0
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	--=============================================================================================== 
