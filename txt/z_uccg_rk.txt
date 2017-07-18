@@ -1199,6 +1199,21 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and a.typea='2'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	---- GET
+	insert into @tmpk(uno,mount,[weight],total)	
+	select a.uno
+		,case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
+		,case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
+		,isnull(a.scost,0)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where b.datea between @t_bdate and @t_edate
+	and len(a.uno)>0
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and CHARINDEX('退料',b.typea)>0 
+	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
+	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	--===============================================================================================	
 	--期末存貨
 
