@@ -18,7 +18,7 @@
             q_desc = 1;
             q_tables = 's';
             var q_name = "costa";
-            var q_readonly = ['txtNoa','txtWages','txtMakeless','txtMoney'];
+            var q_readonly = ['txtNoa'];
             var q_readonlys = [];
             var bbmNum = [['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney',15,0,1],['txtPrice1',15,2,1],['txtPrice2',15,2,1],['txtPrice3',15,2,1]];
             var bbsNum = [['txtMount', 15, 2, 1],['txtPrice', 15, 2, 1],['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney', 15, 0, 1]];
@@ -34,7 +34,7 @@
 				['txtProductno_', 'btnProduct_', 'chgitem', 'noa,item', 'txtProductno_,txtProduct_', 'chgitem_b.aspx']);
 			var t_mech = '';
 			function sum() {
-				var t_money=0,t_wages=0,t_makeless=0;
+				/*var t_money=0,t_wages=0,t_makeless=0;
             	for(var i=0;i<q_bbsCount;i++){
             		t_money = q_add(t_money,q_float('txtMoney_'+i));
             		t_wages = q_add(t_wages,q_float('txtWages_'+i));
@@ -42,7 +42,7 @@
             	}    
             	$('#txtMoney').val(t_money);
             	$('#txtWages').val(t_wages);
-            	$('#txtMakeless').val(t_makeless);
+            	$('#txtMakeless').val(t_makeless);*/
             }
             
             $(document).ready(function() {
@@ -373,13 +373,15 @@
 			<table class="tview" id="tview" >
 				<tr>
 					<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
-					<td style="width:80px; color:black;"><a id='vewNoa'> </a></td>
 					<td style="width:100px; color:black;"><a id='vewMon'> </a></td>
+					<td style="width:100px; color:black;"><a>直接人工</a></td>
+					<td style="width:100px; color:black;"><a>製造費用</a></td>
 				</tr>
 				<tr>
 					<td><input id="chkBrow.*" type="checkbox" style=''/></td>
-					<td id='noa' style="text-align: center;">~noa</td>
 					<td id='mon' style="text-align: center;">~mon</td>
+					<td id='wages' style="text-align: center;">~wages</td>
+					<td id='makeless' style="text-align: center;">~makeless</td>
 				</tr>
 			</table>
 		</div>
@@ -418,7 +420,8 @@
 				</tr>
 			</table>
 		</div>	
-		<div class='dbbs'>
+		<!-- 2017/07/20 先暫時不用BBS -->
+		<div class='dbbs' style="display:none;">
 				<table id="tbbs" class='tbbs'>
 					<tr style='color:white; background:#003366;' >
 						<td style="width:20px;">
