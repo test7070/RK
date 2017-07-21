@@ -19,7 +19,7 @@
 			var toIns = true;
 			var q_name = "cub";
 			var q_readonly = ['txtNoa','txtWorker','txtWorker2'];
-			var q_readonlys = ['txtNoq','txtMakeno','txtSize','txtDime','txtWidth','txtProductno','txtProduct','txtPrice','txtW01','txtW02','txtTotal'];
+			var q_readonlys = ['txtNoq','txtMakeno','txtSize','txtDime','txtWidth','txtProductno','txtProduct','txtPrice','txtW01','txtW02','txtW03','txtTotal'];
 			var q_readonlyt = ['txtNoq','txtProductno','txtProduct'];
 			var bbmNum = [];
 			var bbsNum = [];
@@ -981,6 +981,7 @@
 						<td style="width:80px;" align="center">施工工時(分)</td>
 						<!-- COIL 重量(KG) = 耗料重-->
 						<td style="display:none;" align="center">耗料重</td>
+						<td style="width:80px;" align="center">投入重量</td>
 						<td style="width:100px;" align="center">原物料成本</td>
 						<td style="width:80px;" align="center">直接人工</td>
 						<td style="width:80px;" align="center">製造費用</td>
@@ -1042,6 +1043,7 @@
 						<td><input id="txtMins.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<!-- COIL 重量(KG) = 耗料重-->
 						<td style="display:none;"><input id="txtGweight.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<td><input id="txtW03.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtTotal.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtW01.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtW02.*" type="text" class="num" style="float:left;width:95%;"/></td>
