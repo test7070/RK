@@ -100,12 +100,13 @@
             function btnOk() {
             	sum();
             	
-                var t_noa = trim($('#txtNoa').val());
-                var t_date = trim($('#txtMon').val());
-                if (t_noa.length == 0 || t_noa == "AUTO")
-                    q_gtnoa(q_name, replaceAll(q_getPara('sys.key_costa') + (t_date.length == 0 ? q_date() : t_date), '/', ''));
-                else
-                    wrServer(t_noa);
+            	var t_mon = $.trim($('#txtMon').val());
+            	if(t_mon.length==0){
+            		alert('請輸入月份');
+            		return;
+            	}
+            	$('#txtNoa').val(t_mon);
+            	wrServer(t_mon);
             }
             function _btnSeek() {
                 if (q_cur > 0 && q_cur < 4)// 1-3
@@ -395,10 +396,10 @@
 					<td class="tdZ"> </td>
 				</tr>
 				<tr>
-					<td><span> </span><a id="lblNoa" class="lbl"> </a></td>
-					<td><input id="txtNoa" type="text" class="txt c1"/></td>
 					<td><span> </span><a id="lblMon" class="lbl"> </a></td>
 					<td><input id="txtMon" type="text" class="txt c1"/></td>
+					<td style="display:none;"><span> </span><a id="lblNoa" class="lbl"> </a></td>
+					<td style="display:none;"><input id="txtNoa" type="text" class="txt c1"/></td>
 				</tr>
 				<tr>
 					<td><span> </span><a id="lblWages" class="lbl">直接人工</a></td>
@@ -417,6 +418,10 @@
 					<td><input id="txtMoney" type="text" class="txt num c1"/> </td>
 					<td><span> </span><a id="lblPrice3" class="lbl">瓦斯(KG/元)</a></td>
 					<td><input id="txtPrice3" type="text" class="txt num c1"/> </td>
+				</tr>
+				<tr>
+					<td><span> </span><a id="lblMemo" class="lbl">備註</a></td>
+					<td colspan="3"><textarea id="txtMemo" rows="5" class="txt c1"> </textarea></td>
 				</tr>
 			</table>
 		</div>	

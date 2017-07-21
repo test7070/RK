@@ -54,7 +54,10 @@
 					},{
 						type : '6', //[12] 7
 						name : 'xuno'
-					}]
+					},{
+                        type : '6',//[13] 8
+                        name : 'ymon'
+                    }]
 				});
 				q_popAssign();
 

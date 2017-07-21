@@ -2603,6 +2603,7 @@ z_cub_rkp03:--z_cub_rkp03
 		,size nvarchar(20)
 		,ordeno nvarchar(20)
 		,ordeno2 nvarchar(10)
+		,mins float
 		
 		,date_cub nvarchar(20) -- cub date
 		,[weight] float
@@ -2640,9 +2641,11 @@ z_cub_rkp03:--z_cub_rkp03
 		,total07 float	
 	)
 	insert into @tmp(gno,pno,makeno,date_cub,[weight],total
-		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size)
-	select '1',1,a.makeno,b.datea,a.hweight,a.total
+		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
+		,mins)
+	select '1',1,a.makeno,b.datea,a.hweight,isnull(a.total,0) + isnull(a.w01,0) + isnull(a.w01,0)
 		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
+		,a.mins
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_edate
@@ -2671,12 +2674,14 @@ z_cub_rkp03:--z_cub_rkp03
 	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
 	
 	insert into @tmp(gno,pno,weight01,weight02,weight03,weight04,weight05,weight06,weight07
-		,total01,total02,total03,total04,total05,total06,total07)
+		,total01,total02,total03,total04,total05,total06,total07
+		,mins)
 	select '2',2
 		,sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(weight03,0)),sum(isnull(weight04,0))
 		,sum(isnull(weight05,0)),sum(isnull(weight06,0)),sum(isnull(weight07,0))
 		,sum(isnull(total01,0)),sum(isnull(total02,0)),sum(isnull(total03,0)),sum(isnull(total04,0))
 		,sum(isnull(total05,0)),sum(isnull(total06,0)),sum(isnull(total07,0))
+		,sum(isnull(mins,0))
 	from @tmp	
 	
 	update @tmp set price01 = case when ISNULL(weight01,0) = 0 then 0 else round(total01/weight01,2) end
@@ -2726,6 +2731,7 @@ z_cub_rkp03:--z_cub_rkp03
 		,dbo.getComma(weight07,-1) a27
 		,dbo.getComma(price07,-1) a28
 		,dbo.getComma(total07,-1) a29
+		,mins a30
 	from @tmp order by pno,recno;
 
 z_cub_rkp01:--z_cub_rkp01	
@@ -3070,10 +3076,9 @@ z_cub_rkp01:--z_cub_rkp01
 	
 z_cub_rkp02:--z_cub_rkp02	
 	SET QUOTED_IDENTIFIER OFF
-	--declare @t_datea nvarchar(max) = case when '#non' = [6] then '' else [6] end
 	declare @t_bdate nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	declare @t_edate nvarchar(max) = case when '#non' = [8] then char(255) else [8] end
-	declare @t_datea nvarchar(max) = @t_edate
+	--------------------------------------------------------------------------------
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -3110,14 +3115,16 @@ z_cub_rkp02:--z_cub_rkp02
 		,mon nvarchar(20)
 	)
 	insert into @tmp(cubno,cubnoq,gno,dime,radius,width,lengthb
-		,makeno,custno,cust,timea,weight02,ordeno,no2)
+		,makeno,custno,cust,timea,weight02,ordeno,no2
+		,money01,money02,money03)
 	select a.noa,a.noq, '1',a.dime,a.radius,a.width,a.lengthb
 		,a.makeno,a.custno,a.comp
 		,a.mins,a.hweight,a.ordeno,a.no2
+		,ISNULL(a.total,0),ISNULL(a.w01,0),ISNULL(a.w02,0)
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
-	where b.datea<=@t_datea
+	where b.datea between @t_bdate and @t_edate
 	
 	update @tmp set custno=b.custno,cust=b.nick
 	from @tmp a
@@ -3139,21 +3146,7 @@ z_cub_rkp02:--z_cub_rkp02
 	from @tmp a
 	outer apply (select top 1 productno,product from view_cubt where noa=a.cubno and nor=a.cubnoq and kind='2' order by noq) b
 	
-	--製造成本
-	IF OBJECT_ID('tempdb..#z_cub_rkp02')is not null
-	BEGIN
-		drop table #z_cub_rkp02
-	END
-	select * into #z_cub_rkp02 from dbo.makeno(@t_datea,0)
-	
-	update @tmp set weight01=b.totweight1
-		,weight02=b.totweight2
-		,money01=b.totmoney1
-		,money02=ISNULL(b.wages01,0)--直接人工金額
-		,money03=ISNULL(b.makeless01,0)--製造費用金額
-	from @tmp a
-	left join #z_cub_rkp02 b on a.makeno=b.makeno
-	
+
 	update @tmp set money04=ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
 	--合計
 	insert into @tmp(gno,timea,weight01,weight02,money01,money02,money03,money04)
@@ -3172,8 +3165,6 @@ z_cub_rkp02:--z_cub_rkp02
 	left join view_cuts b on a.makeno=b.cname
 	left join view_cut c on b.accy=c.accy and b.noa=c.noa
 	where gno='1'
-	
-	delete @tmp where not isnull(mon,'') between left(@t_bdate,6) and left(@t_edate,6)
 	
 	select gno
 		,row_number()over(order by gno,makeno) rr
@@ -3202,8 +3193,7 @@ z_cub_rkp02:--z_cub_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a22
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a23
 	from @tmp
-	order by gno,makeno
-	drop table #z_cub_rkp02;
+	order by gno,makeno;
 	
 z_cub_rkp05:--z_cub_rkp05	
 	SET QUOTED_IDENTIFIER OFF
@@ -3902,71 +3892,11 @@ z_cub_rkp01_old:--z_cub_rkp01
 z_cub_rkp04:--z_cub_rkp04
 	SET QUOTED_IDENTIFIER OFF
 	declare @cmd nvarchar(max)
-	--成品進倉 cut 的日期
-	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end
-	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
+	declare @t_mon nvarchar(max) = case when '#non' = [13] then '' else [13] end
 	--------------------------------------------------------------------------------------------------
-	declare @table nvarchar(20)
-	declare @tables nvarchar(20)
-	
-	-- 進貨、入庫  成本單價都以重量計
-	
-	declare cursor_table cursor for
-	SELECT replace(TABLE_NAME,'rc2s','rc2'),TABLE_NAME 
-	FROM INFORMATION_SCHEMA.TABLES 
-	where TABLE_NAME like 'rc2s[0-9][0-9][0-9]%' 
-	open cursor_table
-	fetch next from cursor_table
-	into @table,@tables
-	while(@@FETCH_STATUS <> -1)
-	begin	
-		set @cmd="
-		update "+@tables+" set sprice=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end
-			,sprice2=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end
-		from "+@tables+" a
-		left join "+@table+" b on a.noa=b.noa
-		where b.datea<=@t_date"
-		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_edate
-		
-		fetch next from cursor_table
-		into @table,@tables
-	end
-	close cursor_table
-	deallocate cursor_table
-
-	declare cursor_table cursor for
-	SELECT replace(TABLE_NAME,'inas','ina'),TABLE_NAME 
-	FROM INFORMATION_SCHEMA.TABLES 
-	where TABLE_NAME like 'inas[0-9][0-9][0-9]%' 
-	open cursor_table
-	fetch next from cursor_table
-	into @table,@tables
-	while(@@FETCH_STATUS <> -1)
-	begin	
-		set @cmd="
-		update "+@tables+" set sprice=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end
-		,sprice2=case when isnull(a.[weight],0)=0 then 0 else round(a.total/a.[weight],4) end 
-		from "+@tables+" a
-		left join "+@table+" b on a.noa=b.noa
-		where b.datea<=@t_date"
-		execute sp_executesql @cmd,N'@t_date nvarchar(20)',@t_date=@t_edate
-		
-		fetch next from cursor_table
-		into @table,@tables
-	end
-	close cursor_table
-	deallocate cursor_table
-
-	--------------------------------------------------------------------------------------------------
-	--CUTS
-	declare @sel int
-	declare @makeno nvarchar(20)
-	declare @accy nvarchar(10)
-	declare @noa nvarchar(20)
-	declare @noq nvarchar(10)
-	declare @money float
-	declare @uno nvarchar(30)
-	declare @weight float
+	declare @money01 float = 0 --人工費用
+	declare @money02 float = 0 --製造費用
+	select @money01=wages,@money02=makeless from costa where mon=@t_mon
 	
 	IF OBJECT_ID('tempdb..#z_cub_rkp04')is not null
 	BEGIN
@@ -3977,124 +3907,92 @@ z_cub_rkp04:--z_cub_rkp04
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
-		,uno nvarchar(30)
-		,makeno nvarchar(20)
-		,[weight] float
-		,[money] float
-		,price float
+		,mins float
+		,money01 float
+		,money02 float
 	)
-	/*
-	以製造批號 算出成本單價
-	若多次入庫,則用重量分攤
-	聯琦 cut left(noa,3)='105' 是期初匯入的,排除!
-	*/
-	insert into #z_cub_rkp04(accy,noa,noq,uno,makeno,[weight])
-	select a.accy,a.noa,a.noq,a.bno,a.cname,a.[weight]
-	from view_cuts a
-	left join view_cut b on a.accy=b.accy and a.noa=b.noa
-	where b.datea between @t_bdate and @t_edate
-	and left(a.noa,3)!='105'
-	and len(isnull(a.cname,''))>0
-	------------------------------------------------------------------------------------
-	--生產成本   CUB
-	declare @tmpa table(
-		sel int identity(1,1)
-		,accy nvarchar(10)
-		,noa nvarchar(20)
-		,noq nvarchar(10)
-		,makeno nvarchar(20)
-		,[weight] float
-		,[money] float --鋼捲+皮膜+保護膜
-		,money2 float --鋼捲+皮膜+保護膜+物料
-	)
-	insert into @tmpa(accy,noa,noq)
-	select a.accy,a.noa,a.noq
-	from(
-		select a.accy,a.noa,a.noq
-		from view_cubs a
-		left join view_cub b on a.accy=b.accy and a.noa=b.noa
-		left join (select makeno from #z_cub_rkp04 group by makeno) c on a.makeno=c.makeno
-		where c.makeno is not null) a
-	group by a.accy,a.noa,a.noq
+	insert into #z_cub_rkp04(accy,noa,noq,mins)
+	select a.accy,a.noa,a.noq,isnull(a.mins,0)
+	from view_cubs a
+	left join view_cub b on a.noa=b.noa
+	where left(b.datea,6)=@t_mon
+	order by a.accy,a.noa,a.noq
 	
-	update @tmpa set makeno=b.makeno
-		,[weight]=b.hweight-- 鋼捲+皮膜+保護膜 重, 分攤物料金額用
-	from @tmpa a
-	left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+	declare @tmins float = 0
+	select @tmins = sum(mins) from #z_cub_rkp04 
+	
+	if ISNULL(@tmins,0)>0
+	begin
+		update #z_cub_rkp04 set money01 = round(@money01*mins/@tmins,0)
+			,money02 = round(@money02*mins/@tmins,0)
+	end
+	
+	--尾差由最後一筆攤提,但金額最多扣到0
+	declare @tmoney01 float=0
+	declare @tmoney02 float=0
+	select @tmoney01=SUM(money01),@tmoney02=SUM(money02) from #z_cub_rkp04 
+
+	set @tmoney01 = ISNULL(@tmoney01,0) - @money01
+	set @tmoney02 = ISNULL(@tmoney02,0) - @money02
+		
+	declare @sel int
+	declare @m01 float
+	declare @m02 float
 	
 	declare cursor_table cursor for
-	select accy,noa from @tmpa group by accy,noa
+	select sel,money01,money02 from #z_cub_rkp04 order by sel desc
 	open cursor_table
 	fetch next from cursor_table
-	into @accy,@noa
+	into @sel,@m01,@m02
 	while(@@FETCH_STATUS <> -1)
 	begin	
-		declare cursor_table2 cursor for
-		select noq,uno,[weight] from view_cubs where accy=@accy and noa=@noa
-		open cursor_table2
-		fetch next from cursor_table2
-		into @noq,@uno,@weight
-		while(@@FETCH_STATUS <> -1)
-		begin	
-			select @money = 0
-			--鋼捲成本
-			select @money = ROUND(ISNULL(@weight*sprice,0),0) from view_uccb where uno=@uno
-			--皮膜、保護膜成本
-			select @money=isnull(@money,0)+sum(round(isnull(a.[weight]*b.sprice,0),0))
-			from view_cubt a
-			left join view_uccb b on a.uno=b.uno
-			where a.accy=@accy
-			and a.noa=@noa
-			and a.nor=@noq
-			
-			update @tmpa set [money]=isnull(@money,0) where accy=@accy and noa=@noa and noq=@noq
-			
-			fetch next from cursor_table2
-			into @noq,@uno,@weight
+		if @m01 > 0 and @m01 >= @tmoney01
+		begin
+			update #z_cub_rkp04 set money01 = money01 - @tmoney01 where sel = @sel
+			set @tmoney01 = 0
+		end 
+		else if @m01 > 0 and @m01 < @tmoney01
+		begin
+			update #z_cub_rkp04 set money01 = 0 where sel = @sel
+			set @tmoney01 = @tmoney01 - @m01
 		end
-		close cursor_table2
-		deallocate cursor_table2
 		
-		--物料總金額
-		set @money = 0
-		select @money=sum(round(isnull(a.[weight]*b.sprice,0),0))
-		from view_cubu a
-		left join view_uccb b on a.ucolor=b.uno
-		where a.accy=@accy 
-		and a.noa=@noa
-		set @money=ISNULL(@money,0)
+		if @m02 > 0 and @m02 >= @tmoney02
+		begin
+			update #z_cub_rkp04 set money02 = money02 - @tmoney02 where sel = @sel
+			set @tmoney02 = 0
+		end 
+		else if @m02 > 0 and @m02 < @tmoney02
+		begin
+			update #z_cub_rkp04 set money02 = 0 where sel = @sel
+			set @tmoney02 = @tmoney02 - @m02
+		end
 		
-		update @tmpa set [money2]=isnull(a.[money],0)+ case when b.[weight]=0 then 0 else round(@money*a.[weight]/b.[weight],4) end
-		from @tmpa a
-		outer apply(select SUM(ISNULL([weight],0)) [weight] from @tmpa where accy=a.accy and noa=a.noa)b
-		where @accy=a.accy and @noa=a.noa
+		if @tmoney01=0 and @tmoney02=0
+		begin
+			break
+		end
 		
 		fetch next from cursor_table
-		into @accy,@noa
+		into @sel,@m01,@m02
 	end
 	close cursor_table
 	deallocate cursor_table
-	
-	update #z_cub_rkp04 set [money]=case when isnull(c.[weight],0)=0 then 0 else round(b.money2 * a.[weight] / c.[weight],4) end
-	from #z_cub_rkp04 a
-	left join @tmpa b on a.makeno=b.makeno
-	outer apply(select SUM(ISNULL([weight],0)) [weight] from #z_cub_rkp04 where makeno=a.makeno) c
-	
-	update #z_cub_rkp04 set price = case when isnull([weight],0)=0 then 0 else round([money]/[weight],4) end
-	---------------------------------------------------------------------
+	-----------------------------------------------------------------------
 	-- UPDATE DATA
+	declare @accy nvarchar(20)
 	declare cursor_table cursor for
 	select accy from #z_cub_rkp04 group by accy
 	open cursor_table
 	fetch next from cursor_table
 	into @accy
 	while(@@FETCH_STATUS <> -1)
-	begin	
+	begin
 		set @cmd=
-		"update cuts"+@accy+" set sprice=isnull(b.price,0),sprice2=isnull(b.price,0)
-		from cuts"+@accy+" a
+		"update cubs"+@accy+" set w01=b.money01,w02=b.money02
+		from cubs"+@accy+" a
 		left join #z_cub_rkp04 b on b.accy=@accy and a.noa=b.noa and a.noq=b.noq
-		where b.sel is not null"
+		where b.noa is not null"
 		execute sp_executesql @cmd,N'@accy nvarchar(10)',@accy=@accy
 		
 		fetch next from cursor_table
@@ -4103,4 +4001,5 @@ z_cub_rkp04:--z_cub_rkp04
 	close cursor_table
 	deallocate cursor_table
 	
+	drop table #z_cub_rkp04
 	select '0' gno, '結轉完成!' msg;
