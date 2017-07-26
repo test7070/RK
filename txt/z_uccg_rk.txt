@@ -507,6 +507,7 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	close cursor_table
 	deallocate cursor_table
 	-----------------------------------------------------------------------------------------------
+	--=============================================================================================
 	-- 計算在製品成本  CUBS
 	IF OBJECT_ID('tempdb..#z_uccg_rk_cubs')is not null
 	BEGIN
@@ -516,151 +517,158 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 		sel int identity(1,1)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
-		,noq nvarchar(10)
-		,[weight] float
-		,cubs float --鋼捲成本
-		,cubt float--皮膜成本
-		,cubu float--物料成本
+		,noq nvarchar(10)		
+		
+		,cubs float        --鋼捲成本
+		,cubs_weight float --鋼捲重量
+		,cubs_length float --鋼捲長度
+		
+		,pvc float         --皮膜成本
+		,pvc_weight float  --皮膜重量
+		
+		,pve float         --保護膜成本
+		,pve_weight float  --保護膜重量
+		
+		,A01 float         --物料成本
+		,A01_weight float  --物料重量
+		,A02 float         
+		,A02_weight float
+		,A03 float         
+		,A03_weight float
+		,A04 float         
+		,A04_weight float
+		,A05 float         
+		,A05_weight float  
+		
+		,tweight float
 		,total float
 	)
-	---- 鋼捲
-	declare @tmpCub_cubs table(
+	--鋼捲
+	insert into #z_uccg_rk_cubs(accy,noa,noq,cubs,cubs_weight,cubs_length)
+	select a.accy,a.noa,a.noq,c.scost,a.[weight],a.w09
+	from view_cubs a 
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_gets c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
+	where b.datea between @bdate and @edate
+	--皮膜
+	update #z_uccg_rk_cubs set pvc=b.scost
+		,pvc_weight = b.[weight]
+	from #z_uccg_rk_cubs a
+	outer apply(select SUM(isnull([wweight],0)) [weight],SUM(isnull([scost],0)) scost 
+		from view_cubt where accy=a.accy and noa=a.noa and nor=a.noq and kind='1') b
+	--保護膜
+	update #z_uccg_rk_cubs set pve= b.scost
+		,pve_weight = b.[weight]
+	from #z_uccg_rk_cubs a
+	outer apply(select SUM(isnull([wweight],0)) [weight],SUM(isnull([scost],0)) scost 
+		from view_cubt where accy=a.accy and noa=a.noa and nor=a.noq and kind='2') b
+	--物料	
+	declare @tmp_cubu table(
 		sel int identity(1,1)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
-		,noq nvarchar(10)
+		,groupano nvarchar(20)
 		,uno nvarchar(30)
 		,[weight] float
 		,scost float
-		,isSelect int
 	)
-	---- 物料
-	declare @tmpCub_cubu table(
+	declare @tmp_cubs_cubu table(
 		sel int identity(1,1)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
-		,uno nvarchar(20)
+		,noq nvarchar(10)
+		,[length] float 
+		,cubu_sel int
+		,groupano nvarchar(20)
 		,[weight] float
 		,scost float
 	)
-	---- 暫存檔
-	declare @tmpaa table(
-		sel int identity(1,1)
-		,accy nvarchar(10) -- cubs
-		,noa nvarchar(20)  -- cubs
-		,noq nvarchar(10)  -- cubs 
-		,[weight] float   -- cubs
-		,uno nvarchar(30) -- cubu
-		,[money] float
-	)
-	
-	declare @tweight float = 0
+	declare @length float
+	declare @tlength float
 	
 	declare cursor_table cursor for
-	select a.accy,a.noa,sum(isnull(b.[weight],0))
-	from view_cub a 
-	left join view_cubs b on a.accy=b.accy and a.noa=b.noa
-	where a.datea between @bdate and @edate
-	group by a.accy,a.noa
+	select accy,noa,sum(isnull([cubs_length],0))
+	from #z_uccg_rk_cubs
+	group by accy,noa
 	open cursor_table
 	fetch next from cursor_table
-	into @accy,@noa,@tweight
+	into @accy,@noa,@tlength
 	while(@@FETCH_STATUS <> -1)
 	begin
-		insert into @tmpCub_cubs(accy,noa,noq,uno,[weight],scost)
-		select accy,noa,noq,uno,[weight],scost
-		from view_gets
-		where noa=@noa
-		
-		insert into @tmpCub_cubu(accy,noa,uno,[weight],scost)
-		select a.accy,a.noa,a.ucolor,a.[weight],ISNULL(b.scost,0)
+		insert into @tmp_cubu(accy,noa,groupano,uno,[weight],scost)
+		select a.accy,a.noa,c.groupano,a.ucolor,a.[weight],b.scost
 		from view_cubu a
-		left join view_gets b on a.noa=b.noa and a.ucolor=b.uno
-		where a.accy=@accy and a.noa=@noa and len(ISNULL(a.ucolor,''))>0
-			
-		declare cursor_table2 cursor for
-		select a.noq,a.uno,a.[weight] 
-		from view_cubs a 
+		left join view_gets b on a.accy=b.accy and a.noa=b.noa and a.ucolor=b.uno
+		left join ucc c on a.productno=c.noa
 		where a.accy=@accy and a.noa=@noa
-		order by a.noq
-		open cursor_table2
-		fetch next from cursor_table2
-		into @noq,@uno,@weight	
-		while(@@FETCH_STATUS <> -1)
-		begin
-			insert into #z_uccg_rk_cubs(accy,noa,noq,[weight])values(@accy,@noa,@noq,@weight)
 		
-			---- 鋼捲成本
-			select @sel=0,@scost=0
-			select top 1 @sel=sel 
-			from @tmpCub_cubs
-			where isnull(isSelect,0)=0
-			and uno=@uno and [weight]=@weight
-			order by accy,noa,noq
-			
-			if @sel!=0
-			begin
-				update @tmpCub_cubs set isSelect = 1 where sel=@sel
-				select @scost = scost from @tmpCub_cubs where sel=@sel
-			end
-			update #z_uccg_rk_cubs set cubs=@scost where accy=@accy and noa=@noa and noq=@noq
-			---- 皮膜成本
-			select @scost = 0
-			select @scost = SUM(ISNULL(scost,0))
-			from view_cubt
-			where accy=@accy and noa=@noa and nor=@noq
-			update #z_uccg_rk_cubs set cubt=@scost where accy=@accy and noa=@noa and noq=@noq
-			----  物料成本
-			insert into @tmpaa(accy,noa,noq,[weight],uno,[money])
-			select @accy,@noa,@noq,@weight,uno,case when @tweight = 0 then 0 else round(scost * @weight/@tweight,0) end
-			from @tmpCub_cubu
-			where accy=@accy and noa=@noa
-		
-			
-			fetch next from cursor_table2
-			into @noq,@uno,@weight	
-		end
-		close cursor_table2
-		deallocate cursor_table2
-		
-		
+		insert into @tmp_cubs_cubu(accy,noa,noq,[length],cubu_sel,groupano,[weight],scost)
+		select a.accy,a.noa,a.noq,a.cubs_length,b.sel,b.groupano
+			,case when ISNULL(@tlength,0)!=0 then round(b.[weight]*a.cubs_length/@tlength,2) else 0 end
+			,case when ISNULL(@tlength,0)!=0 then round(b.[scost]*a.cubs_length/@tlength,0) else 0 end
+		from #z_uccg_rk_cubs a
+		left join @tmp_cubu b on a.accy=b.accy and a.noa=b.noa 
+		where a.accy=@accy and a.noa=@noa
+		order by a.accy,a.noa,a.noq
+
 		fetch next from cursor_table
-		into @accy,@noa,@tweight
+		into @accy,@noa,@tlength
 	end
 	close cursor_table
-	deallocate cursor_table
+	deallocate cursor_table	
+	--物料 尾差修正
+	declare @sel2 int
+	declare @weight2 float
+	declare @scost2 float
 	
-	-- 修正物料分配尾差
 	declare cursor_table cursor for
-	
-	select a.accy,a.noa,a.uno,a.[money]-b.scost
-	from(
-	select accy,noa,uno,SUM([money]) [money] from @tmpaa group by accy,noa,uno) a
-	left join @tmpCub_cubu b on a.accy=b.accy and a.noa=b.noa and a.uno=b.uno
-	where a.[money]!=b.scost
-	
+	select sel,[weight],scost from @tmp_cubu
 	open cursor_table
 	fetch next from cursor_table
-	into @accy,@noa,@uno,@diff
+	into @sel,@weight,@scost
 	while(@@FETCH_STATUS <> -1)
 	begin
-		set @sel = 0
-		select @sel=sel from @tmpaa where accy=@accy and noa=@noa and uno=@uno and [money]!=0
-		if ISNULL(@sel,0)>0
-		begin
-			update @tmpaa set [money] = [money] - @diff where sel=@sel
-		end
+		select @weight2=0,@scost2=0
+		select @weight2=SUM(ISNULL([weight],0)),@scost2=SUM(ISNULL([scost],0))
+		from @tmp_cubs_cubu where cubu_sel=@sel
+		
+		--尾差都由最後一筆修正
+		update @tmp_cubs_cubu set [weight]=round(b.[weight] + @weight - @weight2,2)
+			,scost = b.scost + @scost - @scost2
+		from @tmp_cubs_cubu a
+		outer apply(select top 1 * from @tmp_cubs_cubu where cubu_sel=@sel order by sel desc) b
+		where a.sel=b.sel
+
 		fetch next from cursor_table
-		into @accy,@noa,@uno,@diff
+		into @sel,@weight,@scost
 	end
 	close cursor_table
-	deallocate cursor_table
+	deallocate cursor_table	
 	
-	update #z_uccg_rk_cubs set cubu=ISNULL(b.[money],0)
-	from #z_uccg_rk_cubs a
-	left join (select accy,noa,noq,sum(isnull([money],0)) [money] from @tmpaa group by accy,noa,noq) b 
-		on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
-	update #z_uccg_rk_cubs set total = ISNULL(cubs,0)+ISNULL(cubt,0)+ISNULL(cubu,0)
+	 update #z_uccg_rk_cubs set A01 = b.A01,A01_weight=b.A01_weight
+		,A02 = b.A02,A02_weight=b.A02_weight
+		,A03 = b.A03,A03_weight=b.A03_weight
+		,A04 = b.A04,A04_weight=b.A04_weight
+		,A05 = b.A05,A05_weight=b.A05_weight
+	 from #z_uccg_rk_cubs a
+	 left join (select accy,noa,noq
+		,SUM(case when groupano='A01' then isnull([scost],0) else 0 end) A01
+		,SUM(case when groupano='A01' then isnull([weight],0) else 0 end) A01_weight
+		,SUM(case when groupano='A02' then isnull([scost],0) else 0 end) A02
+		,SUM(case when groupano='A02' then isnull([weight],0) else 0 end) A02_weight
+		,SUM(case when groupano='A03' then isnull([scost],0) else 0 end) A03
+		,SUM(case when groupano='A03' then isnull([weight],0) else 0 end) A03_weight
+		,SUM(case when groupano='A04' then isnull([scost],0) else 0 end) A04
+		,SUM(case when groupano='A04' then isnull([weight],0) else 0 end) A04_weight
+		,SUM(case when groupano='A05' then isnull([scost],0) else 0 end) A05
+		,SUM(case when groupano='A05' then isnull([weight],0) else 0 end) A05_weight
+		from @tmp_cubs_cubu group by accy,noa,noq) b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+	where b.noa is not null
+	
+	update #z_uccg_rk_cubs set tweight = round(ISNULL(cubs_weight,0) + ISNULL(pvc_weight,0) + ISNULL(pve_weight,0) 
+		+ ISNULL(A01_weight,0) + ISNULL(A02_weight,0) + ISNULL(A03_weight,0) + ISNULL(A04_weight,0) + ISNULL(A05_weight,0),2)
+		,total = ISNULL(cubs,0) + ISNULL(pvc,0) + ISNULL(pve,0) 
+		+ ISNULL(A01,0) + ISNULL(A02,0) + ISNULL(A03,0) + ISNULL(A04,0) + ISNULL(A05,0)
 	-----------------------------------------------------------------------
 	-- 更新資料  回寫到CUBS
 	-----------------------------------------------------------------------
@@ -672,7 +680,23 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	while(@@FETCH_STATUS <> -1)
 	begin
 		set @cmd =
-		"update cubs"+@accy+" set [total] = b.total
+		"update cubs"+@accy+" set [total] = b.total,w03=b.tweight
+			,x01 = b.cubs_weight
+			,x02 = b.pvc_weight
+			,x03 = b.pve_weight
+			,x04 = b.A01_weight
+			,x05 = b.A02_weight
+			,x06 = b.A03_weight
+			,x07 = b.A04_weight
+			,x08 = b.A05_weight
+			,y01 = b.cubs
+			,y02 = b.pvc
+			,y03 = b.pve
+			,y04 = b.A01
+			,y05 = b.A02
+			,y06 = b.A03
+			,y07 = b.A04
+			,y08 = b.A05
 		from cubs"+@accy+" a
 		left join #z_uccg_rk_cubs b on @accy=b.accy and a.noa=b.noa and a.noq=b.noq
 		where b.noa is not null"
@@ -683,7 +707,6 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	end
 	close cursor_table
 	deallocate cursor_table
-
 	-------------------------------------------------------------------------------------------------------
 	set @n=0
 	select @n=count(1) from #z_uccg_rk

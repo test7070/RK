@@ -3079,7 +3079,6 @@ z_cub_rkp02:--z_cub_rkp02
 	declare @t_bdate nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	declare @t_edate nvarchar(max) = case when '#non' = [8] then char(255) else [8] end
 	--------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
 		cubno nvarchar(20),
@@ -3115,11 +3114,11 @@ z_cub_rkp02:--z_cub_rkp02
 		,mon nvarchar(20)
 	)
 	insert into @tmp(cubno,cubnoq,gno,dime,radius,width,lengthb
-		,makeno,custno,cust,timea,weight02,ordeno,no2
+		,makeno,custno,cust,timea,weight01,weight02,ordeno,no2
 		,money01,money02,money03)
 	select a.noa,a.noq, '1',a.dime,a.radius,a.width,a.lengthb
 		,a.makeno,a.custno,a.comp
-		,a.mins,a.hweight,a.ordeno,a.no2
+		,a.mins,a.w03,a.hweight,a.ordeno,a.no2
 		,ISNULL(a.total,0),ISNULL(a.w01,0),ISNULL(a.w02,0)
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
