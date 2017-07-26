@@ -388,7 +388,6 @@ z_cub_rk01:--z_cub_rk01
 	declare @t_bcustno nvarchar(max) = case when '#non' = [5] then '' else [5] end
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	-------------------------------------------------------------------------------------------------
-	-------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -442,19 +441,22 @@ z_cub_rk01:--z_cub_rk01
 		,x07 float--原鋼材損耗率%
 
 	)
-	insert into @tmp(recno,recno2,datea,accy,noa,noq,makeno,custno,cust
+	insert into @tmp(gno,recno,recno2,datea,accy,noa,noq,makeno,custno,cust
 		,uno,spec,dime,width,size,[weight]
+		,w01,w02,w03,w04,w05
 		,x02,x03,x06)
-	select ROW_NUMBER()over(order by b.datea,a.makeno),1,b.datea 
+	select '1',ROW_NUMBER()over(order by b.datea,a.makeno),1,b.datea 
 		,a.accy,a.noa,a.noq,a.makeno,a.custno,a.comp
 		,a.uno,a.size,a.dime,a.width
 		,CAST(ISNULL(a.dime,0) as nvarchar)+' * '+CAST(ISNULL(a.width,0) as nvarchar),ISNULL(a.[weight],0)
+		,a.x04,a.x05,a.x06,a.x07,a.x08
 		,a.w09,a.hweight,a.price
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(ISNULL(a.makeno,''))>0
 	order by a.makeno,b.datea
+
 
 	---------------------------------------------------------------------------------
 	declare @sel int
@@ -511,10 +513,10 @@ z_cub_rk01:--z_cub_rk01
 			end
 			else
 			begin
-				insert into @tmp(recno,recno2,accy,noa,noq,makeno,custno,cust
+				insert into @tmp(gno,recno,recno2,accy,noa,noq,makeno,custno,cust
 					,uno2,dime2,width2,productno2,product2,mount2,weight2
 					,size2)
-				select recno,@n,accy,noa,noq,makeno,custno,cust
+				select '2',recno,@n,accy,noa,noq,makeno,custno,cust
 					,@uno,@dime,@width,@productno,@product,@mount,@weight
 					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime,0) as nvarchar)+' * '+CAST(ISNULL(@width,0) as nvarchar) end
 				from @tmp
@@ -601,10 +603,10 @@ z_cub_rk01:--z_cub_rk01
 			end
 			else
 			begin
-				insert into @tmp(recno,recno2,accy,noa,noq,makeno,custno,cust
+				insert into @tmp(gno,recno,recno2,accy,noa,noq,makeno,custno,cust
 					,uno3,dime3,width3,productno3,product3,mount3,weight3
 					,size3)
-				select recno,@n,accy,noa,noq,makeno,custno,cust
+				select '2',recno,@n,accy,noa,noq,makeno,custno,cust
 					,@uno,@dime,@width,@productno,@product,@mount,@weight
 					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime2,0) as nvarchar)+' * '+CAST(ISNULL(@width2,0) as nvarchar) end
 				from @tmp
@@ -623,82 +625,6 @@ z_cub_rk01:--z_cub_rk01
 	close cursor_table
 	deallocate cursor_table
 	
-	declare @totweight float
-	declare @w01 float,@w02 float,@w03 float,@w04 float,@w05 float
-	
-	declare cursor_table cursor for
-	select accy,noa,sum(isnull([weight],0)) from @tmp group by accy,noa
-	open cursor_table
-	fetch next from cursor_table
-	into @accy,@noa,@totweight
-	while(@@FETCH_STATUS <> -1)
-	begin	
-		--物料(依鋼捲重量均攤)
-		if @totweight!=0
-		begin
-			select @w01=0,@w02=0,@w03=0,@w04=0,@w05=0
-			select @w01 = SUM( case when b.groupano = 'A01' then ISNULL(a.[weight],0) else 0 end )--接著劑 	
-				,@w02 = SUM( case when b.groupano = 'A02' then ISNULL(a.[weight],0) else 0 end )--接著劑稀釋液	
-				,@w03 = SUM( case when b.groupano = 'A03' then ISNULL(a.[weight],0) else 0 end )--背漆	
-				,@w04 = SUM( case when b.groupano = 'A04' then ISNULL(a.[weight],0) else 0 end )--背漆稀釋液	
-				,@w05 = SUM( case when b.groupano = 'A05' then ISNULL(a.[weight],0) else 0 end )--面漆
-			from view_cubu a
-			left join ucc b on a.productno=b.noa
-			where accy=a.accy and a.noa=@noa
-			
-			update @tmp set w01 = ROUND(@w01*[weight]/@totweight,2)
-				,w02 = ROUND(@w02*[weight]/@totweight,2)
-				,w03 = ROUND(@w03*[weight]/@totweight,2)
-				,w04 = ROUND(@w04*[weight]/@totweight,2)
-				,w05 = ROUND(@w05*[weight]/@totweight,2)
-			where accy=@accy and noa=@noa
-			
-			--物料均攤尾差在最後一筆修正
-			update @tmp set w01= a.w01+(@w01-b.w01)
-			from @tmp a
-			outer apply(select SUM(ISNULL(w01,0)) w01 
-				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
-					where accy=@accy and noa=@noa and ISNULL(w01,0)!=0) c on a.sel=c.sel
-			where accy=@accy and noa=@noa  and c.recno=1
-			
-			update @tmp set w02= a.w02+(@w02-b.w02)
-			from @tmp a
-			outer apply(select SUM(ISNULL(w02,0)) w02 
-				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
-					where accy=@accy and noa=@noa and ISNULL(w02,0)!=0) c on a.sel=c.sel
-			where accy=@accy and noa=@noa  and c.recno=1
-			
-			update @tmp set w03= a.w03+(@w03-b.w03)
-			from @tmp a
-			outer apply(select SUM(ISNULL(w03,0)) w03 
-				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
-					where accy=@accy and noa=@noa and ISNULL(w03,0)!=0) c on a.sel=c.sel
-			where accy=@accy and noa=@noa  and c.recno=1
-			
-			update @tmp set w04= a.w04+(@w04-b.w04)
-			from @tmp a
-			outer apply(select SUM(ISNULL(w04,0)) w04 
-				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
-					where accy=@accy and noa=@noa and ISNULL(w04,0)!=0) c on a.sel=c.sel
-			where accy=@accy and noa=@noa  and c.recno=1
-			
-			update @tmp set w05= a.w05+(@w05-b.w05)
-			from @tmp a
-			outer apply(select SUM(ISNULL(w05,0)) w05 
-				from @tmp where accy=@accy and noa=@noa) b
-				left join (select sel,ROW_NUMBER()over(order by accy desc,noa desc,noq desc) recno from @tmp 
-					where accy=@accy and noa=@noa and ISNULL(w05,0)!=0) c on a.sel=c.sel
-			where accy=@accy and noa=@noa  and c.recno=1
-		end 
-		fetch next from cursor_table
-		into @accy,@noa,@totweight
-	end
-	close cursor_table
-	deallocate cursor_table
 	------------------------------------------------------------------------
 	--條件過濾
 	if(len(@t_makeno)>0)
