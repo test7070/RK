@@ -151,7 +151,7 @@
 	
 	update @tmp set po=left(ordepo,CHARINDEX('chr(10)',ordepo)-1)
 	where CHARINDEX('chr(10)',ordepo)>0
-	update @tmp set pn=RIGHT(ordepo,len(ordepo)-len(po)-7)
+	update @tmp set pn=RIGHT(ordepo,(len(ordepo+'x')-1)-(len(po+'x')-1)-7)
 	where CHARINDEX('chr(10)',ordepo)>0
 	
 	update @tmp set po=ordepo where CHARINDEX('chr(10)',ordepo)=0
@@ -239,9 +239,12 @@
                     
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "ALPHACAST", 25, 250, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "LAEM CHABANG", 25, 225, 0);
+                    
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "PO：" + ((Para)vccLabel[i]).memo, 25, 200, 0);
                     //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "ITEM：" + ((Para)vccLabel[i]).engpro, 30, 240, 0);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "ITEM：Electro galvanized", 25, 175, 0);
+                    //PN移到ITEM:去  2017/08/01
+                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "ITEM："+((Para)vccLabel[i]).pn, 25, 175, 0);
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "ITEM：Electro galvanized", 25, 175, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "QTY：" + ((Para)vccLabel[i]).mount.ToString() + "  片", 25, 150, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "MADE IN TAIWAN", 25, 125, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "R.O.C", 25, 100, 0);
@@ -254,7 +257,8 @@
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "KGS", 155, 25, 0);
                     
                     cb.SetFontAndSize(bfChinese, 14);
-                    cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)vccLabel[i]).pn, 220, 200, 0);
+                    //PN移到ITEM:去
+                    //cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)vccLabel[i]).pn, 220, 200, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)vccLabel[i]).pvcno, 220, 175, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, "棧板：" + ((Para)vccLabel[i]).pallet, 280, 175, 0);
                     cb.ShowTextAligned(iTextSharp.text.pdf.PdfContentByte.ALIGN_LEFT, ((Para)vccLabel[i]).spec, 220, 150, 0);
