@@ -319,7 +319,7 @@ z_cub_rk02:--z_cub_rk02
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)
 
 	update @tmpa set w22=ISNULL(w08,0)+ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)
-		,w23 = ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0)
+		,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2)
 		,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
 	-------------------------------------------------------------------------
 	--條件過濾2
