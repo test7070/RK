@@ -1,0 +1,67 @@
+ALTER  function [dbo].[quat_orde](@ordeno nvarchar(max), @custno nvarchar(max), @para nvarchar(max))
+returns @tmp table(
+	sel bit,
+	accy nvarchar(20),
+	noa nvarchar(20),
+	no3 nvarchar(10),
+	productno nvarchar(20),
+	product nvarchar(100),
+	dime float,
+	width float,
+	lengthb float,
+	radius float,
+	unit nvarchar(20),
+	unit2 nvarchar(20),
+	spec nvarchar(20),
+	scolor nvarchar(50),
+	class nvarchar(20),
+	ucolor nvarchar(20),
+	zinc nvarchar(30),
+	hard nvarchar(30),
+	[source] nvarchar(30),
+	uno nvarchar(30),
+	mount float,
+	[weight] float,
+	memo nvarchar(max),
+	omount float,
+	oweight float,
+	emount float,
+	eweight float,
+	price float
+	,style nvarchar(20)
+	,size nvarchar(50)
+) as
+begin
+	insert into @tmp(sel,accy,noa,no3,productno,product
+		,dime,width,lengthb,radius,unit,unit2,spec,scolor,class
+		,ucolor,zinc,hard,[source],uno,mount,[weight],memo
+		,omount,oweight,emount,eweight,price,style,size)
+	select *
+	from(
+		select case when exists(select noa from view_ordes where noa=@ordeno and quatno=b.noa and no3=b.no3) then 1 else 0 end sel
+			,b.accy,b.noa,b.no3,b.productno,b.product
+			,b.dime,b.width,b.lengthb,b.radius,b.unit,b.unit2,b.spec,b.scolor,b.class
+			,b.ucolor,b.zinc,b.hard,b.[source],b.[uno],isnull(b.mount,0) mount,isnull(b.[weight],0) [weight],b.memo
+			,isnull(c.mount,0) omount,isnull(c.[weight],0) pweight
+			,isnull(b.mount,0)-isnull(c.mount,0) emount
+			,isnull(b.[weight],0)-isnull(c.[weight],0) eweight
+			,b.price,b.style,b.size
+		from view_quat a
+		left join view_quats b on a.accy=b.accy and a.noa=b.noa
+		outer apply(select SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight] from view_ordes where noa!=@ordeno and quatno=b.noa and no3=b.no3) c
+		where isnull(a.enda,0)=0 
+		and isnull(a.cancel,0)=0
+		and b.noa is not null
+		and (len(@custno)=0 or a.custno=@custno)) a
+	order by case when sel=1 then 0 else 1 end,accy,noa,no3
+	
+	if(@para='orde_rk')
+	begin
+		delete @tmp where emount<=0 and eweight<=0 
+	end
+	if(@para='orde_pk')
+	begin
+		delete @tmp where eweight<=0 
+	end
+	return
+end

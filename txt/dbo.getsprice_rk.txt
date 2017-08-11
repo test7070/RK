@@ -1,0 +1,26 @@
+ALTER function [dbo].[getsprice_rk](@t_uno nvarchar(30))	
+returns float
+as
+begin	
+	declare @sprice float = 0
+	if exists(select * from view_get where idno=@t_uno)
+	begin
+		--領料組合
+		declare @weight float = 0
+		declare @money float = 0
+		
+		select @weight=[weight] from view_get where idno=@t_uno
+		select @money=isnull(round(sum(isnull(a.gweight,0)*dbo.getsprice_rk(a.uno)),0),0)
+		from view_gets a
+		left join view_get b on a.accy=b.accy and a.noa=b.noa
+		where b.idno=@t_uno
+		and len(isnull(a.uno,''))>0
+		
+		set @sprice = case when @weight=0 then 0 else round(@money/@weight,4) end
+	end
+	else
+	begin
+		select @sprice=isnull(sprice,0) from view_uccb where uno=@t_uno
+	end
+	return @sprice
+end	

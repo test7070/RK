@@ -1,0 +1,70 @@
+ALTER function [dbo].[get_rk](@t_noa nvarchar(max), @t_custno nvarchar(max))
+returns @tmp table(	
+		sel int identity(1,1)
+		,inano nvarchar(20)
+		,inanoq nvarchar(10)
+		,uno nvarchar(30)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,productno nvarchar(30)
+		,product nvarchar(50)
+		,style nvarchar(20)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,spec nvarchar(20) --出貨單 皮膜編號
+		,class nvarchar(20)
+		,ucolor nvarchar(20)
+		,rackno nvarchar(50)
+		,unit nvarchar(20)
+		,lengthc float
+		,memo nvarchar(max)
+		,mount float
+		,[weight] float
+		,gmount float
+		,gweight float
+		,emount float
+		,eweight float
+		,ordeno nvarchar(20)
+		,no2 nvarchar(10)
+		,ospec nvarchar(20) --訂單規格
+		,cspec nvarchar(50)
+) as
+begin
+	--只抓寄庫的
+	insert into @tmp(inano,inanoq,uno
+		,custno,cust,productno,product,style,dime,radius,width,lengthb
+		,spec,class,ucolor,rackno,unit,lengthc,memo
+		,mount,[weight],ordeno,no2,ospec)
+	select a.noa,a.noq,a.uno
+		,c.custno,d.nick,c.productno,c.product,c.style,c.dime,c.radius,c.width,c.lengthb
+		,c.spec,c.class,c.ucolor,c.rackno,c.unit,c.lengthc,c.memo
+		,a.mount,a.[weight],c.ordeno,c.no2,e.spec
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join view_vccs c on a.noa=c.noa and a.noq=c.noq
+	left join view_vcc d on c.accy=d.accy and c.noa=d.noa
+	left join view_ordes e on c.ordeno=e.noa and c.no2=e.no2
+	where c.noa is not null
+	and (len(@t_custno)=0 or d.custno=@t_custno)
+	order by a.noa desc,a.noq
+	
+	update @tmp set cspec=isnull(b.product,'')
+	from @tmp a
+	left join spec b on a.ospec=b.noa
+	
+	update @tmp set gweight=ISNULL(b.[weight],0),gmount=ISNULL(b.[mount],0)
+	from @tmp a
+	left join(select uno
+		,sum(case when ISNULL(gweight,0)>0 then gweight else [weight] end) [weight] 
+		,sum(case when ISNULL(gmount,0)>0 then gmount else [mount] end) [mount] 
+		from view_gets where len(uno)>0 group by uno) b on a.uno=b.uno
+	
+	update @tmp set eweight = ISNULL([weight],0)-ISNULL([gweight],0)
+		,emount = ISNULL([mount],0)-ISNULL([gmount],0)
+	
+	delete @tmp where eweight<=0
+	
+	return
+end	
