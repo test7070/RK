@@ -1,0 +1,140 @@
+
+	alter function [dbo].[unohistory_rk](@t_rank int,@t_uno nvarchar(50),@t_makeno nvarchar(max))
+	returns @tmp table(
+		[rank] int
+		,[status] int -- 1入庫,2出庫
+		,datea nvarchar(10)
+		,tablea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(max) --成品進倉(CUT)用製造批號回找生產日報(CUB)
+		,bno nvarchar(30) --母鋼捲
+		,uno nvarchar(30)
+		,mount float
+		,[weight] float
+		,price float
+		,sprice float
+		,storeno nvarchar(20)
+		,place nvarchar(20)
+	) as
+	begin
+		-- @t_rank < 0 就不回溯
+		--入庫
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice,storeno,place)
+		select @t_rank,1,b.datea,'rc2',a.accy,a.noa,a.noq,'',a.uno,a.mount,a.[weight],a.price,a.sprice,a.storeno,a.place
+		from view_rc2s a
+		left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		and b.typea='1'
+		
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice,storeno,place)
+		select @t_rank,1,b.datea,'ina',a.accy,a.noa,a.noq,'',a.uno,a.mount,a.[weight],a.price,a.sprice,a.storeno,a.place
+		from view_inas a 
+		left join view_ina b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice,a.storeno,a.place)
+		select @t_rank,1,b.datea,'vcc',a.accy,a.noa,a.noq,'',a.uno
+			,case when isnull(a.mount,0)>0 then a.gmount else a.[mount]end
+			,case when isnull(a.gweight,0)>0 then a.gweight else a.[weight]end,a.price,null,'',''
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		and b.typea='2'
+		
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice,storeno,place)
+		select @t_rank,1,b.datea,'cuts',a.accy,a.noa,a.noq,a.uno,a.bno,a.mount,a.[weight],null,a.sprice,a.storeno,a.place
+		from view_cuts a
+		left join view_cut b on a.accy=b.accy and a.noa=b.noa
+		where a.bno=@t_uno
+		------------------------------------------------------------
+		--出庫
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice)
+		select @t_rank,2,b.datea,'rc2',a.accy,a.noa,a.noq,'',a.uno,a.mount,a.[weight],a.price,null
+		from view_rc2s a
+		left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		and b.typea='2'
+		
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice)
+		select @t_rank,2,b.datea,'vcc',a.accy,a.noa,a.noq,'',a.uno
+			,case when isnull(a.mount,0)>0 then a.gmount else a.[mount]end
+			,case when isnull(a.gweight,0)>0 then a.gweight else a.[weight]end,a.price,null
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		and b.typea='1'
+		
+		--領料有2部分
+		----1.生產日報(CUB)產生的
+		------鋼捲, 回溯時只抓同製造批號的,不然會抓到不相關的
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice)
+		select @t_rank,2,b.datea,'cub',a.accy,a.noa,a.noq,'',a.uno
+			,null,a.[weight],null,null
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		and (len(@t_makeno)=0 or a.makeno=@t_makeno)
+		------皮膜、保護膜
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice)
+		select @t_rank,2,b.datea,'cubt',a.accy,a.noa,a.noq,'',a.uno
+			,null,a.[weight],null,null
+		from view_cubt a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		------物料
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice)
+		select @t_rank,2,b.datea,'cubu',a.accy,a.noa,a.noq,'',a.ucolor
+			,null,a.[weight],null,null
+		from view_cubu a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		where a.ucolor=@t_uno
+		
+		----2.自己輸入的
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice)
+		select @t_rank,2,b.datea,'get',a.accy,a.noa,'','',a.uno
+			,case when isnull(a.mount,0)>0 then a.gmount else a.[mount]end
+			,case when isnull(a.gweight,0)>0 then a.gweight else a.[weight]end,null,null
+		from view_gets a
+		left join view_get b on a.accy=b.accy and a.noa=b.noa
+		left join view_cub c on a.noa=c.noa
+		where a.uno=@t_uno
+		and c.noa is null
+		------------------------------------------------------------
+		--調撥
+		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice,storeno,place)
+		select @t_rank,3,b.datea,'cng',a.accy,a.noa,a.noq,'',a.uno
+			,a.[mount],a.[weight],null,null
+			,a.storeinno,a.place
+		from view_cngs a
+		left join view_cng b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@t_uno
+		
+		declare @tmpa table(uno nvarchar(30),makeno nvarchar(30))
+		declare @makeno nvarchar(max)
+		insert into @tmpa select bno,makeno from @tmp where len(isnull(bno,''))>0
+		declare @uno nvarchar(max)
+		if @t_rank>=0
+		begin
+			set @t_rank = @t_rank + 1
+			declare cursor_table cursor for
+			select uno,makeno from @tmpa
+			open cursor_table
+			fetch next from cursor_table
+			into @uno,@makeno
+			while(@@FETCH_STATUS <> -1)
+			begin
+				insert into @tmp
+				select * from dbo.unohistory_rk(@t_rank,@uno,@makeno)
+				
+				fetch next from cursor_table
+				into @uno,@makeno
+			end
+			close cursor_table
+			deallocate cursor_table
+		end
+		return
+	end
+	
+	

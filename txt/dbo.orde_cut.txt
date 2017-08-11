@@ -1,0 +1,68 @@
+ALTER  function [dbo].[orde_cut](@cutno nvarchar(max), @para nvarchar(max),@makeno nvarchar(max),@ordeno nvarchar(max))
+returns @tmp table(
+	sel bit,
+	cubno nvarchar(20),
+	cubnoq nvarchar(10),
+	datea nvarchar(20),
+	accy nvarchar(20),
+	noa nvarchar(20),
+	no2 nvarchar(10),
+	makeno nvarchar(20),
+	uno nvarchar(30),
+	productno nvarchar(20),
+	product nvarchar(100),
+	dime float,
+	width float,
+	lengthb float,
+	radius float,
+	unit nvarchar(20),
+	pvcno nvarchar(20),
+	pvc nvarchar(20),
+	ucolor nvarchar(20),
+	[source] nvarchar(20),
+	peno nvarchar(20),
+	pe nvarchar(20),
+	mount float,
+	[weight] float,
+	price float,
+	memo nvarchar(max),
+	custno nvarchar(20),
+	comp nvarchar(50),
+	cnt int
+) 
+as begin
+	insert into @tmp(sel,cubno,cubnoq,datea,accy,noa,no2,makeno,uno,productno,product
+		,dime,width,lengthb,radius,unit,ucolor,[source]
+		,mount,[weight],price,memo
+		,custno,comp,cnt)
+	select * 
+	from(	
+		select case when f.noa is not null then 1 else 0 end sel  
+			,a.noa cubno,a.noq cubnoq
+			,b.datea,a.accy,a.ordeno noa,a.no2,a.makeno,a.uno,d.productno,d.product
+			,a.dime,d.width,d.lengthb,a.radius,d.unit
+			,d.ucolor,d.[source]
+			,d.mount,d.[weight],d.price,d.memo
+			,a.custno,a.comp,1 cnt
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		left join ucc c on a.spec=c.noa
+		left join view_ordes d on a.ordeno=d.noa and a.no2=d.no2
+		left join view_orde e on d.accy=e.accy and d.noa=e.noa
+		outer apply(select top 1 noa from view_cuts where noa=@cutno and cname=a.makeno) f
+		where ISNULL(e.enda,0)=0
+		and (len(@makeno)=0 or charindex(@makeno,a.makeno)>0)
+		and (len(@ordeno)=0 or @ordeno=a.ordeno)
+	) a
+	order by case when sel=1 then 0 else 1 end,datea,accy,noa,no2
+	
+	update @tmp set pvcno=b.productno,pvc=b.product
+	from @tmp a
+	outer apply (select top 1 * from view_cubt where kind='1' and noa=a.cubno and nor=a.cubnoq order by noq) b 
+	
+	update @tmp set peno=b.productno,pe=b.product
+	from @tmp a
+	outer apply (select top 1 * from view_cubt where kind='2' and noa=a.cubno and nor=a.cubnoq order by noq) b 
+
+	return
+end

@@ -1,0 +1,725 @@
+z_quat_rkp03:--z_quat_rkp03  ref. z_orde_rk01
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
+	declare @t_bdate nvarchar(10) = case when '#non'=[4] then '' else [4] end
+	declare @t_edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
+	declare @t_bcustno nvarchar(20) = case when '#non'=[6] then '' else [6] end
+	declare @t_ecustno nvarchar(20) = case when '#non'=[7] then char(255) else [7] end
+	declare @t_bproductno nvarchar(30) = case when '#non'=[8] then '' else [8] end
+	declare @t_eproductno nvarchar(30) = case when '#non'=[9] then char(255) else [9] end
+	declare @t_bradius float = case when '#non'=[10] then 0.00 else cast([10] as float) end
+	declare @t_eradius float = case when '#non'=[11] then 9999.99 else cast([11] as float) end
+	declare @t_bwidth float = case when '#non'=[12] then 0.00 else cast([12] as float)end
+	declare @t_ewidth float = case when '#non'=[13] then 9999.99 else cast([13] as float) end
+	declare @t_bdime float = case when '#non'=[14] then 0.000 else cast([14] as float) end
+	declare @t_edime float = case when '#non'=[15] then 999.990 else cast([15] as float) end
+	declare @t_blengthb float = case when '#non'=[16] then 0.0 else cast([16] as float) end
+	declare @t_elengthb float = case when '#non'=[17] then 99999.9 else cast([17] as float) end
+	declare @t_cancel nvarchar(max) = case when '#non'=[18] then '' else [18] end
+	-----------------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,no2 nvarchar(10)
+		,datea nvarchar(20)
+		,odate nvarchar(20)
+		,productno nvarchar(30)
+		,product nvarchar(max)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,scolor nvarchar(20)
+		,[class] nvarchar(20)
+		,ucolor nvarchar(20)
+		,zinc nvarchar(20)
+		,[source] nvarchar(20)
+		,spec nvarchar(20)
+		,cspec nvarchar(50)
+		,unit nvarchar(20)
+		,price float
+		,mount float
+		,[weight] float
+		,total float
+		
+		,memo nvarchar(max)
+		,enda bit
+		,cancel bit
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,coin nvarchar(20)
+		,floata float
+		,size nvarchar(max)
+	)
+	insert into @tmp(gno,accy,noa,no2,datea,odate,productno,product,dime,radius,width,lengthb,scolor,[class]
+		,ucolor,zinc,[source],spec,unit,price,mount,[weight],total,memo,enda,cancel,custno,cust,coin,floata)
+	select '1',a.accy,a.noa,a.no3,b.datea,b.odate,a.productno,a.product,a.dime,a.radius,a.width,a.lengthb,a.scolor,a.[class]
+		,a.ucolor,a.zinc,a.[source],a.spec,a.unit,a.price,a.mount,a.[weight],a.total,a.memo
+		,case when ISNULL(a.enda,0)=0 and ISNULL(b.enda,0)=0 then 0 else 1 end
+		,case when ISNULL(a.cancel,0)=0 and ISNULL(b.cancel,0)=0 then 0 else 1 end 
+		,b.custno
+		,b.nick
+		,b.coin
+		,b.floata
+	from view_quats a
+	left join view_quat b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @t_bdate and @t_edate
+	and ISNULL(b.custno,'') between @t_bcustno and @t_ecustno
+	and (ISNULL(a.productno,'') between @t_bproductno and @t_eproductno or ISNULL(a.scolor,'') between @t_bproductno and @t_eproductno)
+	and ISNULL(a.dime,0) between @t_bdime and @t_edime
+	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
+	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
+	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
+	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
+	order by a.noa,a.no2
+	
+	update @tmp set total = case when len(unit)=0 or unit='KG' or unit='M2' or unit = N'M²' or unit = 'M' or unit = '批' or unit = '公斤' or unit='噸' or unit='頓' then round(ISNULL([weight],0)*ISNULL(price,0),2) else round(ISNULL([mount],0)*ISNULL(price,0),2) end
+	
+	update @tmp set cspec=ISNULL(b.product,'')
+	from @tmp a
+	left join spec b on a.spec=b.noa
+	
+	update @tmp set size=dbo.getComma(dime,-1)
+			+case when ISNULL(radius,0)!=0 then '+'+cast(radius as nvarchar) else '' end
+			+case when ISNULL(width,0)!=0 then '*'+cast(width as nvarchar) else '' end
+			+case when ISNULL(lengthb,0)!=0 then '*'+cast(lengthb as nvarchar) else '*COIL' end 
+	where not(ISNULL(dime,0)=0 and ISNULL(radius,0)=0 and ISNULL(width,0)=0 and ISNULL(lengthb,0)=0)
+	--===============================================================================
+	insert into @tmp(gno,mount,[weight])
+	select '2',SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)) from @tmp where gno='1'
+	
+	declare @dlabel nvarchar(max) = ''
+	declare @dvalue nvarchar(max) = ''
+	if len(@t_bdate)>0
+	begin
+		set @dlabel = '日期：'
+		set @dvalue = @t_bdate + ' ～ ' + @t_edate
+	end
+
+	select gno 
+		,@dlabel+@dvalue aaa
+		,"<a href="+CHAR(34)+"JavaScript:q_box('quat_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(sel as nvarchar)+"</a>" rr --序
+		,odate a01 --訂單日期
+		,case when enda=0 then '' else '*' end a02 --結
+		,noa a03 --訂單編號
+		,no2 a04 --訂序
+		,cust a05 --客戶
+		,product a06 --品名
+		,scolor a07 --皮膜
+		,ucolor a08 --背面處理
+		,zinc a09--保護膜
+		,cspec a10--規格
+		,size a11--尺寸
+		,unit a12--單位
+		,dbo.getComma(mount,-1) a13--數量	
+		,dbo.getComma([weight],-1) a14--重量	
+		,price a15--單價	
+		,coin a16--匯率	
+		,floata a17--匯率		
+		,dbo.getComma([total],-1) a18--金額
+	from @tmp
+	order by gno,sel;
+
+z_quat_rkp02:--z_quat_rkp02
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
+	------------------------------------------------------------------------------------------------
+	declare @reportno nvarchar(max) = '表單編號：LC-10-00-07-02'
+	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
+	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
+	-------------------------------------
+	declare @tmpa table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,no3 nvarchar(10)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,spec nvarchar(20)
+		,cspec nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,size nvarchar(50)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
+		,backprocess nvarchar(20) --背面處理
+		,pveno nvarchar(20)
+		,pve nvarchar(50)
+		,mount float
+		,[weight] float
+		,unit nvarchar(20)
+		,unit2 nvarchar(20)
+		,price float
+		,coin nvarchar(20)
+		,memo nvarchar(max)
+		,cmount nvarchar(50)
+		,cprice nvarchar(50)
+	)
+	-----------------------------------------------------------------------------------------------------------
+	insert into @tmpa(accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+		,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo)
+	select a.accy,a.noa,a.no3,a.productno,a.product,a.spec,a.dime,a.width,a.lengthb,a.radius
+		,a.scolor,a.[class],a.[ucolor],a.zinc,a.[source],a.mount,a.[weight],a.unit,a.unit2,a.price,b.coin,a.memo
+	from view_quats a
+	left join view_quat b on a.accy=b.accy and a.noa=b.noa
+	where b.noa is not null
+	and a.noa=@t_noa
+	-----------------------------------------------------------------------------------------------------------
+	update @tmpa set size =case when dime=0 and width=0 and lengthb=0 then''
+			else CAST(dime as nvarchar)
+			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
+			+'*'+CAST(width as nvarchar)
+			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
+		,cmount=dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' or upper(unit2)='M' then weight else  mount end,-1)+' '+unit2
+		,cprice=ISNULL(coin,'')+' '+dbo.getComma(price,-1)+'/'+unit
+	-----------------------------------------------------------------------------------------------------------
+	update @tmpa set cspec=ISNULL(b.product,'')
+	from @tmpa a
+	left join spec b on a.spec=b.noa
+	-----------------------------------------------------------------------------------------------------------
+	--要奇數行,因為欄位抬頭會用到3行
+	declare @pagecount int = 35  -- 一頁可印35行
+	
+	declare @tmpb table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,a01 nvarchar(max) --TO：
+		,a02 nvarchar(max) --ATTN：		
+		,a03 nvarchar(max) --合約編號：
+		,a04 nvarchar(max) --傳真號碼：
+		,a05 nvarchar(max) --日　　期：
+		,a06 nvarchar(max) --電話號碼：02-8286-2896
+		
+		,recno int
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,no3 nvarchar(10)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,spec nvarchar(20)
+		,cspec nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,size nvarchar(50)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
+		,backprocess nvarchar(20) --背面處理
+		,pveno nvarchar(20)
+		,pve nvarchar(50)
+		,mount float
+		,[weight] float
+		,unit nvarchar(20)
+		,unit2 nvarchar(20)
+		,price float
+		,coin nvarchar(20)
+		,memo nvarchar(max)
+		,cmount nvarchar(50)
+		,cprice nvarchar(50)
+		
+		,aa nvarchar(max)
+		,bb nvarchar(max)
+	)
+	declare @sel int
+	declare @n int = 0
+	declare @curpage int = 1
+	declare @recno int
+	--每頁明細前要先印3行抬頭
+	--每筆明細都要佔2行
+	if exists(select * from @tmpa)
+	begin
+		insert into @tmpb(gno)values('1')
+		insert into @tmpb(gno)values('2')
+		insert into @tmpb(gno)values('3')
+		set @n = 3
+		
+		declare cursor_table cursor for
+		select sel,row_number()over(order by accy,noa,no3) from @tmpa order by accy,noa,no3 	
+		open cursor_table
+		fetch next from cursor_table
+		into @sel,@recno
+		while(@@FETCH_STATUS <> -1)
+		begin
+			if @n >= @pagecount
+			begin
+				insert into @tmpb(gno)values('1')
+				insert into @tmpb(gno)values('2')
+				insert into @tmpb(gno)values('3')
+				set @n = 3
+			end
+			
+			insert into @tmpb(gno,recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
+				,size,cmount,cprice)
+			select '4',@recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
+				,size,cmount,cprice
+			from @tmpa where sel=@sel
+			insert into @tmpb(gno,recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
+				,size,cmount,cprice)
+			select '5',@recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
+				,size,cmount,cprice
+			from @tmpa where sel=@sel
+			
+			set @n = @n + 2
+			fetch next from cursor_table
+			into @sel,@recno
+		end
+		close cursor_table
+		deallocate cursor_table
+	end
+	
+	--耍再改, 改和  訂單一樣
+	
+	--只有一筆明細時,全部印在同一頁
+	--否則 "交貨日期~簽名印在最後一頁"
+	/*if (select count(1) from @tmpa)>1
+	begin
+		--補空白行
+		while @n%@pagecount!=0
+		begin
+			insert into @tmpb(gno)values('6')
+			set @n = @n + 1
+		end
+	end*/
+	-------------------------------------------------------------------------
+	--備註
+	insert into @tmpb(gno,aa,bb)values('7','交貨日期：','')
+	insert into @tmpb(gno,aa,bb)
+	select '7','付款方式：',paytype + case when len(isnull(memo2,''))>0 then '('+memo2+')' else '' end
+	from view_quat where noa=@t_noa
+	
+	insert into @tmpb(gno,aa,bb)
+	select '7','包裝方式：',packtype
+	from view_quat where noa=@t_noa
+	
+	insert into @tmpb(gno,aa,bb)
+	select '7','交貨方式：'
+		,case when chka1=1 then @sign1 else @sign2 end + '賣方運送&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		+case when chka2=1 then @sign1 else @sign2 end + '買方自運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		+case when chka3=1 then @sign1 else @sign2 end + '可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		+case when chka4=1 then @sign1 else @sign2 end + '不可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		+case when chka5=1 then @sign1 else @sign2 end + '出貨數量若不足五噸，另需負擔運費。'
+	from view_quat where noa=@t_noa
+	
+	insert into @tmpb(gno,aa,bb)
+	select '7','交貨地點：',addr from view_quat where noa=@t_noa
+	
+	insert into @tmpb(gno,aa,bb)
+	select '7','交貨公差：',tolerance from view_quat where noa=@t_noa
+	
+	insert into @tmpb(gno,aa,bb)
+	select '7','材料類別：','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">A.</span>'+case when chkb1=1 then @sign1 else @sign2 end + '一般流通品' from view_quat where noa=@t_noa
+	
+	insert into @tmpb(gno,aa,bb)
+	select '7','','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">B.</span>'+case when chkb2=1 then @sign1 else @sign2 end + '買方專用材料' from view_quat where noa=@t_noa
+	
+	insert into @tmpb(gno,aa,bb)
+	select '7','','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">&nbsp'+CHAR(59)+'</span>'+case when chkb3=1 then @sign1 else @sign2 end + '特製皮膜'
+		+case when chkb4=1 then @sign1 else @sign2 end + '特殊規格鋼捲，於合約完成後半年內未出貨完畢，買方需購回剩餘原材料。' from view_quat where noa=@t_noa
+
+	--MEMO
+	declare @string nvarchar(max)
+	declare @memo nvarchar(max)
+	set @n = 0
+	select @string = memo from view_quat where noa=@t_noa
+	while CHARINDEX('chr(10)',@string)>0
+	begin
+		set @memo = LEFT(@string,CHARINDEX('chr(10)',@string)-1)
+		insert into @tmpb(gno,aa,bb)values('7',case when @n=0 then '備　　註：' else '' end,@memo)
+		set @string = SUBSTRING(@string,len(@memo)+8,len(@string))
+		set @n = @n +1
+	end
+	if(len(@string)>0)
+	begin
+		insert into @tmpb(gno,aa,bb)values('7',case when @n=0 then '備　　註：' else '' end,@string)
+	end
+	--補空白行
+	set @n = 0
+	select @n = count(1) from @tmpb
+	set @n = @n + 5-- 預留簽章行數
+	while @n%@pagecount!=0
+	begin
+		insert into @tmpb(gno)values('6')
+		set @n = @n + 1
+	end
+	--簽章
+	insert into @tmpb(gno,aa)values('8','聯琦金屬股份有限公司')
+	insert into @tmpb(gno)values('6')
+	insert into @tmpb(gno)values('6')
+	insert into @tmpb(gno)values('6')
+	insert into @tmpb(gno)values('9')
+	---------------------------------------------------------------------------
+	update @tmpb set a01 = ISNULL(b.comp,'')
+		,a02 = ISNULL(b.conn,'')
+		,a03 = b.quatno
+		,a04 = b.fax
+		,a05 = '日　　期：'+dbo.AD2ChineseEraName(GETDATE())
+		,a06 = '電話號碼：'+isnull(b.tel,'')
+	from @tmpb a
+	left join view_quat b on b.noa=@t_noa
+	
+	update @tmpb set cspec=ISNULL(b.product,'')
+	from @tmpb a
+	left join spec b on a.spec=b.noa
+	
+	update @tmpb set aa=replace(aa,"~#$","'"),bb=replace(bb,"~#$","'")
+	
+	select '<img src="'+@t_path+'getlogo.aspx?noa=LC01'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,recno rr
+		,product pp
+		,backprocess bp
+		,@t_noa xxxx
+		,@reportno reportno
+		,*
+	from @tmpb order by sel;
+
+z_quat_rkp01:--z_quat_rkp01
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
+	------------------------------------------------------------------------------------------------
+	declare @reportno nvarchar(max) = 'LC-10-00-05-03'
+	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
+	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
+	
+	declare @acomp nvarchar(50)
+	declare @noa nvarchar(20)
+	declare @datea nvarchar(20)
+	declare @custno nvarchar(20)
+	declare @comp nvarchar(50)
+	declare @serial nvarchar(20)
+	declare @boss nvarchar(20)
+	declare @conn nvarchar(20)
+	declare @tel nvarchar(20)
+	declare @fax nvarchar(20)
+	declare @odate nvarchar(20)
+	declare @paytype nvarchar(20)
+	declare @memo2 nvarchar(max)
+	declare @packtype nvarchar(20)
+	declare @chka1 bit
+	declare @chka2 bit
+	declare @chka3 bit
+	declare @chka4 bit
+	declare @chka5 bit
+	declare @addr nvarchar(max)
+	declare @tolerance nvarchar(20)
+	declare @chkb1 bit
+	declare @chkb2 bit
+	declare @chkb3 bit
+	declare @chkb4 bit
+	declare @memo nvarchar(max)
+	declare @coin nvarchar(20)
+	
+	declare @productno nvarchar(20)
+	declare @product nvarchar(50)
+	declare @dime float
+	declare @radius float
+	declare @width float
+	declare @lengthb float
+	declare @spec nvarchar(20)
+	declare @scolor nvarchar(30)
+	declare @ucolor nvarchar(30)
+	declare @uno nvarchar(30)
+	declare @classa nvarchar(20)
+	declare @style nvarchar(20)
+	declare @source nvarchar(20)
+	declare @mount float
+	declare @weight float
+	declare @unit nvarchar(20)
+	declare @unit2 nvarchar(20)
+	declare @price float
+	declare @po nvarchar(50)
+	declare @pn nvarchar(50)
+	
+	declare @pvcno nvarchar(20)
+	declare @pvc nvarchar(30)
+	declare @pveno nvarchar(20)
+	declare @pve nvarchar(30)
+	declare @pveno2 nvarchar(20)
+	declare @pve2 nvarchar(30)
+	
+	declare @string nvarchar(max)
+	declare @n int,@m int
+	declare @curcount int
+	declare @pagecount int = 37 -- 一頁全部幾行   要奇數行
+	
+	declare @tmp table(
+		sel int identity(1,1),
+		pno int ,
+		gno nvarchar(10),
+		noa nvarchar(20),
+		aa nvarchar(max),
+		bb nvarchar(max),
+		cc nvarchar(max),
+		dd nvarchar(max),	
+		recno int,
+		[to] nvarchar(max),
+		[attn] nvarchar(50),
+		[subject] nvarchar(20),
+		fax nvarchar(50),
+		tel nvarchar(50),
+		quatno nvarchar(20),
+		productno nvarchar(50),
+		product nvarchar(50),
+		dime float,
+		radius float,
+		width float,
+		lengthb float,
+		spec nvarchar(20),
+		cspec nvarchar(20),
+		pvcno nvarchar(20),--scolor
+		pvc nvarchar(30),--classa
+		pveno nvarchar(20),--zinc
+		pve nvarchar(30),--[source]
+		pveno2 nvarchar(20),--hard
+		pve2 nvarchar(30),--uno
+		
+		ucolor nvarchar(30),
+		style nvarchar(20),
+		[source] nvarchar(20),
+		mount float,
+		weight float,
+		unit nvarchar(20),
+		unit2 nvarchar(20),
+		price float,
+		po nvarchar(50),
+		pn nvarchar(50),
+		coin nvarchar(20)
+	)
+
+	
+	declare cursor_table cursor for
+	select noa,datea,custno,comp,serial,boss,conn,tel,fax,odate
+		,paytype,memo2,packtype
+		,chka1,chka2,chka3,chka4,chka5
+		,addr,tolerance
+		,chkb1,chkb2,chkb3,chkb4,memo,coin
+	from view_quat
+	where noa=@t_noa	
+	open cursor_table
+	fetch next from cursor_table
+	into @noa,@datea,@custno,@comp,@serial,@boss,@conn,@tel,@fax,@odate
+		,@paytype,@memo2,@packtype
+		,@chka1,@chka2,@chka3,@chka4,@chka5
+		,@addr,@tolerance
+		,@chkb1,@chkb2,@chkb3,@chkb4,@memo,@coin
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @curcount = 0
+		if @curcount%@pagecount=0
+		begin
+			---- 欄位名稱
+			insert into @tmp(pno,gno,noa)values(1,'8',@noa)
+			insert into @tmp(pno,gno,noa)values(1,'9',@noa)
+			insert into @tmp(pno,gno,noa)values(1,'10',@noa)
+			set @curcount = @curcount + 2
+		end
+
+		set @n = 1
+		declare cursor_table2 cursor for
+		select productno,product,dime,radius,width,lengthb,spec,ucolor
+			,scolor,class,zinc,[source],hard,uno
+			,style,mount,[weight],unit,unit2,price,po,pn
+		from view_quats
+		where noa=@t_noa	
+		open cursor_table2
+		fetch next from cursor_table2
+		into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
+			,@pvcno, @pvc, @pveno, @pve,@pveno2,@pve2
+			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn
+		while(@@FETCH_STATUS <> -1)
+		begin
+			if @curcount%@pagecount=0
+			begin
+				---- 欄位名稱
+				insert into @tmp(pno,gno,noa)values(1,'8',@noa)
+				insert into @tmp(pno,gno,noa)values(1,'9',@noa)
+				insert into @tmp(pno,gno,noa)values(1,'10',@noa)
+				set @curcount = @curcount + 2
+			end
+	
+			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
+				,pvcno,pvc,pveno,pve,pveno2,pve2
+				,style,mount,weight,unit,unit2,price,po,pn,coin)
+			values(1,case when len(@uno)=0 then '2' else '3' end
+				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
+				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
+				,@style,@mount,@weight
+				,@unit,@unit2,@price,@po,@pn,@coin)
+			insert into @tmp(pno,gno,recno,noa,productno,product,dime,radius,width,lengthb,spec,ucolor
+				,pvcno,pvc,pveno,pve,pveno2,pve2
+				,style,mount,weight,unit,unit2,price,po,pn,coin)
+			values(1,'4'
+				,@n,@noa,@productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
+				,@pvcno,@pvc,@pveno,@pve,@pveno2,@pve2
+				,@style,@mount,@weight
+				,@unit,@unit2,@price,@po,@pn,@coin)
+			set @curcount = @curcount + 2
+			
+			set @n = @n + 1
+			fetch next from cursor_table2
+			into @productno,@product,@dime,@radius,@width,@lengthb,@spec,@ucolor
+			,@pvcno, @pvc, @pveno, @pve,@pveno2,@pve2
+			,@style,@mount,@weight,@unit,@unit2,@price,@po,@pn
+		end
+		close cursor_table2
+		deallocate cursor_table2
+		
+		--備註
+		---------------------------------------------------------
+		insert into @tmp(pno,gno,noa)values(2,'5',@noa)
+		--insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Delivery Date：',convert(nvarchar,dbo.ChineseEraName2AD(@odate),111))
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Delivery Date：','')
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Payment:',@paytype+@memo2)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Packing:',@packtype)
+		
+		set @string = ''
+		--set @string = 
+		--	case when @chka1=1 then @sign1 else @sign2 end + '賣方運送&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka2=1 then @sign1 else @sign2 end + '買方自運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka3=1 then @sign1 else @sign2 end + '可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka4=1 then @sign1 else @sign2 end + '不可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
+		--	+case when @chka5=1 then @sign1 else @sign2 end + '出貨數量若不足五噸，另需負擔運費。' 
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Delivery Term:',@string)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'Loading Port:',@addr)
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,"Q'ty Tolerance:",@tolerance)
+		
+		set @string = '<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">A.</span>'+case when @chkb1=1 then @sign1 else @sign2 end + '一般流通品'
+		--insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'材料類別：',@string)
+		set @string = '<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">B.</span>'+case when @chkb2=1 then @sign1 else @sign2 end + '買方專用材料'
+		--insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'',@string)
+		/*set @string = '<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">&nbsp'+CHAR(59)+'</span>'+case when @chkb3=1 then @sign1 else @sign2 end + '特製皮膜'
+			+case when @chkb4=1 then @sign1 else @sign2 end + '特殊規格鋼捲，於合約完成後半年內未出貨完畢，買方需購回剩餘原材料。'
+		insert into @tmp(pno,gno,noa,aa,bb)values(2,'1',@noa,'',@string)*/
+		--MEMO
+		set @n = 0
+		set @string = @memo
+		while CHARINDEX('chr(10)',@string)>0
+		begin
+			set @memo = LEFT(@string,CHARINDEX('chr(10)',@string)-1)
+			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then 'Remark：' else '' end,@memo)
+			set @string = SUBSTRING(@string,len(@memo)+8,len(@string))
+			set @n = @n +1
+		end
+		if(len(@string)>0)
+		begin
+			insert into @tmp(pno,gno,aa,bb)values(2,'1',case when @n=0 then 'Remark：' else '' end,@string)
+		end
+		---------------------------------------------------------
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno,aa)values(4,'6','Lien Chy Laminated Metal Co., Ltd.')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'5')
+		insert into @tmp(pno,gno)values(4,'7')
+		---------------------------------------------------------
+		--假如備註不能印在同一頁,那就換到下一頁印
+		select @n = count(1) from @tmp where pno='1'
+		select @m = count(1) from @tmp where pno='2'
+		set @n = @n%@pagecount
+		if(@pagecount - @n - @m)<0
+		begin
+			select @n = @pagecount - count(1) from @tmp where pno='1'
+			while @n >0
+			begin
+				insert into @tmp(pno,gno)values(1,'5')
+				set @n = @n - 1
+			end
+		end
+		
+		fetch next from cursor_table
+		into @noa,@datea,@custno,@comp,@serial,@boss,@conn,@tel,@fax,@odate
+		,@paytype,@memo2,@packtype
+		,@chka1,@chka2,@chka3,@chka4,@chka5
+		,@addr,@tolerance
+		,@chkb1,@chkb2,@chkb3,@chkb4,@memo,@coin
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update @tmp set [to]=ISNULL(b.comp,''),[attn]=ISNULL(b.conn,''),[subject]='',quatno=b.quatno,fax=b.fax,tel=b.tel
+	from @tmp a
+	left join view_quat b on a.noa=b.noa
+	
+	update @tmp set cspec=ISNULL(b.product,'')
+	from @tmp a
+	left join spec b on a.spec=b.noa
+	
+	update @tmp set product=b.engpro
+	from @tmp a
+	left join ucc b on a.productno=b.noa
+	where len(isnull(b.engpro,''))>0
+	
+	update @tmp set pvc=b.engpro
+	from @tmp a
+	left join ucc b on a.pvcno=b.noa
+	where len(isnull(b.engpro,''))>0
+	
+	update @tmp set pve=b.engpro
+	from @tmp a
+	left join ucc b on a.pveno=b.noa
+	where len(isnull(b.engpro,''))>0
+	
+	---
+	--補空白行
+	select @n = count(1) from @tmp
+	while @n%@pagecount!=0
+	begin
+		insert into @tmp(pno,gno)values(3,'5')
+		set @n=@n+1
+	end
+	
+	select gno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[to]+'</a>' a01
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[attn]+'</a>' a02
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+quatno+'</a>' a03
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+fax+'</a>' a04
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+convert(nvarchar,getdate(),111)+'</a>' a05
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+tel+'</a>' a06
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC02'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+noa+'</a>' xxxx
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(aa,"~#$","'")+'</a>' aa
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(bb,"~#$","'")+'</a>' bb
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(cc,"~#$","'")+'</a>' cc
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+replace(dd,"~#$","'")+'</a>' dd
+		,recno rr
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+productno+'</a>' pxno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+product+'</a>' pp
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'
+			+case when dime=0 and width=0 and lengthb=0 then''
+			else CAST(dime as nvarchar)
+			+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end 
+			+'*'+CAST(width as nvarchar)
+			+'*'+case when lengthb=0 then 'C' else CAST(lengthb as nvarchar) end end
+			+'</a>' size
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+spec+'</a>' spec
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+cspec+'</a>' cspec
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' pvcno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' pvc
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pveno+'</a>' pveno
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pve+'</a>' pve
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+coin+'</a>' coin
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+ucolor+'</a>' ucolor
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+[source]+'</a>' [source] 
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(case when len(isnull(unit2,''))=0 or upper(unit2)='KG' then weight else  mount end,-1)+'</a>' mount
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price,-1)+'/'+unit+'</a>' price
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit+'</a>' unit
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+unit2+'</a>' unit2
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+po+'</a>' po
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+pn+'</a>' pn
+		,'<a style="font-family:'+ "'Times NewX Roman','標楷體', serif"+char(59)+'">'+@reportno +'</a>' reportno
+	from @tmp a order by a.pno,a.sel;

@@ -1,0 +1,474 @@
+z_rc2_rkp03:--z_rc2_rkp03	
+	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_stktype nvarchar(max) = '[3]'
+	declare @t_noa nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	declare @t_noq nvarchar(10)=''
+	------------------------------------------------------------------------------------------------	
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,typea nvarchar(20)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,specno nvarchar(20)
+		,spec nvarchar(20)
+		,size nvarchar(50)
+		,mount float
+		,unit nvarchar(20)
+		,datea nvarchar(10)
+		,tggno nvarchar(20)
+		,tgg nvarchar(20)
+		,hard float
+		,uno nvarchar(30)
+		,shelflife nvarchar(20)
+	)
+	
+	insert into @tmp(gno,typea,productno,product,size,mount,unit,datea,tggno,tgg,hard,uno,shelflife
+		,dime,width,lengthb,specno,spec)
+	select '1',d.item,a.productno,a.product,a.size,a.mount,a.unit,b.datea,b.tggno,b.nick,a.hard,a.uno,c.shelflife
+		,a.dime,a.width,a.lengthb,a.spec,e.product
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join ucc c on a.productno=c.noa
+	left join dbo.fnSplit(@t_stktype) d on c.typea = d.n
+	left join spec e on a.spec=e.noa
+	where a.noa=@t_noa
+	and (len(@t_noq)=0 or a.noa=@t_noq)
+	order by a.noa,a.noq
+	
+	update @tmp set size= case when spec='mm' then CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+'mm' 
+		else CAST(dime as nvarchar)+'*'+CAST(width as nvarchar)+case when lengthb>0 then '*'+CAST(lengthb as nvarchar) else '' end end
+	where len(isnull(size,''))=0
+	
+	declare @transform nvarchar(max)='style="-webkit-transform: rotate(90deg)'+char(59)+'
+    -moz-transform: rotate(90deg)'+char(59)+'
+    -o-transform: rotate(90deg)'+char(59)+'
+    -ms-transform: rotate(90deg)'+char(59)+'
+    filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=1)'+char(59)+'
+    transform: rotate(90deg)'+char(59)+'"'
+	
+	select gno 
+		,'<div '+@transform+'>'+datea+'</div>' a01
+		,'<div '+@transform+'>'+CAST(mount as nvarchar)+unit+'</div>'  a02
+		,'<div '+@transform+'>'+size+'</div>'  a03
+		,'<div '+@transform+'>'+productno+product+'</div>'  a04
+		,'<div '+@transform+'>'+typea+'</div>'  a05
+		,'' a06
+		,'<div '+@transform+'>'+shelflife+'</div>'  a07
+		,'<div '+@transform+'>'+uno+'</div>'  a08
+		,'' a09
+		,'<div '+@transform+'>'+tgg+'</div>'  a10
+	from @tmp
+	order by sel;
+
+z_rc2_rkp02:--z_rc2_rkp02	
+	SET QUOTED_IDENTIFIER OFF
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_stktype nvarchar(max) = '[3]'
+	declare @t_noa nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	------------------------------------------------------------------------------------------------	
+	------------------------------------------------------------------------------------------------	
+	IF OBJECT_ID('tempdb..#z_rc2_rkp02')is not null
+	BEGIN
+		drop table #z_rc2_rkp02
+	END
+	
+	create table #z_rc2_rkp02(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,tggno nvarchar(20)
+		,tgg nvarchar(50)
+		,noa nvarchar(20)
+		,datea nvarchar(10)
+		
+		,bknoa nvarchar(20)
+		,bkdate nvarchar(10)
+		
+		,uno nvarchar(30)
+		
+		,product01 nvarchar(50)
+		,size01 nvarchar(50)
+		,mount01 float
+		,bkmount01 float
+		,memo01 nvarchar(max)
+
+		,product02 nvarchar(50)
+		,size02 nvarchar(50)
+		,mount02 float
+		,bkmount02 float
+		,memo02 nvarchar(max)
+		
+		,uno03 nvarchar(30)
+		,product03 nvarchar(50)
+		,size03 nvarchar(50)
+		,mount03 float
+		,bkmount03 float
+		,memo03 nvarchar(max)
+	)
+	declare @n int
+	declare @datea nvarchar(10)
+	declare @bkdate nvarchar(10)
+	declare @noa nvarchar(20)
+	declare @bknoa nvarchar(20)
+	declare @tggno nvarchar(20)
+	declare @tgg nvarchar(50)
+	
+	declare @uno nvarchar(30)
+	declare @bkmount float
+	declare @memo nvarchar(max)
+	
+	declare @product nvarchar(50)
+	declare @size nvarchar(50)
+	declare @mount float
+	
+	--只能印3筆
+	declare cursor_table cursor for
+	select top 3 row_number()over(order by a.noq),b.datea,a.noa
+		,a.uno,a.mount,a.memo
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	where a.noa=@t_noa
+	and ISNULL(b.typea,'1')='2'--退貨
+	order by a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		if LEN(ISNULL(@uno,''))>0
+		begin
+			select @product='',@size='',@mount=0
+				,@datea='',@noa='',@tggno='',@tgg=''
+			select @product=a.product
+				,@size= case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
+					+case when ISNULL(a.dime,0)=0 or ISNULL(a.width,0)=0 then '' else '*' end
+					+case when ISNULL(a.width,0)=0 then '' else CAST(a.width as nvarchar) end
+					+case when ISNULL(a.width,0)=0 or ISNULL(a.lengthb,0)=0  then '' else '*' end
+					+case when ISNULL(a.lengthb,0)=0 then '' else CAST(a.lengthb as nvarchar) end
+					+case when Upper(ISNULL(a.spec,''))='MM' or a.kind='A1' or a.kind='A4' or a.kind='A5' then 'mm' else '' end
+					+case when len(c.product)>0 then ' '+c.product else '' end
+				,@mount=a.mount
+				,@datea=b.datea,@noa=a.noa,@tggno=b.tggno,@tgg=b.tgg
+			from view_rc2s a
+			left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+			left join spec c on a.spec=c.noa
+			where a.noa!=@t_noa
+			and a.uno=@uno
+
+			if not exists(select * from #z_rc2_rkp02)
+			begin
+				insert into #z_rc2_rkp02(gno,noa,bknoa,tggno,tgg,datea,bkdate)values('1',@noa,@bknoa,@tggno,@tgg,@datea,@bkdate)
+			end
+			set @cmd = "update #z_rc2_rkp02 set uno=@uno
+				,product0"+CAST(@n as nvarchar)+"=@product
+				,size0"+CAST(@n as nvarchar)+"=@size
+				,mount0"+CAST(@n as nvarchar)+"=@mount
+				,bkmount0"+CAST(@n as nvarchar)+"=@bkmount
+				,memo0"+CAST(@n as nvarchar)+"=@memo"
+			execute sp_executesql @cmd,N'@uno nvarchar(30),@product nvarchar(50),@size nvarchar(50),@mount float,@bkmount float,@memo nvarchar(max)'
+				,@uno=@uno,@product=@product,@size=@size,@mount=@mount,@bkmount=@bkmount,@memo=@memo
+		end
+		fetch next from cursor_table
+		into @n,@bkdate,@bknoa,@uno,@bkmount,@memo
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,tgg a01
+		,'' a02
+		,'' a03
+		,bknoa a04
+		,datea a05
+		,bkdate a06
+		,product01 b01
+		,size01 c01
+		,dbo.getComma(mount01,-1) d01
+		,dbo.getComma(bkmount01,-1) e01
+		,memo01 f01
+		
+		,product02 b02
+		,size02 c02
+		,dbo.getComma(mount02,-1) d02
+		,dbo.getComma(bkmount02,-1) e02
+		,memo02 f02
+		
+		,product03 b03
+		,size03 c03
+		,dbo.getComma(mount03,-1) d03
+		,dbo.getComma(bkmount03,-1) e03
+		,memo03 f03
+		
+	from #z_rc2_rkp02
+	
+	drop table #z_rc2_rkp02;
+	
+z_rc2_rkp01:--z_rc2_rkp01
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_stktype nvarchar(max) = '[3]'
+	declare @t_noa nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	declare @t_merge nvarchar(max) = case when '#non' = [5] then '' else [5] end
+	------------------------------------------------------------------------------
+	declare @tmpa table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
+		,typea nvarchar(20)
+		,productno nvarchar(20)
+		,product nvarchar(max)
+		,size nvarchar(max)
+		,mount float
+		,[weight] float
+		,unit nvarchar(20)
+		,memo nvarchar(max)
+		
+		,kind nvarchar(20)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,spec nvarchar(20)
+		,cspec nvarchar(20)
+	)
+	insert into @tmpa(accy,noa,noq,uno,typea,productno,product
+		,size,mount,[weight],unit,memo
+		,kind,dime,width,lengthb,radius,spec,cspec)
+	select a.accy,a.noa,a.noq,a.uno,isnull(d.item,''),isnull(a.productno,''),isnull(a.product,'')
+		,isnull(a.size,''),isnull(a.mount,0),isnull(a.[weight],0),isnull(a.unit,''),a.memo
+		,b.kind,a.dime,a.width,a.lengthb,a.radius,a.spec,ISNULL(e.product,'')
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join ucc c on a.productno=c.noa
+	left join dbo.fnSplit(@t_stktype) d on b.kind = d.n
+	left join spec e on a.spec=e.noa
+	where a.noa=@t_noa
+	order by a.accy,a.noa,a.noq
+	
+	update @tmpa set size = case when ISNULL(a.dime,0)=0 then '' else CAST(a.dime as nvarchar) end
+		+case when ISNULL(a.dime,0)=0 or ISNULL(a.width,0)=0 then '' else '*' end
+		+case when ISNULL(a.width,0)=0 then '' else CAST(a.width as nvarchar) end
+		+case when ISNULL(a.width,0)=0 or ISNULL(a.lengthb,0)=0  then '' else '*' end
+		+case when ISNULL(a.lengthb,0)=0 then '' else CAST(a.lengthb as nvarchar) end
+		+case when Upper(ISNULL(a.spec,''))='MM' or a.kind='A1' or a.kind='A4' or a.kind='A5' then 'mm' else '' end
+		+case when len(cspec)>0 then ' '+cspec else '' end
+	from @tmpa a
+	---------------------------------------------------------------------------
+	declare @tmpb table(
+		sel int identity(1,1)
+		,gno nvarchar(20)
+		,pno int
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(30)
+		,typea nvarchar(20)
+		,productno nvarchar(20)
+		,product nvarchar(max)
+		,size nvarchar(max)
+		,mount float
+		,[weight] float
+		,totweight float
+		,unit nvarchar(20)
+		,memo nvarchar(max)
+		
+		,datea nvarchar(20)
+		,tgg nvarchar(max)
+		,rc2no nvarchar(20)
+		,ordcno nvarchar(20)
+	)
+	declare @sel int
+	declare @typea nvarchar(20)
+	declare @productno nvarchar(20)
+	declare @product nvarchar(max)
+	declare @size nvarchar(max)
+	declare @unit nvarchar(max)
+	declare @memo nvarchar(max)
+	declare @mount float
+	declare @weight float
+	declare @totweight float
+	declare @uno1 nvarchar(30)
+	declare @uno2 nvarchar(30)
+	declare @n int
+	declare @t_memo nvarchar(max)
+	
+	if len(@t_merge)=0
+	begin
+		declare cursor_table cursor for
+		select sel from @tmpa
+		open cursor_table
+		fetch next from cursor_table
+		into @sel
+		while(@@FETCH_STATUS <> -1)
+		begin
+			
+			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight],totweight,memo)
+			select '1',1,typea,uno,productno,product,size,unit,mount,[weight],[weight],memo
+			from @tmpa 
+			where sel=@sel
+			insert into @tmpb(gno,pno,typea,uno,productno,product,size,unit,mount,[weight],totweight)
+			select '2',1,typea,uno,productno,product,size,unit,mount,[weight],[weight]
+			from @tmpa 
+			where sel=@sel
+			
+			fetch next from cursor_table
+			into @sel
+		end
+		close cursor_table
+		deallocate cursor_table
+		
+	end	
+	else
+	begin
+		declare cursor_table cursor for
+		select b.sel,typea,productno,product,size,unit
+			,sum(isnull(mount,0)),isnull([weight],0) ,sum(isnull([weight],0))
+			from @tmpa a
+			outer apply(select top 1 sel from @tmpa 
+				where typea=a.typea and productno=a.productno and product=a.product and size=a.size and unit=a.unit and [weight]=a.[weight] order by sel) b
+		group by b.sel,typea,productno,product,size,unit,[weight]
+		order by b.sel
+		open cursor_table
+		fetch next from cursor_table
+		into @n,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight
+		while(@@FETCH_STATUS <> -1)
+		begin
+			set @t_memo = ''
+			
+			declare cursor_table2 cursor for
+			select isnull(memo,'') 
+			from @tmpa 
+			where typea=@typea and productno=@productno and product=@product and size=@size and unit=@unit and [weight]=@weight 
+			order by sel
+			open cursor_table2
+			fetch next from cursor_table2
+			into @memo
+			while(@@FETCH_STATUS <> -1)
+			begin
+				set @t_memo = @t_memo + @memo
+				fetch next from cursor_table2
+				into @memo
+			end
+			close cursor_table2
+			deallocate cursor_table2
+		
+			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight],totweight,memo)
+			select '1',1,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight,@t_memo
+			select @sel = @@IDENTITY
+			insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight],totweight)
+			select '2',1,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight
+			
+			select @uno1='',@uno2=''
+			select top 1 @uno1 = uno from @tmpa where typea=@typea and productno=@productno and product=@product and size=@size and unit=@unit and isnull([weight],0)=@weight and len(uno)>0 order by uno
+			select top 1 @uno2 = uno from @tmpa where typea=@typea and productno=@productno and product=@product and size=@size and unit=@unit and isnull([weight],0)=@weight and len(uno)>0 order by uno desc
+			if len(isnull(@uno1,''))=0
+			begin
+				update @tmpb set uno=@uno2 where sel=@sel
+			end
+			else if len(isnull(@uno2,''))=0
+			begin
+				update @tmpb set uno=@uno1 where sel=@sel
+			end
+			else if @uno1=@uno2  
+			begin
+				update @tmpb set uno=@uno1 where sel=@sel
+			end
+			else
+			begin
+				set @n = 0
+				while 1=1
+				begin
+					if LEFT(@uno1,@n+1) = LEFT(@uno2,@n+1)
+						set @n = @n + 1
+					else
+						break
+				end
+				update @tmpb set uno=@uno1 + '~' + substring(@uno2,@n+1,len(@uno2)) where sel=@sel
+			end
+
+			fetch next from cursor_table
+			into @n,@typea,@productno,@product,@size,@unit,@mount,@weight,@totweight
+		end
+		close cursor_table
+		deallocate cursor_table
+	end
+	insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight])
+	select '3',3,'','','','',unit,sum(mount),sum(totweight)
+	from @tmpb
+	where gno='1'
+	group by unit
+	
+	declare @t_pagecount int = 33 -- 一頁幾行
+	declare @t_endcount int = 14 --要保留14行印頁尾
+	set @n = 0
+	select @n=count(1) from @tmpb
+	if @n%@t_pagecount < @t_endcount
+	begin
+		while (@n+@t_endcount)%@t_pagecount!=0
+		begin
+			insert into @tmpb(gno,pno)values('4',4)
+			set @n = @n + 1
+		end
+	end
+	else if @n%@t_pagecount > @t_pagecount-@t_endcount
+	begin
+		while @n%@t_pagecount!=0
+		begin
+			insert into @tmpb(gno,pno)values('4',4)
+			set @n = @n + 1
+		end
+		while (@n+@t_endcount)%@t_pagecount!=0
+		begin
+			insert into @tmpb(gno,pno)values('4',4)
+			set @n = @n + 1
+		end
+	end
+	--要保留14行印頁尾
+	insert into @tmpb(gno,pno)values('5',99)
+	insert into @tmpb(gno,pno)values('6',99)
+	insert into @tmpb(gno,pno)values('7',99)
+	insert into @tmpb(gno,pno)values('8',99)
+	insert into @tmpb(gno,pno)values('9',99)
+	insert into @tmpb(gno,pno)values('10',99)
+	insert into @tmpb(gno,pno)values('11',99)
+	insert into @tmpb(gno,pno)values('12',99)
+	insert into @tmpb(gno,pno)values('13',99)
+	insert into @tmpb(gno,pno)values('14',99)
+	insert into @tmpb(gno,pno)values('15',99)
+	insert into @tmpb(gno,pno)values('16',99)
+	insert into @tmpb(gno,pno)values('17',99)
+	insert into @tmpb(gno,pno)values('18',99)
+	
+	update @tmpb set datea=b.datea,tgg=b.tgg,rc2no=@t_noa,ordcno=b.ordcno
+	from @tmpb a
+	left join view_rc2 b on b.noa=@t_noa
+	
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo 
+		,datea a01
+		,tgg a02
+		,rc2no a03
+		,ordcno a04
+		,typea b01
+		,productno b02
+		,product b03
+		,uno b04
+		,size b05
+		,case when len(@t_merge)>0 then CAST(mount as nvarchar) +' X '+CAST([weight] as nvarchar) + ' = '+CAST(totweight as nvarchar)+ unit 
+			else CAST(totweight as nvarchar) + ' '+ unit end b06
+		,memo b07
+		,CAST([weight] as nvarchar) + ' '+ unit b08
+		,mount b09
+	from @tmpb order by pno;

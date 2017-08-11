@@ -1,0 +1,67 @@
+
+
+ALTER  function [dbo].[cut_vcc](@vccno nvarchar(max), @custno nvarchar(max), @para nvarchar(max))
+returns @tmp table(
+	sel bit,
+	accy nvarchar(20),
+	noa nvarchar(20),
+	no2 nvarchar(10),
+	uno nvarchar(30),
+	productno nvarchar(20),
+	product nvarchar(50),
+	dime float,
+	width float,
+	lengthb float,
+	radius float,
+	unit nvarchar(20),
+	spec nvarchar(20),
+	class nvarchar(20),
+	ucolor nvarchar(20),
+	[source] nvarchar(20),
+	lengthc float,
+	mount float,
+	[weight] float,
+	price float,
+	memo nvarchar(max)
+	,special nvarchar(20)
+	,size nvarchar(max) --因為CUT沒有存,抓訂單的spec
+) as
+begin
+	insert into @tmp(sel,accy,noa,no2,uno,productno,product
+		,dime,width,lengthb,radius,unit,spec,class
+		,ucolor,[source],lengthc,mount,[weight],price,memo
+		,special,size)
+	select * 
+	from(
+		select case when exists(select noa from view_vccs where noa=@vccno and uno=a.bno) then 1 else 0 end sel 
+		,b.accy,b.noa,b.no2,a.bno,b.productno,b.product
+		--2017/03/13  改為抓訂單厚寬長
+		--,a.dime,a.width,a.lengthb,a.radius
+		,b.dime,b.width,b.lengthb,b.radius
+		,b.unit,a.spec,a.class
+		,a.ucolor,b.[source],a.hweight,a.mount,a.[weight],b.price,a.memo
+		,a.special,isnull(d.product,b.spec) xspec
+	from view_cuts a
+	left join view_ordes b on a.ordeno=b.noa and a.no2=b.no2
+	left join view_orde c on b.accy=c.accy and b.noa=c.noa
+	left join spec d on b.spec=d.noa 
+	where c.noa is not null
+	and c.custno=@custno
+	--不再限制只能匯一次
+	--and not exists(select noa from view_vccs where noa!=@vccno and uno=a.bno)
+	
+	) a
+	order by case when sel=1 then 0 else 1 end,accy,noa,no2
+	
+	--排除沒庫存的
+	delete @tmp
+	from @tmp a
+	left join uccy b on a.uno=b.uno
+	where b.uno is null or isnull(b.eweight,0)<=0
+	
+	update @tmp set mount=isnull(b.emount,0),[weight]=isnull(b.eweight,0)
+	from @tmp a
+	left join uccy b on a.uno=b.uno
+	return
+end
+

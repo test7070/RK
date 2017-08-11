@@ -1,0 +1,77 @@
+ALTER function [dbo].[ordc_import](@t_tggno nvarchar(max), @t_kind nvarchar(max), @t_noa nvarchar(max),@para nvarchar(max))
+	returns @tmp table(
+		sel int identity(1,1)
+		,rdate nvarchar(20)
+		,tggno nvarchar(20)
+		,tgg nvarchar(50)
+		,kind nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,no2 nvarchar(10)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,style nvarchar(20)
+		,spec nvarchar(20)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,mount float
+		,[weight] float
+		,unit nvarchar(20)
+		,price float
+		,total float
+		,memo nvarchar(max)
+		--RC2
+		,mount2 float
+		,weight2 float
+		--BCCIN
+		,mount3 float
+		,weight3 float
+		--未採購
+		,emount float
+		,eweight float
+		
+		,cnt int
+		
+		,class nvarchar(20)
+		,[source] nvarchar(20)
+		,ucolor nvarchar(20)
+		,scolor nvarchar(20)
+		,size nvarchar(50)
+		,unit2 nvarchar(20)
+	) as
+	begin
+		--  ordc_import  採購匯入    RC2  BCCIN
+		--  rc2.noa 和 bccin.noa  單號不可以一樣(英文代碼),不然判斷會出錯
+		insert into @tmp(rdate,tggno,tgg,kind,accy,noa,no2
+			,productno,product,style,spec,dime,width,lengthb,radius,mount,[weight],unit,price,memo
+			,cnt,class,[source],ucolor,scolor,size,unit2)
+		select case when len(isnull(a.rdate,''))>0 then a.rdate else b.datea end
+			,b.tggno,c.nick,b.kind,a.accy,a.noa,a.no2
+			,a.productno,a.product,a.style,a.spec,a.dime,a.width,a.lengthb,a.radius,a.mount,a.[weight],a.unit,a.price,a.memo
+			,1,a.class,a.[source],a.ucolor,a.scolor,a.size,a.unit2
+		from view_ordcs a
+		left join view_ordc b on a.accy=b.accy and a.noa=b.noa
+		left join tgg c on b.tggno=c.noa
+		where ISNULL(b.enda,0) = 0
+		and ISNULL(a.enda,0) = 0
+		and (len(@t_tggno)=0 or b.tggno=@t_tggno)
+		and (len(@t_kind)=0 or b.kind=@t_kind)
+		and ((upper(@para)='BCCIN' and b.kind='A6') or (upper(@para)!='BCCIN'))
+		order by case when len(isnull(a.rdate,''))>0 then a.rdate else b.datea end desc,a.accy,a.noa,a.no2
+		
+		update @tmp set mount2=b.mount,weight2=b.[weight]
+		from @tmp a
+		outer apply(select SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight] from view_rc2s where noa!=@t_noa and ordeno=a.noa and no2=a.no2) b
+		
+		update @tmp set mount3=b.mount,weight3=b.[weight]
+		from @tmp a
+		outer apply(select SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight] from bccins where noa!=@t_noa and ordcno=a.noa and no2=a.no2) b
+		
+		update @tmp set emount = ISNULL(mount,0)-ISNULL(mount2,0)-ISNULL(mount3,0)
+			,eweight = ISNULL([weight],0)-ISNULL(weight2,0)-ISNULL(weight3,0)
+		--由結案來控管
+		--delete @tmp where emount<=0 and eweight<=0
+		return
+	end	
