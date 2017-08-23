@@ -57,6 +57,9 @@
 					},{
                         type : '6',//[13] 8
                         name : 'ymon'
+                    },{
+                        type : '6',//[14] 9
+                        name : 'xdime'
                     }]
 				});
 				q_popAssign();
