@@ -58,7 +58,7 @@
                         type : '6',//[13] 8
                         name : 'ymon'
                     },{
-                        type : '6',//[14] 9
+                        type : '1',//[14,15] 9
                         name : 'xdime'
                     }]
 				});
@@ -73,11 +73,14 @@
 	            }else{
 	            	$('#txtNoa').val(t_para.noa);
 	            }
-	            $('#txtXmon1').mask('999/99');
-                $('#txtXmon2').mask('999/99');
-                $('#txtYmon').mask('999/99');
+	            $('#txtXdime1').val(0).css('text-align','right');
+	            $('#txtXdime2').val(99).css('text-align','right');
+	            
+	            $('#txtXmon1').mask(r_picm);
+                $('#txtXmon2').mask(r_picm);
+                $('#txtYmon').mask(r_picm);
                 
-                $('#txtXdate').mask('999/99/99');
+                $('#txtXdate').mask(r_picd);
                 $('#txtXdate').datepicker();
                 $('#txtXdate').val(q_date());
                 $('#txtYmon').val(q_date().substring(0,6));

@@ -3024,6 +3024,20 @@ z_cub_rkp02:--z_cub_rkp02
 	declare @t_bdate nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	declare @t_edate nvarchar(max) = case when '#non' = [8] then char(255) else [8] end
 	--------------------------------------------------------------------------------
+	declare @t_bcustno nvarchar(20) = case when '#non' = [9] then '' else [9] end
+	declare @t_ecustno nvarchar(20) = case when '#non' = [10] then char(255) else [10] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [11] then '' else [11] end
+	declare @t_xbdime nvarchar(20) = case when '#non' = [14] then '' else [14] end
+	declare @t_xedime nvarchar(20) = case when '#non' = [15] then '' else [15] end
+	--------------------------------------------------------------------------------
+	declare @t_bdime float=0,@t_edime float=0
+	begin try
+		set @t_bdime = CAST(@t_xbdime as float)
+		set @t_edime = CAST(@t_xedime as float)
+	end try
+	begin catch
+		--nothing
+	end catch
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
@@ -3070,6 +3084,10 @@ z_cub_rkp02:--z_cub_rkp02
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
+	and a.custno between @t_bcustno and @t_ecustno
+	and (len(@t_makeno)=0 or CHARINDEX(@t_makeno,a.makeno)>0)
+	and a.dime between @t_bdime and @t_edime
+	
 	
 	update @tmp set custno=b.custno,cust=b.nick
 	from @tmp a
@@ -3093,9 +3111,16 @@ z_cub_rkp02:--z_cub_rkp02
 	
 
 	update @tmp set money04=ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
+	--小計
+	insert into @tmp(gno,timea,makeno,weight01,weight02,money01,money02,money03,money04)
+	select '2',sum(isnull(timea,0)),LEFT(makeno,1),sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0))
+	from @tmp
+	where gno='1'
+	group by LEFT(makeno,1)
+	
 	--合計
 	insert into @tmp(gno,timea,weight01,weight02,money01,money02,money03,money04)
-	select '2',sum(isnull(timea,0)),sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0))
+	select '3',sum(isnull(timea,0)),sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0))
 	from @tmp
 	where gno='1'
 	
