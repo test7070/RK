@@ -837,7 +837,7 @@
 				font-size: medium;
 			}
 			.dbbs {
-				width: 2650px;
+				width: 2800px;
 			}
 			.dbbs .tbbs {
 				margin: 0;
@@ -994,6 +994,8 @@
 						<td style="width:80px;" align="center">背漆<BR>重量</td>
 						<td style="width:80px;" align="center">背漆<BR>稀釋液<BR>重量</td>
 						<td style="width:80px;" align="center">面漆<BR>重量</td>
+						<td style="width:80px;display:none;" align="center">樣品<BR>重量</td>
+						<td style="width:80px;display:none;" align="center">報廢<BR>重量</td>
 						<td style="width:80px;" align="center">鋼捲<BR>成本</td>
 						<td style="width:80px;" align="center">皮膜<BR>成本</td>
 						<td style="width:80px;" align="center">保護膜<BR>成本</td>
@@ -1002,6 +1004,8 @@
 						<td style="width:80px;" align="center">背漆<BR>成本</td>
 						<td style="width:80px;" align="center">背漆<BR>稀釋液<BR>成本</td>
 						<td style="width:80px;" align="center">面漆<BR>成本</td>
+						<td style="width:80px;display:none;" align="center">樣品<BR>成本</td>
+						<td style="width:80px;display:none;" align="center">報廢<BR>成本</td>
 					</tr>
 					<tr style='background:#cad3ff;'>
 						<td align="center" style="display: none;">
@@ -1071,6 +1075,8 @@
 						<td><input id="txtX06.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtX07.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtX08.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<td style="display:none;"><input id="txtX09.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<td style="display:none;"><input id="txtX10.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtY01.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtY02.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtY03.*" type="text" class="num" style="float:left;width:95%;"/></td>
@@ -1079,6 +1085,8 @@
 						<td><input id="txtY06.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtY07.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtY08.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<td style="display:none;"><input id="txtY09.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<td style="display:none;"><input id="txtY10.*" type="text" class="num" style="float:left;width:95%;"/></td>
 					</tr>
 				</table>
 			</div>
