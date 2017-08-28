@@ -191,6 +191,7 @@ z_quat_rkp02:--z_quat_rkp02
 	declare @tmpb table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
+		,pno int
 		,a01 nvarchar(max) --TO：
 		,a02 nvarchar(max) --ATTN：		
 		,a03 nvarchar(max) --合約編號：
@@ -237,9 +238,9 @@ z_quat_rkp02:--z_quat_rkp02
 	--每筆明細都要佔2行
 	if exists(select * from @tmpa)
 	begin
-		insert into @tmpb(gno)values('1')
-		insert into @tmpb(gno)values('2')
-		insert into @tmpb(gno)values('3')
+		insert into @tmpb(gno,pno)values('1',1)
+		insert into @tmpb(gno,pno)values('2',1)
+		insert into @tmpb(gno,pno)values('3',1)
 		set @n = 3
 		
 		declare cursor_table cursor for
@@ -251,23 +252,23 @@ z_quat_rkp02:--z_quat_rkp02
 		begin
 			if @n >= @pagecount
 			begin
-				insert into @tmpb(gno)values('1')
-				insert into @tmpb(gno)values('2')
-				insert into @tmpb(gno)values('3')
+				insert into @tmpb(gno,pno)values('1',1)
+				insert into @tmpb(gno,pno)values('2',1)
+				insert into @tmpb(gno,pno)values('3',1)
 				set @n = 3
 			end
 			
-			insert into @tmpb(gno,recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+			insert into @tmpb(gno,pno,recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
 				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
 				,size,cmount,cprice)
-			select '4',@recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+			select '4',1,@recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
 				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
 				,size,cmount,cprice
 			from @tmpa where sel=@sel
-			insert into @tmpb(gno,recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+			insert into @tmpb(gno,pno,recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
 				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
 				,size,cmount,cprice)
-			select '5',@recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
+			select '5',1,@recno,accy,noa,no3,productno,product,spec,dime,width,lengthb,radius
 				,pvcno,pvc,backprocess,pveno,pve,mount,[weight],unit,unit2,price,coin,memo
 				,size,cmount,cprice
 			from @tmpa where sel=@sel
@@ -280,32 +281,20 @@ z_quat_rkp02:--z_quat_rkp02
 		deallocate cursor_table
 	end
 	
-	--耍再改, 改和  訂單一樣
-	
-	--只有一筆明細時,全部印在同一頁
-	--否則 "交貨日期~簽名印在最後一頁"
-	/*if (select count(1) from @tmpa)>1
-	begin
-		--補空白行
-		while @n%@pagecount!=0
-		begin
-			insert into @tmpb(gno)values('6')
-			set @n = @n + 1
-		end
-	end*/
+
 	-------------------------------------------------------------------------
 	--備註
-	insert into @tmpb(gno,aa,bb)values('7','交貨日期：','')
-	insert into @tmpb(gno,aa,bb)
-	select '7','付款方式：',paytype + case when len(isnull(memo2,''))>0 then '('+memo2+')' else '' end
+	insert into @tmpb(gno,pno,aa,bb)values('7',3,'交貨日期：','')
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'付款方式：',paytype + case when len(isnull(memo2,''))>0 then '('+memo2+')' else '' end
 	from view_quat where noa=@t_noa
 	
-	insert into @tmpb(gno,aa,bb)
-	select '7','包裝方式：',packtype
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'包裝方式：',packtype
 	from view_quat where noa=@t_noa
 	
-	insert into @tmpb(gno,aa,bb)
-	select '7','交貨方式：'
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'交貨方式：'
 		,case when chka1=1 then @sign1 else @sign2 end + '賣方運送&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
 		+case when chka2=1 then @sign1 else @sign2 end + '買方自運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
 		+case when chka3=1 then @sign1 else @sign2 end + '可分批交運&nbsp'+CHAR(59)+'&nbsp'+CHAR(59)
@@ -313,20 +302,20 @@ z_quat_rkp02:--z_quat_rkp02
 		+case when chka5=1 then @sign1 else @sign2 end + '出貨數量若不足五噸，另需負擔運費。'
 	from view_quat where noa=@t_noa
 	
-	insert into @tmpb(gno,aa,bb)
-	select '7','交貨地點：',addr from view_quat where noa=@t_noa
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'交貨地點：',addr from view_quat where noa=@t_noa
 	
-	insert into @tmpb(gno,aa,bb)
-	select '7','交貨公差：',tolerance from view_quat where noa=@t_noa
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'交貨公差：',tolerance from view_quat where noa=@t_noa
 	
-	insert into @tmpb(gno,aa,bb)
-	select '7','材料類別：','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">A.</span>'+case when chkb1=1 then @sign1 else @sign2 end + '一般流通品' from view_quat where noa=@t_noa
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'材料類別：','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">A.</span>'+case when chkb1=1 then @sign1 else @sign2 end + '一般流通品' from view_quat where noa=@t_noa
 	
-	insert into @tmpb(gno,aa,bb)
-	select '7','','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">B.</span>'+case when chkb2=1 then @sign1 else @sign2 end + '買方專用材料' from view_quat where noa=@t_noa
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">B.</span>'+case when chkb2=1 then @sign1 else @sign2 end + '買方專用材料' from view_quat where noa=@t_noa
 	
-	insert into @tmpb(gno,aa,bb)
-	select '7','','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">&nbsp'+CHAR(59)+'</span>'+case when chkb3=1 then @sign1 else @sign2 end + '特製皮膜'
+	insert into @tmpb(gno,pno,aa,bb)
+	select '7',3,'','<span style="display: block'+CHAR(59)+'width:20px'+CHAR(59)+'float:left'+CHAR(59)+'">&nbsp'+CHAR(59)+'</span>'+case when chkb3=1 then @sign1 else @sign2 end + '特製皮膜'
 		+case when chkb4=1 then @sign1 else @sign2 end + '特殊規格鋼捲，於合約完成後半年內未出貨完畢，買方需購回剩餘原材料。' from view_quat where noa=@t_noa
 
 	--MEMO
@@ -337,29 +326,60 @@ z_quat_rkp02:--z_quat_rkp02
 	while CHARINDEX('chr(10)',@string)>0
 	begin
 		set @memo = LEFT(@string,CHARINDEX('chr(10)',@string)-1)
-		insert into @tmpb(gno,aa,bb)values('7',case when @n=0 then '備　　註：' else '' end,@memo)
+		insert into @tmpb(gno,pno,aa,bb)values('7',3,case when @n=0 then '備　　註：' else '' end,@memo)
 		set @string = SUBSTRING(@string,len(@memo)+8,len(@string))
 		set @n = @n +1
 	end
 	if(len(@string)>0)
 	begin
-		insert into @tmpb(gno,aa,bb)values('7',case when @n=0 then '備　　註：' else '' end,@string)
-	end
-	--補空白行
-	set @n = 0
-	select @n = count(1) from @tmpb
-	set @n = @n + 5-- 預留簽章行數
-	while @n%@pagecount!=0
-	begin
-		insert into @tmpb(gno)values('6')
-		set @n = @n + 1
+		insert into @tmpb(gno,pno,aa,bb)values('7',3,case when @n=0 then '備　　註：' else '' end,@string)
 	end
 	--簽章
-	insert into @tmpb(gno,aa)values('8','聯琦金屬股份有限公司')
-	insert into @tmpb(gno)values('6')
-	insert into @tmpb(gno)values('6')
-	insert into @tmpb(gno)values('6')
-	insert into @tmpb(gno)values('9')
+	insert into @tmpb(gno,pno,aa)values('8',5,'聯琦金屬股份有限公司')
+	insert into @tmpb(gno,pno)values('6',5)
+	insert into @tmpb(gno,pno)values('6',5)
+	insert into @tmpb(gno,pno)values('6',5)
+	insert into @tmpb(gno,pno)values('9',5)
+	---------------------------------------------------------------------------
+	-- PNO:1  明細
+	-- PNO:2  空白行(當無法印在一頁時才會有)
+	-- PNO:3  備註
+	-- PNO:4  空白行(備註和簽章間的空白,簽章都置底)
+	-- PNO:5  簽章
+	
+	declare @count1 int = 0
+	declare @count3 int = 0
+	declare @count5 int = 0
+	select @count1 = count(1) from @tmpb where pno=1
+	select @count3 = count(1) from @tmpb where pno=3
+	select @count5 = count(1) from @tmpb where pno=5
+	
+	if (@count1%@pagecount)+@count3+@count5<=@pagecount
+	begin
+		set @n = @pagecount - ((@count1%@pagecount)+@count3+@count5)
+		while @n > 0
+		begin
+			insert into @tmpb(gno,pno)values('6',4)
+			set @n = @n - 1
+		end
+	end
+	else
+	begin
+		--pno:2
+		set @n = @pagecount - (@count1%@pagecount)
+		while @n > 0
+		begin
+			insert into @tmpb(gno,pno)values('6',2)
+			set @n = @n - 1
+		end
+		--pno:4
+		set @n = @pagecount - (@count3+@count5)
+		while @n > 0
+		begin
+			insert into @tmpb(gno,pno)values('6',4)
+			set @n = @n - 1
+		end
+	end
 	---------------------------------------------------------------------------
 	update @tmpb set a01 = ISNULL(b.comp,'')
 		,a02 = ISNULL(b.conn,'')
@@ -383,7 +403,7 @@ z_quat_rkp02:--z_quat_rkp02
 		,@t_noa xxxx
 		,@reportno reportno
 		,*
-	from @tmpb order by sel;
+	from @tmpb order by pno,sel;
 
 z_quat_rkp01:--z_quat_rkp01
 	SET QUOTED_IDENTIFIER OFF

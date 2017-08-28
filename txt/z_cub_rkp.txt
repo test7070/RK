@@ -3864,6 +3864,7 @@ z_cub_rkp04:--z_cub_rkp04
 	declare @cmd nvarchar(max)
 	declare @t_mon nvarchar(max) = case when '#non' = [13] then '' else [13] end
 	--------------------------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------------------------
 	declare @money01 float = 0 --人工費用
 	declare @money02 float = 0 --製造費用
 	select @money01=wages,@money02=makeless from costa where mon=@t_mon
@@ -3874,6 +3875,8 @@ z_cub_rkp04:--z_cub_rkp04
 	END
 	create table #z_cub_rkp04 (
 		sel int identity(1,1)
+		,tablea nvarchar(20)
+		,datea nvarchar(20)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
@@ -3881,13 +3884,22 @@ z_cub_rkp04:--z_cub_rkp04
 		,money01 float
 		,money02 float
 	)
-	insert into #z_cub_rkp04(accy,noa,noq,mins)
-	select a.accy,a.noa,a.noq,isnull(a.mins,0)
+	insert into #z_cub_rkp04(tablea,datea,accy,noa,noq,mins)
+	select 'cubs',b.datea,a.accy,a.noa,a.noq,isnull(a.mins,0)
 	from view_cubs a
 	left join view_cub b on a.noa=b.noa
 	where left(b.datea,6)=@t_mon
+	and isnull(a.mins,0)!=0
 	order by a.accy,a.noa,a.noq
 	
+	insert into #z_cub_rkp04(tablea,datea,accy,noa,noq,mins)
+	select 'cucs',b.datea,a.accy,a.noa,a.noq,isnull(a.mins,0)
+	from view_cucs a
+	left join view_cuc b on a.noa=b.noa
+	where left(b.datea,6)=@t_mon
+	and isnull(a.mins,0)!=0
+	order by a.accy,a.noa,a.noq
+		
 	declare @tmins float = 0
 	select @tmins = sum(mins) from #z_cub_rkp04 
 	
@@ -3910,7 +3922,7 @@ z_cub_rkp04:--z_cub_rkp04
 	declare @m02 float
 	
 	declare cursor_table cursor for
-	select sel,money01,money02 from #z_cub_rkp04 order by sel desc
+	select sel,money01,money02 from #z_cub_rkp04 order by datea,noa,noq
 	open cursor_table
 	fetch next from cursor_table
 	into @sel,@m01,@m02
@@ -3950,23 +3962,24 @@ z_cub_rkp04:--z_cub_rkp04
 	deallocate cursor_table
 	-----------------------------------------------------------------------
 	-- UPDATE DATA
+	declare @table nvarchar(20)
 	declare @accy nvarchar(20)
 	declare cursor_table cursor for
-	select accy from #z_cub_rkp04 group by accy
+	select tablea,accy from #z_cub_rkp04 group by tablea,accy
 	open cursor_table
 	fetch next from cursor_table
-	into @accy
+	into @table,@accy
 	while(@@FETCH_STATUS <> -1)
 	begin
 		set @cmd=
-		"update cubs"+@accy+" set w01=b.money01,w02=b.money02
-		from cubs"+@accy+" a
-		left join #z_cub_rkp04 b on b.accy=@accy and a.noa=b.noa and a.noq=b.noq
+		"update "+@table+@accy+" set w01=b.money01,w02=b.money02
+		from "+@table+@accy+" a
+		left join #z_cub_rkp04 b on b.tablea=@table and b.accy=@accy and a.noa=b.noa and a.noq=b.noq
 		where b.noa is not null"
-		execute sp_executesql @cmd,N'@accy nvarchar(10)',@accy=@accy
-		
+		execute sp_executesql @cmd,N'@table nvarchar(20),@accy nvarchar(10)',@table=@table,@accy=@accy
+
 		fetch next from cursor_table
-		into @accy
+		into @table,@accy
 	end
 	close cursor_table
 	deallocate cursor_table
