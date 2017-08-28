@@ -481,7 +481,7 @@
             input[type="text"], input[type="button"] {
                 font-size: medium;
             }
-            .dbbs{width: 2700px;}
+            .dbbs{width: 2850px;}
             .tbbs {
                 margin: 0;
                 padding: 2px;
@@ -608,6 +608,8 @@
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:80px;"></td>
+					<td style="width:80px;"></td>
+					<td style="width:80px;"></td>
 				</tr>
 				<tr style='color:white; background:#003366;' >
 					<td rowspan="2"><input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/></td>
@@ -637,6 +639,8 @@
 					<td rowspan="2">開始時間</td>
 					<td rowspan="2">結束時間</td>	
 					<td rowspan="2">施工工時(分)</td>
+					<td rowspan="2">直接人工</td>
+					<td rowspan="2">製造費用</td>
 				</tr>
 				<tr style='color:white; background:#003366;' >
 					<td>製造批號</td>
@@ -687,6 +691,8 @@
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
+					<td style="width:80px;"></td>
+					<td style="width:80px;"></td>
 					<td style="width:80px;"></td>
 				</tr>
 				<tr style='background:#cad3ff;'>
@@ -740,6 +746,8 @@
 					<td><input id="txtBtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtEtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtW01.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtW02.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 				</tr>
 			</table>
 		</div>
