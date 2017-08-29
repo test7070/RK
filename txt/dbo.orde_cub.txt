@@ -1,0 +1,62 @@
+
+ALTER  function [dbo].[orde_cub](@cubno nvarchar(max), @para nvarchar(max))
+returns @tmp table(
+	sel bit,
+	datea nvarchar(20),
+	accy nvarchar(20),
+	noa nvarchar(20),
+	no2 nvarchar(10),
+	productno nvarchar(20),
+	product nvarchar(100),
+	dime float,
+	width float,
+	lengthb float,
+	radius float,
+	unit nvarchar(20),
+	spec nvarchar(20),
+	class nvarchar(20),
+	ucolor nvarchar(30),
+	zinc nvarchar(30),
+	[source] nvarchar(30),
+	hard nvarchar(30),
+	uno nvarchar(30),
+	mount float,
+	[weight] float,
+	price float,
+	memo nvarchar(max),
+	custno nvarchar(20),
+	comp nvarchar(max),
+	nick nvarchar(20),
+	cnt int
+) as
+begin
+	insert into @tmp(sel,datea,accy,noa,no2,productno,product
+		,dime,width,lengthb,radius,unit,spec,class
+		,ucolor,zinc,[source],hard,uno,mount,[weight],price,memo
+		,custno,comp,nick,cnt)
+	select * 
+	from(
+		select case when d.noa is not null then 1 else 0 end sel
+			,b.datea
+			,a.accy,a.noa,a.no2
+			,a.productno
+			,replace(a.product,'~#$',char(39)) product
+			,a.dime,a.width,a.lengthb,a.radius,a.unit,a.scolor,a.class
+			,a.ucolor,a.zinc,a.[source],a.hard,a.uno,a.mount,a.[weight],a.price
+			,replace(a.memo,'~#$',char(39)) memo
+			,b.custno
+			,replace(b.comp,'~#$',char(39)) comp
+			,replace(b.nick,'~#$',char(39)) nick
+			,1 cnt
+		from view_ordes a
+		left join view_orde b on a.accy=b.accy and a.noa=b.noa
+		outer apply(select SUM(isnull([weight],0)) [weight],SUM(isnull([mount],0)) [mount] from view_cuts where ordeno=a.noa and no2=a.no2) c
+		outer apply(select top 1 noa from view_cubs where noa=@cubno) d
+		where b.noa is not null
+		and ISNULL(b.enda,0)=0 
+		--2017/08/28  RK  10%內都還可匯入
+		and ((isnull(a.[weight],0)*1.1)-isnull(c.[weight],0)>0 or (isnull(a.[mount],0)*1.1)-isnull(c.[mount],0)>0)) a
+	order by case when sel=1 then 0 else 1 end,datea,accy,noa,no2
+	return
+end
+
