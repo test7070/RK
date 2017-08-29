@@ -75,8 +75,10 @@ z_cub_rk02:--z_cub_rk02
 		,w24 float--完工總損耗率 w16+w17+w18+w19
 		,memo nvarchar(max)
 	)
-	insert into @tmpa(gno,accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount)
+	insert into @tmpa(gno,accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount
+		,x01,x02,x03,x04,x05)
 	select '1',a.accy,a.noa,a.noq,a.makeno,a.accy,a.ordeno,a.no2,b.datea,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
+		,a.x04,a.x05,a.x06,a.x07,a.x08
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
@@ -148,98 +150,6 @@ z_cub_rk02:--z_cub_rk02
 	end
 	close cursor_table
 	deallocate cursor_table
-	-------------------------------------------------------------------------------
-	-- 物料
-	-- groupano
-	-- A01  接著劑
-	-- A02  接著劑稀釋液
-	-- A03  背漆
-	-- A04  背漆稀釋液
-	-- A05  面漆
-	declare @tmpb table(
-		sel int identity(1,1)
-		,accy nvarchar(10)
-		,noa nvarchar(20)
-		,noq nvarchar(10)
-		,[weight] float --鋼捲重
-		,xweight float --物料重
-	)
-	declare @diffweight float
-	
-	declare cursor_table cursor for
-	select a.accy,a.noa,a.noq,a.productno,a.product,b.groupano,a.[weight]
-	from view_cubu a
-	left join ucc b on a.productno=b.noa
-	left join (select accy,noa from @tmpa group by accy,noa) c on a.accy=c.accy and a.noa=c.noa
-	where b.noa is not null
-	and c.noa is not null	
-	open cursor_table
-	fetch next from cursor_table
-	into @accy,@noa,@noq,@productno,@product,@groupano,@weight
-	while(@@FETCH_STATUS <> -1)
-	begin	
-		delete @tmpb
-		insert into @tmpb(accy,noa,noq,[weight])
-		select accy,noa,noq,[weight]
-		from view_cubs 
-		where accy=@accy and noa=@noa and isnull([weight],0)>0
-		--依鋼捲重量均攤
-		select @totweight = 0, @diffweight = 0 
-		select @totweight = SUM(ISNULL([weight],0)) from @tmpb
-		update @tmpb set xweight = round(@weight*[weight]/@totweight,0)
-		--尾差修正
-		select @diffweight = SUM(ISNULL([xweight],0)) from @tmpb
-
-		set @diffweight = @weight - @diffweight
-		if @diffweight!=0
-		begin
-			update @tmpb set xweight = xweight + @diffweight 
-			from @tmpb a
-			left join (select sel,ROW_NUMBER()over(order by sel) rr from @tmpb) b on a.sel=b.sel
-			where b.rr=1 and b.sel is not null
-		end
-		
-		if @groupano='A01'
-		begin
-			update @tmpa set x01 = ISNULL(a.x01,0)+ isnull(b.xweight,0)
-			from @tmpa a
-			left join @tmpb b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
-			where b.noa is not null
-		end	
-		else if @groupano='A02'
-		begin
-			update @tmpa set x02 = ISNULL(a.x02,0)+ isnull(b.xweight,0)
-			from @tmpa a
-			left join @tmpb b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
-			where b.noa is not null
-		end
-		else if @groupano='A03'
-		begin
-			update @tmpa set x03 = ISNULL(a.x03,0)+ isnull(b.xweight,0)
-			from @tmpa a
-			left join @tmpb b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
-			where b.noa is not null
-		end
-		else if @groupano='A04'
-		begin
-			update @tmpa set x04 = ISNULL(a.x04,0)+ isnull(b.xweight,0)
-			from @tmpa a
-			left join @tmpb b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
-			where b.noa is not null
-		end
-		else if @groupano='A05'
-		begin
-			update @tmpa set x05 = ISNULL(a.x05,0)+ isnull(b.xweight,0)
-			from @tmpa a
-			left join @tmpb b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
-			where b.noa is not null
-		end
-		
-		fetch next from cursor_table
-		into @accy,@noa,@noq,@productno,@product,@groupano,@weight
-	end
-	close cursor_table
-	deallocate cursor_table
 	-------------------------------------------------------------------------
 	--條件過濾1
 	if(len(@t_makeno)>0)
@@ -289,7 +199,7 @@ z_cub_rk02:--z_cub_rk02
 		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
 		where b.datea<=@t_edate
 		group by a.cubno) b on a.makeno=b.makeno
-	--w03 生產線廢料(a1)   w01 - w02 - w04         要回寫到cubs.price   
+	--w03 生產線廢料(a1)   w01 - w02 - w04        --- 要回寫到cubs.price   
 	update @tmpa set w03 = cast(ISNULL(w01,0) as decimal(12,3))
 		-cast(ISNULL(w02,0) as decimal(12,3))
 		-cast(ISNULL(w04,0) as decimal(12,3))
@@ -439,8 +349,13 @@ z_cub_rk01:--z_cub_rk01
 		,x05 float--損耗率% C/A*100%
 		,x06 float--原鋼材廢料
 		,x07 float--原鋼材損耗率%
-
-	)
+		--****************************
+		,y01 float --樣品重
+		,y02 float --報廢重
+		,y03 float --不良耗損
+		,y04 float --尺寸耗損
+		,y05 float --頭尾耗損
+	)				
 	insert into @tmp(gno,recno,recno2,datea,accy,noa,noq,makeno,custno,cust
 		,uno,spec,dime,width,size,[weight]
 		,w01,w02,w03,w04,w05
@@ -457,6 +372,19 @@ z_cub_rk01:--z_cub_rk01
 	and len(ISNULL(a.makeno,''))>0
 	order by a.makeno,b.datea
 
+	-- cucs
+	update @tmp set y01=weight6
+		,y02=weight7
+		,y03=weight8
+		,y04=weight9
+		,y05=weight10
+	from @tmp a
+	outer apply(select SUM(ISNULL(weight6,0)) weight6 
+		,SUM(ISNULL(weight7,0)) weight7 
+		,SUM(ISNULL(weight8,0)) weight8 
+		,SUM(ISNULL(weight9,0)) weight9 
+		,SUM(ISNULL(weight10,0)) weight10 
+		from view_cucs where cubno=a.makeno) b
 
 	---------------------------------------------------------------------------------
 	declare @sel int
@@ -674,21 +602,25 @@ z_cub_rk01:--z_cub_rk01
 	
 	--小計
 	insert into @tmp(gno,makeno,recno,recno2,[weight],mount2,weight2,mount3,weight3
-		,w01,w02,w03,w04,w05,x01,x02,x03,x04,x06)
+		,w01,w02,w03,w04,w05,x01,x02,x03,x04,x06
+		,y01,y02,y03,y04,y05)
 	select '10',LEFT(makeno,1)+CHAR(255),99999,1,SUM(case when recno2=1 then ISNULL([weight],0) else 0 end)
 		,SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0)),SUM(ISNULL(mount3,0)),SUM(ISNULL(weight3,0))
 		,SUM(ISNULL(w01,0)),SUM(ISNULL(w02,0)),SUM(ISNULL(w03,0)),SUM(ISNULL(w04,0)),SUM(ISNULL(w05,0))
 		,SUM(ISNULL(x01,0)),SUM(ISNULL(x02,0)),SUM(ISNULL(x03,0)),SUM(ISNULL(x04,0)),SUM(ISNULL(x06,0))
+		,SUM(ISNULL(y01,0)),SUM(ISNULL(y02,0)),SUM(ISNULL(y03,0)),SUM(ISNULL(y04,0)),SUM(ISNULL(y05,0))
 	from @tmp
 	group by LEFT(makeno,1)
 	
 	--總計
 	insert into @tmp(gno,makeno,recno,recno2,[weight],mount2,weight2,mount3,weight3
-		,w01,w02,w03,w04,w05,x01,x02,x03,x04,x06)
+		,w01,w02,w03,w04,w05,x01,x02,x03,x04,x06
+		,y01,y02,y03,y04,y05)
 	select '9',CHAR(255),99999,1,SUM(case when recno2=1 then ISNULL([weight],0) else 0 end)
 		,SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0)),SUM(ISNULL(mount3,0)),SUM(ISNULL(weight3,0))
 		,SUM(ISNULL(w01,0)),SUM(ISNULL(w02,0)),SUM(ISNULL(w03,0)),SUM(ISNULL(w04,0)),SUM(ISNULL(w05,0))
 		,SUM(ISNULL(x01,0)),SUM(ISNULL(x02,0)),SUM(ISNULL(x03,0)),SUM(ISNULL(x04,0)),SUM(ISNULL(x06,0))
+		,SUM(ISNULL(y01,0)),SUM(ISNULL(y02,0)),SUM(ISNULL(y03,0)),SUM(ISNULL(y04,0)),SUM(ISNULL(y05,0))
 	from @tmp
 	where gno!='10'
 	
@@ -751,6 +683,12 @@ z_cub_rk01:--z_cub_rk01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when x05=0 then '' else dbo.getComma(a.[x05],2) +' %'end +'</a>' f05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[x06],2) +'</a>' f06
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when x07=0 then '' else dbo.getComma(a.[x07],2) +' %'end +'</a>' f07
+	
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y01],-1) +'</a>' h01
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y02],-1) +'</a>' h02
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y03],-1) +'</a>' h03
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y04],-1) +'</a>' h04
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y05],-1) +'</a>' h05
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(partition by datea order by recno) recno from @tmp) b on a.sel=b.sel
 	order by a.makeno,a.recno,a.recno2;
