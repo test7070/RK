@@ -17,7 +17,7 @@
             q_tables = 's';
             var q_name = "cuc";
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
-            var q_readonlys = [];
+            var q_readonlys = ['txtNoq'];
             var bbmNum = [];
             var bbsNum = [['txtPara', 10, 0, 1],['txtParaa', 10, 0, 1],['txtHours', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1]];
             var bbmMask = [];
@@ -481,7 +481,7 @@
             input[type="text"], input[type="button"] {
                 font-size: medium;
             }
-            .dbbs{width: 2850px;}
+            .dbbs{width: 3200px;}
             .tbbs {
                 margin: 0;
                 padding: 2px;
@@ -578,6 +578,8 @@
 				<tr style='height:1px;' >
 					<td style="width:20px;"></td>
 					<td style="width:20px;"></td>
+					<td style="width:50px;"></td>
+					<td style="width:200px;"></td>
 					<td style="width:200px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:60px;"></td>
@@ -614,6 +616,8 @@
 				<tr style='color:white; background:#003366;' >
 					<td rowspan="2"><input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/></td>
 					<td rowspan="2">項<BR>次</td>
+					<td rowspan="2">序</td>
+					<td rowspan="2">二次加工<BR>來源編號</td>
 					<td>訂單號碼</td>
 					<td rowspan="2">客戶</td>
 					<td rowspan="2">皮膜<BR>編號</td>
@@ -662,6 +666,8 @@
 				<tr style='height: 1px;' >
 					<td style="width:20px;"></td>
 					<td style="width:20px;"></td>
+					<td style="width:50px;"></td>
+					<td style="width:200px;"></td>
 					<td style="width:200px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:60px;"></td>
@@ -698,9 +704,10 @@
 				<tr style='background:#cad3ff;'>
 					<td align="center">
 						<input id="btnMinus.*" type="button" style="font-size: medium; font-weight: bold;" value="－"/>
-						<input id="txtNoq.*" type="text" style="display: none;"/>
 					</td>
 					<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+					<td><input id="txtNoq.*" type="text" style="float:left;width:95%;"/></td>
+					<td><input id="txtNob.*" type="text" style="float:left;width:95%;"/></td>
 					<td>
 						<input id="txtOrdeno.*" type="text" style="float:left;width:72%;"/>
 						<input id="txtNo2.*" type="text" style="float:left;width:20%;"/>
