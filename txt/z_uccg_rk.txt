@@ -517,7 +517,8 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 		sel int identity(1,1)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
-		,noq nvarchar(10)		
+		,noq nvarchar(10)
+		,makeno nvarchar(20)		
 		
 		,cubs float        --鋼捲成本
 		,cubs_weight float --鋼捲重量
@@ -540,12 +541,17 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 		,A05 float         
 		,A05_weight float  
 		
+		,A06 float         --樣品         
+		,A06_weight float  
+		,A07 float         --報廢
+		,A07_weight float  
+		
 		,tweight float
 		,total float
 	)
 	--鋼捲
-	insert into #z_uccg_rk_cubs(accy,noa,noq,cubs,cubs_weight,cubs_length)
-	select a.accy,a.noa,a.noq,c.scost,a.[weight],a.w09
+	insert into #z_uccg_rk_cubs(accy,noa,noq,makeno,cubs,cubs_weight,cubs_length)
+	select a.accy,a.noa,a.noq,a.makeno,c.scost,a.[weight],a.w09
 	from view_cubs a 
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_gets c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
@@ -671,7 +677,7 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 		+ ISNULL(A01,0) + ISNULL(A02,0) + ISNULL(A03,0) + ISNULL(A04,0) + ISNULL(A05,0)
 	-----------------------------------------------------------------------
 	-- 更新資料  回寫到CUBS
-	-----------------------------------------------------------------------
+	-----------------------------------------------------------------------	
 	declare cursor_table cursor for
 	select accy from #z_uccg_rk_cubs group by accy
 	open cursor_table
@@ -707,6 +713,177 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	end
 	close cursor_table
 	deallocate cursor_table
+	-----------------------------------------------------------------------
+	-- 計算 樣品、報廢
+	-----------------------------------------------------------------------	
+	-- 計算在製品成本  CUBS
+	IF OBJECT_ID('tempdb..#z_uccg_rk_cucs')is not null
+	BEGIN
+		drop table #z_uccg_rk_cucs
+	END
+	create table #z_uccg_rk_cucs(
+		sel int identity(1,1)
+		
+		,accy nvarchar(10) 
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,price float   		
+		
+		,weight6 float -- 樣品重
+		,weight7 float -- 報廢重
+		,template_money float
+		,waste_money float
+	)
+	
+	insert into #z_uccg_rk_cucs(accy,noa,noq,makeno,weight6,weight7)
+	select a.accy,a.noa,a.noq,a.cubno,a.weight6,a.weight7
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where 1=1
+	and b.datea between @bdate and @edate	
+	and not(ISNULL(a.weight6,0)=0 and ISNULL(a.weight7,0)=0)
+	
+	declare @tmpCubs table(
+		sel int identity(1,1)
+		,makeno nvarchar(20)
+		,[weight] float
+		,total float
+		,price float
+	)
+	--計算原物料單位成本
+	insert into @tmpCubs(makeno,[weight],total,price)
+	select a.makeno ,a.w03,a.total,case when ISNULL(a.w03,0)=0 then 0 else ROUND(ISNULL(a.total,0)/a.w03,2) end
+	from view_cubs a
+	left join (select makeno from #z_uccg_rk_cucs group by makeno) b on a.makeno=b.makeno
+	where b.makeno is not null
+	--推算出樣品、報廢成本,        **成品成本= 原物料成本 - 樣品成本 - 報廢成本
+	update #z_uccg_rk_cucs set template_money = round(a.weight6 * b.price,0)
+		,waste_money = ROUND(a.weight7*b.price,0)
+	from #z_uccg_rk_cucs a
+	left join @tmpCubs b on a.makeno=b.makeno
+	-----資料回寫
+	declare cursor_table cursor for
+	select accy from #z_uccg_rk_cucs group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy	
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update cucs"+@accy+" set m02=b.template_money,m03=b.waste_money
+		from cucs"+@accy+" a
+		left join #z_uccg_rk_cucs b on b.accy=@accy and a.noa=b.noa and a.noq=b.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(20)',@accy=@accy
+		
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	-------------------------------------------------------------------------------------
+	-- 計算成品的金額
+	declare @tmpCuts table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,[weight] float --入庫重量 
+		,cost float 
+	)
+	insert into @tmpCuts(accy,noa,noq,makeno,[weight])
+	select a.accy,a.noa,a.noq,a.cname,a.[weight]
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @bdate and @edate
+	and len(ISNULL(a.cname,'')) > 0
+	
+	declare @cost float
+	declare @template float
+	declare @waste float
+	declare @makeno nvarchar(20)
+	declare @tweight float
+	declare @cost2 float
+	declare @w01 float
+	declare @w02 float
+	
+	IF OBJECT_ID('tempdb..#z_uccg_rk_cuts')is not null
+	BEGIN
+		drop table #z_uccg_rk_cuts
+	END
+	create table #z_uccg_rk_cuts(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,[weight] float
+		,cost float
+	)
+
+	declare cursor_table cursor for
+	select makeno from @tmpCuts group by makeno
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno	
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @cost = 0, @template = 0, @waste = 0, @w01 = 0, @w02 = 0
+		select @cost = isnull(total,0)+ISNULL(w01,0)+ISNULL(w02,0) from view_cubs where makeno=@makeno
+		select @template=SUM(ISNULL(m02,0)),@waste=SUM(ISNULL(m03,0)) from view_cucs where cubno=@makeno
+		--假如有樣品或報廢 ,直接人工、製造費用 就算在(樣品或報廢)上
+		select @w01=SUM(ISNULL(w01,0)),@w02=SUM(ISNULL(w02,0)) from view_cucs 
+		where cubno=@makeno and ISNULL(weight6,0)=0 and ISNULL(weight7,0)=0
+		
+		set @cost = ISNULL(@cost,0) - ISNULL(@template,0) - ISNULL(@waste,0) + isnull(@w01,0) + isnull(@w02,0) 
+		--------------------------------------------------------------------
+		set @tweight = 0
+		select @tweight = SUM(ISNULL([weight],0)) from view_cuts where cname=@makeno
+		
+		insert into #z_uccg_rk_cuts(accy,noa,noq,makeno,[weight],cost)
+		select accy,noa,noq,cname,[weight],case when @tweight=0 then 0 else round(@cost*ISNULL([weight],0)/@tweight,0) end
+		from view_cuts where cname=@makeno
+		order by accy,noa,noq
+		
+		select @cost2 = 0, @diff = 0
+		select @cost2 = SUM(ISNULL(cost,0)) from #z_uccg_rk_cuts where makeno=@makeno
+		set @diff = @cost - @cost2
+		--尾差由最後一筆修正		
+		update #z_uccg_rk_cuts set cost = a.cost + @diff 
+		from #z_uccg_rk_cuts a
+		outer apply(select top 1 * from #z_uccg_rk_cuts where makeno=@makeno order by sel desc) b
+		where a.sel=b.sel
+		
+		fetch next from cursor_table
+		into @makeno
+	end
+	close cursor_table
+	deallocate cursor_table
+	------------------------------------------------
+	-- 回寫資料
+	declare cursor_table cursor for
+	select accy from #z_uccg_rk_cuts group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy	
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update cuts"+@accy+" set total=b.cost
+		from cuts"+@accy+" a
+		left join #z_uccg_rk_cuts b on b.accy=@accy and a.noa=b.noa and a.noq=b.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(20)',@accy=@accy
+		
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+
 	-------------------------------------------------------------------------------------------------------
 	set @n=0
 	select @n=count(1) from #z_uccg_rk

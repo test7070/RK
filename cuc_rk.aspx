@@ -17,7 +17,7 @@
             q_tables = 's';
             var q_name = "cuc";
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
-            var q_readonlys = ['txtNoq'];
+            var q_readonlys = ['txtNoq','txtM02','txtM03'];
             var bbmNum = [];
             var bbsNum = [['txtPara', 10, 0, 1],['txtParaa', 10, 0, 1],['txtHours', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 2, 1]];
             var bbmMask = [];
@@ -89,6 +89,13 @@
 					var t_noa = $('#txtNoa').val();
                 	var t_where ='';
                 	q_box("orde_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cucno:t_noa,page:'cuc_rk'}), "orde_cuc", "95%", "95%", '');
+				});
+				$('#btnCuc').click(function(e){
+					if(!(q_cur==1 || q_cur==2))
+						return;
+					var t_noa = $('#txtNoa').val();
+                	var t_where ='';
+                	q_box("cuc_rk_b.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + t_where+";"+";"+JSON.stringify({cucno:t_noa,page:'cuc_rk'}), "cuc_cuc", "95%", "95%", '');
 				});
             }
 
@@ -579,7 +586,7 @@
 					<td style="width:20px;"></td>
 					<td style="width:20px;"></td>
 					<td style="width:50px;"></td>
-					<td style="width:200px;"></td>
+					<td style="width:200px;display:none;"></td>
 					<td style="width:200px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:60px;"></td>
@@ -617,7 +624,7 @@
 					<td rowspan="2"><input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/></td>
 					<td rowspan="2">項<BR>次</td>
 					<td rowspan="2">序</td>
-					<td rowspan="2">二次加工<BR>來源編號</td>
+					<td rowspan="2" style="display:none;">二次加工<BR>來源編號</td>
 					<td>訂單號碼</td>
 					<td rowspan="2">客戶</td>
 					<td rowspan="2">皮膜<BR>編號</td>
@@ -633,9 +640,9 @@
 					<td colspan="2">待修品</td>
 					<td rowspan="2">廢料重量<BR>(KG)</td>
 					<td rowspan="2">裁剪(包裝)<BR>工時(分)</td>
-					<td rowspan="2">樣品重</td>
+					<td rowspan="2">樣品重<br>樣品成本</td>
 					<td rowspan="2">成品<BR>再投入</td>
-					<td rowspan="2">報廢重</td>
+					<td rowspan="2">報廢重<br>報廢成本</td>
 					<td rowspan="2">不良損耗</td>
 					<td rowspan="2">尺寸損耗</td>
 					<td rowspan="2">頭尾損耗</td>
@@ -667,7 +674,7 @@
 					<td style="width:20px;"></td>
 					<td style="width:20px;"></td>
 					<td style="width:50px;"></td>
-					<td style="width:200px;"></td>
+					<td style="width:200px;display:none;"></td>
 					<td style="width:200px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:60px;"></td>
@@ -707,7 +714,7 @@
 					</td>
 					<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
 					<td><input id="txtNoq.*" type="text" style="float:left;width:95%;"/></td>
-					<td><input id="txtNob.*" type="text" style="float:left;width:95%;"/></td>
+					<td style="display:none;"><input id="txtNob.*" type="text" style="float:left;width:95%;"/></td>
 					<td>
 						<input id="txtOrdeno.*" type="text" style="float:left;width:72%;"/>
 						<input id="txtNo2.*" type="text" style="float:left;width:20%;"/>
@@ -743,9 +750,15 @@
 					<td><input id="txtWeight5.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWaste.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtHours.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
-					<td><input id="txtWeight6.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td>
+						<input id="txtWeight6.*" type="text" class="txt num" style="float:left;width:95%;"/>
+						<input id="txtM02.*" type="text" class="txt num" style="float:left;width:95%;"/>
+					</td>
 					<td><input id="txtPara.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
-					<td><input id="txtWeight7.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td>
+						<input id="txtWeight7.*" type="text" class="txt num" style="float:left;width:95%;"/>
+						<input id="txtM03.*" type="text" class="txt num" style="float:left;width:95%;"/>
+					</td>
 					<td><input id="txtWeight8.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWeight9.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWeight10.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
