@@ -3064,7 +3064,11 @@ z_cub_rkp02:--z_cub_rkp02
 		rate02 float,
 		money03 float,--製造費用金額
 		rate03 float,
-		money04 float,--合計
+		money04 float,--電費
+		rate04 float,
+		money05 float,--瓦斯費
+		rate05 float,
+		money06 float,--合計
 		price01 float,--加工成本單價
 		price02 float,--在製品單價
 		
@@ -3075,11 +3079,11 @@ z_cub_rkp02:--z_cub_rkp02
 	)
 	insert into @tmp(cubno,cubnoq,gno,dime,radius,width,lengthb
 		,makeno,custno,cust,timea,weight01,weight02,ordeno,no2
-		,money01,money02,money03)
+		,money01,money02,money03,money04,money05)
 	select a.noa,a.noq, '1',a.dime,a.radius,a.width,a.lengthb
 		,a.makeno,a.custno,a.comp
 		,a.mins,a.w03,a.hweight,a.ordeno,a.no2
-		,ISNULL(a.total,0),ISNULL(a.w01,0),ISNULL(a.w02,0)
+		,ISNULL(a.total,0),ISNULL(a.w01,0),ISNULL(a.w02,0),ISNULL(a.w04,0),ISNULL(a.w05,0)
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
@@ -3110,25 +3114,29 @@ z_cub_rkp02:--z_cub_rkp02
 	outer apply (select top 1 productno,product from view_cubt where noa=a.cubno and nor=a.cubnoq and kind='2' order by noq) b
 	
 
-	update @tmp set money04=ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)
+	update @tmp set money06=ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)+ISNULL(money04,0)+ISNULL(money05,0)
 	--小計
-	insert into @tmp(gno,timea,makeno,weight01,weight02,money01,money02,money03,money04)
-	select '2',sum(isnull(timea,0)),LEFT(makeno,1),sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0))
+	insert into @tmp(gno,timea,makeno,weight01,weight02,money01,money02,money03,money04,money05,money06)
+	select '2',sum(isnull(timea,0)),LEFT(makeno,1),sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0))
+		,sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0)),sum(isnull(money05,0)),sum(isnull(money06,0))
 	from @tmp
 	where gno='1'
 	group by LEFT(makeno,1)
 	
 	--合計
-	insert into @tmp(gno,timea,weight01,weight02,money01,money02,money03,money04)
-	select '3',sum(isnull(timea,0)),sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0)),sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0))
+	insert into @tmp(gno,timea,weight01,weight02,money01,money02,money03,money04,money05,money06)
+	select '3',sum(isnull(timea,0)),sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(money01,0))
+		,sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0)),sum(isnull(money05,0)),sum(isnull(money06,0))
 	from @tmp
 	where gno='1'
 	
-	update @tmp set rate01 = case when money04=0 then 0 else ROUND(money01/money04*100,2) end
-		,rate02 = case when money04=0 then 0 else ROUND(money02/money04*100,2) end
-		,rate03 = case when money04=0 then 0 else ROUND(money03/money04*100,2) end
-		,price01 = case when weight02=0 then 0 else ROUND((isnull(money02,0)+isnull(money03,0))/weight02,2) end
-		,price02 = case when weight02=0 then 0 else ROUND(money04/weight02,2) end
+	update @tmp set rate01 = case when money06=0 then 0 else ROUND(money01/money06*100,2) end
+		,rate02 = case when money06=0 then 0 else ROUND(money02/money06*100,2) end
+		,rate03 = case when money06=0 then 0 else ROUND(money03/money06*100,2) end
+		,rate04 = case when money06=0 then 0 else ROUND(money04/money06*100,2) end
+		,rate05 = case when money06=0 then 0 else ROUND(money05/money06*100,2) end
+		,price01 = case when weight02=0 then 0 else ROUND((isnull(money02,0)+isnull(money03,0)+isnull(money04,0)+isnull(money05,0))/weight02,2) end
+		,price02 = case when weight02=0 then 0 else ROUND(money06/weight02,2) end
 	
 	update @tmp set mon=LEFT(c.datea,6)
 	from @tmp a
@@ -3159,9 +3167,13 @@ z_cub_rkp02:--z_cub_rkp02
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money03,0)+'</a>' a18
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate03,-1)+'</a>' a19
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money04,0)+'</a>' a20
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price01,-1)+'</a>' a21
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a22
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a23
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate04,-1)+'</a>' a21
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money05,0)+'</a>' a22
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate05,-1)+'</a>' a23
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money06,0)+'</a>' a24
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price01,-1)+'</a>' a25
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a26
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a27
 	from @tmp
 	order by gno,makeno;
 	
@@ -3421,6 +3433,8 @@ z_cub_rkp04:--z_cub_rkp04
 	begin
 		update #z_cub_rkp04a set money01 = round(@money01*mins/@tmins,0)
 			,money02 = round(@money02*mins/@tmins,0)
+			,money03 = round(@money03*mins/@tmins,0)
+			,money04 = round(@money04*mins/@tmins,0)
 	end
 	
 	--尾差由最後一筆攤提,但金額最多扣到0
@@ -3530,6 +3544,8 @@ z_cub_rkp04:--z_cub_rkp04
 	begin
 		update #z_cub_rkp04b set money01 = round(@money01*mins/@tmins,0)
 			,money02 = round(@money02*mins/@tmins,0)
+			,money03 = round(@money03*mins/@tmins,0)
+			,money04 = round(@money04*mins/@tmins,0)
 	end
 	
 	--尾差由最後一筆攤提,但金額最多扣到0
