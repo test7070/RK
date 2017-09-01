@@ -643,7 +643,7 @@
 					<td colspan="2">待修品</td>
 					<td rowspan="2">廢料重量<BR>(KG)</td>
 					<td rowspan="2">裁剪(包裝)<BR>工時(分)</td>
-					<td rowspan="2">盤盈重</td>
+					<td rowspan="2">盤盈重<br>盤盈成本</td>
 					<td rowspan="2">樣品重<br>樣品成本</td>
 					<td rowspan="2">成品<BR>再投入</td>
 					<td rowspan="2">報廢重<br>報廢成本</td>
@@ -759,7 +759,10 @@
 					<td><input id="txtWeight5.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWaste.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtHours.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
-					<td><input id="txtWeight11.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td>
+						<input id="txtWeight11.*" type="text" class="txt num" style="float:left;width:95%;"/>
+						<input id="txtM04.*" type="text" class="txt num" style="float:left;width:95%;"/>
+					</td>
 					<td>
 						<input id="txtWeight6.*" type="text" class="txt num" style="float:left;width:95%;"/>
 						<input id="txtM02.*" type="text" class="txt num" style="float:left;width:95%;"/>

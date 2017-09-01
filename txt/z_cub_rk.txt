@@ -230,7 +230,8 @@ z_cub_rk02:--z_cub_rk02
 		,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)
 
 	update @tmpa set w22=ISNULL(w08,0)+ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)
-		,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2)
+		--加盤盈
+		,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
 		,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
 	-------------------------------------------------------------------------
 	--條件過濾2
@@ -289,7 +290,6 @@ z_cub_rk02:--z_cub_rk02
 	left join adpro b on a.typea=b.noa
 	outer apply(select top 1 * from view_cuts where cname=a.makeno) c
 	order by a.gno,a.accy,a.noa,a.noq;
-
 
 
 z_cub_rk01:--z_cub_rk01
