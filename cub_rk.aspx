@@ -837,7 +837,7 @@
 				font-size: medium;
 			}
 			.dbbs {
-				width: 2800px;
+				width: 3000px;
 			}
 			.dbbs .tbbs {
 				margin: 0;
@@ -985,6 +985,8 @@
 						<td style="width:100px;" align="center">原物料成本</td>
 						<td style="width:80px;" align="center">直接人工</td>
 						<td style="width:80px;" align="center">製造費用</td>
+						<td style="width:80px;" align="center">電費</td>
+						<td style="width:80px;" align="center">瓦斯費</td>
 						<td style="width:150px;" align="center">製造批號</td>
 						<td style="width:80px;" align="center">鋼捲<BR>重量</td>
 						<td style="width:80px;" align="center">皮膜<BR>重量</td>
@@ -1066,6 +1068,8 @@
 						<td><input id="txtTotal.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtW01.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtW02.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<td><input id="txtW04.*" type="text" class="num" style="float:left;width:95%;"/></td>
+						<td><input id="txtW05.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtMakeno.*" type="text" style="float:left;width:95%;"/></td>
 						<td><input id="txtX01.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtX02.*" type="text" class="num" style="float:left;width:95%;"/></td>

@@ -20,8 +20,9 @@
             var q_name = "costa";
             var q_readonly = ['txtNoa'];
             var q_readonlys = [];
-            var bbmNum = [['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney',15,0,1],['txtPrice1',15,2,1],['txtPrice2',15,2,1],['txtPrice3',15,2,1]];
-            var bbsNum = [['txtMount', 15, 2, 1],['txtPrice', 15, 2, 1],['txtWages',15,0,1],['txtMakeless',15,0,1],['txtMoney', 15, 0, 1]];
+            var bbmNum = [['txtPrice1',15,2,1],['txtPrice2',15,2,1],['txtPrice3',15,2,1],['txtPrice4',15,2,1]
+            	,['txtPrice5',15,2,1],['txtPrice6',15,2,1],['txtPrice7',15,2,1],['txtPrice8',15,2,1]];
+            var bbsNum = [];
             var bbmMask = [];
             var bbsMask = [];
             q_sqlCount = 6;
@@ -33,17 +34,7 @@
             aPop = new Array(
 				['txtProductno_', 'btnProduct_', 'chgitem', 'noa,item', 'txtProductno_,txtProduct_', 'chgitem_b.aspx']);
 			var t_mech = '';
-			function sum() {
-				/*var t_money=0,t_wages=0,t_makeless=0;
-            	for(var i=0;i<q_bbsCount;i++){
-            		t_money = q_add(t_money,q_float('txtMoney_'+i));
-            		t_wages = q_add(t_wages,q_float('txtWages_'+i));
-            		t_makeless = q_add(t_makeless,q_float('txtMakeless_'+i));
-            	}    
-            	$('#txtMoney').val(t_money);
-            	$('#txtWages').val(t_wages);
-            	$('#txtMakeless').val(t_makeless);*/
-            }
+			function sum() {}
             
             $(document).ready(function() {
                 bbmKey = ['noa'];
@@ -401,23 +392,43 @@
 					<td style="display:none;"><span> </span><a id="lblNoa" class="lbl"> </a></td>
 					<td style="display:none;"><input id="txtNoa" type="text" class="txt c1"/></td>
 				</tr>
-				<tr>
+				<!--<tr>
 					<td><span> </span><a id="lblWages" class="lbl">直接人工</a></td>
 					<td><input id="txtWages" type="text" class="txt num c1"/> </td>
-					<td><span> </span><a id="lblPrice1" class="lbl">水(度/元)</a></td>
-					<td><input id="txtPrice1" type="text" class="txt num c1"/> </td>
-				</tr>
-				<tr>
+				</tr>-->
+				<!--<tr>
 					<td><span> </span><a id="lblMakeless" class="lbl">製造費用</a></td>
 					<td><input id="txtMakeless" type="text" class="txt num c1"/> </td>
-					<td><span> </span><a id="lblPrice2" class="lbl">電(度/元)</a></td>
-					<td><input id="txtPrice2" type="text" class="txt num c1"/> </td>
+				</tr>-->
+				<tr>
+					<td> </td>
+					<td><span> </span><a style="color:black;">生產</a></td>
+					<td> </td>
+					<td><span> </span><a style="color:black;">裁切</a></td>
 				</tr>
 				<tr>
-					<td><span> </span><a id="lblMoney" class="lbl">變動成本</a></td>
-					<td><input id="txtMoney" type="text" class="txt num c1"/> </td>
-					<td><span> </span><a id="lblPrice3" class="lbl">瓦斯(KG/元)</a></td>
+					<td><span> </span><a id="lblPrice1" class="lbl">直接人工</a></td>
+					<td><input id="txtPrice1" type="text" class="txt num c1"/> </td>
+					<td><span> </span><a id="lblPrice5" class="lbl">直接人工</a></td>
+					<td><input id="txtPrice5" type="text" class="txt num c1"/> </td>
+				</tr>
+				<tr>
+					<td><span> </span><a id="lblPrice2" class="lbl">製造費用</a></td>
+					<td><input id="txtPrice2" type="text" class="txt num c1"/> </td>
+					<td><span> </span><a id="lblPrice6" class="lbl">製造費用</a></td>
+					<td><input id="txtPrice6" type="text" class="txt num c1"/> </td>
+				</tr>
+				<tr>
+					<td><span> </span><a id="lblPrice3" class="lbl">電費</a></td>
 					<td><input id="txtPrice3" type="text" class="txt num c1"/> </td>
+					<td><span> </span><a id="lblPrice7" class="lbl">電費</a></td>
+					<td><input id="txtPrice7" type="text" class="txt num c1"/> </td>
+				</tr>
+				<tr>
+					<td><span> </span><a id="lblPrice4" class="lbl">瓦斯費</a></td>
+					<td><input id="txtPrice4" type="text" class="txt num c1"/> </td>
+					<td><span> </span><a id="lblPrice8" class="lbl">瓦斯費</a></td>
+					<td><input id="txtPrice8" type="text" class="txt num c1"/> </td>
 				</tr>
 				<tr>
 					<td><span> </span><a id="lblMemo" class="lbl">備註</a></td>

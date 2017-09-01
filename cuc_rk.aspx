@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 	<head>
-		<title></title>
+		<title> </title>
 		<script src="../script/jquery.min.js" type="text/javascript"></script>
 		<script src='../script/qj2.js' type="text/javascript"></script>
 		<script src='qset.js' type="text/javascript"></script>
@@ -488,7 +488,7 @@
             input[type="text"], input[type="button"] {
                 font-size: medium;
             }
-            .dbbs{width: 3200px;}
+            .dbbs{width: 3300px;}
             .tbbs {
                 margin: 0;
                 padding: 2px;
@@ -616,6 +616,9 @@
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
+					<td style="width:100px;"></td>
+					<td style="width:80px;"></td>
+					<td style="width:80px;"></td>
 					<td style="width:80px;"></td>
 					<td style="width:80px;"></td>
 					<td style="width:80px;"></td>
@@ -640,6 +643,7 @@
 					<td colspan="2">待修品</td>
 					<td rowspan="2">廢料重量<BR>(KG)</td>
 					<td rowspan="2">裁剪(包裝)<BR>工時(分)</td>
+					<td rowspan="2">盤盈重</td>
 					<td rowspan="2">樣品重<br>樣品成本</td>
 					<td rowspan="2">成品<BR>再投入</td>
 					<td rowspan="2">報廢重<br>報廢成本</td>
@@ -652,6 +656,8 @@
 					<td rowspan="2">施工工時(分)</td>
 					<td rowspan="2">直接人工</td>
 					<td rowspan="2">製造費用</td>
+					<td rowspan="2">電費</td>
+					<td rowspan="2">瓦斯費</td>
 				</tr>
 				<tr style='color:white; background:#003366;' >
 					<td>製造批號</td>
@@ -704,6 +710,9 @@
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
 					<td style="width:100px;"></td>
+					<td style="width:100px;"></td>
+					<td style="width:80px;"></td>
+					<td style="width:80px;"></td>
 					<td style="width:80px;"></td>
 					<td style="width:80px;"></td>
 					<td style="width:80px;"></td>
@@ -750,6 +759,7 @@
 					<td><input id="txtWeight5.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtWaste.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtHours.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtWeight11.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td>
 						<input id="txtWeight6.*" type="text" class="txt num" style="float:left;width:95%;"/>
 						<input id="txtM02.*" type="text" class="txt num" style="float:left;width:95%;"/>
@@ -768,6 +778,8 @@
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtW01.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtW02.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtW04.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td><input id="txtW05.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 				</tr>
 			</table>
 		</div>
