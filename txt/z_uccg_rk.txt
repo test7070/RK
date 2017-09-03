@@ -379,10 +379,7 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	end
 	close cursor_table
 	deallocate cursor_table
-	
-	--*****
---select 'aaa'
---select * from #z_uccg_rk
+	--------------------------------------------------------------------------------------------------------------
 	-- 計算領料組合的
 	declare cursor_table cursor for
 	select uno,sum(isnull([weight],0)),sum(isnull(scost,0)) from #z_uccg_rk where isnull(isIna,0)=1 group by uno
@@ -718,7 +715,7 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	-----------------------------------------------------------------------
 	-- 計算 樣品、報廢
 	-----------------------------------------------------------------------	
-	-- 計算在製品成本  CUBS
+	-- 計算在製品成本  CUCS
 	IF OBJECT_ID('tempdb..#z_uccg_rk_cucs')is not null
 	BEGIN
 		drop table #z_uccg_rk_cucs
@@ -790,31 +787,23 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	
 	-------------------------------------------------------------------------------------
 	---- 計算成品的金額
-	--declare @tmpCuts table(
-	--	sel int identity(1,1)
-	--	,accy nvarchar(10)
-	--	,noa nvarchar(20)
-	--	,noq nvarchar(10)
-	--	,makeno nvarchar(20)
-	--	,[weight] float --入庫重量 
-	--	,cost float 
-	--)
-	--insert into @tmpCuts(accy,noa,noq,makeno,[weight])
-	--select a.accy,a.noa,a.noq,a.cname,a.[weight]
-	--from view_cuts a
-	--left join view_cut b on a.accy=b.accy and a.noa=b.noa
-	--where b.datea between @bdate and @edate
-	--and len(ISNULL(a.cname,'')) > 0
+	declare @tmpCuts table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,[weight] float --入庫重量 
+		,cost float 
+	)
+	insert into @tmpCuts(accy,noa,noq,makeno,[weight])
+	select a.accy,a.noa,a.noq,a.cname,a.[weight]
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @bdate and @edate
+	and len(ISNULL(a.cname,'')) > 0
 	
-	--declare @cost float
-	--declare @template float
-	--declare @waste float
-	--declare @makeno nvarchar(20)
-	--declare @tweight float
-	--declare @cost2 float
-	--declare @w01 float
-	--declare @w02 float
-	
+	---------------------------------------------------------------------------------
 	--IF OBJECT_ID('tempdb..#z_uccg_rk_cuts')is not null
 	--BEGIN
 	--	drop table #z_uccg_rk_cuts
@@ -828,7 +817,19 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	--	,[weight] float
 	--	,cost float
 	--)
-
+	
+	--declare @cost float --半成品成本
+	--declare @template float --樣品成本
+	--declare @waste float
+	--declare @makeno nvarchar(20)
+	--declare @tweight float
+	--declare @cost2 float
+	--declare @w01 float
+	--declare @w02 float
+	
+	----成品的金額  = 半成品成本 - 樣品成本 
+	---- 半成品成本 = 原物料成本+製費
+	---- 樣品成本 = 樣品重*半成品單價 + 樣品製費    (半成品單價= 半成品成本/完工重量)
 	--declare cursor_table cursor for
 	--select makeno from @tmpCuts group by makeno
 	--open cursor_table
@@ -839,6 +840,7 @@ z_uccg_rk03: -- z_uccg_rk.txt  z_uccg_rk03  原物料成本結轉
 	--	select @cost = 0, @template = 0, @waste = 0, @w01 = 0, @w02 = 0
 	--	-- cubs.total 已經包含 直接人工、製造費用、電費、瓦斯費
 	--	select @cost = isnull(total,0) from view_cubs where makeno=@makeno
+	--	-- 樣品、報廢
 	--	select @template=SUM(ISNULL(m02,0)),@waste=SUM(ISNULL(m03,0)) from view_cucs where cubno=@makeno
 		
 	--	select @w01=SUM(ISNULL(w01,0)),@w02=SUM(ISNULL(w02,0)) from view_cucs 

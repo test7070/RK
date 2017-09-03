@@ -60,6 +60,10 @@
                     },{
                         type : '1',//[14,15] 9
                         name : 'xdime'
+                    },{
+                        type : '8',//[16] 10
+                        name : 'xdetail',
+                        value : ["明細"]
                     }]
 				});
 				q_popAssign();
