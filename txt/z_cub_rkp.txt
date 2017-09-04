@@ -2672,7 +2672,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品彙總表
 		,[money] float
 	)
 	insert into @tmpC(uno,accy,noa,noq,datea,[weight],[money])
-	select c.uno,a.accy,a.noa,a.noq,b.datea,isnull(a.[gweight],0),round(isnull(a.[gweight],0)*c.price,0)
+	select c.uno,a.accy,a.noa,a.noq,b.datea,isnull(a.[gweight],0),isnull(a.scost,0)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	left join #z_cub_rkp06_uno c on a.uno=c.uno 
@@ -2690,7 +2690,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品彙總表
 		,[money] float
 	)
 	insert into @tmpD(uno,accy,noa,noq,datea,[weight],[money])
-	select c.uno,a.accy,a.noa,a.noq,b.datea,isnull(a.[gweight],0),round(isnull(a.[gweight],0)*c.price,0)
+	select c.uno,a.accy,a.noa,a.noq,b.datea,isnull(a.[gweight],0),isnull(a.scost,0)
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	left join #z_cub_rkp06_uno c on a.uno=c.uno 
@@ -2710,7 +2710,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品彙總表
 	insert into @tmpE(uno,accy,noa,noq,datea,[weight],[money])
 	select c.uno,a.accy,a.noa,a.noq,b.datea
 		,case when isnull(a.[gweight],0)=0 then isnull(a.[weight],0) else a.[gweight] end
-		,ROUND(case when isnull(a.[gweight],0)=0 then isnull(a.[weight],0) else a.[gweight] end * c.price,0)
+		,isnull(a.scost,0)
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join #z_cub_rkp06_uno c on a.uno=c.uno 
@@ -2750,7 +2750,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品彙總表
 	insert into @tmpG(uno,accy,noa,noq,datea,[weight],[money])
 	select c.uno,a.accy,a.noa,a.noq,b.datea
 		,case when isnull(a.[gweight],0)=0 then isnull(a.[weight],0) else a.[gweight] end
-		,ROUND(case when isnull(a.[gweight],0)=0 then isnull(a.[weight],0) else a.[gweight] end * c.price,0)
+		,isnull(a.scost,0)
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join #z_cub_rkp06_uno c on a.uno=c.uno 
@@ -3491,7 +3491,6 @@ z_cub_rkp05:--z_cub_rkp05
 	declare @t_makeno nvarchar(max) = case when '#non' = [11] then '' else [11] end
 	declare @t_detail nvarchar(max) = case when '#non' = [16] then '' else [16] end
 	--------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
 	IF OBJECT_ID('tempdb..#z_cub_rkp05')is not null
 	BEGIN
 		drop table #z_cub_rkp05
@@ -3840,7 +3839,145 @@ z_cub_rkp05:--z_cub_rkp05
 	end 
 	close cursor_table 
 	deallocate cursor_table 
+	----------------------------------------------------------------------------------------
+	--計算 出貨、領料 成本
 	
+	declare @tmpb table(
+		sel int identity(1,1)
+		,uno nvarchar(30)
+		,[weight] float
+		,[money] float
+		,[price] float
+	)
+	insert into @tmpb(uno,[weight],[money],[price])
+	select uno,weight01,money07,price07 from #z_cub_rkp05 where gno='2'
+	
+	--盤點成本
+	declare @tmpc table(
+		sel int identity(1,1)
+		,uno nvarchar(20)
+		,[weight] float
+		,[money] float
+	)
+	insert into @tmpc(uno,[weight],[money])
+	select a.uno
+		,-1*case when ISNULL(a.gweight,0)=0 then ISNULL(a.[weight],0) else a.gweight end
+		,-1*ISNULL(a.scost,0)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join @tmpb c on a.uno=c.uno
+	where c.uno is not null
+	and (b.typea='盤點'	) 
+	
+	
+	IF OBJECT_ID('tempdb..#z_cub_rkp05_b')is not null
+	BEGIN
+		drop table #z_cub_rkp05_b
+	END
+	create table #z_cub_rkp05_b(
+		sel int identity(1,1)
+		,uno nvarchar(30)
+		,datea nvarchar(20)
+		,tablea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,[weight] float
+		,[money] float
+		,n float
+	)
+	insert into #z_cub_rkp05_b(uno,datea,tablea,accy,noa,noq,[weight],[money],n)
+	select a.uno,b.datea,'vcc',a.accy,a.noa,a.noq
+		,case when ISNULL(a.gweight,0)=0 then ISNULL(a.[weight],0) else a.gweight end
+		,round(case when ISNULL(a.gweight,0)=0 then ISNULL(a.[weight],0) else a.gweight end * c.price ,0)
+		,case when a.typea = '1' then -1 else 1 end
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join @tmpb c on a.uno=c.uno
+	where c.uno is not null
+	
+	insert into #z_cub_rkp05_b(uno,datea,tablea,accy,noa,noq,[weight],[money],n)
+	select a.uno,b.datea,'get',a.accy,a.noa,a.noq
+		,case when ISNULL(a.gweight,0)=0 then ISNULL(a.[weight],0) else a.gweight end
+		,round(case when ISNULL(a.gweight,0)=0 then ISNULL(a.[weight],0) else a.gweight end * c.price ,0)
+		,-1
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join @tmpb c on a.uno=c.uno
+	where c.uno is not null
+	and (b.typea='領料單' or b.typea='報廢'	)
+	----------------------------------------------------------------------------------------
+	declare @uno nvarchar(30)
+	declare @weight float
+	declare @money float
+	declare @tweight float
+	declare @tmoney float
+	declare @diff float
+	
+	declare cursor_table cursor for 
+	select uno,weight,money from @tmpb
+	open cursor_table 
+	fetch next from cursor_table 
+	into @uno,@weight,@money
+	while(@@FETCH_STATUS <> -1) 
+	begin 
+		select @tweight = @weight,@tmoney=@money
+		--盤點
+		select @tweight=@tweight + isnull(SUM([weight]),0) 
+			,@tmoney=@tmoney + isnull(SUM([money]),0) 
+		from @tmpc where uno=@uno 
+		--領料、出退貨
+		select @tweight=@tweight + isnull(SUM(n*[weight]),0) 
+			,@tmoney=@tmoney + isnull(SUM(n*[money]),0) 
+		from #z_cub_rkp05_b where uno=@uno 
+		
+		if(@tweight=0 and @tmoney!=0) 
+		begin
+			--最後一筆調整金額
+			update #z_cub_rkp05_b set [money]=a.[money]- @tmoney*a.n
+			from #z_cub_rkp05_b a
+			left join(select top 1 * from #z_cub_rkp05_b where uno=@uno order by datea desc,sel desc) b on a.sel=b.sel 
+			where b.noa is not null
+		end
+		else if(@tweight<0 and @tmoney!=0)
+		begin
+			print @uno+'有問題'
+		end
+	
+		fetch next from cursor_table 
+		into @uno,@weight,@money
+	end 
+	close cursor_table 
+	deallocate cursor_table 
+
+	--更新出貨、領料成本
+	declare cursor_table cursor for 
+	select accy from #z_cub_rkp05_b group by accy
+	open cursor_table 
+	fetch next from cursor_table 
+	into @accy
+	while(@@FETCH_STATUS <> -1) 
+	begin 
+		set @cmd=
+		"update vccs"+@accy+" set scost=b.[money]
+		from vccs"+@accy+" a
+		left join #z_cub_rkp05_b b on b.tablea='vcc' and b.accy=@accy and a.noa=b.noa and a.noq=b.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(20)',@accy=@accy
+		
+		set @cmd=
+		"update gets"+@accy+" set scost=b.[money]
+		from gets"+@accy+" a
+		left join #z_cub_rkp05_b b on b.tablea='vcc' and b.accy=@accy and a.noa=b.noa and a.noq=b.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(20)',@accy=@accy
+		
+		fetch next from cursor_table 
+		into @accy
+	end 
+	close cursor_table 
+	deallocate cursor_table
+	----------------------------------------------------------------------------------------
 	if LEN(@t_detail)=0
 		delete #z_cub_rkp05 where gno='2'
 	
