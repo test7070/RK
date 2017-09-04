@@ -752,6 +752,7 @@
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtSprice.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtTotal.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<!-- total  當執行製成品單位成本表(z_cub_rkp05)時會寫入  -->
 				</tr>
 			</table>
 		</div>
