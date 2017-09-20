@@ -1,0 +1,94 @@
+	ALTER function [dbo].[unfinished_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max))
+	returns @tmp table(	
+		sel int identity(1,1)
+		,gno nvarchar(20)
+		,pno int
+		,recno int
+		,makeno nvarchar(30)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,pvcno nvarchar(20)
+		,pvc nvarchar(30)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,size nvarchar(20)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(10)
+		,mins float
+		
+		,date_cub nvarchar(20) -- cub date
+		,[weight] float
+		,price float
+		,total float
+		
+		,date_cut nvarchar(20) -- cut date
+		--期初存貨
+		,weight01 float
+		,price01 float
+		,total01 float			
+		--盤點調整	
+		,weight02 float
+		,price02 float
+		,total02 float			
+		--本期完工投入	
+		,weight03 float
+		,price03 float
+		,total03 float			
+		--本期耗料	
+		,weight04 float
+		,price04 float
+		,total04 float			
+		--本期樣品	
+		,weight05 float
+		,price05 float
+		,total05 float			
+		--本期報廢	
+		,weight06 float
+		,price06 float
+		,total06 float			
+		--期末存貨	
+		,weight07 float
+		,price07 float
+		,total07 float	
+	) as
+	begin
+		insert into @tmp(gno,pno,makeno,date_cub,[weight],total
+			,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
+			,mins)
+		select '1',1,a.makeno,b.datea,a.hweight,isnull(a.total,0) + isnull(a.w01,0) + isnull(a.w01,0)
+			,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
+			,a.mins
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		where b.datea<=@t_edate
+		
+		update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
+		from @tmp a
+		left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
+		
+		update @tmp set price = case when [weight]!=0 then round(total/[weight],3) else 0 end
+		
+		update @tmp set date_cut=ISNULL(b.datea,'')
+		from @tmp a
+		outer apply(select top 1 * from view_cuts where a.makeno=cname order by datea) b
+		------------------------------------------------------------------------------------------
+		-- 只留下  有庫存 及 本期轉為成品的
+		delete @tmp where len(date_cut)>0 and date_cut<@t_bdate
+		
+		update @tmp set weight01=[weight],price01=price,total01=total where date_cub<@t_bdate
+		update @tmp set weight03=[weight],price03=price,total03=total where date_cub>=@t_bdate
+		update @tmp set weight04=[weight],price04=price,total04=total where date_cut between @t_bdate and @t_edate
+		update @tmp set weight07=ISNULL(weight01,0)+ISNULL(weight03,0)-ISNULL(weight04,0)
+			,total07=ISNULL(total01,0)+ISNULL(total03,0)-ISNULL(total04,0)
+		
+		update @tmp set price01 = case when ISNULL(weight01,0) = 0 then 0 else round(total01/weight01,2) end
+			,price02 = case when ISNULL(weight02,0) = 0 then 0 else round(total02/weight02,2) end
+			,price03 = case when ISNULL(weight03,0) = 0 then 0 else round(total03/weight03,2) end
+			,price04 = case when ISNULL(weight04,0) = 0 then 0 else round(total04/weight04,2) end
+			,price05 = case when ISNULL(weight05,0) = 0 then 0 else round(total05/weight05,2) end
+			,price06 = case when ISNULL(weight06,0) = 0 then 0 else round(total06/weight06,2) end
+			,price07 = case when ISNULL(weight07,0) = 0 then 0 else round(total07/weight07,2) end
+		return
+	end	
