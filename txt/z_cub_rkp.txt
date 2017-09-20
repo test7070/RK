@@ -1,3 +1,305 @@
+z_cub_rkp11:--z_cub_rkp11	營業成本表
+	SET QUOTED_IDENTIFIER OFF 
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	
+	declare @t_bdate nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
+	----------------------------------------------------------------------------------------------------------
+	declare @tmpKind table(
+		kind nvarchar(20)
+		,product nvarchar(50)
+	)
+	insert into @tmpKind(kind,product)
+	select 'A1','金屬底材'
+	union
+	select 'A4','皮膜'
+	union
+	select 'A5','保護膜'
+	union
+	select 'A6','物料'
+	union
+	select 'A7','成品'
+	union
+	select 'A8','溶劑'
+	--------------------------------------------------------------------------------------------------
+--============================================================================================	
+	-- 原物料
+--============================================================================================
+	IF OBJECT_ID('tempdb..#z_cub_rkp08a')is not null
+	BEGIN
+		drop table #z_cub_rkp08a
+	END
+	select * into #z_cub_rkp08a from [dbo].[material_rk](@t_bdate,@t_edate,'','','')
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,attr nvarchar(10)
+		,typea nvarchar(20)
+		,kind nvarchar(20)
+		,product nvarchar(20)
+		,itemno nvarchar(20)
+		,item nvarchar(50)
+		,[mount] float
+		,[weight] float
+		,[price] float
+		,[money] float
+	)
+	--期初存貨 1
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+		,'A01' 
+		,'期初' 
+		,sum(isnull(a.mount01,0)),sum(isnull(a.weight01,0)),sum(isnull(a.total01,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--盤點調整 2
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'A02','盤點'
+		,sum(isnull(a.mount02,0)),sum(isnull(a.weight02,0)),sum(isnull(a.total02,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期購入3
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'A03','購入'
+		,sum(isnull(a.mount03,0)),sum(isnull(a.weight03,0)),sum(isnull(a.total03,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	
+	--本期領料 5
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'B05','領料'
+		,sum(isnull(a.mount05,0)),sum(isnull(a.weight05,0)),sum(isnull(a.total05,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期自調入 6
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'A06','自調入'
+		,sum(isnull(a.mount06,0)),sum(isnull(a.weight06,0)),sum(isnull(a.total06,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期自調用料 7
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'B07','自調用料'
+		,sum(isnull(a.mount07,0)),sum(isnull(a.weight07,0)),sum(isnull(a.total07,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期銷貨 8
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'B08','銷貨'
+		,sum(isnull(a.mount08,0)),sum(isnull(a.weight08,0)),sum(isnull(a.total08,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期銷貨退回	9
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'A09','銷貨退回'
+		,sum(isnull(a.mount09,0)),sum(isnull(a.weight09,0)),sum(isnull(a.total09,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期報廢 10
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'B10','報廢'
+		,sum(isnull(a.mount10,0)),sum(isnull(a.weight10,0)),sum(isnull(a.total10,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期退料 11
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'B11','退料'
+		,sum(isnull(a.mount11,0)),sum(isnull(a.weight11,0)),sum(isnull(a.total11,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--期末存貨 12
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'C12','期末存貨'
+		,sum(isnull(a.mount12,0)),sum(isnull(a.weight12,0)),sum(isnull(a.total12,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--本期耗料 4
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,mount,[weight],[money])
+	select  1,'1'
+		,case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,''),'D01','耗料'
+		,sum(isnull(a.mount04,0)),sum(isnull(a.weight04,0)),sum(isnull(a.total04,0))
+	from #z_cub_rkp08a a
+	left join view_uccb b on a.uno=b.uno
+	left join @tmpKind c on b.kind=c.kind
+	group by case when (ISNULL(a.weight01,0)>0 and ISNULL(a.price01,0)=0) or (ISNULL(a.weight12,0)>0 and ISNULL(a.price12,0)=0) then '客供' else '' end
+		,ISNULL(b.kind,''),ISNULL(c.product,'')
+	--------------------------------------------------------------------------------------------------
+	delete @tmp where mount=0 and [weight]=0 and [money]=0 and itemno!='D01'  --耗料還是要顯示
+	--------------------------------------------------------------------------------------------------
+--============================================================================================
+	-- 在製品
+--============================================================================================
+	IF OBJECT_ID('tempdb..#z_cub_rkp08b')is not null
+	BEGIN
+		drop table #z_cub_rkp08b
+	END
+	select * into #z_cub_rkp08b from [dbo].[unfinished_rk](@t_bdate,@t_edate)
+	--期初
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'2' attr,'' typea,'' kind,'在製品' product,'A01' itemno,'期初' item
+		,sum(isnull(a.[weight01],0)),sum(isnull(a.[total01],0))
+	from #z_cub_rkp08b a
+	 
+	
+	--期末
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'2' attr,'' typea,'' kind,'在製品' product,'C01' itemno,'期末' item
+		,sum(isnull(a.[weight07],0)),sum(isnull(a.[total07],0))
+	from #z_cub_rkp08b a 
+	---------------------------------------------------------------------------
+--============================================================================================
+	--製成品
+--============================================================================================	
+	IF OBJECT_ID('tempdb..#z_cub_rkp08c')is not null
+	BEGIN
+		drop table #z_cub_rkp08c
+	END
+	select * into #z_cub_rkp08c from [dbo].[finished_rk]('106/09/01','106/09/30')
+	
+	--select * from #z_cub_rkp08c
+	--select * from @tmp
+	
+	--期初
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'期初' item
+		,sum(isnull(a.[w01],0)),sum(isnull(a.[m01],0))
+	from #z_cub_rkp08c a
+	
+	--本月生產	
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'本月生產' item
+		,sum(isnull(a.[w02],0)),sum(isnull(a.[m02],0))
+	from #z_cub_rkp08c a		
+	--盤點調整			
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'盤點調整' item
+		,sum(isnull(a.[w03],0)),sum(isnull(a.[m03],0))
+	from #z_cub_rkp08c a
+	--本期領料			
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'本期領料' item
+		,sum(isnull(a.[w04],0)),sum(isnull(a.[m04],0))
+	from #z_cub_rkp08c a
+	--本期報廢			
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'本期報廢' item
+		,sum(isnull(a.[w05],0)),sum(isnull(a.[m05],0))
+	from #z_cub_rkp08c a
+	--銷貨退回			
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'銷貨退回' item
+		,sum(isnull(a.[w06],0)),sum(isnull(a.[m06],0))
+	from #z_cub_rkp08c a
+	--委外加工			
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'委外加工' item
+		,sum(isnull(a.[w07],0)),sum(isnull(a.[m07],0))
+	from #z_cub_rkp08c a
+	----本月銷售收入  			
+	--insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	--select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'委外加工' item
+	--	,sum(isnull(a.[w08],0)),sum(isnull(a.[m08],0))
+	--from #z_cub_rkp08c a
+	--本月銷售成本		
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'銷售' item
+		,sum(isnull(a.[w09],0)),sum(isnull(a.[m09],0))
+	from #z_cub_rkp08c a	
+	----銷售毛利
+	--insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	--select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'期初' item
+	--	,sum(isnull(a.[w01],0)),sum(isnull(a.[m01],0))
+	--from #z_cub_rkp08c a
+	
+	
+	--期末 W11 P11 M11
+	insert into @tmp(gno,attr,typea,kind,product,itemno,item,[weight],[money])
+	select 1,'3' attr,'' typea,'' kind,'製成品' product,'A01' itemno,'期末' item
+		,sum(isnull(a.[w11],0)),sum(isnull(a.[m11],0))
+	from #z_cub_rkp08c a
+
+
+	--insert into @tmp(item,mount,[weight],[money])
+	--select *
+	--from #z_cub_rkp08b a
+	--group by
+	
+	--select * from #z_cub_rkp08a
+--	select * from #z_cub_rkp08b
+	
+	select gno
+		, product a01
+		, item + case when len(isnull(typea,''))>0 then '-' else '' end + typea a02
+		, dbo.getComma(mount,-1) b01
+		, dbo.getComma(weight,-1) b02
+		, dbo.getComma(price,-1) b03
+		, dbo.getComma([money],-1) b04 
+	from @tmp 
+	order by attr,kind,isnull(typea,''),itemno
+	drop table #z_cub_rkp08a
+	drop table #z_cub_rkp08b
+	drop table #z_cub_rkp08c;
+	
+
+
 z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	SET QUOTED_IDENTIFIER OFF 
 	declare @cmd nvarchar(max)
