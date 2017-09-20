@@ -7,7 +7,6 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	declare @t_bdate nvarchar(max) = case when '#non' = [4] then '' else [4] end
 	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
 	----------------------------------------------------------------------------------------------------------
-	----------------------------------------------------------------------------------------------------------
 	declare @tmpKind table(
 		kind nvarchar(20)
 		,product nvarchar(50)
@@ -32,7 +31,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	BEGIN
 		drop table #z_cub_rkp08a
 	END
-	select * into #z_cub_rkp08a from [dbo].[material_rk](@t_bdate,@t_edate,'','','')
+	select * into #z_cub_rkp08a from [dbo].[material_rk](@t_bdate,@t_edate,'','','z')
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -303,7 +302,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 		, dbo.getComma(price,-1) b03
 		, dbo.getComma([money],-1) b04 
 	from @tmp 
-	order by attr,kind,isnull(typea,''),itemno
+	order by attr,typea,kind,sel
 	drop table #z_cub_rkp08a
 	drop table #z_cub_rkp08b
 	drop table #z_cub_rkp08c;
