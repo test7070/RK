@@ -1,4 +1,4 @@
-	ALTER function [dbo].[finished_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max))
+ALTER function [dbo].[finished_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max))
 	returns @tmp table(	
 		sel int identity(1,1)
 		,recno int
@@ -291,16 +291,26 @@
 		,p09 = case when w09=0 then null else round(m09/w09,2) end
 		,p11 = case when w11=0 then null else round(m11/w11,2) end
 	----------------------------------------------------------------------------------------------------------------
-	insert into @tmp(gno,pno,w01,w02,w03,w04,w05,w06,w07,w08,w09,w10,w11
-		,m01,m02,m03,m04,m05,m06,m07,m08,m09,m10,m11)
-	select '2',2,SUM(w01),SUM(w02),SUM(w03),SUM(w04),SUM(w05),SUM(w06),SUM(w07),SUM(w08),SUM(w09),SUM(w10),SUM(w11)
-		,SUM(m01),SUM(m02),SUM(m03),SUM(m04),SUM(m05),SUM(m06),SUM(m07),SUM(m08),SUM(m09),SUM(m10),SUM(m11)
-	from @tmp 
-	where pno=1
+	--insert into @tmp(gno,pno,w01,w02,w03,w04,w05,w06,w07,w08,w09,w10,w11
+	--	,m01,m02,m03,m04,m05,m06,m07,m08,m09,m10,m11)
+	--select '2',2,SUM(w01),SUM(w02),SUM(w03),SUM(w04),SUM(w05),SUM(w06),SUM(w07),SUM(w08),SUM(w09),SUM(w10),SUM(w11)
+	--	,SUM(m01),SUM(m02),SUM(m03),SUM(m04),SUM(m05),SUM(m06),SUM(m07),SUM(m08),SUM(m09),SUM(m10),SUM(m11)
+	--from @tmp 
+	--where pno=1
 	
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by dime,makeno,accy,noa,noq) recno from @tmp where pno=1) b on a.sel=b.sel
 
+	
+	
+	
+	
+	
+	
+	
 		return
 	end	
+GO
+
+

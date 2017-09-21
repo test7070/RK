@@ -1,5 +1,4 @@
-
-	alter function [dbo].[unohistory_rk](@t_rank int,@t_uno nvarchar(50),@t_makeno nvarchar(max))
+ALTER function [dbo].[unohistory_rk](@t_rank int,@t_uno nvarchar(50),@t_makeno nvarchar(max))
 	returns @tmp table(
 		[rank] int
 		,[status] int -- 1入庫,2出庫
@@ -36,7 +35,7 @@
 		
 		insert into @tmp([rank],[status],datea,tablea,accy,noa,noq,bno,uno,mount,[weight],price,sprice,a.storeno,a.place)
 		select @t_rank,1,b.datea,'vcc',a.accy,a.noa,a.noq,'',a.uno
-			,case when isnull(a.mount,0)>0 then a.gmount else a.[mount]end
+			,case when isnull(a.gmount,0)>0 then a.gmount else a.[mount]end
 			,case when isnull(a.gweight,0)>0 then a.gweight else a.[weight]end,a.price,null,'',''
 		from view_vccs a
 		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
@@ -136,5 +135,3 @@
 		end
 		return
 	end
-	
-	

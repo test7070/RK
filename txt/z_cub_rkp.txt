@@ -221,7 +221,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	BEGIN
 		drop table #z_cub_rkp08c
 	END
-	select * into #z_cub_rkp08c from [dbo].[finished_rk]('106/09/01','106/09/30')
+	select * into #z_cub_rkp08c from [dbo].[finished_rk](@t_bdate,@t_edate)
 	
 	--select * from #z_cub_rkp08c
 	--select * from @tmp
@@ -285,7 +285,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 		,sum(isnull(a.[w11],0)),sum(isnull(a.[m11],0))
 	from #z_cub_rkp08c a
 
-
+	update @tmp set price = case when [money]=0 or [weight]=0 then null else ROUND([money]/[weight],2) end
 	--insert into @tmp(item,mount,[weight],[money])
 	--select *
 	--from #z_cub_rkp08b a
