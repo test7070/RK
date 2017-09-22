@@ -55,7 +55,7 @@ z_cub_rk02:--z_cub_rk02
 		,w06 float--成品再投入	   cucs.para
 		--,w07 nvarchar(40)--成品規格	
 		,w08 float--(1)進倉成品	   cuts.weight
-		,w09 float--(2)樣品	cucs.weight6 + cucs.waste
+		,w09 float--(2)樣品	cucs.weight6
 		,w10 float--(2)報廢 cucs.weight7 
 		,w15 float--(2)盤盈	cucs.weight11	
 		,w11 float--(b1)不良品	cucs.wright8  
@@ -167,7 +167,7 @@ z_cub_rk02:--z_cub_rk02
 	--w04 生產線分條餘料(a2) cucs.weight4
 	--w05 待修品再投入   cucs.weight5	
 	--w06 成品再投入	 cucs.para
-	--w09 樣品	cucs.weight6 + cucs.waste
+	--w09 樣品	cucs.weight6
 	--w10 報廢  cucs.weight7 
 	--w11 不良品(b1)	cucs.wright8  
 	--w12 尺寸損耗(b3)	cucs.wright9
@@ -176,7 +176,7 @@ z_cub_rk02:--z_cub_rk02
 	update @tmpa set w04=ISNULL(b.[weight4],0)
 		,w05=ISNULL(b.[weight5],0)
 		,w06=ISNULL(b.[para],0)
-		,w09=ISNULL(b.[weight6],0)+ISNULL(b.[waste],0)
+		,w09=ISNULL(b.[weight6],0)
 		,w10=ISNULL(b.[weight7],0)
 		,w11=ISNULL(b.[weight8],0)
 		,w12=ISNULL(b.[weight9],0)
@@ -192,7 +192,6 @@ z_cub_rk02:--z_cub_rk02
 		,SUM(ISNULL(a.weight8,0)) [weight8]
 		,SUM(ISNULL(a.weight9,0)) [weight9]
 		,SUM(ISNULL(a.weight10,0)) [weight10]
-		,SUM(ISNULL(a.waste,0)) [waste] 
 		,SUM(ISNULL(cast(a.para as float),0)) [para] 
 		,SUM(ISNULL(cast(a.paraa as float),0)) [paraa] 
 		,SUM(ISNULL(a.weight11,0)) [weight11]

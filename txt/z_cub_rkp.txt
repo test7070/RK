@@ -1220,6 +1220,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	declare @t_bdate nvarchar(20) = case when '#non' = [4] then '' else [4] end	
 	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end	
 	------------------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -1250,22 +1251,27 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,price01 float
 		,total01 float			
 		--盤點調整	
+		,bweight02 float
 		,weight02 float
 		,price02 float
 		,total02 float			
-		--本期完工投入	
+		--完工投入	
 		,weight03 float
 		,price03 float
 		,total03 float			
-		--本期耗料	
+		--耗料	
 		,weight04 float
 		,price04 float
 		,total04 float			
-		--本期樣品	
+		--樣品	
+		,bweight05 float
+		
 		,weight05 float
 		,price05 float
 		,total05 float			
-		--本期報廢	
+		--報廢	
+		,bweight06 float
+		
 		,weight06 float
 		,price06 float
 		,total06 float			
@@ -1293,20 +1299,93 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	update @tmp set date_cut=ISNULL(b.datea,'')
 	from @tmp a
 	outer apply(select top 1 * from view_cuts where a.makeno=cname order by datea) b
+	
+	
+	--前期盤點調整
+	update @tmp set bweight02=ISNULL(b.weight11,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight11,0)) weight11
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea<@t_bdate) b
+	--本期盤點調整
+	update @tmp set weight02=ISNULL(b.weight11,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight11,0)) weight11 
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea between @t_bdate and @t_edate) b
+	
+	--前期樣品	
+	update @tmp set bweight05=ISNULL(b.weight6,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight6,0)) weight6 
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea<@t_bdate) b
+	--本期樣品	
+	update @tmp set weight05=ISNULL(b.weight6,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight6,0)) weight6 
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea between @t_bdate and @t_edate) b
+	--前期報廢
+	update @tmp set bweight06=ISNULL(b.weight7,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight7,0)) weight7 
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea<@t_bdate) b
+	--本期報廢	
+	update @tmp set weight06=ISNULL(b.weight7,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight7,0)) weight7 
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea between @t_bdate and @t_edate) b
+	--耗料	
+		
+		
+--select *  from @tmp
+--return		
+--期初存貨
+--盤點調整	
+--本期完工投入	
+--本期耗料	
+--本期樣品	
+--本期報廢	
+--期末存貨		
 	------------------------------------------------------------------------------------------
+	declare @makeno nvarchar(20)
+	declare @weight float
+	declare @price float
+	declare @total float
+	
+	
 	-- 只留下  有庫存 及 本期轉為成品的
+	
 	delete @tmp where len(date_cut)>0 and date_cut<@t_bdate
 	
-	update @tmp set weight01=[weight],price01=price,total01=total where date_cub<@t_bdate
-	update @tmp set weight03=[weight],price03=price,total03=total where date_cub>=@t_bdate
+	update @tmp set weight01=[weight]+ISNULL(bweight02,0)-ISNULL(bweight05,0)-ISNULL(bweight06,0)
+		,price01=price,total01=total 
+		where date_cub<@t_bdate
+		
+	update @tmp set weight03=[weight]
+		,price03=price,total03=total 
+		where date_cub>=@t_bdate
+	
 	update @tmp set weight04=[weight],price04=price,total04=total where date_cut between @t_bdate and @t_edate
-	update @tmp set weight07=ISNULL(weight01,0)+ISNULL(weight03,0)-ISNULL(weight04,0)
+	
+	update @tmp set weight07=ISNULL(weight01,0)
+		+ISNULL(weight02,0)-ISNULL(weight05,0)-ISNULL(weight06,0)
+		+ISNULL(weight03,0)-ISNULL(weight04,0)
 		,total07=ISNULL(total01,0)+ISNULL(total03,0)-ISNULL(total04,0)
 	
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
-	
+
 	insert into @tmp(gno,pno,weight01,weight02,weight03,weight04,weight05,weight06,weight07
 		,total01,total02,total03,total04,total05,total06,total07
 		,mins)
@@ -1342,7 +1421,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,dbo.getComma(price01,-1) a10
 		,dbo.getComma(total01,-1) a11
 		--盤點調整			
-		,'' a12
+		,dbo.getComma(weight02,-1) a12
 		,'' a13
 		,'' a14
 		--本期完工投入
@@ -1354,11 +1433,11 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,dbo.getComma(price04,-1) a19
 		,dbo.getComma(total04,-1) a20			
 		--本期樣品 
-		,'' a21
+		,dbo.getComma(weight05,-1) a21
 		,'' a22
 		,'' a23
 		--本期報廢	
-		,'' a24
+		,dbo.getComma(weight06,-1) a24
 		,'' a25
 		,'' a26	
 		--期末存貨
