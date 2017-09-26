@@ -1461,6 +1461,7 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	declare @t_xbdime nvarchar(20) = case when '#non' = [10] then '' else [10] end
 	declare @t_xedime nvarchar(20) = case when '#non' = [11] then '' else [11] end
 	--------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
 	declare @t_bdime float=0,@t_edime float=0
 	begin try
 		set @t_bdime = CAST(@t_xbdime as float)
@@ -1482,6 +1483,8 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		makeno nvarchar(20),
 		custno nvarchar(20),
 		cust nvarchar(50),
+		productno nvarchar(20),
+		product nvarchar(50),
 		pvcno nvarchar(20),--皮膜
 		pvc nvarchar(20),
 		peno nvarchar(20),--保護膜
@@ -1507,12 +1510,14 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		,ordeno nvarchar(20)
 		,no2 nvarchar(10)
 		,mon nvarchar(20)
+		,spec nvarchar(20)
+		,cspec nvarchar(50)
 	)
 	insert into @tmp(cubno,cubnoq,gno,dime,radius,width,lengthb
-		,makeno,custno,cust,timea,weight01,weight02,ordeno,no2
+		,makeno,custno,cust,productno,product,timea,weight01,weight02,ordeno,no2
 		,money01,money02,money03,money04,money05)
 	select a.noa,a.noq, '1',a.dime,a.radius,a.width,a.lengthb
-		,a.makeno,a.custno,a.comp
+		,a.makeno,a.custno,a.comp,a.productno,a.product
 		,a.mins,a.w03,a.hweight,a.ordeno,a.no2
 		,ISNULL(a.total,0),ISNULL(a.w01,0),ISNULL(a.w02,0),ISNULL(a.w04,0),ISNULL(a.w05,0)
 	from view_cubs a
@@ -1523,6 +1528,11 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	and (len(@t_makeno)=0 or CHARINDEX(@t_makeno,a.makeno)>0)
 	and a.dime between @t_bdime and @t_edime
 	
+	update @tmp set spec = b.spec,cspec=c.product
+	from @tmp a
+	left join view_ordes b on a.ordeno=b.noa and a.no2=b.no2
+	left join spec c on b.spec=c.noa
+	where b.noa is not null
 	
 	update @tmp set custno=b.custno,cust=b.nick
 	from @tmp a
@@ -1585,7 +1595,7 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a05
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a06
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' a07
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' a08
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+isnull(cspec,'')+'</a>' a08
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+peno+'</a>' a09
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pe+'</a>' a10
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(timea as nvarchar)+'</a>' a11
