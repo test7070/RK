@@ -81,7 +81,7 @@
                 document.title = '裁切作業';
                 bbmMask = [['txtDatea', r_picd]];
                 q_mask(bbmMask);
-                q_cmbParse("cmbTypea", '分條作業,十呎裁切,四呎裁切,三呎裁切,二呎裁切');
+                q_cmbParse("cmbTypea", '分條作業,十呎裁切,四呎裁切,三呎裁切,二呎裁切,重工,挑板');
 				
                 $('#btnOrde').click(function() {
 					if(!(q_cur==1 || q_cur==2))
