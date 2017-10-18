@@ -64,7 +64,9 @@
 				document.title = '生產物料耗用';
 				bbmMask = [['txtDatea', r_picd]];
 				q_mask(bbmMask);
-				q_cmbParse("cmbCustno", '1@皮膜,2@保護膜,3@物料','s');
+				//q_cmbParse("cmbCustno", '1@皮膜,2@保護膜,3@物料','s');
+				//皮膜、保護膜  會和別的地方衝到,先暫時不要用
+				q_cmbParse("cmbCustno", '3@物料','s');
 			}
 
 			function q_gtPost(t_name) {
