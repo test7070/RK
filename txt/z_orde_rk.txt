@@ -83,8 +83,12 @@ z_orde_rk03:--z_orde_rk03
 	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and (len(@t_enda)=0 or ISNULL(b.enda,0)=@t_enda)
-	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
+	and (len(@t_enda)=0 
+		or (cast(@t_enda as int)=0 and ISNULL(a.enda,0)=0 and ISNULL(b.enda,0)=0)
+		or (cast(@t_enda as int)=1 and (ISNULL(a.enda,0)=1 or ISNULL(b.enda,0)=1)) )
+	and (len(@t_cancel)=0 
+		or (cast(@t_cancel as int)=0 and ISNULL(a.cancel,0)=0 and ISNULL(b.cancel,0)=0)
+		or (cast(@t_cancel as int)=1 and (ISNULL(a.cancel,0)=1 or ISNULL(b.cancel,0)=1)) )
 	order by a.custno,a.noa,a.no2
 	
 	update @tmp set cspec=ISNULL(b.product,'')
@@ -196,7 +200,6 @@ z_orde_rk02:--z_orde_rk02
 	declare @t_blengthb float = case when '#non'=[21] then 0.0 else cast([21] as float) end
 	declare @t_elengthb float = case when '#non'=[22] then 99999.9 else cast([22] as float) end
 	-----------------------------------------------------------------------------------------------------
-	-----------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,recno int
@@ -257,10 +260,14 @@ z_orde_rk02:--z_orde_rk02
 	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and (len(@t_enda)=0 or ISNULL(b.enda,0)=@t_enda)
-	and (len(@t_cancel)=0 or ISNULL(b.cancel,0)=@t_cancel)
+	and (len(@t_enda)=0 
+		or (cast(@t_enda as int)=0 and ISNULL(a.enda,0)=0 and ISNULL(b.enda,0)=0)
+		or (cast(@t_enda as int)=1 and (ISNULL(a.enda,0)=1 or ISNULL(b.enda,0)=1)) )
+	and (len(@t_cancel)=0 
+		or (cast(@t_cancel as int)=0 and ISNULL(a.cancel,0)=0 and ISNULL(b.cancel,0)=0)
+		or (cast(@t_cancel as int)=1 and (ISNULL(a.cancel,0)=1 or ISNULL(b.cancel,0)=1)) )
 	order by a.productno,a.noa,a.no2
-	
+
 	update @tmp set cspec=ISNULL(b.product,'')
 	from @tmp a
 	left join spec b on a.spec=b.noa
@@ -433,8 +440,12 @@ z_orde_rk01:--z_orde_rk01
 	and ISNULL(a.radius,0) between @t_bradius and @t_eradius
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
-	and (len(@t_enda)=0 or case when ISNULL(a.enda,0)=1 or ISNULL(b.enda,0)=1 then 1 else 0 end=@t_enda)
-	and (len(@t_cancel)=0 or case when ISNULL(a.cancel,0)=1 or ISNULL(b.cancel,0)=1 then 1 else 0 end=@t_cancel)
+	and (len(@t_enda)=0 
+		or (cast(@t_enda as int)=0 and ISNULL(a.enda,0)=0 and ISNULL(b.enda,0)=0)
+		or (cast(@t_enda as int)=1 and (ISNULL(a.enda,0)=1 or ISNULL(b.enda,0)=1)) )
+	and (len(@t_cancel)=0 
+		or (cast(@t_cancel as int)=0 and ISNULL(a.cancel,0)=0 and ISNULL(b.cancel,0)=0)
+		or (cast(@t_cancel as int)=1 and (ISNULL(a.cancel,0)=1 or ISNULL(b.cancel,0)=1)) )
 	order by a.noa,a.no2
 	
 	update @tmp set cspec=ISNULL(b.product,'')
