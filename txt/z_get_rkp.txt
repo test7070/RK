@@ -77,6 +77,14 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	left join view_inas b on a.uno=b.uno
 	left join view_vccs c on b.noa=c.noa and b.noq=c.noq
 	where c.noa is not null
+	
+	update @tmp set spec=isnull(d.product,'')
+	from @tmp a
+	left join view_inas b on a.uno=b.uno
+	left join view_vccs c on b.noa=c.noa and b.noq=c.noq
+	left join spec d on a.spec=d.noa
+	where c.noa is null 
+	and d.noa is not null
 
 	update @tmp set size=case when len(isnull(style,''))>0 then style+' ' else '' end
 			+dbo.getComma(dime,-1)
