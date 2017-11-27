@@ -54,7 +54,6 @@ ALTER function [dbo].[unfinished_rk](@t_bdate nvarchar(max), @t_edate nvarchar(m
 		,total07 float	
 	) as
 	begin
-		declare @enddate nvarchar(20) = '106/10/00'
 		insert into @tmp(gno,pno,makeno,date_cub,[weight],total
 			,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
 			,mins)
@@ -64,8 +63,7 @@ ALTER function [dbo].[unfinished_rk](@t_bdate nvarchar(max), @t_edate nvarchar(m
 		from view_cubs a
 		left join view_cub b on a.accy=b.accy and a.noa=b.noa
 		where b.datea<=@t_edate
-		and b.datea>=@enddate
-		
+
 		update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
 		from @tmp a
 		left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2

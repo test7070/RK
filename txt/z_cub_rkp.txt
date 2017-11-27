@@ -321,8 +321,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	declare @t_uno nvarchar(max) = case when '#non' = [9] then '' else [9] end
 	declare @t_ordeno nvarchar(max) = case when '#non' = [12] then '' else [12] end
 	-------------------------------------------------------------------------------------
-	declare @enddate nvarchar(20) = '106/10/00'
-	
 	declare @tmp table(
 		sel int identity(1,1)
 		,recno int
@@ -406,7 +404,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	and (len(@t_makeno)=0 or a.cname=@t_makeno)
 	and (len(@t_uno)=0 or a.bno=@t_uno)
 	and (len(@t_ordeno)=0 or a.ordeno=@t_ordeno)
-	and a.datea>=@enddate
 	
 	update @tmp set price = case when ISNULL([weight],0)=0 then 0 else ROUND([money]/[weight],2) end
 	---------------------------------------------------------------------------------------------------
@@ -419,8 +416,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,uno nvarchar(20)
 		,price float
 	)
-	insert into #z_cub_rkp08_uno(uno,price)
-	select uno,price from @tmp group by uno,price
+	insert into #z_cub_rkp08_uno(uno,price)select uno,price from @tmp group by uno,price
 	
 	--期初存貨
 	--本月生產	
@@ -439,8 +435,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	from view_cuts a
 	left join #z_cub_rkp08_uno c on a.bno=c.uno 
 	where c.uno is not null
-	and a.datea>=@enddate
-	
 	--盤點調整	
 	declare @tmpB table(
 		sel int identity(1,1)
@@ -459,8 +453,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='盤點'
-	and b.datea>=@enddate
-	
 	--本期領料
 	declare @tmpC table(
 		sel int identity(1,1)
@@ -479,8 +471,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='領料單'
-	and b.datea>=@enddate
-	
 	--本期報廢
 	declare @tmpD table(
 		sel int identity(1,1)
@@ -499,8 +489,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='報廢'	
-	and b.datea>=@enddate
-	
 	--銷貨退回	
 	declare @tmpE table(
 		sel int identity(1,1)
@@ -521,8 +509,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='2'	
-	and b.datea>=@enddate
-	
 	--委外加工	none		
 	--本月銷售收入  
 	declare @tmpF table(
@@ -543,8 +529,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='1'	
-	and b.datea>=@enddate
-	
 	--本月銷售成本	
 	declare @tmpG table(
 		sel int identity(1,1)
@@ -564,8 +548,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
-	and b.typea='1'	
-	and b.datea>=@enddate	
+	and b.typea='1'		
 	--銷售毛利			
 	--期末存貨
 	------------------------------------------------------------------------------------------------------------
@@ -702,8 +685,6 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
 	declare @t_detail nvarchar(max) = case when '#non' = [13] then '' else [13] end
 	--------------------------------------------------------------------------------
-	declare @enddate nvarchar(20) = '106/10/00'
-	
 	IF OBJECT_ID('tempdb..#z_cub_rkp06')is not null
 	BEGIN
 		drop table #z_cub_rkp06
@@ -778,12 +759,10 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	)
 	
 	insert into @tmp(makeno)
-	select a.cname 
-	from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
+	select a.cname from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
 	where b.datea between @t_bdate and @t_edate
 	and (len(@t_makeno)=0 or a.cname=@t_makeno)
 	and len(isnull(a.cname,''))>0
-	and b.datea>=@enddate
 	group by a.cname
 	
 	update @tmp set dime = b.dime, pvcno= b.spec 
@@ -1241,14 +1220,12 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	declare @t_bdate nvarchar(20) = case when '#non' = [4] then '' else [4] end	
 	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end	
 	------------------------------------------------------------------------------------
-	declare @enddate nvarchar(20) = '106/09/30'
 	------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
 		,pno int
 		,recno int
-		,datea nvarchar(20)
 		,makeno nvarchar(30)
 		,dime float
 		,width float
@@ -1303,18 +1280,16 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,price07 float
 		,total07 float	
 	)
-	insert into @tmp(gno,pno,datea,makeno,date_cub,[weight],total
+	insert into @tmp(gno,pno,makeno,date_cub,[weight],total
 		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
 		,mins)
-	select '1',1,b.datea,a.makeno,b.datea,a.hweight,isnull(a.total,0) + isnull(a.w01,0) + isnull(a.w01,0)
+	select '1',1,a.makeno,b.datea,a.hweight,isnull(a.total,0) + isnull(a.w01,0) + isnull(a.w01,0)
 		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
 		,a.mins
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_edate
-	and b.datea>@enddate
-
-
+	
 	update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
 	from @tmp a
 	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
@@ -1324,6 +1299,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	update @tmp set date_cut=ISNULL(b.datea,'')
 	from @tmp a
 	outer apply(select top 1 * from view_cuts where a.makeno=cname order by datea) b
+	
 	
 	--前期盤點調整
 	update @tmp set bweight02=ISNULL(b.weight11,0)
@@ -1386,9 +1362,10 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	declare @price float
 	declare @total float
 	
+	
 	-- 只留下  有庫存 及 本期轉為成品的
-
-	--delete @tmp where len(date_cut)>0 and date_cut<@t_bdate
+	
+	delete @tmp where len(date_cut)>0 and date_cut<@t_bdate
 	
 	update @tmp set weight01=[weight]+ISNULL(bweight02,0)-ISNULL(bweight05,0)-ISNULL(bweight06,0)
 		,price01=price,total01=total 
@@ -1429,6 +1406,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,price07 = case when ISNULL(weight07,0) = 0 then 0 else round(total07/weight07,2) end
 	
 	select gno
+		,@t_bdate + '~' + @t_edate a00
 		,recno rr
 		,dime a01
 		,radius a02
@@ -1484,7 +1462,6 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	declare @t_xbdime nvarchar(20) = case when '#non' = [10] then '' else [10] end
 	declare @t_xedime nvarchar(20) = case when '#non' = [11] then '' else [11] end
 	--------------------------------------------------------------------------------
-	declare @enddate nvarchar(20) = '106/09/30'
 	--------------------------------------------------------------------------------
 	declare @t_bdime float=0,@t_edime float=0
 	begin try
@@ -1551,8 +1528,7 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	and a.custno between @t_bcustno and @t_ecustno
 	and (len(@t_makeno)=0 or CHARINDEX(@t_makeno,a.makeno)>0)
 	and a.dime between @t_bdime and @t_edime
-	and b.datea>@enddate
-
+	
 	update @tmp set spec = b.spec,cspec=c.product
 	from @tmp a
 	left join view_ordes b on a.ordeno=b.noa and a.no2=b.no2
@@ -2329,11 +2305,6 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
 	declare @uno nvarchar(30) = ''
 	-------------------------------------------------------------------------------------
-	-- 106/09/30 前的資料都不回寫
-	-- 意思就是 106/09/31 前的資料都不能修改
-	-- 不然會出錯
-	declare @enddate nvarchar(20) = '106/10/00'
-	
 	-- 計算sprice
 	-- 當進貨退回時,成本單價將會變動
 	declare @tmp_01 table(
@@ -2642,14 +2613,12 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	--計算領料組合的  (之後回寫到入庫單)
 	declare @tmpd table(
 		sel int identity(1,1)
-		,datea nvarchar(20)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
 		,uno nvarchar(30)
 		,[money] float
 	)
-	declare @datea nvarchar(20)
 	declare @accy nvarchar(10)
 	declare @noa nvarchar(20)
 	declare @noq nvarchar(10)
@@ -2668,15 +2637,15 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		into @xuno
 		while(@@FETCH_STATUS <> -1)
 		begin
-			select @accy='',@noa = '',@noq='',@money=0,@datea=''
-			select @accy=a.accy,@noa = b.noa,@noq=a.noq ,@datea=b.datea
+			select @accy='',@noa = '',@noq='',@money=0
+			select @accy=a.accy,@noa = b.noa,@noq=a.noq 
 			from view_inas a
 			left join view_get b on a.noa=b.noa
 			where a.uno=@xuno and b.noa is not null 
 			
 			select @money=SUM(ISNULL(scost,0)) from #z_cub_rkp03 where tablea='gets' and noa=@noa
-			insert into @tmpd(datea,accy,noa,noq,uno,[money])
-			select @datea,@accy,@noa,@noq,@xuno,@money
+			insert into @tmpd(accy,noa,noq,uno,[money])
+			select @accy,@noa,@noq,@xuno,@money
 
 			fetch next from cursor_table
 			into @xuno
@@ -2687,7 +2656,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	end
 	---- 回寫ina total
 	declare cursor_table cursor for
-	select accy,noa,noq,[money] from @tmpd where datea>@enddate
+	select accy,noa,noq,[money] from @tmpd
 	open cursor_table
 	fetch next from cursor_table
 	into @accy,@noa,@noq,@money
@@ -2790,10 +2759,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	deallocate cursor_table
 	-----------------------------------------------------------------------
 	-- 更新資料  回寫到各TABLE
-	
 	-----------------------------------------------------------------------
-	
-	
 	declare cursor_table cursor for
 	select accy from #z_cub_rkp03 group by accy
 	open cursor_table
@@ -2806,28 +2772,25 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		"update vccs"+@accy+" set scost=b.scost
 		from vccs"+@accy+" a
 		left join #z_cub_rkp03 b on b.tablea='vccs' and b.accy=@accy and a.noa=b.noa and a.noq=b.noq
-		where b.noa is not null
-		and b.datea>@enddate"
-		execute sp_executesql @cmd,N'@enddate nvarchar(10),@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-			,@enddate=@enddate,@accy=@accy,@noa=@noa,@noq=@noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+			,@accy=@accy,@noa=@noa,@noq=@noq
 		--gets
 		set @cmd =
 		"update gets"+@accy+" set scost=b.scost
 		from gets"+@accy+" a
 		left join #z_cub_rkp03 b on b.tablea='gets' and b.accy=@accy and a.noa=b.noa and a.noq=b.noq 
-		where b.noa is not null
-		and b.datea>@enddate"
-		execute sp_executesql @cmd,N'@enddate nvarchar(10),@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-			,@enddate=@enddate,@accy=@accy,@noa=@noa,@noq=@noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+			,@accy=@accy,@noa=@noa,@noq=@noq
 		--cubt
 		set @cmd =
 		"update cubt"+@accy+" set scost=b.scost
 		from cubt"+@accy+" a
 		left join #z_cub_rkp03 b on b.tablea='cubt' and b.accy=@accy and a.noa=b.noa and a.noq=b.noq 
-		where b.noa is not null
-		and b.datea>@enddate"
-		execute sp_executesql @cmd,N'@enddate nvarchar(10),@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-			,@enddate=@enddate,@accy=@accy,@noa=@noa,@noq=@noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+			,@accy=@accy,@noa=@noa,@noq=@noq
 		
 		fetch next from cursor_table
 		into @accy
@@ -2843,7 +2806,6 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	END
 	create table #z_cub_rkp03_cubs(
 		sel int identity(1,1)
-		,datea nvarchar(20)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
@@ -2879,8 +2841,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		,total float
 	)
 	--鋼捲
-	insert into #z_cub_rkp03_cubs(datea,accy,noa,noq,makeno,cubs,cubs_weight,cubs_length,w01,w02,w04,w05)
-	select b.datea,a.accy,a.noa,a.noq,a.makeno,c.scost,a.[weight],a.w09,a.w01,a.w02,a.w04,a.w05
+	insert into #z_cub_rkp03_cubs(accy,noa,noq,makeno,cubs,cubs_weight,cubs_length,w01,w02,w04,w05)
+	select a.accy,a.noa,a.noq,a.makeno,c.scost,a.[weight],a.w09,a.w01,a.w02,a.w04,a.w05
 	from view_cubs a 
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_gets c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
@@ -3035,9 +2997,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 			,y08 = b.A05
 		from cubs"+@accy+" a
 		left join #z_cub_rkp03_cubs b on @accy=b.accy and a.noa=b.noa and a.noq=b.noq
-		where b.noa is not null
-		and b.datea>@enddate"
-		execute sp_executesql @cmd,N'@accy nvarchar(10),@enddate nvarchar(20)',@accy=@accy,@enddate=@enddate
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10)',@accy=@accy
 		
 		fetch next from cursor_table
 		into @accy
