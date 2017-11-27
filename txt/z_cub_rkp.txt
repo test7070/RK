@@ -1220,7 +1220,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	declare @t_bdate nvarchar(20) = case when '#non' = [4] then '' else [4] end	
 	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end	
 	------------------------------------------------------------------------------------
-	declare @enddate nvarchar(20) = '106/08/31'
+	declare @enddate nvarchar(20) = '106/09/30'
 	------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -1463,7 +1463,7 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	declare @t_xbdime nvarchar(20) = case when '#non' = [10] then '' else [10] end
 	declare @t_xedime nvarchar(20) = case when '#non' = [11] then '' else [11] end
 	--------------------------------------------------------------------------------
-	declare @enddate nvarchar(20) = '106/08/31'
+	declare @enddate nvarchar(20) = '106/09/30'
 	--------------------------------------------------------------------------------
 	declare @t_bdime float=0,@t_edime float=0
 	begin try
@@ -2308,10 +2308,10 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
 	declare @uno nvarchar(30) = ''
 	-------------------------------------------------------------------------------------
-	-- 106/08/31 前的資料都不回寫
-	-- 意思就是 106/08/31 前的資料都不能修改
+	-- 106/09/30 前的資料都不回寫
+	-- 意思就是 106/09/30 前的資料都不能修改
 	-- 不然會出錯
-	declare @enddate nvarchar(20) = '106/09/00'
+	declare @enddate nvarchar(20) = '106/10/00'
 	
 	-- 計算sprice
 	-- 當進貨退回時,成本單價將會變動
