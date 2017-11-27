@@ -321,6 +321,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	declare @t_uno nvarchar(max) = case when '#non' = [9] then '' else [9] end
 	declare @t_ordeno nvarchar(max) = case when '#non' = [12] then '' else [12] end
 	-------------------------------------------------------------------------------------
+	declare @enddate nvarchar(20) = '106/10/00'
+	
 	declare @tmp table(
 		sel int identity(1,1)
 		,recno int
@@ -404,6 +406,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	and (len(@t_makeno)=0 or a.cname=@t_makeno)
 	and (len(@t_uno)=0 or a.bno=@t_uno)
 	and (len(@t_ordeno)=0 or a.ordeno=@t_ordeno)
+	and a.datea>=@enddate
 	
 	update @tmp set price = case when ISNULL([weight],0)=0 then 0 else ROUND([money]/[weight],2) end
 	---------------------------------------------------------------------------------------------------
@@ -416,7 +419,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,uno nvarchar(20)
 		,price float
 	)
-	insert into #z_cub_rkp08_uno(uno,price)select uno,price from @tmp group by uno,price
+	insert into #z_cub_rkp08_uno(uno,price)
+	select uno,price from @tmp group by uno,price
 	
 	--期初存貨
 	--本月生產	
@@ -435,6 +439,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	from view_cuts a
 	left join #z_cub_rkp08_uno c on a.bno=c.uno 
 	where c.uno is not null
+	and a.datea>=@enddate
+	
 	--盤點調整	
 	declare @tmpB table(
 		sel int identity(1,1)
@@ -453,6 +459,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='盤點'
+	and b.datea>=@enddate
+	
 	--本期領料
 	declare @tmpC table(
 		sel int identity(1,1)
@@ -471,6 +479,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='領料單'
+	and b.datea>=@enddate
+	
 	--本期報廢
 	declare @tmpD table(
 		sel int identity(1,1)
@@ -489,6 +499,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='報廢'	
+	and b.datea>=@enddate
+	
 	--銷貨退回	
 	declare @tmpE table(
 		sel int identity(1,1)
@@ -509,6 +521,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='2'	
+	and b.datea>=@enddate
+	
 	--委外加工	none		
 	--本月銷售收入  
 	declare @tmpF table(
@@ -529,6 +543,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
 	and b.typea='1'	
+	and b.datea>=@enddate
+	
 	--本月銷售成本	
 	declare @tmpG table(
 		sel int identity(1,1)
@@ -548,7 +564,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join #z_cub_rkp08_uno c on a.uno=c.uno 
 	where c.uno is not null 
-	and b.typea='1'		
+	and b.typea='1'	
+	and b.datea>=@enddate	
 	--銷售毛利			
 	--期末存貨
 	------------------------------------------------------------------------------------------------------------
@@ -685,6 +702,8 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
 	declare @t_detail nvarchar(max) = case when '#non' = [13] then '' else [13] end
 	--------------------------------------------------------------------------------
+	declare @enddate nvarchar(20) = '106/10/00'
+	
 	IF OBJECT_ID('tempdb..#z_cub_rkp06')is not null
 	BEGIN
 		drop table #z_cub_rkp06
@@ -759,10 +778,12 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	)
 	
 	insert into @tmp(makeno)
-	select a.cname from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
+	select a.cname 
+	from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
 	where b.datea between @t_bdate and @t_edate
 	and (len(@t_makeno)=0 or a.cname=@t_makeno)
 	and len(isnull(a.cname,''))>0
+	and b.datea>=@enddate
 	group by a.cname
 	
 	update @tmp set dime = b.dime, pvcno= b.spec 
@@ -2309,7 +2330,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @uno nvarchar(30) = ''
 	-------------------------------------------------------------------------------------
 	-- 106/09/30 前的資料都不回寫
-	-- 意思就是 106/09/30 前的資料都不能修改
+	-- 意思就是 106/09/31 前的資料都不能修改
 	-- 不然會出錯
 	declare @enddate nvarchar(20) = '106/10/00'
 	
