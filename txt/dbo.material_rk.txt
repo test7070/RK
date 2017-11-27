@@ -1,4 +1,4 @@
-	ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max)
+ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		, @t_kind nvarchar(max),@t_bproductno nvarchar(max),@t_eproductno nvarchar(max))
 	returns @tmp table(		
 		sel int identity(1,1)
@@ -67,6 +67,7 @@
 	begin
 	--ref  z_uccg_rk01 原物料彙總明細表 
 	--===============================================================================================
+	declare @enddate nvarchar(20) = '106/10/00'
 	--期初存貨
 	declare @tmpa table(
 		sel int identity(1,1)
@@ -91,6 +92,7 @@
 	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+	
 	---- INA
 	insert into @tmpa(uno,mount,[weight],total)	
 	select a.uno
@@ -119,7 +121,7 @@
 	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
-
+	and a.datea>=@enddate
 	---- CUBU 沒有CUBU
 	--==============================
 	---------- 出
