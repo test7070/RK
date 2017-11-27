@@ -157,7 +157,9 @@ z_vcc_rk02:--z_vcc_rk02
 		,invono,dime,radius,width,lengthb,mweight,coin,[money2],tax,total,itemno
 		,memo,ordememo,checker
 		,tmoney,floata)
-	select '1',a.accy,a.noa,a.noq,b.custno,c.nick,c.stype,isnull(f.product,'')
+	select '1',a.accy,a.noa,a.noq,b.custno
+		,case when len(isnull(c.nick,''))>0 then c.nick else b.nick end
+		,c.stype,isnull(f.product,'')
 		,b.datea,a.productno,a.product
 		,isnull(a.style,''),d.spec,null
 		,case when len(ISNULL(a.size,''))>0 then a.size else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*' + case when ISNULL(a.lengthb,0)>0 then CAST(a.lengthb as nvarchar) else 'COIL' end end
@@ -188,6 +190,7 @@ z_vcc_rk02:--z_vcc_rk02
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
 	and (len(@t_ordeno)=0 or CHARINDEX(','+a.ordeno+',',','+@t_ordeno+',')>0)
+
 	--t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓'
 	--原幣金額
 	update @tmp set tmoney = round(case when len(unit) = 0 or unit = 'KG' or unit = 'M2' or unit = 'M²' or unit = 'M' or unit = '批' or unit = '公斤' or unit = '噸' or unit = '頓' then [weight] else mount end * price ,2)
