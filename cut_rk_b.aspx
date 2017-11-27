@@ -85,8 +85,10 @@
 					<td align="center" style="width:5%;" rowspan="1">長</td>
 					<td align="center" style="width:5%;" rowspan="1">單位</td>
 					<td align="center" style="width:10%;" rowspan="2">皮膜</td>
-					<td align="center" style="width:5%;" rowspan="2">背面<br>處理</td>
-					<td align="center" style="width:5%;" rowspan="2">保護膜</td>
+					
+					<td align="center" style="width:8%;" rowspan="2">棧板號碼</td>
+					<!--<td align="center" style="width:5%;" rowspan="2">背面<br>處理</td>
+					<td align="center" style="width:5%;" rowspan="2">保護膜</td>-->
 					<td align="center" style="width:5%;" rowspan="2">件數</td>
 					<td align="center" style="width:5%;" rowspan="2">數量</td>
 					<td align="center" style="width:5%;" rowspan="2">重量</td>
@@ -110,8 +112,10 @@
 					<td align="center" style="width:5%;">長</td>
 					<td align="center" style="width:5%;">單位</td>
 					<td align="center" style="width:10%;">皮膜</td>
-					<td align="center" style="width:5%;">背面<br>處理</td>
-					<td align="center" style="width:5%;">保護膜</td>
+					
+					<td align="center" style="width:8%;">棧板號碼</td>
+					<!--<td align="center" style="width:5%;">背面<br>處理</td>
+					<td align="center" style="width:5%;">保護膜</td>-->
 					<td align="center" style="width:5%;">件數</td>
 					<td align="center" style="width:5%;">數量</td>
 					<td align="center" style="width:5%;">重量</td>
@@ -148,8 +152,9 @@
 						<input id="txtSpec.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 						<input id="txtClass.*" type="text" style="float:left;width:50%;"  readonly="readonly" />
 					</td>
-					<td style="width:5%;"><input id="txtStyle.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
-					<td style="width:5%;"><input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:8%;"><input id="txtSpecial.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<!--<td style="width:5%;"><input id="txtStyle.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
+					<td style="width:5%;"><input id="txtSource.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>-->
 					<td style="width:5%;"><input id="txtLengthc.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtMount.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>
 					<td style="width:5%;"><input id="txtWeight.*" type="text" style="float:left;width:100%;"  readonly="readonly" /></td>

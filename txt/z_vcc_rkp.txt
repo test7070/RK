@@ -5,7 +5,6 @@ z_vcc_rkp03:--z_vcc_rkp03
 	declare @t_db nvarchar(max) = '[2]'
 	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	------------------------------------------------------------------------------------------------	
-	------------------------------------------------------------------------------------------------	
 	IF OBJECT_ID('tempdb..#z_vcc_rkp03')is not null
 	BEGIN
 		drop table #z_vcc_rkp03
@@ -82,11 +81,16 @@ z_vcc_rkp03:--z_vcc_rkp03
 					else CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+ case when a.lengthb=0 then 'C' else CAST(a.lengthb as nvarchar) end
 					end
 				,@mount=a.mount
-				,@datea=b.datea,@noa=a.noa,@custno=b.custno,@cust=b.comp
+				,@noa=a.noa,@custno=b.custno,@cust=b.comp
 			from view_vccs a
 			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 			where a.noa=@t_noa
 			and a.uno=@uno
+			
+			select @datea=b.datea 
+			from view_vccs a
+			left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+			where a.typea='1' and a.uno=@uno
 
 			if not exists(select * from #z_vcc_rkp03)
 			begin
