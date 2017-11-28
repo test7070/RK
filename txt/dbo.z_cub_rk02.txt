@@ -1,0 +1,234 @@
+--z_cub_rk02   z_cub_rkp04  有用到
+alter function z_cub_rk02(@t_bdate nvarchar(max), @t_edate nvarchar(max)
+	,@t_makeno nvarchar(max)
+	,@t_pvcno nvarchar(max) 
+	,@t_bcustno nvarchar(max) 
+	,@t_ecustno nvarchar(max))
+	returns @tmpa table(	
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,ordeaccy nvarchar(10)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(10)
+		,datea nvarchar(20)
+		,typea nvarchar(20)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,uno nvarchar(30)
+		,dime float--原鋼材規格
+		,width float
+		,lengthb float
+		,radius float
+		,[weight] float
+		,[mount] float
+
+		--皮膜
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
+		,pvcweight float
+		,pvcmount float
+		--保護膜
+		,pveno nvarchar(20)
+		,pve nvarchar(50)
+		,pveweight float
+		,pvemount float
+		--物料
+		,x01 float  --接著劑
+		,x02 float  --接著劑稀釋液	
+		,x03 float  --背漆
+		,x04 float	--背漆稀釋液
+		,x05 float  --面漆
+		-----------------------------
+		,w01 float--總投入重量
+		,w02 float--本期生產半成品
+		,w03 float--(a1)生產線廢料	
+		,w04 float--(a2)生產線分條餘料
+		,w05 float--待修品再投入   cucs.weight5	
+		,w06 float--成品再投入	   cucs.para
+		--,w07 nvarchar(40)--成品規格	
+		,w08 float--(1)進倉成品	   cuts.weight
+		,w09 float--(2)樣品	cucs.weight6
+		,w10 float--(2)報廢 cucs.weight7 
+		,w15 float--(2)盤盈	cucs.weight11	
+		,w11 float--(b1)不良品	cucs.wright8  
+		,w12 float--(b2)尺寸損耗	cucs.wright9
+		,w13 float--(b3)頭尾(廠內)損耗	cucs.wright10
+		,w14 float--供應商求償   cucs.paraa
+		
+		,w16 float--不良品損耗率	w11/w01
+		,w17 float--尺寸損耗率	        w12/w01
+		,w18 float--頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		,w19 float--扣除求償損耗率	
+		
+		,w21 float--(3)損耗總重量(a1+a2+b1+b2+b3)	 w03+w04+w11+w12+w13
+		,w22 float--當月耗量(1+2+3)	  w08+w09+w10+w21
+		,w23 float--期末半成品結存(總投入量+待修品再投入+成品再投入-a1-a2-b1-b2-b3-進倉成品-樣品-報廢)  w01+w05+w06-w08-w09-w10-w21 
+		,w24 float--完工總損耗率 w16+w17+w18+w19
+		,memo nvarchar(max)
+	) as
+	begin
+		insert into @tmpa(accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount
+			,x01,x02,x03,x04,x05)
+		select a.accy,a.noa,a.noq,a.makeno,a.accy,a.ordeno,a.no2,b.datea,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
+			,a.x04,a.x05,a.x06,a.x07,a.x08
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
+		where b.noa is not null 
+		and b.datea <=@t_edate
+		-------------------------------------------------------------------------------
+		declare @sel int
+		declare @accy nvarchar(10)
+		declare @noa nvarchar(20)
+		declare @noq nvarchar(10)
+		declare @productno nvarchar(20)
+		declare @product nvarchar(50)
+		declare @weight float
+		declare @mount float
+		declare @groupano nvarchar(20)
+		declare @totweight float
+		
+		-- PVC 皮膜
+		declare cursor_table cursor for
+		select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[wweight],0)),sum(isnull(a.[weight],0))
+		from view_cubt a
+		left join @tmpa b on a.accy=b.accy and a.noa=b.noa and a.nor=b.noq
+		where b.noa is not null
+		and a.kind = '1'
+		group by b.sel,b.accy,b.noa,b.noq
+		open cursor_table
+		fetch next from cursor_table
+		into @sel,@accy,@noa,@noq,@weight,@mount
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			select @productno = '', @product = ''
+			select top 1 @productno=productno,@product=product
+			from view_cubt 
+			where accy=@accy and noa=@noa and nor=@noq and kind='1'
+			order by noq
+			
+			update @tmpa set pvcno=@productno,pvc=@product,pvcweight=@weight,pvcmount=@mount where sel=@sel
+			
+			fetch next from cursor_table
+			into @sel,@accy,@noa,@noq,@weight,@mount
+		end
+		close cursor_table
+		deallocate cursor_table
+		-------------------------------------------------------------------------------
+		-- PVE 保護膜
+		declare cursor_table cursor for
+		select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[wweight],0)),sum(isnull(a.[weight],0))
+		from view_cubt a
+		left join @tmpa b on a.accy=b.accy and a.noa=b.noa and a.nor=b.noq
+		where b.noa is not null
+		and a.kind = '2'
+		group by b.sel,b.accy,b.noa,b.noq
+		open cursor_table
+		fetch next from cursor_table
+		into @sel,@accy,@noa,@noq,@weight,@mount
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			select @productno = '', @product = ''
+			select top 1 @productno=productno,@product=product
+			from view_cubt 
+			where accy=@accy and noa=@noa and nor=@noq and kind='2'
+			order by noq
+			
+			update @tmpa set pveno=@productno,pve=@product,pveweight=@weight,pvemount=@mount where sel=@sel
+			
+			fetch next from cursor_table
+			into @sel,@accy,@noa,@noq,@weight,@mount
+		end
+		close cursor_table
+		deallocate cursor_table
+		-------------------------------------------------------------------------
+		--條件過濾1
+		if(len(@t_makeno)>0)
+			delete @tmpa where CHARINDEX(@t_makeno,makeno)=0
+		if(len(@t_pvcno)>0)	
+			delete @tmpa where isnull(pvcno,'')!=@t_pvcno
+		delete @tmpa where not(isnull(custno,'') between @t_bcustno and @t_ecustno)
+		-------------------------------------------------------------------------
+		--w01 總投入重量
+		update @tmpa set w01 = ISNULL([weight],0) + ISNULL([pvcweight],0) + ISNULL([pveweight],0) + ISNULL([x01],0) + ISNULL([x02],0) + ISNULL([x03],0) + ISNULL([x04],0) + ISNULL([x05],0)
+		--w02 本期生產半成品
+		update @tmpa set w02 = isnull(b.hweight,0)
+		from @tmpa a
+		left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+		where b.noa is not null
+		--w04 生產線分條餘料(a2) cucs.weight4
+		--w05 待修品再投入   cucs.weight5	
+		--w06 成品再投入	 cucs.para
+		--w09 樣品	cucs.weight6
+		--w10 報廢  cucs.weight7 
+		--w11 不良品(b1)	cucs.wright8  
+		--w12 尺寸損耗(b3)	cucs.wright9
+		--w13 頭尾(廠內)損耗(b4)	cucs.wright10
+		--w14 供應商求償   cucs.paraa
+		update @tmpa set w04=ISNULL(b.[weight4],0)
+			,w05=ISNULL(b.[weight5],0)
+			,w06=ISNULL(b.[para],0)
+			,w09=ISNULL(b.[weight6],0)
+			,w10=ISNULL(b.[weight7],0)
+			,w11=ISNULL(b.[weight8],0)
+			,w12=ISNULL(b.[weight9],0)
+			,w13=ISNULL(b.[weight10],0)
+			,w14=ISNULL(b.[paraa],0)
+			,w15=ISNULL(b.[weight11],0)
+		from @tmpa a
+		left join(select a.cubno makeno
+			,SUM(ISNULL(a.weight4,0)) [weight4] 
+			,SUM(ISNULL(a.weight5,0)) [weight5] 
+			,SUM(ISNULL(a.weight6,0)) [weight6] 
+			,SUM(ISNULL(a.weight7,0)) [weight7]
+			,SUM(ISNULL(a.weight8,0)) [weight8]
+			,SUM(ISNULL(a.weight9,0)) [weight9]
+			,SUM(ISNULL(a.weight10,0)) [weight10]
+			,SUM(ISNULL(cast(a.para as float),0)) [para] 
+			,SUM(ISNULL(cast(a.paraa as float),0)) [paraa] 
+			,SUM(ISNULL(a.weight11,0)) [weight11]
+			from view_cucs a 
+			left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+			where b.datea<=@t_edate
+			group by a.cubno) b on a.makeno=b.makeno
+			
+		
+		--w03 生產線廢料(a1)   w01 - w02 - w04        --- 要回寫到cubs.price   
+		update @tmpa set w03 = cast(ISNULL(w01,0) as decimal(12,3))
+			-cast(ISNULL(w02,0) as decimal(12,3))
+			-cast(ISNULL(w04,0) as decimal(12,3))
+		
+		--w08 進倉成品 cuts.weight
+		update @tmpa set w08=ISNULL(b.[weight],0)
+		from @tmpa a
+		left join (select a.cname makeno,SUM(ISNULL(a.[weight],0)) [weight] 
+			from view_cuts a 
+			left join view_cut b on a.noa=b.noa
+			where b.datea<=@t_edate group by cname) b on a.makeno=b.makeno
+		-------------------------------------------------------------------------------
+		--w15 原物料損耗  ???
+		--w16 不良品損耗率	w11/w01
+		--w17 尺寸損耗率	        w12/w01
+		--w18 頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		--w19 扣除求償損耗率	
+		--w21 (3)損耗總重量(a1+a2+b1+b2+b3)	 w03+w04+w11+w12+w13
+		--w22 當月耗量(1+2+3)	w08+w09+w10+w21
+		--w23 期末半成品結存(總投入量+待修品再投入+成品再投入-a1-a2-b1-b2-b3-進倉成品-樣品-報廢)  w01+w05+w06-w08-w09-w10-w21
+		--w24 完工總損耗率 w16+w17+w18+w19
+		update @tmpa set   
+			w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,2) end
+			,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,2) end
+			,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,2) end
+			,w19=case when ISNULL(w01,0)=0 then 0 else round((w14)/w01*100,2) end
+			,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)
+
+		update @tmpa set w22=ISNULL(w08,0)+ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)
+			--加盤盈
+			,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
+			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
+	
+		return
+	end
