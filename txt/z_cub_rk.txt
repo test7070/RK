@@ -199,6 +199,8 @@ z_cub_rk02:--z_cub_rk02
 		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
 		where b.datea<=@t_edate
 		group by a.cubno) b on a.makeno=b.makeno
+		
+	
 	--w03 生產線廢料(a1)   w01 - w02 - w04        --- 要回寫到cubs.price   
 	update @tmpa set w03 = cast(ISNULL(w01,0) as decimal(12,3))
 		-cast(ISNULL(w02,0) as decimal(12,3))
@@ -232,8 +234,8 @@ z_cub_rk02:--z_cub_rk02
 		--加盤盈
 		,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
 		,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
-	-------------------------------------------------------------------------
-	--條件過濾2
+	---------------------------------------------------------------------------
+	----條件過濾2
 	if(LEN(@t_chk)=0)
 		delete @tmpa where datea<@t_bdate
 	else
@@ -248,6 +250,20 @@ z_cub_rk02:--z_cub_rk02
 		,SUM(ISNULL(w13,0)),SUM(ISNULL(w14,0)),SUM(ISNULL(w15,0)),SUM(ISNULL(w16,0)),SUM(ISNULL(w17,0)),SUM(ISNULL(w18,0))
 		,SUM(ISNULL(w19,0)),SUM(ISNULL(w21,0)),SUM(ISNULL(w22,0)),SUM(ISNULL(w23,0)),SUM(ISNULL(w24,0))
 	from @tmpa	
+
+--select * from @tmpa
+
+--delete test.dbo.z_cub_rk02
+--insert into test.dbo.z_cub_rk02(makeno,weight)
+--select makeno,w23 
+--from @tmpa
+--where makeno is not null
+--order by makeno
+
+--select * from test.dbo.z_cub_rk02 where makeno='M175A20-5'
+--return
+
+--return	
 	
 	select a.gno
 		,ROW_NUMBER()over(order by a.gno,a.accy,a.noa,a.noq) rr
@@ -289,7 +305,6 @@ z_cub_rk02:--z_cub_rk02
 	left join adpro b on a.typea=b.noa
 	outer apply(select top 1 * from view_cuts where cname=a.makeno) c
 	order by a.gno,a.accy,a.noa,a.noq;
-
 
 z_cub_rk01:--z_cub_rk01
 	SET QUOTED_IDENTIFIER OFF
