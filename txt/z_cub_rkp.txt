@@ -1366,6 +1366,19 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	-- 本期耗料 =  前期庫存 + 盤點調整 + 本期完工投入 - 本期樣品 - 本期報廢 - 本期領用 - 期末存貨
 	update @tmp set weight04 = ISNULL(weight01,0) + ISNULL(weight02,0) +ISNULL(weight03,0) - ISNULL(weight05,0) - ISNULL(weight06,0)- ISNULL(weight07,0)- ISNULL(weight10,0)
 	------------------------------------------------------------------------------------------
+	
+--select SUM(weight01)  w1
+--	,SUM(weight02)  w2
+--	,SUM(weight03)  w3
+--	,SUM(weight04)  w4
+--	,SUM(weight05)  w5
+--	,SUM(weight06)  w6
+--	,SUM(weight07)  w7
+--	,SUM(weight10)  w10
+--	,SUM(ISNULL(weight01,0) + ISNULL(weight02,0) +ISNULL(weight03,0) - ISNULL(weight05,0) - ISNULL(weight06,0)- ISNULL(weight07,0)- ISNULL(weight10,0))
+--from @tmp
+----return	
+	
 	--declare @makeno nvarchar(20)
 	--declare @weight float
 	--declare @price float
