@@ -316,6 +316,18 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 	left join view_orde c on b.accy=c.accy and b.noa=c.noa
 	where b.noa is not null
 	
+	update #z_ucc_rk02_b set cust=isnull(a.cust,'')+' <a style="color:red">'+ISNULL(c.nick,'')+'</a>'
+	from #z_ucc_rk02_b a
+	left join view_uccb b on a.uno=b.uno and b.tablea='rc2s'
+	left join view_rc2 c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	
+	update #z_ucc_rk02_b set cust=isnull(a.cust,'')+' <a style="color:blue">'+ISNULL(c.cust,'')+'</a>'
+	from #z_ucc_rk02_b a
+	left join view_uccb b on a.uno=b.uno and b.tablea='inas'
+	left join view_ina c on b.accy=c.accy and b.noa=c.noa
+	where b.noa is not null
+	
 	if len(@t_cust)>0
 	begin
 		delete #z_ucc_rk02_b where not(CHARINDEX(@t_cust,cust)>0 or @t_cust=custno)

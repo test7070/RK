@@ -43,6 +43,8 @@
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
 				var t_makeno = $.trim($('#txtMakeno').val());
+				//var t_cust = $.trim($('#txtCust').val());
+				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
 					+ q_sqlPara2("noa", t_noa);

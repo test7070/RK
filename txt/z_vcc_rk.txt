@@ -63,6 +63,7 @@ z_vcc_rk02:--z_vcc_rk02
 	declare @t_bproductno nvarchar(30) = case when '#non'=[11] then '' else [11] end 
 	declare @t_eproductno nvarchar(30) = case when '#non'=[12] then char(255) else [12] end 
 	declare @t_ordeno nvarchar(max) = case when '#non'=[21] then '' else [21] end 
+	declare @t_pvcno nvarchar(max) = case when '#non'=[22] then '' else [22] end 
 	
 	declare @t_bradius float = 0
 	declare @t_eradius float = 999999
@@ -92,7 +93,6 @@ z_vcc_rk02:--z_vcc_rk02
 		set @t_blengthb = 0
 		set @t_elengthb = 999999
 	end catch
-	------------------------------------------------------------------
 	------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -190,6 +190,7 @@ z_vcc_rk02:--z_vcc_rk02
 	and ISNULL(a.width,0) between @t_bwidth and @t_ewidth
 	and ISNULL(a.lengthb,0) between @t_blengthb and @t_elengthb
 	and (len(@t_ordeno)=0 or CHARINDEX(','+a.ordeno+',',','+@t_ordeno+',')>0)
+	and (len(@t_pvcno)=0 or a.spec=@t_pvcno)
 
 	--t_unit.length == 0 || t_unit == 'KG' || t_unit == 'M2' || t_unit == 'M²' || t_unit == 'M' || t_unit == '批' || t_unit == '公斤' || t_unit == '噸' || t_unit == '頓'
 	--原幣金額

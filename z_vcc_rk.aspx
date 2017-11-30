@@ -109,6 +109,9 @@
 					}, {
 						type : '6', //[21] 10
 						name : 'xordeno'
+					}, {
+						type : '6', //[22] 11
+						name : 'xpvcno'
 					}]
 				});
 				q_popAssign();
