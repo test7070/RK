@@ -92,6 +92,14 @@
 					<td class='seek' style="width:90px;"><a id='lblMakeno'>製造批號</a></td>
 					<td><input class="txt" id="txtMakeno" type="text" style="width:220px;" /></td>
 				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a>客戶</a></td>
+					<td><input class="txt" id="txtCust" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a>皮膜</a></td>
+					<td><input class="txt" id="txtPvc" type="text" style="width:220px;" /></td>
+				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
 		</div>
