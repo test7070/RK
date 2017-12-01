@@ -1,5 +1,5 @@
 --z_cub_rk02   z_cub_rkp04  有用到
-alter function z_cub_rk02(@t_bdate nvarchar(max), @t_edate nvarchar(max)
+ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 	,@t_makeno nvarchar(max)
 	,@t_pvcno nvarchar(max) 
 	,@t_bcustno nvarchar(max) 
@@ -42,6 +42,9 @@ alter function z_cub_rk02(@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		,x04 float	--背漆稀釋液
 		,x05 float  --面漆
 		-----------------------------
+		,total float --總投入成本(含直接人工、製造費用)
+		,emoney float  --期末半成品成本( round(w23/w01*total,0))
+		
 		,w01 float--總投入重量
 		,w02 float--本期生產半成品
 		,w03 float--(a1)生產線廢料	
@@ -71,9 +74,11 @@ alter function z_cub_rk02(@t_bdate nvarchar(max), @t_edate nvarchar(max)
 	) as
 	begin
 		insert into @tmpa(accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount
-			,x01,x02,x03,x04,x05)
+			,x01,x02,x03,x04,x05
+			,total)
 		select a.accy,a.noa,a.noq,a.makeno,a.accy,a.ordeno,a.no2,b.datea,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
 			,a.x04,a.x05,a.x06,a.x07,a.x08
+			,isnull(a.total,0)
 		from view_cubs a
 		left join view_cub b on a.accy=b.accy and a.noa=b.noa
 		left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
@@ -229,6 +234,9 @@ alter function z_cub_rk02(@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			--加盤盈
 			,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
 			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
-	
+		update @tmpa set emoney=round(w23/w01*total,0)	
 		return
 	end
+GO
+
+
