@@ -157,9 +157,23 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 	
 	-----------------------------------------------------------------
 	-- update 倉庫、儲位
+	
 	declare @sel int
 	declare @uno nvarchar(30)
 	declare @tt nvarchar(20)
+	declare @datea nvarchar(20)
+	declare @storeno nvarchar(20)
+	declare @place nvarchar(20)
+
+	update #z_ucc_rk02_a set storeno=b.storeno,place=b.place 
+	from #z_ucc_rk02_a a
+	outer apply(select top 1 storeno,place
+		from #z_ucc_rk02_a 
+		where uno=a.uno and datea<=a.datea and storeno is not null
+		order by datea desc,tt desc) b
+	
+	/*
+	
 	declare @datea nvarchar(20)
 	declare @storeno nvarchar(20)
 	declare @place nvarchar(20)
@@ -186,8 +200,9 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 		into @sel,@uno,@tt,@datea
 	end
 	close cursor_table
-	deallocate cursor_table
+	deallocate cursor_table*/
 	-----------------------------------------------------------------
+	
 	declare @mount decimal(25,8)
 	declare @weight decimal(25,8)
 	declare @money float

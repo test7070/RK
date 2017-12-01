@@ -307,9 +307,526 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	drop table #z_cub_rkp08b
 	drop table #z_cub_rkp08c;
 	
-
-
 z_cub_rkp08:--z_cub_rkp08	製成品彙總表
+	SET QUOTED_IDENTIFIER OFF 
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	
+	declare @t_bdate nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
+	declare @t_uno nvarchar(max) = case when '#non' = [9] then '' else [9] end
+	declare @t_ordeno nvarchar(max) = case when '#non' = [12] then '' else [12] end
+	
+	-------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,recno int
+		,gno nvarchar(20)
+		,pno int
+		,datea nvarchar(20)
+		,typea nvarchar(20) -- 業種
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,pvcno nvarchar(20)
+		,makeno nvarchar(20)
+		,uno nvarchar(30)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,ordeaccy nvarchar(10)
+		,ordeno nvarchar(20)
+		,no2 nvarchar(10)
+		,[weight] float
+		,[money] float
+		,[price] float
+		
+		--期初存貨
+		,w01 float
+		,p01 float
+		,m01 float
+		--進貨(RC2S)
+		,w02 float
+		,p02 float
+		,m02 float
+		--進貨退回(RC2S)
+		,w03 float
+		,p03 float
+		,m03 float
+		--入庫(INAS)
+		,w04 float
+		,p04 float
+		,m04 float
+		--成品進倉(CUTS)
+		,w05 float
+		,p05 float
+		,m05 float
+		--出貨(VCCS)
+		,w06 float
+		,p06 float
+		,m06 float
+		--出貨退回(VCCS)
+		,w07 float
+		,p07 float
+		,m07 float
+		--領料(GETS)
+		,w08 float
+		,p08 float
+		,m08 float	
+		--領料(CUBT)
+		,w09 float
+		,p09 float
+		,m09 float	
+		--期末存貨		
+		,w10 float
+		,p10 float
+		,m10 float
+		
+	)
+	insert into @tmp(gno,pno,datea,typea,dime,radius,width,lengthb,pvcno,makeno,uno,accy,noa,noq
+		,ordeaccy,ordeno,no2,[weight],[money])
+	select '1',1,a.datea,case when len(isnull(c.product,''))=0 then isnull(b.custpro,'') else isnull(c.product,'') end
+		,a.dime,a.radius,a.width,a.lengthb,a.spec,a.cname,a.bno,a.accy,a.noa,a.noq
+		,b.accy,a.ordeno,a.no2,a.[weight],a.[total]
+	from view_cuts a
+	left join view_ordes b on a.ordeno=b.noa and a.no2=b.no2
+	left join adpro c on b.custpro=c.noa
+	where a.datea<=@t_edate
+	and len(ISNULL(a.bno,''))>0
+	and (len(@t_makeno)=0 or a.cname=@t_makeno)
+	and (len(@t_uno)=0 or a.bno=@t_uno)
+	and (len(@t_ordeno)=0 or a.ordeno=@t_ordeno)
+	
+	update @tmp set price = case when ISNULL([weight],0)=0 then 0 else ROUND([money]/[weight],2) end
+	---------------------------------------------------------------------------------------------------------
+	--期初
+	declare @x_stktype nvarchar(max)='A1@金屬底材,A4@皮膜,A5@保護膜,A6@物料,A7@成品,A8@溶劑' 
+	declare @x_edate nvarchar(10) = dbo.AD2ChineseEraName(Dateadd(DD,-1, dbo.ChineseEraName2AD(@t_bdate)))     
+	--只抓成品、成品倉
+	declare @x_kind nvarchar(max)= 'A7' 
+	declare @x_storeno nvarchar(max) = '06' 
+
+	declare @tmp01 table(
+		sel int identity(1,1)
+		,kind nvarchar(20)
+		,datea nvarchar(20) 
+		,uno nvarchar(30)
+		,makeno nvarchar(30)
+		,size nvarchar(max)
+		,weight float
+		,price float
+		,total float
+		,storeno nvarchar(20)
+		,store nvarchar(50)
+		,place nvarchar(20)
+	)
+	insert into @tmp01(kind,datea,uno,makeno,size,weight,price,total,storeno,store,place)
+	execute [dbo].[z_ucc_rk02] @x_stktype,@x_kind,@x_edate,@x_storeno
+	-----------------------------------------------------------------------------------------------------
+	--期初
+	update @tmp set w01=b.weight,p01=b.price,m01=b.total
+	from @tmp a
+	left join @tmp01 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w01,m01)
+	select a.uno,a.weight,a.total
+	from @tmp01 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	
+	--進貨
+	declare @tmp02 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp02(uno,weight,total)
+	select a.uno
+		,SUM(a.weight) weight
+		,SUM(a.total) total
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	where b.kind=@x_kind 
+	and a.storeno=@x_storeno
+	and b.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.uno,''))>0
+	and b.typea='1'
+	group by a.uno
+	
+	update @tmp set w02=b.weight
+		,p02=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m02=b.total
+	from @tmp a
+	left join @tmp02 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w02,m02)
+	select a.uno,a.weight,a.total
+	from @tmp02 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	
+	--進貨退回
+	declare @tmp03 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp03(uno,weight,total)
+	select a.uno
+		,SUM(a.weight) weight
+		,SUM(a.total) total
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where c.kind=@x_kind 
+	and c.storeno=@x_storeno
+	and b.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.uno,''))>0
+	and b.typea='2'
+	group by a.uno
+	
+	update @tmp set w03=b.weight
+		,p03=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m03=b.total
+	from @tmp a
+	left join @tmp03 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w03,m03)
+	select a.uno,a.weight,a.total
+	from @tmp03 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	
+	--入庫
+	declare @tmp04 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp04(uno,weight,total)
+	select a.uno
+		,SUM(a.weight) weight
+		,SUM(a.total) total
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	where b.kind=@x_kind 
+	and a.storeno=@x_storeno
+	and b.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.uno,''))>0
+	group by a.uno
+	
+	update @tmp set w04=b.weight
+		,p04=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m04=b.total
+	from @tmp a
+	left join @tmp04 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w04,m04)
+	select a.uno,a.weight,a.total
+	from @tmp04 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	
+	--成品進倉CUTS  
+	declare @tmp05 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp05(uno,weight,total)
+	select a.bno
+		,SUM(a.weight) weight
+		,SUM(a.total) total
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.kind=@x_kind 
+	and a.storeno=@x_storeno
+	and a.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.bno,''))>0
+	group by a.bno
+	
+	update @tmp set w05=b.weight
+		,p05=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m05=b.total
+	from @tmp a
+	left join @tmp05 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w05,m05)
+	select a.uno,a.weight,a.total
+	from @tmp05 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	-----=============================================================================================
+	-----=============================================================================================
+	--出貨
+	declare @tmp06 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp06(uno,weight,total)
+	select a.uno
+		,SUM(case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end) weight
+		,SUM(a.scost) total
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where c.kind=@x_kind 
+	and c.storeno=@x_storeno
+	and b.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.uno,''))>0
+	and b.typea='1'
+	group by a.uno
+	
+	update @tmp set w06=b.weight
+		,p06=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m06=b.total
+	from @tmp a
+	left join @tmp06 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w06,m06)
+	select a.uno,a.weight,a.total
+	from @tmp06 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	
+	--出貨退回
+	declare @tmp07 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp07(uno,weight,total)
+	select a.uno
+		,SUM(case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end) weight
+		,SUM(a.scost) total
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where c.kind=@x_kind 
+	and c.storeno=@x_storeno
+	and b.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.uno,''))>0
+	and b.typea='2'
+	group by a.uno
+	
+	update @tmp set w07=b.weight
+		,p07=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m07=b.total
+	from @tmp a
+	left join @tmp07 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w07,m07)
+	select a.uno,a.weight,a.total
+	from @tmp07 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+
+	--領料(GET)
+	declare @tmp08 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp08(uno,weight,total)
+	select a.uno
+		,SUM(case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end) weight
+		,SUM(a.scost) total
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where c.kind=@x_kind 
+	and c.storeno=@x_storeno
+	and b.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.uno,''))>0
+	group by a.uno
+	
+	update @tmp set w08=b.weight
+		,p08=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m08=b.total
+	from @tmp a
+	left join @tmp08 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w08,m08)
+	select a.uno,a.weight,a.total
+	from @tmp08 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	
+	--領料(CUBT)
+	declare @tmp09 table(
+		uno nvarchar(20)
+		,weight float
+		,total float
+	)
+	insert into @tmp09(uno,weight,total)
+	select a.uno
+		,SUM(case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end) weight
+		,SUM(a.scost) total
+	from view_cubt a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join view_uccb c on a.uno=c.uno
+	where c.kind=@x_kind 
+	and c.storeno=@x_storeno
+	and b.datea between @t_bdate and @t_edate
+	and len(ISNULL(a.uno,''))>0
+	group by a.uno
+	
+	update @tmp set w09=b.weight
+		,p09=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
+		,m09=b.total
+	from @tmp a
+	left join @tmp09 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w09,m09)
+	select a.uno,a.weight,a.total
+	from @tmp09 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null
+	----------------------------------------------------------------------------------
+	--期末
+	declare @tmp10 table(
+		sel int identity(1,1)
+		,kind nvarchar(20)
+		,datea nvarchar(20) 
+		,uno nvarchar(30)
+		,makeno nvarchar(30)
+		,size nvarchar(max)
+		,weight float
+		,price float
+		,total float
+		,storeno nvarchar(20)
+		,store nvarchar(50)
+		,place nvarchar(20)
+	)
+	insert into @tmp10(kind,datea,uno,makeno,size,weight,price,total,storeno,store,place)
+	execute [dbo].[z_ucc_rk02] @x_stktype,@x_kind,@t_edate,@x_storeno
+	
+	update @tmp set w10=b.weight,p10=b.price,m10=b.total
+	from @tmp a
+	left join @tmp10 b on a.uno=b.uno 
+	where b.uno is not null 
+	
+	insert into @tmp(uno,w10,m10)
+	select a.uno,a.weight,a.total
+	from @tmp10 a
+	left join @tmp b on a.uno=b.uno
+	where b.uno is null 
+	-----------------------------------------------------------------------------------------------------
+	update @tmp set w01=ISNULL(w01,0)
+		,w02=ISNULL(w02,0)
+		,w03=ISNULL(w03,0)
+		,w04=ISNULL(w04,0)
+		,w05=ISNULL(w05,0)
+		,w06=ISNULL(w06,0)
+		,w07=ISNULL(w07,0)
+		,w08=ISNULL(w08,0)
+		,w09=ISNULL(w08,0)
+		,w10=ISNULL(w10,0)
+		,m01=ISNULL(m01,0)
+		,m02=ISNULL(m02,0)
+		,m03=ISNULL(m03,0)
+		,m04=ISNULL(m04,0)
+		,m05=ISNULL(m05,0)
+		,m06=ISNULL(m06,0)
+		,m07=ISNULL(m07,0)
+		,m08=ISNULL(m08,0)
+		,m09=ISNULL(m09,0)
+		,m10=ISNULL(m10,0)
+	delete @tmp where w01=0 and w02=0 and w03=0 and w04=0 and w05=0 and w06=0 and w07=0 and w08=0 and w09=0 and w10=0 
+		and m01=0 and m02=0 and m03=0 and m04=0 and m05=0 and m06=0 and m07=0 and m08=0 and m09=0 and m10=0 
+	---------------------
+	delete  @tmp 
+	where (len(@t_makeno)>0 and makeno!=@t_makeno)
+		and  (len(@t_uno)>0 and uno!=@t_uno)
+		and  (len(@t_ordeno)>0 and ordeno!=@t_ordeno)
+	---------------------	
+	insert into @tmp(gno,w01,m01,w02,m02,w03,m03,w04,m04,w05,m05,w06,m06,w07,m07,w08,m08,w09,m09,w10,m10)
+	select '2',SUM(ISNULL(w01,0)),SUM(ISNULL(m01,0))
+		,SUM(ISNULL(w02,0)),SUM(ISNULL(m02,0))
+		,SUM(ISNULL(w03,0)),SUM(ISNULL(m03,0))
+		,SUM(ISNULL(w04,0)),SUM(ISNULL(m04,0))
+		,SUM(ISNULL(w05,0)),SUM(ISNULL(m05,0))
+		,SUM(ISNULL(w06,0)),SUM(ISNULL(m06,0))
+		,SUM(ISNULL(w07,0)),SUM(ISNULL(m07,0))
+		,SUM(ISNULL(w08,0)),SUM(ISNULL(m08,0))
+		,SUM(ISNULL(w09,0)),SUM(ISNULL(m09,0))
+		,SUM(ISNULL(w10,0)),SUM(ISNULL(m10,0))
+	from @tmp
+	where gno='1'
+	
+	update @tmp set p01 = case when ISNULL(w01,0)=0 then 0 else round(ISNULL(m01,0)/ISNULL(w01,0),2)end
+		,p02 = case when ISNULL(w02,0)=0 then 0 else round(ISNULL(m02,0)/ISNULL(w02,0),2)end
+		,p03 = case when ISNULL(w03,0)=0 then 0 else round(ISNULL(m03,0)/ISNULL(w03,0),2)end
+		,p04 = case when ISNULL(w04,0)=0 then 0 else round(ISNULL(m04,0)/ISNULL(w04,0),2)end
+		,p05 = case when ISNULL(w05,0)=0 then 0 else round(ISNULL(m05,0)/ISNULL(w05,0),2)end
+		,p06 = case when ISNULL(w06,0)=0 then 0 else round(ISNULL(m06,0)/ISNULL(w06,0),2)end
+		,p07 = case when ISNULL(w07,0)=0 then 0 else round(ISNULL(m07,0)/ISNULL(w07,0),2)end
+		,p08 = case when ISNULL(w08,0)=0 then 0 else round(ISNULL(m08,0)/ISNULL(w08,0),2)end
+		,p09 = case when ISNULL(w09,0)=0 then 0 else round(ISNULL(m09,0)/ISNULL(w09,0),2)end
+		,p10 = case when ISNULL(w10,0)=0 then 0 else round(ISNULL(m10,0)/ISNULL(w10,0),2)end
+	-- w10 = w01+w02-w03+w04+w05-w06+w07-w08-w09
+	--select w10,w01+w02-w03+w04+w05-w06+w07-w08-w09, *
+	--from @tmp
+	--where (w10 != w01+w02-w03+w04+w05-w06+w07-w08-w09)
+	--or (m10 != m01+m02-m03+m04+m05-m06+m07-m08-m09)
+	
+	select gno
+		,sel rr
+		,typea a01
+		,dime a02
+		,radius a03
+		,width a04
+		,lengthb a05
+		,pvcno a06
+		,makeno a07
+		,uno a08
+		,ordeno a09
+		,dbo.getComma(w01,-1) b01
+		,dbo.getComma(p01,-1) b02
+		,dbo.getComma(m01,-1) b03
+		,dbo.getComma(w02,-1) b04
+		,dbo.getComma(p02,-1) b05
+		,dbo.getComma(m02,-1) b06
+		,dbo.getComma(w03,-1) b07
+		,dbo.getComma(p03,-1) b08
+		,dbo.getComma(m03,-1) b09
+		,dbo.getComma(w04,-1) b10
+		,dbo.getComma(p04,-1) b11
+		,dbo.getComma(m04,-1) b12
+		,dbo.getComma(w05,-1) b13
+		,dbo.getComma(p05,-1) b14
+		,dbo.getComma(m05,-1) b15
+		,dbo.getComma(w06,-1) b16
+		,dbo.getComma(p06,-1) b17
+		,dbo.getComma(m06,-1) b18
+		,dbo.getComma(w07,-1) b19
+		,dbo.getComma(p07,-1) b20
+		,dbo.getComma(m07,-1) b21
+		,dbo.getComma(isnull(w08,0)+isnull(w09,0),-1) b22
+		,dbo.getComma(case when isnull(w08,0)+isnull(w09,0)=0 then 0 else round((isnull(m08,0)+isnull(m09,0))/(isnull(w08,0)+isnull(w09,0)),2) end,-1) b23
+		,dbo.getComma(isnull(m08,0)+isnull(m09,0),-1) b24
+		,dbo.getComma(w10,-1) b25
+		,dbo.getComma(p10,-1) b26
+		,dbo.getComma(m10,-1) b27
+	from @tmp	
+	order by gno,sel;
+
+	
+
+z_cub_rkp08_old:--z_cub_rkp08	製成品彙總表
 	SET QUOTED_IDENTIFIER OFF 
 	declare @cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
@@ -1401,11 +1918,78 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	from @tmp a
 	left join view_cubs b on a.makeno=b.makeno
 	where b.noa is not null		
+	-------------------------------------------------------------------------------------------------
+	
 		
+
 	update @tmp set total02=round(weight02*price02,0),total03=round(weight03*price03,0)
 		,total04=round(weight04*price04,0),total05=round(weight05*price05,0)
 		,total06=round(weight06*price06,0),total07=round(weight07*price07,0)
-
+-----------------------------------------------------------------
+	--尾差修正
+	declare @sel int
+	declare @weight01 float,@weight02 float,@weight03 float,@weight04 float,@weight05 float,@weight06 float,@weight07 float,@weight10 float
+		,@price01 float,@price02 float,@price03 float,@price04 float,@price05 float,@price06 float,@price07 float,@price10 float
+		,@total01 float,@total02 float,@total03 float,@total04 float,@total05 float,@total06 float,@total07 float,@total10 float
+	
+	declare cursor_table cursor for
+	select sel,weight01,weight02,weight03,weight04,weight05,weight06,weight07,weight10
+		,price01,price02,price03,price04,price05,price06,price07,price10
+		,total01,total02,total03,total04,total05,total06,total07,total10
+	from @tmp
+	where total01+total02+total03-total04-total05-total06-total07!=total10
+	open cursor_table
+	fetch next from cursor_table
+	into @sel,@weight01,@weight02,@weight03,@weight04,@weight05,@weight06,@weight07,@weight10
+		,@price01,@price02,@price03,@price04,@price05,@price06,@price07,@price10
+		,@total01,@total02,@total03,@total04,@total05,@total06,@total07,@total10
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		if @weight01=@weight04 and @price01=@price04 and @total01!=@total04
+		begin
+			update @tmp set total04=@total01 where sel=@sel
+		end
+		else if @weight01=@weight05 and @price01=@price05 and @total01!=@total05
+		begin
+			update @tmp set total05=@total01 where sel=@sel
+		end
+		else if @weight01=@weight06 and @price01=@price06 and @total01!=@total06
+		begin
+			update @tmp set total06=@total01 where sel=@sel
+		end
+		else if @weight01=@weight07 and @price01=@price07 and @total01!=@total07
+		begin
+			update @tmp set total07=@total01 where sel=@sel
+		end
+		else if @weight10=@weight03 and @price10=@price03 and @total10!=@total03
+		begin
+			update @tmp set total03=@total10 where sel=@sel
+		end
+		else if @total04>0
+		begin
+			update @tmp set total04=total04 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		else if @total05>0
+		begin
+			update @tmp set total05=total05 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		else if @total06>0
+		begin
+			update @tmp set total06=total06 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		else if @total07>0
+		begin
+			update @tmp set total07=total07 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		
+		fetch next from cursor_table
+		into @sel,@weight01,@weight02,@weight03,@weight04,@weight05,@weight06,@weight07,@weight10
+		,@price01,@price02,@price03,@price04,@price05,@price06,@price07,@price10
+		,@total01,@total02,@total03,@total04,@total05,@total06,@total07,@total10
+	end
+	close cursor_table
+	deallocate cursor_table	
+-----------------------------------------------------------------
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
