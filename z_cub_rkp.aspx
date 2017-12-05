@@ -58,7 +58,10 @@
                         type : '8',//[13]      8
                         name : 'xdetail',
                         value : ["明細"]
-                    }]
+                    },{
+						type : '6', //[14]     9
+						name : 'xpvcno'
+					}]
 				});
 				q_popAssign();
 

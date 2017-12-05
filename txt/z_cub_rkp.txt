@@ -2632,6 +2632,10 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	
 	declare @t_bdate nvarchar(max) = case when '#non' = [4] then '' else [4] end
 	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
+	declare @t_bcustno nvarchar(20) =case when '#non' = [6] then '' else [6] end
+	declare @t_ecustno nvarchar(20) = case when '#non' = [7] then char(255) else [7] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
+	declare @t_pvcno nvarchar(max) = case when '#non' = [14] then '' else [14] end
 	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -2831,6 +2835,14 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	left join (select sel,ROW_NUMBER()over(order by makeno,accy,noa,noq) recno from @tmp where pno=1) b on a.sel=b.sel
 	where b.sel is not null
 	
+	--條件過濾
+	delete @tmp where not(ISNULL(custno,'') between @t_bcustno and @t_ecustno)
+	if len(@t_makeno)>0
+		delete @tmp where makeno!=@t_makeno
+	if len(@t_pvcno)>0
+		delete @tmp where pvc!=@t_pvcno
+		
+	
 	insert into @tmp(gno,pno,makeno,weight01,money01,mount02,weight02,money02
 		,mount03,weight03,money03,weight04,money04,weight05,money05,weight06,money06
 		,weight07,money07,weight08,money08,weight10,money10,weight11,money11a,money12a,money11b,money12b
@@ -2846,8 +2858,10 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 
 	update @tmp set 
 		 price01 = case when ISNULL(weight01,0) = 0 then 0 else round(money01/weight01,2) end
-		,price02 = case when ISNULL(weight02,0) = 0 then 0 else round(money02/weight02,2) end
-		,price03 = case when ISNULL(weight03,0) = 0 then 0 else round(money03/weight03,2) end
+		 --皮膜  單價是用M算
+		,price02 = case when ISNULL(mount02,0) = 0 then 0 else round(money02/mount02,2) end
+		 --保護膜  單價是用M算
+		,price03 = case when ISNULL(mount03,0) = 0 then 0 else round(money03/mount03,2) end
 		,price04 = case when ISNULL(weight04,0) = 0 then 0 else round(money04/weight04,2) end
 		,price05 = case when ISNULL(weight05,0) = 0 then 0 else round(money05/weight05,2) end
 		,price06 = case when ISNULL(weight06,0) = 0 then 0 else round(money06/weight06,2) end
