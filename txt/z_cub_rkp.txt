@@ -2838,7 +2838,7 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	--條件過濾
 	delete @tmp where not(ISNULL(custno,'') between @t_bcustno and @t_ecustno)
 	if len(@t_makeno)>0
-		delete @tmp where makeno!=@t_makeno
+		delete @tmp where charindex(@t_makeno,makeno)=0
 	if len(@t_pvcno)>0
 		delete @tmp where pvc!=@t_pvcno
 		
