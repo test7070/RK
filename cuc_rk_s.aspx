@@ -43,7 +43,7 @@
                 var t_edate = $.trim($('#txtEdate').val());
 				var t_noa = $.trim($('#txtNoa').val());
 				var t_makeno = $.trim($('#txtMakeno').val());
-				//var t_cust = $.trim($('#txtCust').val());
+				var t_spec = $.trim($('#txtSpec').val());
 				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
@@ -51,7 +51,8 @@
 				
 				if(t_makeno.length>0)
 		       		t_where += " and exists(select noa from view_cucs"+r_accy+" where view_cucs"+r_accy+".noa=view_cuc"+r_accy+".noa and view_cucs"+r_accy+".cubno='"+t_makeno+"')";
-		       			
+		       	if(t_spec.length>0)
+		       		t_where += " and exists(select noa from view_cucs"+r_accy+" where view_cucs"+r_accy+".noa=view_cuc"+r_accy+".noa and view_cucs"+r_accy+".spec='"+t_spec+"')";		
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -100,7 +101,7 @@
 				</tr>
 				<tr class='seek_tr'>
 					<td class='seek' style="width:90px;"><a>皮膜</a></td>
-					<td><input class="txt" id="txtPvc" type="text" style="width:220px;" /></td>
+					<td><input class="txt" id="txtSpec" type="text" style="width:220px;" /></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
