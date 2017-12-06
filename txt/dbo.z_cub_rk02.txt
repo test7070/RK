@@ -234,9 +234,7 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			--加盤盈
 			,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
 			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
-		update @tmpa set emoney=round(w23/w01*total,0)	
+		--update @tmpa set emoney=round(w23/w01*total,0)
+		update @tmpa set emoney=case when isnull(w23,0)>0 then total else 0 end
 		return
 	end
-GO
-
-
