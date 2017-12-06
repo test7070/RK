@@ -2723,13 +2723,23 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	from view_cubs a
 	left join view_cub b on a.noa=b.noa
 	where b.datea between @t_bdate and @t_edate
+	and (ISNULL(a.custno,'') between @t_bcustno and @t_ecustno)
+	and (len(@t_makeno)=0 or charindex(@t_makeno,a.makeno)>0)
+	if len(@t_pvcno)>0
+		delete @tmp 
+		from @tmp a
+		outer apply(select top 1 * from view_cubt where a.accy=accy and a.noa=noa and a.noq=nor and kind='1' and productno=@t_pvcno) b
+		where b.noa is null
+	
+
 	--皮膜
 	update @tmp set mount02=c.[weight],weight02=b.x02,money02=b.y02
 		,pvc=c.productno
 	from @tmp a
 	left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
 	outer apply(select top 1 * from view_cubt where a.accy=accy and a.noa=noa and a.noq=nor and kind = '1' order by noq) c
-	where b.noa is not null 
+	--where b.noa is not null 
+	
 	--保護膜
 	declare @accy nvarchar(10)
 	declare @noa nvarchar(20)
@@ -2835,12 +2845,7 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	left join (select sel,ROW_NUMBER()over(order by makeno,accy,noa,noq) recno from @tmp where pno=1) b on a.sel=b.sel
 	where b.sel is not null
 	
-	--條件過濾
-	delete @tmp where not(ISNULL(custno,'') between @t_bcustno and @t_ecustno)
-	if len(@t_makeno)>0
-		delete @tmp where charindex(@t_makeno,makeno)=0
-	if len(@t_pvcno)>0
-		delete @tmp where pvc!=@t_pvcno
+	
 		
 	
 	insert into @tmp(gno,pno,makeno,weight01,money01,mount02,weight02,money02
