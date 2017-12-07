@@ -297,7 +297,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 		,SUM(ISNULL(a.lengthc,0))
 		,SUM(ISNULL(a.[mount],0))
 		,SUM(ISNULL(a.[weight],0))
-		,case when CHARINDEX('chr(10)',c.memo)>0 then LEFT(c.memo,CHARINDEX('chr(10)',c.memo)-1) else memo end memo
+		,case when CHARINDEX('chr(10)',c.memo)>0 then LEFT(c.memo,CHARINDEX('chr(10)',c.memo)-1) else c.memo end memo
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
@@ -318,7 +318,7 @@ z_vcc_rkp01:--z_vcc_rkp01
 			+case when ISNULL(a.width,0)!=0 then '*'+cast(a.width as nvarchar) else '' end
 			+case when ISNULL(a.lengthb,0)!=0 then '*'+cast(a.lengthb as nvarchar) 
 				when a.dime=0 and a.width=0 and a.radius=0 and a.lengthb=0 then '' else '*COIL' end
-		,case when CHARINDEX('chr(10)',c.memo)>0 then LEFT(c.memo,CHARINDEX('chr(10)',c.memo)-1) else '' end
+		,case when CHARINDEX('chr(10)',c.memo)>0 then LEFT(c.memo,CHARINDEX('chr(10)',c.memo)-1) else c.memo end
 	---------------------------------------------------------------------------------------------------------
 	update @tmp set recno=b.recno
 	from @tmp a

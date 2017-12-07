@@ -31,7 +31,7 @@
                 q_mask(bbmMask);
                 $('#txtBdate').datepicker();
                 $('#txtEdate').datepicker();
-                q_cmbParse("cmbTypea", '領料單,加寄庫出貨,退料,盤點,報廢');
+                q_cmbParse("cmbTypea", '@全部,領料單,加寄庫出貨,退料,盤點,報廢');
 			}
 
 			function q_gtPost(t_name) {

@@ -562,7 +562,7 @@
                 font-size: medium;
             }
             .dbbs {
-                width: 2000px;
+                width: 2100px;
             }
             .dbbs .tbbs {
                 margin: 0;
@@ -694,7 +694,7 @@
 					<td style="width:250px;">入庫批號</td>
 					<td style="width:200px;">棧板序號</td>
 					<td style="width:200px;">備註</td>
-					<td style="width:100px;">轉入庫日期</td>
+					<td style="width:120px;">轉入庫日期</td>
 					<td style="width:100px;">倉庫</td>
 					<td style="width:100px;">儲位</td>
 					<td align="center" style="width:100px;">開始時間</td>
