@@ -72,7 +72,12 @@ z_rc2_rk01:--z_rc2_rk01
 	left join view_rc2 a on a.noa = b.noa
 	left join tgg c on c.noa=a.tggno
 	left join spec d on b.spec=d.noa
-	left join delis e on b.noa=e.noa and b.noq=e.noq
+	outer apply(
+		select x.noa,x.total
+		from delis x
+		left join deli y on x.noa=y.noa
+		where y.noa is not null and y.rc2no=b.noa and x.noq=b.noq
+	) e
 	where a.noa is not null
 		and(a.datea between @t_bdate and @t_edate)
 		and ((case when isnull(a.mon,'')='' then left(a.datea,6) else a.mon end)  between @t_bmon and @t_emon)
