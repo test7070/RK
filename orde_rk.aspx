@@ -326,6 +326,7 @@
 		                			$('#txtCustno').val(as[0].custno);
 		                			$('#txtComp').val(as[0].comp);
 		                			$('#txtNick').val(as[0].nick);
+		                			$('#cmbCoin').val(as[0].coin);
 		                		}
                     			sum();
                     		}

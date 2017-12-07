@@ -30,13 +30,12 @@ returns @tmp table(
 	price float
 	,style nvarchar(20)
 	,size nvarchar(50)
-	,coin nvarchar(20)
 ) as
 begin
 	insert into @tmp(sel,accy,noa,no3,productno,product
 		,dime,width,lengthb,radius,unit,unit2,spec,scolor,class
 		,ucolor,zinc,hard,[source],uno,mount,[weight],memo
-		,omount,oweight,emount,eweight,price,style,size,coin)
+		,omount,oweight,emount,eweight,price,style,size)
 	select *
 	from(
 		select case when exists(select noa from view_ordes where noa=@ordeno and quatno=b.noa and no3=b.no3) then 1 else 0 end sel
@@ -46,7 +45,7 @@ begin
 			,isnull(c.mount,0) omount,isnull(c.[weight],0) pweight
 			,isnull(b.mount,0)-isnull(c.mount,0) emount
 			,isnull(b.[weight],0)-isnull(c.[weight],0) eweight
-			,b.price,b.style,b.size,a.coin
+			,b.price,b.style,b.size
 		from view_quat a
 		left join view_quats b on a.accy=b.accy and a.noa=b.noa
 		outer apply(select SUM(ISNULL(mount,0)) mount,SUM(ISNULL([weight],0)) [weight] from view_ordes where noa!=@ordeno and quatno=b.noa and no3=b.no3) c
