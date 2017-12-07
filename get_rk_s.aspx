@@ -48,6 +48,7 @@
 				var t_idno = $.trim($('#txtIdno').val());
 				var t_uno = $.trim($('#txtUno').val());
 				var t_typea = $.trim($('#cmbTypea').val());
+				var t_ordeno = $.trim($('#txtOrdeno').val());
 				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
@@ -61,7 +62,10 @@
                         
 				if(t_uno.length>0)
 		       		t_where += " and exists(select noa from view_gets"+r_accy+" where view_gets"+r_accy+".noa=view_get"+r_accy+".noa and view_gets"+r_accy+".uno='"+t_uno+"')";	
-		       			
+		       	
+		       	if(t_ordeno.length>0)
+		       		t_where += " and exists(select noa from view_gets"+r_accy+" where view_gets"+r_accy+".noa=view_get"+r_accy+".noa and view_gets"+r_accy+".ordeno='"+t_ordeno+"')";
+		       				
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
@@ -119,6 +123,10 @@
 				<tr class='seek_tr'>
 					<td class='seek' style="width:90px;"><a id='lblUno'>領料批號</a></td>
 					<td><input class="txt" id="txtUno" type="text" style="width:220px;" /></td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek' style="width:90px;"><a id='lblOrdeno'>訂單編號</a></td>
+					<td><input class="txt" id="txtOrdeno" type="text" style="width:220px;" /></td>
 				</tr>
 			</table>
 			<!--#include file="../inc/seek_ctrl.inc"-->
