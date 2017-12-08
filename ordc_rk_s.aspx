@@ -48,6 +48,7 @@
 		        t_edate = $('#txtEdate').val();
 		        t_bodate = $('#txtBodate').val();
 		        t_eodate = $('#txtEodate').val();
+		        t_part = $('#txtPart').val();
 
 		        var t_where = " 1=1 " 
 		        + q_sqlPara2("kind", t_kind)
@@ -57,6 +58,9 @@
 		        + q_sqlPara2("tggno", t_tggno);
 		        if (t_tgg.length>0)
                     t_where += " and charindex('" + t_tgg + "',tgg)>0";
+                if (t_part.length>0)
+                    t_where += " and (charindex(N'" + t_part + "',partno)>0 or charindex(N'" + t_part + "',part)>0)";
+                    
                 if (t_ordbno.length>0)
                     t_where += " and exists(select noa from view_ordcs"+r_accy+" where view_ordcs"+r_accy+".noa=view_ordc"+r_accy+".noa and view_ordcs"+r_accy+".ordbno='"+t_ordbno+"')";
 		       	if(t_enda=='0'){
@@ -132,6 +136,12 @@
 					<td class='seek'  style="width:20%;"><a id='lblOrdbno'>請購單號</a></td>
 					<td>
 					<input class="txt" id="txtOrdbno" type="text" style="width:215px; font-size:medium;" />
+					</td>
+				</tr>
+				<tr class='seek_tr'>
+					<td class='seek'  style="width:20%;"><a id='lblPart'>部門</a></td>
+					<td>
+					<input class="txt" id="txtPart" type="text" style="width:215px; font-size:medium;" />
 					</td>
 				</tr>
 			</table>
