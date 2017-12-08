@@ -74,16 +74,18 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 		,[emoney] float
 		,isLast int
 	)
-	--進貨(退貨不算)
 	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money]
 		,storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0),isnull(a.[total],0)
+	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0)
+		,case when d.noa is null then isnull(a.[total],0) else ISNULL(d.cost,0) end
 		,case when ISNULL(b.typea,2)=2 then null else isnull(a.storeno,'') end
 		,case when ISNULL(b.typea,2)=2 then null else isnull(a.place,'') end
 		,case when ISNULL(b.typea,2)=2 then '21' else '01' end,'rc2'
 		,a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join deli c on a.noa=c.rc2no
+	left join delis d on c.noa=d.noa and d.noq=a.noq
 	where case when len(isnull(a.datea,''))>0 then a.datea else b.datea end <=@t_edate
 	and len(ISNULL(a.uno,''))>0
 	--入庫

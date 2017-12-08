@@ -2953,7 +2953,6 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
 	declare @uno nvarchar(30) = ''
 	-------------------------------------------------------------------------------------
-	--只重算 106/10/01後的
 	--開帳記錄存在  itema,itemb	
 	-- 計算sprice
 	-- 當進貨退回時,成本單價將會變動
@@ -2975,13 +2974,16 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		,[weight] float
 		,[total] float
 	)
+	--進口報單轉來的要注意
 	insert into @tmp_02(uno,datea,[weight],total)
 	select a.uno,c.datea
 		,sum(case when c.typea='1' then 1 else -1 end * isnull(b.[weight],0))
-		,sum(case when c.typea='1' then 1 else -1 end * isnull(b.[total],0))
+		,sum(case when c.typea='1' then 1 else -1 end * case when e.noa is null then isnull(b.[total],0) else e.cost end)
 	from @tmp_01 a
 	left join view_rc2s b on a.uno=b.uno
 	left join view_rc2 c on b.accy=c.accy and b.noa=c.noa
+	left join deli d on b.noa=d.rc2no
+	left join delis e on d.noa=e.noa and e.noq=b.noq
 	group by a.uno,c.datea
 	---
 	declare @tmp_03 table(
@@ -3041,9 +3043,6 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	insert into sprice(datea,sprice,uno,tablea)
 	select datea,price,uno,'rc2s'
 	from @tmp_03
-
-
-
 	----===================================================================================
 	declare @tmp table(
 		gno nvarchar(10)
