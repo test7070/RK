@@ -1802,7 +1802,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		--原物料成本+費用
 		,isnull(a.total,0) 
 		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
-		,a.mins
+		,case when b.datea>=@t_bdate then a.mins else 0 end
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_edate

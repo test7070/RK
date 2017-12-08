@@ -145,7 +145,7 @@ z_get_rkp02:--z_get_rkp02 ref.z_vcc_rkp01
 	update @tmp set recno=b.recno,noa=@noa,custno=@custno,comp=@comp,nick=@nick
 		,datea=@datea,tel=@tel,addr=@addr,conn=@conn,fax=@fax 
 	from @tmp a
-	left join (select ROW_NUMBER()over(order by case pno when '3' then 1 when '4' then 2 else 0 end,productno,spec,size,pno)recno,sel from @tmp) b on a.sel=b.sel
+	left join (select ROW_NUMBER()over(order by case pno when '3' then 1 when '4' then 2 else 0 end,ordeno,no2,productno,spec,size,pno)recno,sel from @tmp) b on a.sel=b.sel
 	----------------------------------------------------------------------------------
 	declare @reportno nvarchar(max) = '表單編號：LC-16-00-08-02'
 	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
