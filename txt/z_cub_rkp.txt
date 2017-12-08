@@ -1919,10 +1919,11 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	left join view_cubs b on a.makeno=b.makeno
 	where b.noa is not null		
 	-------------------------------------------------------------------------------------------------
-	
+	--select * from @tmp where total03!=0 order by makeno
 		
 
-	update @tmp set total02=round(weight02*price02,0),total03=round(weight03*price03,0)
+	update @tmp set total02=round(weight02*price02,0)
+		--,total03=round(weight03*price03,0)
 		,total04=round(weight04*price04,0),total05=round(weight05*price05,0)
 		,total06=round(weight06*price06,0),total07=round(weight07*price07,0)
 -----------------------------------------------------------------
@@ -2207,34 +2208,34 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	
 	select gno
 		,row_number()over(order by gno,makeno) rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar)+'</a>' rr
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(dime as nvarchar)+'</a>' a01
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(radius as nvarchar)+'</a>' a02
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(width as nvarchar)+'</a>' a03
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(lengthb as nvarchar)+'</a>' a04
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+makeno+'</a>' a05
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cust+'</a>' a06
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvcno+'</a>' a07
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+isnull(cspec,'')+'</a>' a08
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+peno+'</a>' a09
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pe+'</a>' a10
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+CAST(timea as nvarchar)+'</a>' a11
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight01,-1)+'</a>' a12
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(weight02,-1)+'</a>' a13
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money01,0)+'</a>' a14
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate01,-1)+'</a>' a15
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money02,0)+'</a>' a16
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate02,-1)+'</a>' a17
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money03,0)+'</a>' a18
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate03,-1)+'</a>' a19
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money04,0)+'</a>' a20
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate04,-1)+'</a>' a21
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money05,0)+'</a>' a22
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(rate05,-1)+'</a>' a23
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(money06,0)+'</a>' a24
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price01,-1)+'</a>' a25
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(price02,-1)+'</a>' a26
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+mon+'</a>' a27
+		,CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar) rr
+		,CAST(dime as nvarchar) a01
+		,CAST(radius as nvarchar) a02
+		,CAST(width as nvarchar) a03
+		,CAST(lengthb as nvarchar) a04
+		,makeno a05
+		,cust a06
+		,pvcno a07
+		,isnull(cspec,'') a08
+		,peno a09
+		,pe a10
+		,CAST(timea as nvarchar) a11
+		,dbo.getComma(weight01,-1) a12
+		,dbo.getComma(weight02,-1) a13
+		,dbo.getComma(money01,0) a14
+		,dbo.getComma(rate01,-1) a15
+		,dbo.getComma(money02,0) a16
+		,dbo.getComma(rate02,-1) a17
+		,dbo.getComma(money03,0) a18
+		,dbo.getComma(rate03,-1) a19
+		,dbo.getComma(money04,0) a20
+		,dbo.getComma(rate04,-1) a21
+		,dbo.getComma(money05,0) a22
+		,dbo.getComma(rate05,-1) a23
+		,dbo.getComma(money06,0) a24
+		,dbo.getComma(price01,-1) a25
+		,dbo.getComma(price02,-1) a26
+		,mon a27
 	from @tmp
 	order by gno,makeno;
 	
@@ -3723,22 +3724,33 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	deallocate cursor_table
 	
 	-------------------------------------------------------------------------------------
+	--開帳庫存
+	update cubs105 set total= b.money,sprice=b.price,price=b.price
+	from cubs105 a
+	left join itema b on a.makeno=b.makeno
+	where b.makeno is not null
+
+	update cubs106 set total= b.money,sprice=b.price,price=b.price
+	from cubs106 a
+	left join itema b on a.makeno=b.makeno
+	where b.makeno is not null
+
 	---- 計算成品的金額
-	declare @tmpCuts table(
-		sel int identity(1,1)
-		,accy nvarchar(10)
-		,noa nvarchar(20)
-		,noq nvarchar(10)
-		,makeno nvarchar(20)
-		,[weight] float --入庫重量 
-		,cost float 
-	)
-	insert into @tmpCuts(accy,noa,noq,makeno,[weight])
-	select a.accy,a.noa,a.noq,a.cname,a.[weight]
-	from view_cuts a
-	left join view_cut b on a.accy=b.accy and a.noa=b.noa
-	where b.datea between @bdate and @edate
-	and len(ISNULL(a.cname,'')) > 0
+	--declare @tmpCuts table(
+	--	sel int identity(1,1)
+	--	,accy nvarchar(10)
+	--	,noa nvarchar(20)
+	--	,noq nvarchar(10)
+	--	,makeno nvarchar(20)
+	--	,[weight] float --入庫重量 
+	--	,cost float 
+	--)
+	--insert into @tmpCuts(accy,noa,noq,makeno,[weight])
+	--select a.accy,a.noa,a.noq,a.cname,a.[weight]
+	--from view_cuts a
+	--left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	--where b.datea between @bdate and @edate
+	--and len(ISNULL(a.cname,'')) > 0
 	
 	-------------------------------------------------------------------------------------------------------
 	set @n=0
