@@ -1,0 +1,269 @@
+
+	
+alter PROCEDURE [dbo].[z_cub_rkp04](
+	@t_bdate nvarchar(20)
+	,@t_edate nvarchar(20)
+	,@t_makeno nvarchar(max))
+as
+begin
+	------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(20)
+		,pno int
+		,recno int
+		,makeno nvarchar(30)
+		,dime float
+		,width float
+		,lengthb float
+		,radius float
+		,pvcno nvarchar(20)
+		,pvc nvarchar(30)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,size nvarchar(20)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(10)
+		,mins float
+		
+		,date_cub nvarchar(20) -- cub date
+		,[weight] float
+		,price float
+		,total float
+		
+		,date_cut nvarchar(20) -- cut date
+		--期初存貨
+		,weight01 float
+		,price01 float
+		,total01 float			
+		--盤點調整	
+		,weight02 float
+		,price02 float
+		,total02 float			
+		--完工投入	
+		,weight03 float
+		,price03 float
+		,total03 float			
+		--耗料	
+		,weight04 float
+		,price04 float
+		,total04 float			
+		--樣品	
+		,weight05 float
+		,price05 float
+		,total05 float			
+		--報廢	
+		,weight06 float
+		,price06 float
+		,total06 float		
+		--領用
+		,weight07 float		
+		,price07 float
+		,total07 float
+		--期末存貨	
+		,weight10 float
+		,price10 float
+		,total10 float	
+	)
+	insert into @tmp(gno,pno,makeno,date_cub,[weight],total
+		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
+		,mins)
+	select '1',1,a.makeno,b.datea,a.hweight
+		--原物料成本+費用
+		,isnull(a.total,0) 
+		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
+		,case when b.datea>=@t_bdate then a.mins else 0 end
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where b.datea<=@t_edate
+	and (len(@t_makeno)=0 or a.makeno=@t_makeno)
+	
+	update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
+	from @tmp a
+	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
+	update @tmp set price = case when [weight]!=0 then round(total/[weight],3) else 0 end
+	update @tmp set date_cut=ISNULL(b.datea,'')
+	from @tmp a
+	outer apply(select top 1 * from view_cuts where a.makeno=cname order by datea) b
+	--前期庫存
+	declare @bbdate nvarchar(20) = dbo.AD2ChineseEraName( dateadd(DD,-1,dbo.ChineseEraName2AD(@t_bdate)))
+	declare @t_ecustno nvarchar(max) = char(255)
+ 
+	update @tmp set weight01=isnull(b.w23,0),total01=isnull(b.emoney,0)
+	from @tmp a
+	left join dbo.z_cub_rk02('',@bbdate,'','','',@t_ecustno) b on a.makeno=b.makeno
+	
+	-- 期末存貨
+	update @tmp set weight10=ISNULL(b.w23,0),total10=isnull(b.emoney,0)
+	from @tmp a
+	left join dbo.z_cub_rk02(@t_bdate,@t_edate,'','','',@t_ecustno) b on a.makeno=b.makeno
+	
+	--本期盤點調整
+	update @tmp set weight02=ISNULL(b.weight11,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight11,0)) weight11 
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea between @t_bdate and @t_edate) b
+	
+	--本期完工投入
+	update @tmp set weight03=[weight],price03=price,total03=total 
+		where date_cub>=@t_bdate
+		
+	--本期樣品、本期報廢
+	update @tmp set weight05=ISNULL(b.weight6,0)
+		,weight06=ISNULL(b.weight7,0)
+	from @tmp a
+	outer apply(select SUM(isnull(x.weight6,0)) weight6 
+		,SUM(isnull(x.weight7,0)) weight7 
+		from view_cucs x 
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where y.noa is not null and x.cubno=a.makeno and y.datea between @t_bdate and @t_edate) b
+	--	本期領用
+	declare @makeno nvarchar(max)
+	declare @aa nvarchar(max)
+	
+	declare cursor_table cursor for
+	select makeno
+	from view_cubs a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @t_bdate and @t_edate
+	and LEFT(a.makeno,1)='R'	
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		set @aa = reverse(RIGHT(@makeno,len(@makeno)-1))
+		if CHARINDEX('-',@aa)>0
+		begin
+			set @aa =reverse( RIGHT(@aa,LEN(@aa)-CHARINDEX('-',@aa)))
+		end
+		
+		update @tmp set weight07=ISNULL(a.weight07,0) + isnull(b.weight03,0)
+		from @tmp a
+		outer apply(select * from @tmp where makeno=@makeno) b
+		where a.makeno=@aa
+		
+		fetch next from cursor_table
+		into @makeno
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	-- 本期耗料 =  前期庫存 + 盤點調整 + 本期完工投入 - 本期樣品 - 本期報廢 - 本期領用 - 期末存貨
+	update @tmp set weight04 = ISNULL(weight01,0) + ISNULL(weight02,0) +ISNULL(weight03,0) - ISNULL(weight05,0) - ISNULL(weight06,0)- ISNULL(weight07,0)- ISNULL(weight10,0)
+	------------------------------------------------------------------------------------------
+	
+	--刪除都是0的
+	delete @tmp where ISNULL(weight01,0)=0 and ISNULL(weight02,0)=0 and ISNULL(weight03,0)=0
+		and ISNULL(weight04,0)=0 and ISNULL(weight05,0)=0 and ISNULL(weight06,0)=0 
+		and ISNULL(weight07,0)=0 and ISNULL(weight10,0)=0
+		and ISNULL(total01,0)=0 and ISNULL(total02,0)=0 and ISNULL(total03,0)=0
+		and ISNULL(total04,0)=0 and ISNULL(total05,0)=0 and ISNULL(total06,0)=0 
+		and ISNULL(total07,0)=0 and ISNULL(total10,0)=0
+
+	update @tmp set price01 = case when ISNULL(weight01,0) = 0 then 0 else round(total01/weight01,2) end
+		,price10 = case when ISNULL(weight10,0) = 0 then 0 else round(total10/weight10,2) end
+	
+	update @tmp set weight02 = ISNULL(weight02,0)	
+		,weight03 = ISNULL(weight03,0)	
+		,weight04 = ISNULL(weight04,0)	
+		,weight05 = ISNULL(weight05,0)	
+		,weight06 = ISNULL(weight06,0)	
+		,weight07 = ISNULL(weight07,0)
+			
+	update @tmp set price02 = ISNULL(price02,0)	
+		,price03 = ISNULL(price03,0)	
+		,price04 = ISNULL(price04,0)	
+		,price05 = ISNULL(price05,0)	
+		,price06 = ISNULL(price06,0)	
+		,price07 = ISNULL(price07,0)
+	
+	update @tmp set price02=case when weight02=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
+		,price03=case when weight03=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
+		,price04=case when weight04=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
+		,price05=case when weight05=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
+		,price06=case when weight06=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
+		,price07=case when weight07=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	where b.noa is not null		
+	-------------------------------------------------------------------------------------------------
+	--select * from @tmp where total03!=0 order by makeno
+		
+
+	update @tmp set total02=round(weight02*price02,0)
+		--,total03=round(weight03*price03,0)
+		,total04=round(weight04*price04,0),total05=round(weight05*price05,0)
+		,total06=round(weight06*price06,0),total07=round(weight07*price07,0)
+-----------------------------------------------------------------
+	--尾差修正
+	declare @sel int
+	declare @weight01 float,@weight02 float,@weight03 float,@weight04 float,@weight05 float,@weight06 float,@weight07 float,@weight10 float
+		,@price01 float,@price02 float,@price03 float,@price04 float,@price05 float,@price06 float,@price07 float,@price10 float
+		,@total01 float,@total02 float,@total03 float,@total04 float,@total05 float,@total06 float,@total07 float,@total10 float
+	
+	declare cursor_table cursor for
+	select sel,weight01,weight02,weight03,weight04,weight05,weight06,weight07,weight10
+		,price01,price02,price03,price04,price05,price06,price07,price10
+		,total01,total02,total03,total04,total05,total06,total07,total10
+	from @tmp
+	where total01+total02+total03-total04-total05-total06-total07!=total10
+	open cursor_table
+	fetch next from cursor_table
+	into @sel,@weight01,@weight02,@weight03,@weight04,@weight05,@weight06,@weight07,@weight10
+		,@price01,@price02,@price03,@price04,@price05,@price06,@price07,@price10
+		,@total01,@total02,@total03,@total04,@total05,@total06,@total07,@total10
+	while(@@FETCH_STATUS <> -1)
+	begin	
+		if @weight01=@weight04 and @price01=@price04 and @total01!=@total04
+		begin
+			update @tmp set total04=@total01 where sel=@sel
+		end
+		else if @weight01=@weight05 and @price01=@price05 and @total01!=@total05
+		begin
+			update @tmp set total05=@total01 where sel=@sel
+		end
+		else if @weight01=@weight06 and @price01=@price06 and @total01!=@total06
+		begin
+			update @tmp set total06=@total01 where sel=@sel
+		end
+		else if @weight01=@weight07 and @price01=@price07 and @total01!=@total07
+		begin
+			update @tmp set total07=@total01 where sel=@sel
+		end
+		else if @weight10=@weight03 and @price10=@price03 and @total10!=@total03
+		begin
+			update @tmp set total03=@total10 where sel=@sel
+		end
+		else if @total04>0
+		begin
+			update @tmp set total04=total04 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		else if @total05>0
+		begin
+			update @tmp set total05=total05 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		else if @total06>0
+		begin
+			update @tmp set total06=total06 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		else if @total07>0
+		begin
+			update @tmp set total07=total07 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
+		end
+		
+		fetch next from cursor_table
+		into @sel,@weight01,@weight02,@weight03,@weight04,@weight05,@weight06,@weight07,@weight10
+		,@price01,@price02,@price03,@price04,@price05,@price06,@price07,@price10
+		,@total01,@total02,@total03,@total04,@total05,@total06,@total07,@total10
+	end
+	close cursor_table
+	deallocate cursor_table	
+	
+	select makeno,SUM(ISNULL(weight04,0)) weight,SUM(ISNULL(total04,0)) total from @tmp group by makeno
+end
+	
+
+
