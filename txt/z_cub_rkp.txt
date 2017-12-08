@@ -1275,6 +1275,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,pvcno nvarchar(20)
 	)
 	
+	
+	declare @tmpx table(makeno nvarchar(20),weight float,total float)
+	insert into @tmpx
+	execute dbo.z_cub_rkp04 @t_bdate,@t_edate,@t_makeno
+	
 	insert into @tmp(makeno)
 	select a.cname from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
 	where b.datea between @t_bdate and @t_edate
@@ -1345,10 +1350,12 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 			where a.cubno=@makeno and b.typea='十呎裁切')
 		------------------------------------------------------------------
 		--在製品完工重、在製品完工成本
-		update #z_cub_rkp06 set w01 = isnull(b.hweight,0),m01=ISNULL(b.total,0)
+		update #z_cub_rkp06 set w01 = isnull(b.weight,0),m01=ISNULL(b.total,0)
 		from #z_cub_rkp06 a
-		outer apply(select SUM(isnull(hweight,0)) hweight,SUM(ISNULL(total,0)) total  from view_cubs where makeno=@makeno) b
-		where a.makeno=@makeno
+		left join @tmpx b on a.makeno=b.makeno
+		where a.makeno=@makeno and b.makeno is not null
+		
+	
 		--在製品完工單價
 		update #z_cub_rkp06 set p01 = case when w01 =0 then 0 else ROUND(m01/w01,2) end where makeno=@makeno
 		--在製品樣品重,在製品報廢重,在製品盤盈
@@ -1517,7 +1524,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	update #z_cub_rkp06 set money07= m01 - m02 - m03 - m04 + money06
 	--製成品單位成本 = 製成品成本金額 / 進倉重
 	update #z_cub_rkp06 set price07 = case when ISNULL(weight01,0)=0 then 0 else ROUND(money07/weight01,2) end
-		
+
 	-------------------------------------------------------------------------------------------------------
 	select @recno = MAX(recno) from #z_cub_rkp06
 	insert into #z_cub_rkp06(recno,gno,weight01,weight02,weight03,weight04,weight05,w01,m01,w02,m02,w03,m03,w04,m04
@@ -1735,7 +1742,8 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	declare @t_db nvarchar(max) = '[2]'
 	
 	declare @t_bdate nvarchar(20) = case when '#non' = [4] then '' else [4] end	
-	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end	
+	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end	
 	------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -1806,6 +1814,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_edate
+	and (len(@t_makeno)=0 or a.makeno=@t_makeno)
 	
 	update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
 	from @tmp a
