@@ -337,6 +337,11 @@
             	$('#txtTrade').val(xTrade);
             	$('#txtCommoditytax').val(xCommoditytax);
             	$('#txtLctotal').val(xLctotal);
+            	
+            	//原幣贖單金額=原幣完稅合計
+            	$('#txtCoinretiremoney').val($('#txtCointotal').val());
+            	//本幣贖單金額=本幣完稅合計
+            	$('#txtRetiremoney').val($('#txtTotal').val());
             }
 
             function mainPost() {
@@ -723,6 +728,7 @@
                     return;
                 _btnModi();
                 $('#txtProduct').focus();
+                sum();
                 refreshBbs();
             }
 
