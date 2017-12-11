@@ -472,7 +472,7 @@ z_ucc_rk01:--z_ucc_rk01
 		,radius float
 		,mount decimal(25,8)
 		,[weight] decimal(25,8)
-		,price decimal(25,8)
+		,price decimal(25,4)
 		,total decimal(25,8)
 		,uno2 nvarchar(30)
 		,ordeno nvarchar(20)
@@ -514,10 +514,17 @@ z_ucc_rk01:--z_ucc_rk01
 	and (len(@t_place)=0 or b.place=@t_place)
 	and (len(@t_uno)=0 or charindex(@t_uno,a.uno)>0)
 	
+	--進口的單價去deli抓
+	update #z_ucc_rk01 set price = case when isnull(a.[weight],0)=0 then a.price else ROUND(ISNULL(c.cost,0)/c.[weight],4) end
+	from #z_ucc_rk01 a
+	left join deli b on a.noa=b.rc2no
+	left join delis c on b.noa=c.noa and c.noq=a.noq
+	where a.tablea='rc2s' and c.noa is not null
+	
 	update #z_ucc_rk01 set zspec=case when len(ISNULL(cspec,''))>0 then cspec else spec end
 	
 	update #z_ucc_rk01 set total = round(weight*price,0)
-	
+
 	update #z_ucc_rk01 set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
 	from #z_ucc_rk01 a
 	left join view_cuts b on b.bno=a.uno
