@@ -1,3 +1,73 @@
+z_cut_rkp02:--z_cut_rkp02
+	SET QUOTED_IDENTIFIER OFF 
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = N[3] then '' else N[3] end
+	declare @t_bdate nvarchar(20) = case when '#non' = N[4] then '' else N[4] end
+	declare @t_edate nvarchar(20) = case when '#non' = N[5] then char(255) else N[5] end
+	declare @t_bcustno nvarchar(20) = case when '#non' = N[6] then '' else N[6] end
+	declare @t_ecustno nvarchar(20) = case when '#non' = N[7] then char(255) else N[7] end
+	declare @t_makeno nvarchar(max) = case when '#non' = N[8] then '' else N[8] end
+	declare @t_product nvarchar(max) = case when '#non' = N[9] then '' else N[9] end
+	declare @t_pvc nvarchar(max) = case when '#non' = N[10] then '' else N[10] end
+	-------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,pno int
+		,recno int
+		,accy nvarchar(20)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,productno nvarchar(20)
+		,product nvarchar(max)
+		,size nvarchar(max)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(max)
+		,custno nvarchar(20)
+		,cust nvarchar(max)
+		,mount float
+		,[weight] float
+	)
+	
+	insert into @tmp(gno,pno,accy,noa,noq,makeno,productno,product,size
+		,pvcno,pvc,custno,cust,mount,[weight])
+	select '1',1,a.accy,a.noa,a.noq,a.cname,a.productno,a.product
+		,CAST(a.dime as nvarchar)+case when isnull(a.radius,0)=0 then '' else '+' end+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)  size
+		,a.spec,a.class,a.custno,a.comp,isnull(a.mount,0),isnull(a.[weight],0)
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.noa is not null
+	and (len(isnull(@t_noa,''))=0 or a.noa=@t_noa)
+	and a.datea between @t_bdate and @t_edate
+	and ISNULL(a.custno,'') between @t_bcustno and @t_ecustno
+	and (len(isnull(@t_makeno,''))=0 or CHARINDEX(@t_makeno,a.cname)>0)
+	and (len(isnull(@t_product,''))=0 or CHARINDEX(@t_product,a.productno)>0 or CHARINDEX(@t_product,a.product)>0)
+	and (len(isnull(@t_pvc,''))=0 or CHARINDEX(@t_pvc,a.spec)>0 or CHARINDEX(@t_pvc,a.[class])>0)
+	
+	update @tmp set recno=b.recno
+	from @tmp a
+	left join (select sel,ROW_NUMBER()over(order by productno,pvcno,size,makeno) recno from @tmp) b on a.sel=b.sel
+	
+	insert into @tmp(gno,pno,mount,[weight])
+	select '2',2,SUM(mount),SUM([weight]) from @tmp
+	
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,recno rr 
+		,"cut_rk?noa=\'"+noa+"\' and "+cast(recno as nvarchar)+"=$rr?"+accy ghref  
+		,makeno a01
+		,product a02
+		,size a03
+		,pvcno a04
+		,pvc a05
+		,cust a06
+		,dbo.getComma(mount,-1) a07
+		,dbo.getComma([weight],-1) a08
+	from @tmp
+	order by pno,recno;
+
 z_cut_rkp01:--z_cut_rkp01 
 	SET QUOTED_IDENTIFIER OFF 
 	declare @t_path nvarchar(max) = '[1]'
@@ -80,7 +150,7 @@ z_cut_rkp01:--z_cut_rkp01
 	close cursor_table
 	deallocate cursor_table
 	--------------------------------------------------------------------------------
-	declare @reportno nvarchar(max) = '表單編號：LC-11-00-06-04'
+	declare @reportno nvarchar(max) = '表單編號：LC-11-00-06-05'
 	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
 	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
 	
