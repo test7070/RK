@@ -2099,6 +2099,7 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		--nothing
 	end catch
 	--------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
 		cubno nvarchar(20),
@@ -2206,8 +2207,8 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		,rate03 = case when money06=0 then 0 else ROUND(money03/money06*100,2) end
 		,rate04 = case when money06=0 then 0 else ROUND(money04/money06*100,2) end
 		,rate05 = case when money06=0 then 0 else ROUND(money05/money06*100,2) end
-		,price01 = case when weight02=0 then 0 else ROUND((isnull(money02,0)+isnull(money03,0)+isnull(money04,0)+isnull(money05,0))/weight02,2) end
-		,price02 = case when weight02=0 then 0 else ROUND(money06/weight02,2) end
+		,price01 = case when weight02=0 then 0 else ROUND((isnull(money02,0)+isnull(money03,0)+isnull(money04,0)+isnull(money05,0))/weight02,4) end
+		,price02 = case when weight02=0 then 0 else ROUND(money06/weight02,4) end
 	
 	update @tmp set mon=LEFT(c.datea,6)
 	from @tmp a
