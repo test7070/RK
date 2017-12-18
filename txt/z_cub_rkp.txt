@@ -1745,6 +1745,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end	
 	------------------------------------------------------------------------------------
+	------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -1802,23 +1803,42 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,weight10 float
 		,price10 float
 		,total10 float	
+		
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,spec nvarchar(max)
+		,cspec nvarchar(max)
 	)
 	insert into @tmp(gno,pno,makeno,date_cub,[weight],total
 		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
-		,mins)
+		,mins,accy,noa,noq)
 	select '1',1,a.makeno,b.datea,a.hweight
 		--原物料成本+費用
 		,isnull(a.total,0) 
 		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
 		,case when b.datea>=@t_bdate then a.mins else 0 end
+		,a.accy,a.noa,a.noq
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_edate
 	and (len(@t_makeno)=0 or a.makeno=@t_makeno)
 	
-	update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
+--規格
+	update @tmp set spec = b.spec,cspec=c.product
 	from @tmp a
 	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
+	left join spec c on b.spec=c.noa
+	where b.noa is not null	
+
+--皮膜、保護膜
+	update @tmp set pvcno=ISNULL(b.productno,''),pvc=ISNULL(b.product,'')
+	from @tmp a
+	outer apply (select top 1 productno,product from view_cubt where noa=a.noa and nor=a.noq and kind='1' order by noq) b
+	
+	/*update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
+	from @tmp a
+	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2*/
 	update @tmp set price = case when [weight]!=0 then round(total/[weight],3) else 0 end
 	update @tmp set date_cut=ISNULL(b.datea,'')
 	from @tmp a
@@ -2037,7 +2057,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,pvcno a05
 		,makeno a06
 		,cust a07
-		,size a08
+		,cspec a08
 		--期初存貨								
 
 		,dbo.getComma(weight01,-1) a09
@@ -2820,7 +2840,8 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		,weight07=b.x07,money07=b.y07 --A04 背漆稀釋液
 		,weight08=b.x08,money08=b.y08 --A05 面漆
 		,weight10=b.w03               --投入重量
-		,money10=b.total              --半成品金額
+		,money10=ISNULL(b.y01,0)+ISNULL(b.y02,0)+ISNULL(b.y03,0)+ISNULL(b.y04,0)
+			+ISNULL(b.y05,0)+ISNULL(b.y06,0)+ISNULL(b.y07,0)+ISNULL(b.y08,0)   --半成品金額
 		,weight11=b.hweight           --完工重量
 		,money11a=b.w01               --直接人工
 		,money12a=b.w02               --製造費用
@@ -2851,7 +2872,7 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	outer apply(select * from @tmp where a.accy=accy and a.noa=noa and a.noq=noq and pno=1) b
 	where a.pno=2
 	
-	delete @tmp where not isnull(mon,'') between left(@t_bdate,6) and left(@t_edate,6)
+	--delete @tmp where not isnull(mon,'') between left(@t_bdate,6) and left(@t_edate,6)
 	
 	update @tmp set recno=b.recno
 	from @tmp a
