@@ -1,4 +1,3 @@
---z_cub_rk02   z_cub_rkp04  有用到
 ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 	,@t_makeno nvarchar(max)
 	,@t_pvcno nvarchar(max) 
@@ -43,7 +42,7 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		,x05 float  --面漆
 		-----------------------------
 		,total float --總投入成本(含直接人工、製造費用)
-		,emoney float  --期末半成品成本( round(w23/w01*total,0))
+		,emoney float  --期末半成品成本 - 樣品金額 - 報廢金額 + 盤盈金額
 		
 		,w01 float--總投入重量
 		,w02 float--本期生產半成品
@@ -54,8 +53,11 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		--,w07 nvarchar(40)--成品規格	
 		,w08 float--(1)進倉成品	   cuts.weight
 		,w09 float--(2)樣品	cucs.weight6
+		,m09 float--   樣品金額	cucs.m02
 		,w10 float--(2)報廢 cucs.weight7 
-		,w15 float--(2)盤盈	cucs.weight11	
+		,m10 float--   報廢金額 cucs.m03
+		,w15 float--(2)盤盈	cucs.weight11
+		,m15 float--   盤盈金額 cucs.m04	
 		,w11 float--(b1)不良品	cucs.wright8  
 		,w12 float--(b2)尺寸損耗	cucs.wright9
 		,w13 float--(b3)頭尾(廠內)損耗	cucs.wright10
@@ -183,6 +185,9 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			,w13=ISNULL(b.[weight10],0)
 			,w14=ISNULL(b.[paraa],0)
 			,w15=ISNULL(b.[weight11],0)
+			,m09=ISNULL(b.[m02],0)
+			,m10=ISNULL(b.[m03],0)
+			,m15=ISNULL(b.[m04],0)
 		from @tmpa a
 		left join(select a.cubno makeno
 			,SUM(ISNULL(a.weight4,0)) [weight4] 
@@ -195,6 +200,9 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			,SUM(ISNULL(cast(a.para as float),0)) [para] 
 			,SUM(ISNULL(cast(a.paraa as float),0)) [paraa] 
 			,SUM(ISNULL(a.weight11,0)) [weight11]
+			,SUM(ISNULL(a.m02,0)) [m02]
+			,SUM(ISNULL(a.m03,0)) [m03]
+			,SUM(ISNULL(a.m04,0)) [m04] 
 			from view_cucs a 
 			left join view_cuc b on a.accy=b.accy and a.noa=b.noa
 			where b.datea<=@t_edate
@@ -235,6 +243,6 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
 			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
 		--update @tmpa set emoney=round(w23/w01*total,0)
-		update @tmpa set emoney=case when isnull(w23,0)>0 then total else 0 end
+		update @tmpa set emoney=case when isnull(w23,0)>0 then total-m09-m10+m15 else 0 end
 		return
 	end
