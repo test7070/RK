@@ -1264,51 +1264,60 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	)
 	declare @makeno nvarchar(20)
 	declare @dime float
+	declare @radius float
+	declare @width float
+	declare @lengthb float
 	declare @pvcno nvarchar(20)
 	declare @recno int
+	declare @weight float
 	
 	declare @tmp table(
 		sel int identity(1,1)
 		,recno int
 		,makeno nvarchar(20)
 		,dime float
+		,radius float
+		,width float
+		,lengthb float
 		,pvcno nvarchar(20)
+		,weight float
 	)
-	
-	
 	declare @tmpx table(makeno nvarchar(20),weight float,total float)
 	insert into @tmpx
 	execute dbo.z_cub_rkp04 @t_bdate,@t_edate,@t_makeno
 	
-	insert into @tmp(makeno)
-	select a.cname from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
-	where b.datea between @t_bdate and @t_edate
+	insert into @tmp(makeno,weight)
+	select a.cname,SUM(ISNULL(a.weight,0))
+	from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
+	where a.datea between @t_bdate and @t_edate
 	and (len(@t_makeno)=0 or a.cname=@t_makeno)
 	and len(isnull(a.cname,''))>0
 	group by a.cname
-	
-	update @tmp set dime = b.dime, pvcno= b.spec 
+		
+	update @tmp set dime = b.dime, pvcno= b.spec, radius=b.radius,width=b.width,lengthb=b.lengthb 
 	from @tmp a
-	outer apply(select top 1 dime,spec from view_cuts where cname=a.makeno) b
+	left join view_cuts b on a.makeno=b.cname and len(b.spec)>0
+	where b.noa is not null
+	--outer apply(select top 1 dime,spec from view_cuts where cname=a.makeno and len(spec)>0) b
 	
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by dime,makeno,pvcno) recno from @tmp ) b on a.sel=b.sel
 
 	declare cursor_table cursor for 
-	select makeno,dime,pvcno,recno from @tmp order by recno
+	select makeno,weight,dime,radius,width,lengthb,pvcno,recno from @tmp order by recno
 	open cursor_table 
 	fetch next from cursor_table 
-	into @makeno,@dime,@pvcno,@recno
+	into @makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@recno
 	while(@@FETCH_STATUS <> -1) 
 	begin 
-		insert into #z_cub_rkp06(gno,pno,makeno,dime,pvcno,recno)
-		select top 1 '1',1,@makeno,@dime,@pvcno,@recno
+		insert into #z_cub_rkp06(gno,pno,makeno,weight01,dime,radius,width,lengthb,pvcno,recno)
+		select top 1 '1',1,@makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@recno
 		
-		update #z_cub_rkp06 set weight01=ISNULL(b.weight01,0)
+		/*update #z_cub_rkp06 set weight01=ISNULL(b.weight01,0)
 		from #z_cub_rkp06 a
 		outer apply(select SUM(ISNULL(weight,0)) weight01 from view_cuts where cname=@makeno) b
-		where a.makeno=@makeno
+		where a.makeno=@makeno*/
 		
 		update #z_cub_rkp06 set weight02=ISNULL(b.weight02,0)
 			,weight03=ISNULL(b.weight03,0)
@@ -1424,11 +1433,12 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		from view_cuts a
 		left join view_cut b on a.accy=b.accy and a.no2=b.noa
 		where a.cname=@makeno
+		--2017/12/20
+		and a.datea between @t_bdate and @t_edate
 		order by a.accy,a.noa,a.noq
-	
-	
+
 		fetch next from cursor_table 
-		into @makeno,@dime,@pvcno,@recno
+		into @makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@recno
 	end 
 	close cursor_table 
 	deallocate cursor_table 
@@ -1558,6 +1568,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	close cursor_table 
 	deallocate cursor_table 
 	----------------------------------------------------------------------------------------
+
 	--計算 出貨、領料 成本
 	
 	declare @tmpb table(
@@ -1626,7 +1637,6 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	and (b.typea='領料單' or b.typea='報廢'	)
 	----------------------------------------------------------------------------------------
 	declare @uno nvarchar(30)
-	declare @weight float
 	declare @money float
 	declare @tweight float
 	declare @tmoney float
