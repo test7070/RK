@@ -1745,13 +1745,13 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end	
 	------------------------------------------------------------------------------------
-	------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
 		,pno int
 		,recno int
 		,makeno nvarchar(30)
+		,tmakeno nvarchar(30)
 		,dime float
 		,width float
 		,lengthb float
@@ -1865,7 +1865,8 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		where y.noa is not null and x.cubno=a.makeno and y.datea between @t_bdate and @t_edate) b
 	
 	--本期完工投入
-	update @tmp set weight03=[weight],price03=price,total03=total 
+	update @tmp set weight03=[weight],total03=total
+		,price03=case when ISNULL([weight],0)=0 then price else round(total/[weight],4) end 
 		where date_cub>=@t_bdate
 		
 	--本期樣品、本期報廢
@@ -1938,7 +1939,8 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,price06 = ISNULL(price06,0)	
 		,price07 = ISNULL(price07,0)
 	
-	update @tmp set price02=case when weight02=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
+	-- 因為有損耗  
+	/*update @tmp set price02=case when weight02=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
 		,price03=case when weight03=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
 		,price04=case when weight04=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
 		,price05=case when weight05=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
@@ -1946,7 +1948,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,price07=case when weight07=0 then 0 when price01!=0 then price01 when price10!=0 then price10 when isnull(b.hweight,0)!=0 then round(b.total/b.hweight,2) else 0 end
 	from @tmp a
 	left join view_cubs b on a.makeno=b.makeno
-	where b.noa is not null		
+	where b.noa is not null		*/
 	-------------------------------------------------------------------------------------------------
 	--select * from @tmp where total03!=0 order by makeno
 		
@@ -2019,10 +2021,16 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	end
 	close cursor_table
 	deallocate cursor_table	
------------------------------------------------------------------
+	-----------------------------------------------------------------
+	--舊的製造批號7碼,第2碼為0表示  2010年
+	--新的8碼
+	update @tmp set tmakeno=makeno where CHARINDEX('-',makeno)=9
+	update @tmp set tmakeno=left(makeno,1)+case when substring(makeno,2,1)='0' then '1' else '0' end +RIGHT(makeno,len(makeno)-1) 
+	where CHARINDEX('-',makeno)=8
+
 	update @tmp set recno=b.recno
 	from @tmp a
-	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
+	left join (select sel,ROW_NUMBER()over(order by tmakeno) recno from @tmp) b on a.sel=b.sel
 
 	insert into @tmp(gno,pno,weight01,weight02,weight03,weight04,weight05,weight06,weight07,weight10
 		,total01,total02,total03,total04,total05,total06,total07,total10
@@ -2056,6 +2064,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,lengthb a04
 		,pvcno a05
 		,makeno a06
+		,tmakeno a06a
 		,cust a07
 		,cspec a08
 		--期初存貨								
