@@ -1268,6 +1268,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	declare @width float
 	declare @lengthb float
 	declare @pvcno nvarchar(20)
+	declare @cust nvarchar(50)
 	declare @recno int
 	declare @weight float
 	
@@ -1280,6 +1281,8 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,width float
 		,lengthb float
 		,pvcno nvarchar(20)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
 		,weight float
 	)
 	declare @tmpx table(makeno nvarchar(20),weight float,total float)
@@ -1294,7 +1297,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	and len(isnull(a.cname,''))>0
 	group by a.cname
 		
-	update @tmp set dime = b.dime, pvcno= b.spec, radius=b.radius,width=b.width,lengthb=b.lengthb 
+	update @tmp set dime = b.dime, pvcno= b.spec, radius=b.radius,width=b.width,lengthb=b.lengthb,custno=b.custno,cust=b.comp 
 	from @tmp a
 	left join view_cuts b on a.makeno=b.cname and len(b.spec)>0
 	where b.noa is not null
@@ -1305,14 +1308,14 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	left join (select sel,ROW_NUMBER()over(order by dime,makeno,pvcno) recno from @tmp ) b on a.sel=b.sel
 
 	declare cursor_table cursor for 
-	select makeno,weight,dime,radius,width,lengthb,pvcno,recno from @tmp order by recno
+	select makeno,weight,dime,radius,width,lengthb,pvcno,cust,recno from @tmp order by recno
 	open cursor_table 
 	fetch next from cursor_table 
-	into @makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@recno
+	into @makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@cust,@recno
 	while(@@FETCH_STATUS <> -1) 
 	begin 
-		insert into #z_cub_rkp06(gno,pno,makeno,weight01,dime,radius,width,lengthb,pvcno,recno)
-		select top 1 '1',1,@makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@recno
+		insert into #z_cub_rkp06(gno,pno,makeno,weight01,dime,radius,width,lengthb,pvcno,cust,recno)
+		select top 1 '1',1,@makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@cust,@recno
 		
 		/*update #z_cub_rkp06 set weight01=ISNULL(b.weight01,0)
 		from #z_cub_rkp06 a
@@ -1438,7 +1441,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		order by a.accy,a.noa,a.noq
 
 		fetch next from cursor_table 
-		into @makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@recno
+		into @makeno,@weight,@dime,@radius,@width,@lengthb,@pvcno,@cust,@recno
 	end 
 	close cursor_table 
 	deallocate cursor_table 
