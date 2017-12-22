@@ -69,12 +69,12 @@ z_ordc_rk01:--z_ordc_rk01
 	left join spec d on a.spec=d.noa
 	left join dbo.fnSplit(@t_stktype) e on b.kind = e.n
 	left join part f on b.partno=f.noa
-	where b.datea between @t_bdate and @t_edate
-	and b.odate between @t_bodate and @t_eodate
-	and b.tggno between @t_btggno and @t_etggno
-	and a.productno between @t_bproductno and @t_eproductno
-	and (len(@t_kind)=0 or b.kind=@t_kind)
+	where ISNULL(b.datea,'') between @t_bdate and @t_edate
+	and ISNULL(b.odate,'') between @t_bodate and @t_eodate
 	and ISNULL(a.rdate,'') between @t_brdate and @t_erdate
+	and ISNULL(b.tggno,'') between @t_btggno and @t_etggno
+	and ISNULL(a.productno,'') between @t_bproductno and @t_eproductno
+	and (len(@t_kind)=0 or b.kind=@t_kind)
 	and (len(@t_partno)=0 or CHARINDEX(','+b.partno+',',','+@t_partno+',')>0)
 	
 	update @tmp set rc2date=ISNULL(c.datea,'')
@@ -88,6 +88,8 @@ z_ordc_rk01:--z_ordc_rk01
 	left join bccins b on a.noa=b.ordcno and a.noq=b.no2 and b.typea='1'
 	left join bccin c on b.noa=c.noa
 	where c.noa is not null
+	
+	delete @tmp where not(isnull(rc2date,'') between @t_brc2date and @t_erc2date)
 	
 	if @t_enda = '1'
 		delete @tmp where enda!=1
@@ -119,17 +121,18 @@ z_ordc_rk01:--z_ordc_rk01
 		,part a05
 		,noa+'-'+noq a06
 		,tgg a07
-		,product a08
-		,cspec a09
-		,size a10
-		,unit a11
-		,dbo.getComma(mount,-1) a12
-		,dbo.getComma([weight],-1) a13
-		,dbo.getComma(price,-1) a14
-		,dbo.getComma([money],-1) a15
-		,dbo.getComma(c1,-1) a16
-		,dbo.getComma(notv,-1) a17
-		,memo a18
-		,case when enda=1 then '*' else '' end a19
+		,productno a08
+		,product a09
+		,cspec a10
+		,size a11
+		,unit a12
+		,dbo.getComma(mount,-1) a13
+		,dbo.getComma([weight],-1) a14
+		,dbo.getComma(price,-1) a15
+		,dbo.getComma([money],-1) a16
+		,dbo.getComma(c1,-1) a17
+		,dbo.getComma(notv,-1) a18
+		,memo a19
+		,case when enda=1 then '*' else '' end a20
 	from @tmp 
 	order by gno,recno;
