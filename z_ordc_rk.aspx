@@ -15,9 +15,11 @@
 		<script src="css/jquery/ui/jquery.ui.widget.js"> </script>
 		<script src="css/jquery/ui/jquery.ui.datepicker_tw.js"> </script>
 		<script type="text/javascript">
+            var t_part = "";
             $(document).ready(function() {
             	q_getId();
-                q_gf('', 'z_ordc_rk');       
+            	q_gt('part', 'order=^^noa^^', 0, 0, 0, "getPart");
+                      
             });
             function q_gfPost() {
 				$('#q_report').q_report({
@@ -34,30 +36,40 @@
 						type : '0',
 						name : 'xkind',
 						value : q_getPara('sys.stktype')
-					}, {//1  [4][5]  1
+					}, {//  [4][5]  1
                         type : '1',
                         name : 'date'
-                    }, {//1  [6][7]  2
+                    }, {//  [6][7]  2
                         type : '1',
                         name : 'odate'
-                    }, {//3 [8][9]   3
+                    }, {//  [8][9]  3
+                        type : '1',
+                        name : 'rdate'
+                    }, {//  [10][11]  4
+                        type : '1',
+                        name : 'rc2date'
+                    }, {//  [12][13]   5
                         type : '2', 
                         name : 'tgg',
                         dbf : 'tgg',
                         index : 'noa,comp',
                         src : 'tgg_b.aspx'
-                    }, {//5 [10][11]  4
+                    }, {// [14][15]  6
                         type : '2',
                         name : 'product',
                         dbf : 'ucc',
                         index : 'noa,product',
                         src : 'ucc_b.aspx'
                     }, {
-						type : '5', //10 [12]  5
+                        type : '8',// [16]  7
+                        name : 'xpart',
+                        value : t_part.split(',')
+                    }, {
+						type : '5', //[17]  8
 						name : 'kind',
 						value : [q_getPara('report.all')].concat(q_getPara('sys.stktype').split(','))
 					}, {
-						type : '5', //10 [13]  6
+						type : '5', //[18]  9
 						name : 'enda',
 						value : [q_getPara('report.all')].concat(('1@已結案,0@未結案').split(','))
 					}]
@@ -65,15 +77,25 @@
 				q_langShow();
                 q_popAssign();
 				
-				$('#txtDate1').mask('999/99/99');
+				$('#txtDate1').mask(r_picd);
                 $('#txtDate1').datepicker();
-                $('#txtDate2').mask('999/99/99');
+                $('#txtDate2').mask(r_picd);
                 $('#txtDate2').datepicker();
                 
-                $('#txtOdate1').mask('999/99/99');
+                $('#txtOdate1').mask(r_picd);
                 $('#txtOdate1').datepicker();
-                $('#txtOdate2').mask('999/99/99');
+                $('#txtOdate2').mask(r_picd);
                 $('#txtOdate2').datepicker();
+                
+                $('#txtRdate1').mask(r_picd);
+                $('#txtRdate1').datepicker();
+                $('#txtRdate2').mask(r_picd);
+                $('#txtRdate2').datepicker();
+                
+                $('#txtRc2date1').mask(r_picd);
+                $('#txtRc2date1').datepicker();
+                $('#txtRc2date2').mask(r_picd);
+                $('#txtRc2date2').datepicker();
                 
 	            var t_para = new Array();
 	            try{
@@ -91,7 +113,20 @@
                         break;
                 }
             }
-			function q_gtPost(s2) {}
+			function q_gtPost(t_name) {
+				switch(t_name){
+					case 'getPart':
+						var as = _q_appendData("part", "", true);
+						t_part = "";
+						if (as[0] != undefined) {
+							for(var i=0;i<as.length;i++){
+								t_part += (t_part.length==0?'':',')+as[i].noa+'@'+as[i].part;
+							}
+						}
+						q_gf('', 'z_ordc_rk'); 
+						break;
+				}
+			}
 		</script>
 		
 		<style type="text/css">

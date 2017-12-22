@@ -8,12 +8,17 @@ z_ordc_rk01:--z_ordc_rk01
 	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end
 	declare @t_bodate nvarchar(20) = case when '#non' = [6] then '' else [6] end
 	declare @t_eodate nvarchar(20) = case when '#non' = [7] then char(255) else [7] end
-	declare @t_btggno nvarchar(20) = case when '#non' = [8] then '' else [8] end
-	declare @t_etggno nvarchar(20) = case when '#non' = [9] then char(255) else [9] end
-	declare @t_bproductno nvarchar(20) = case when '#non' = [10] then '' else [10] end
-	declare @t_eproductno nvarchar(20) = case when '#non' = [11] then char(255) else [11] end
-	declare @t_kind nvarchar(max)= case when '#non' = [12] then '' else [12] end
-	declare @t_enda nvarchar(max)= case when '#non' = [13] then '' else [13] end
+	declare @t_brdate nvarchar(20) = case when '#non' = [8] then '' else [8] end
+	declare @t_erdate nvarchar(20) = case when '#non' = [9] then char(255) else [9] end
+	declare @t_brc2date nvarchar(20) = case when '#non' = [10] then '' else [10] end
+	declare @t_erc2date nvarchar(20) = case when '#non' = [11] then char(255) else [11] end
+	declare @t_btggno nvarchar(20) = case when '#non' = [12] then '' else [12] end
+	declare @t_etggno nvarchar(20) = case when '#non' = [13] then char(255) else [13] end
+	declare @t_bproductno nvarchar(20) = case when '#non' = [14] then '' else [14] end
+	declare @t_eproductno nvarchar(20) = case when '#non' = [15] then char(255) else [15] end
+	declare @t_partno nvarchar(max) = case when '#non' = [16] then '' else [16] end
+	declare @t_kind nvarchar(max)= case when '#non' = [17] then '' else [17] end
+	declare @t_enda nvarchar(max)= case when '#non' = [18] then '' else [18] end
 	----------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
@@ -24,6 +29,8 @@ z_ordc_rk01:--z_ordc_rk01
 		,noq nvarchar(10)
 		,datea nvarchar(10)
 		,odate nvarchar(10)
+		,rdate nvarchar(10)
+		,rc2date nvarchar(10)
 		,tggno nvarchar(20)
 		,tgg nvarchar(50)
 		,kind nvarchar(20)
@@ -46,23 +53,41 @@ z_ordc_rk01:--z_ordc_rk01
 		,notv float
 		,enda int
 		,memo nvarchar(max)
+		,partno nvarchar(20)
+		,part nvarchar(50)
 	)
 	insert into @tmp(gno,accy,noa,noq,datea,odate,tggno,tgg,kind,typea,productno,product
-		,spec,cspec,dime,width,lengthb,radius,size,mount,[weight],unit,price,[money],enda,memo,c1,notv)
+		,spec,cspec,dime,width,lengthb,radius,size,mount,[weight],unit,price,[money],enda,memo,c1,notv
+		,partno,part)
 	select '1',a.accy,a.noa,a.no2,a.rdate,b.odate,b.tggno,c.nick,b.kind,e.item,a.productno,a.product
 		,a.spec,d.product,a.dime,a.width,a.lengthb,a.radius,a.size,a.mount,a.[weight],a.unit,a.price,a.[total]
 		,case isnull(b.enda,0) when 1 then 1 else case isnull(a.enda,0) when 1 then 1 else 0 end end
-		,a.memo,a.c1,a.notv
+		,a.memo,a.c1,a.notv,b.partno,f.part
 	from view_ordcs a
 	left join view_ordc b on a.accy=b.accy and a.noa=b.noa
 	left join tgg c on c.noa=b.tggno
 	left join spec d on a.spec=d.noa
 	left join dbo.fnSplit(@t_stktype) e on b.kind = e.n
+	left join part f on b.partno=f.noa
 	where b.datea between @t_bdate and @t_edate
 	and b.odate between @t_bodate and @t_eodate
 	and b.tggno between @t_btggno and @t_etggno
 	and a.productno between @t_bproductno and @t_eproductno
 	and (len(@t_kind)=0 or b.kind=@t_kind)
+	and ISNULL(a.rdate,'') between @t_brdate and @t_erdate
+	and (len(@t_partno)=0 or CHARINDEX(','+b.partno+',',','+@t_partno+',')>0)
+	
+	update @tmp set rc2date=ISNULL(c.datea,'')
+	from @tmp a
+	left join view_rc2s b on a.noa=b.ordeno and a.noq=b.no2 and b.typea='1'
+	left join view_rc2 c on b.accy=c.accy and b.noa=c.noa
+	where c.noa is not null
+	
+	update @tmp set rc2date=ISNULL(c.datea,'')
+	from @tmp a
+	left join bccins b on a.noa=b.ordcno and a.noq=b.no2 and b.typea='1'
+	left join bccin c on b.noa=c.noa
+	where c.noa is not null
 	
 	if @t_enda = '1'
 		delete @tmp where enda!=1
@@ -87,21 +112,24 @@ z_ordc_rk01:--z_ordc_rk01
 	
 	select gno
 		,"<a href="+CHAR(34)+"JavaScript:q_box('ordc_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(recno as nvarchar)+"</a>" rr
-		,datea a01
-		,noa+'-'+noq a02
-		,tgg a03
-		,isnull(productno,'') a04a
-		,isnull(product,'') a04b
-		,cspec a05
-		,size a06
-		,unit a07
-		,dbo.getComma(mount,-1) a08
-		,dbo.getComma([weight],-1) a09
-		,dbo.getComma(price,-1) a10
-		,dbo.getComma([money],-1) a11
-		,dbo.getComma(c1,-1) a12
-		,dbo.getComma(notv,-1) a13
-		,memo a14
-		,case when enda=1 then '*' else '' end a15
+		,odate a01
+		,datea a02
+		,rdate a03
+		,rc2date a04
+		,part a05
+		,noa+'-'+noq a06
+		,tgg a07
+		,product a08
+		,cspec a09
+		,size a10
+		,unit a11
+		,dbo.getComma(mount,-1) a12
+		,dbo.getComma([weight],-1) a13
+		,dbo.getComma(price,-1) a14
+		,dbo.getComma([money],-1) a15
+		,dbo.getComma(c1,-1) a16
+		,dbo.getComma(notv,-1) a17
+		,memo a18
+		,case when enda=1 then '*' else '' end a19
 	from @tmp 
 	order by gno,recno;
