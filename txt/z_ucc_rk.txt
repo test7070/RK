@@ -441,7 +441,6 @@ z_ucc_rk01:--z_ucc_rk01
 	declare @t_uno nvarchar(max) = case when '#non'=[19] then '' else [19] end 
 	declare @t_cust nvarchar(max) = case when '#non'=N[20] then '' else N[20] end 
 	------------------------------------------------------------------
-	------------------------------------------------------------------
 	IF OBJECT_ID('tempdb..#z_ucc_rk01')is not null
 	BEGIN
 		drop table #z_ucc_rk01
@@ -486,16 +485,17 @@ z_ucc_rk01:--z_ucc_rk01
 		,po nvarchar(max)
 		,pn nvarchar(max)
 		,special nvarchar(20) --棧板編號
+		,[source] nvarchar(max)
 	)
 	insert into #z_ucc_rk01(tablea,accy,noa,noq
 	,pno,gno,kind,ckind,datea,uno,productno,product 
 	,spec,cspec,size,dime,width,lengthb,radius 
-	,mount,[weight],price,uno2,storeno,store,place) 
+	,mount,[weight],price,uno2,storeno,store,place,[source]) 
 	select b.tablea,b.accy,b.noa,b.noq 
 	,1,'1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
 	,b.spec,d.product,isnull(b.size,''),b.dime,b.width,b.lengthb,b.radius 
 	,a.emount,a.[eweight],b.sprice,b.uno2
-	,b.storeno,e.store,b.place
+	,b.storeno,e.store,b.place,b.[source]
 	from uccy a 
 	left join view_uccb b on a.uno=b.uno 
 	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n 
