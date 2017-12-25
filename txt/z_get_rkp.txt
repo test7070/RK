@@ -242,18 +242,16 @@ z_get_rkp01:--z_get_rkp01
 	where b.noa is not null
 	and a.noa = @t_noa
 	
-	update @tmp set size = CAST(dime as nvarchar)
-		+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end
-		+ case when width=0 then '' else '*'+CAST(width as nvarchar) end
-		+ case when lengthb=0 then ' mm' else '*'+CAST(lengthb as nvarchar) end
-	where kind='A1'
+	update @tmp set size = case  when dime=0 and radius=0 and width=0 and lengthb=0 then ''
+				else CAST(dime as nvarchar)
+				+ (case when radius=0 then '' else '+'+cast(radius as nvarchar) end) 
+				+'*'+CAST(width as nvarchar)
+				+'*'+case when lengthb=0 then 'COIL' else CAST(lengthb as nvarchar) end end
+	where kind='A1' or kind='A7'
 	update @tmp set size = CAST(dime as nvarchar)
 		+ case when width=0 then '' else '*'+CAST(width as nvarchar) end
 		+ case when lengthb=0 then ' mm' else '*'+CAST(lengthb as nvarchar) end
 	where kind='A4' or kind='A5'
-	update @tmp set size = case  when dime=0 and radius=0 and width=0 and lengthb=0 then ''
-				else CAST(dime as nvarchar)+'+'+cast(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+case when lengthb=0 then 'COIL' else CAST(lengthb as nvarchar) end end
-	where not (kind='A1' or kind='A4' or kind='A5')
 	
 	insert into @tmp(gno,noa,datea,mount,[weight],eweight)
 	select '2',noa,datea,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL(eweight,0)) 
