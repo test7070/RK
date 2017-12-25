@@ -73,6 +73,7 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 		,eweight decimal(25,8)
 		,[emoney] float
 		,isLast int
+		,[source] nvarchar(max)
 	)
 	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money]
 		,storeno,place,tt,tablea,accy,noa,noq,datea)
@@ -293,15 +294,16 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 		,storeno nvarchar(20)
 		,store nvarchar(20)
 		,place nvarchar(20)
+		,[source] nvarchar(max)
 	)
 	insert into #z_ucc_rk02_b(pno,gno,kind,ckind,datea,uno,productno,product 
 	,spec,cspec,size,dime,width,lengthb,radius 
 	,mount,[weight],price,total,uno2
-	,storeno,store,place) 
+	,storeno,store,place,[source]) 
 	select 1,'1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
 	,b.spec,d.product,isnull(b.size,''),b.dime,b.width,b.lengthb,b.radius 
 	,a.emount,a.[eweight],b.sprice,a.emoney,b.uno2 
-	,a.storeno,e.store,a.place
+	,a.storeno,e.store,a.place,b.[source]
 	from #z_ucc_rk02_a a
 	left join view_uccb b on a.uno=b.uno 
 	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n 
