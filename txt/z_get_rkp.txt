@@ -192,7 +192,6 @@ z_get_rkp01:--z_get_rkp01
 	declare @t_db nvarchar(max) = '[2]'
 	declare @t_noa nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	------------------------------------------------------------------------------------------------
-	------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1),
 		recno int,
@@ -212,23 +211,27 @@ z_get_rkp01:--z_get_rkp01
 		eweight float,
 		mweight float,
 		memo nvarchar(max)
+		
+		,kind nvarchar(20)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
 	)
 	insert into @tmp(recno,gno,datea,typea,accy,noa,noq
-		,productno,product,size,unit,mount,[weight],eweight,mweight,memo)	
+		,productno,product,unit,mount,[weight],eweight,mweight,memo
+		,kind,dime,radius,width,lengthb)	
 	select ROW_NUMBER()over(order by a.noa,a.noq),'1'
 		,b.datea,b.typea,a.accy,a.noa,a.noq
 		,a.productno,a.product
-		--,ISNULL(c.product,a.spec)
-			,case when e.noa is not null
-				then 
-				case when e.dime=0 and e.radius=0 and e.width=0 and e.lengthb=0 then ''
-				else CAST(e.dime as nvarchar)+'+'+cast(e.radius as nvarchar)+'*'+CAST(e.width as nvarchar)+'*'+case when e.lengthb=0 then 'COIL' else CAST(e.lengthb as nvarchar) end end
-			else
-				case  when j.dime=0 and j.radius=0 and j.width=0 and j.lengthb=0 then ''
-				else CAST(j.dime as nvarchar)+'+'+cast(j.radius as nvarchar)+'*'+CAST(j.width as nvarchar)+'*'+case when j.lengthb=0 then 'COIL' else CAST(j.lengthb as nvarchar) end end
-			end
+		
 		,a.unit
 		,a.mount,a.[weight],a.eweight,a.mweight,a.memo
+		,j.kind
+		,case when e.noa is not null then isnull(e.dime,0) else isnull(j.dime,0) end 
+		,case when e.noa is not null then isnull(e.radius,0) else isnull(j.radius,0) end
+		,case when e.noa is not null then isnull(e.width,0) else isnull(j.width,0) end
+		,case when e.noa is not null then isnull(e.lengthb,0) else isnull(j.lengthb,0) end
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	left join spec c on a.spec=c.noa
@@ -238,6 +241,19 @@ z_get_rkp01:--z_get_rkp01
 	left join view_uccb j on a.uno=j.uno
 	where b.noa is not null
 	and a.noa = @t_noa
+	
+	update @tmp set size = CAST(dime as nvarchar)
+		+ case when radius=0 then '' else '+'+CAST(radius as nvarchar) end
+		+ case when width=0 then '' else '*'+CAST(width as nvarchar) end
+		+ case when lengthb=0 then ' mm' else '*'+CAST(lengthb as nvarchar) end
+	where kind='A1'
+	update @tmp set size = CAST(dime as nvarchar)
+		+ case when width=0 then '' else '*'+CAST(width as nvarchar) end
+		+ case when lengthb=0 then ' mm' else '*'+CAST(lengthb as nvarchar) end
+	where kind='A4' or kind='A5'
+	update @tmp set size = case  when dime=0 and radius=0 and width=0 and lengthb=0 then ''
+				else CAST(dime as nvarchar)+'+'+cast(radius as nvarchar)+'*'+CAST(width as nvarchar)+'*'+case when lengthb=0 then 'COIL' else CAST(lengthb as nvarchar) end end
+	where not (kind='A1' or kind='A4' or kind='A5')
 	
 	insert into @tmp(gno,noa,datea,mount,[weight],eweight)
 	select '2',noa,datea,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),SUM(ISNULL(eweight,0)) 
