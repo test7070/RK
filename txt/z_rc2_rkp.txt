@@ -405,7 +405,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 		deallocate cursor_table
 	end
 	insert into @tmpb(gno,pno,typea,productno,product,size,unit,mount,[weight])
-	select '3',3,'','','','',unit,sum(mount),sum(totweight)
+	select '4',4,'','','','',unit,sum(mount),sum(totweight)
 	from @tmpb
 	where gno='1'
 	group by unit
@@ -418,7 +418,7 @@ z_rc2_rkp01:--z_rc2_rkp01
 	begin
 		while (@n+@t_endcount)%@t_pagecount!=0
 		begin
-			insert into @tmpb(gno,pno)values('4',4)
+			insert into @tmpb(gno,pno)values('3',3)
 			set @n = @n + 1
 		end
 	end
@@ -426,12 +426,12 @@ z_rc2_rkp01:--z_rc2_rkp01
 	begin
 		while @n%@t_pagecount!=0
 		begin
-			insert into @tmpb(gno,pno)values('4',4)
+			insert into @tmpb(gno,pno)values('3',3)
 			set @n = @n + 1
 		end
 		while (@n+@t_endcount)%@t_pagecount!=0
 		begin
-			insert into @tmpb(gno,pno)values('4',4)
+			insert into @tmpb(gno,pno)values('3',3)
 			set @n = @n + 1
 		end
 	end
