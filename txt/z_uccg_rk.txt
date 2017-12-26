@@ -999,7 +999,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- INA
@@ -1013,7 +1013,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- CUTS 
@@ -1021,13 +1021,13 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	select a.bno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
-		,round(c.sprice*ISNULL(a.[weight],0),0)
+		,ISNULL(a.[total],0)
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.bno=c.uno
 	where b.datea<@t_bdate
 	and len(a.bno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 
@@ -1045,7 +1045,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- GET
@@ -1059,7 +1059,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- CUBT    皮膜、保護膜  都是看M  (weight)
@@ -1073,7 +1073,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 		
@@ -1101,7 +1101,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)>0
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1116,7 +1116,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)>0
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1141,7 +1141,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and a.typea='1'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1157,7 +1157,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_get d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and d.noa is null --排除領料轉來的
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
@@ -1167,13 +1167,13 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	select a.bno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
-		,round(c.sprice*ISNULL(a.[weight],0),0)
+		,ISNULL(a.[total],0)
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.bno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.bno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1198,7 +1198,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- GET
@@ -1213,7 +1213,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_cub d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0 
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -1221,6 +1221,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and d.noa is not null -- 生產作業轉來的
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+
 	--===============================================================================================	
 	--本期領料
 	declare @tmpe table(
@@ -1243,7 +1244,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_cub d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -1272,7 +1273,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_get d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -1300,7 +1301,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -1328,7 +1329,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and b.typea='1'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1353,7 +1354,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and b.typea='2'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1378,7 +1379,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('報廢',b.typea)>0 
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1403,7 +1404,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and a.typea='2'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -1418,7 +1419,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('退料',b.typea)>0 
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
