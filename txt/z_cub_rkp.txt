@@ -2323,6 +2323,7 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		sel int identity(1,1)
 		,gno nvarchar(10)
 		,makeno nvarchar(30)
+		,tmakeno nvarchar(30)
 		,pno int
 		,typea nvarchar(30)
 		,datea nvarchar(20)
@@ -2393,13 +2394,13 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 	while(@@FETCH_STATUS <> -1)
 	begin	
 		--CUB
-		insert into @tmpb(makeno,pno,typea,datea,accy,noa,noq,size,memo
+		insert into @tmpb(makeno,tmakeno,pno,typea,datea,accy,noa,noq,size,memo
 			,mount1,length1,weight1
 			,mount2,weight2
 			,weight3
 			,weight4
 			,mins)
-		select a.makeno,1,'生產',b.datea,a.accy,a.noa,a.noq
+		select a.makeno,a.makeno,1,'生產',b.datea,a.accy,a.noa,a.noq
 		--生產："LENGTHB"固定以" C"表達
 			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)
 				+'*'+CAST(a.width as nvarchar)+'*C'
@@ -2416,13 +2417,13 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		left join view_cub b on a.accy=b.accy and a.noa=b.noa
 		where a.makeno=@makeno
 		--CUC
-		insert into @tmpb(makeno,pno,typea,datea,accy,noa,noq,size,memo
+		insert into @tmpb(makeno,tmakeno,pno,typea,datea,accy,noa,noq,size,memo
 			,mount1,length1,weight1
 			,mount2,weight2
 			,weight3
 			,weight4
 			,mins)
-		select a.cubno,2,b.typea,b.datea,a.accy,a.noa,a.noq
+		select a.cubno,a.cubno,2,b.typea,b.datea,a.accy,a.noa,a.noq
 			--分條：最後請固定加上"C"
 			,a.size2+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar) + case when CHARINDEX('分條',b.typea)>0 then 'C' else '' end
 			,a.memo
@@ -2438,13 +2439,13 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
 		where a.cubno = @makeno
 		--CUT
-		insert into @tmpb(makeno,pno,typea,datea,accy,noa,noq,size,memo
+		insert into @tmpb(makeno,tmakeno,pno,typea,datea,accy,noa,noq,size,memo
 			,mount1,length1,weight1
 			,mount2,weight2
 			,weight3
 			,weight4
 			,mins)
-		select a.cname,3,'進倉',b.datea,a.accy,a.noa,a.noq
+		select a.cname,a.cname,3,'進倉',b.datea,a.accy,a.noa,a.noq
 			,CAST(a.dime as nvarchar)+'+'+CAST(a.radius as nvarchar)
 				+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)
 			,a.memo
@@ -2457,6 +2458,32 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		left join view_cut b on a.accy=b.accy and a.noa=b.noa
 		where a.cname = @makeno
 		
+		--再投入
+		insert into @tmpb(makeno,tmakeno,pno,typea,datea,accy,noa,noq,size,memo
+			,mount1,length1,weight1
+			,mount2,weight2
+			,weight3
+			,weight4
+			,mins)
+		select @makeno,b.makeno,5,'再投入',c.datea,b.accy,b.noa,b.noq
+		--生產："LENGTHB"固定以" C"表達
+			,CAST(b.dime as nvarchar)+'+'+CAST(b.radius as nvarchar)
+				+'*'+CAST(b.width as nvarchar)+'*C'
+			,b.memo
+			,0 mount1
+			,ISNULL(b.w09,0) length1
+			,isnull(b.hweight,0) weight1
+			,0 mount2
+			,0 weight2
+			,0 weight3
+			,ISNULL(b.price,0) weight04
+			,ISNULL(b.mins,0) mins
+		from view_cuts a
+		left join view_cubs b on a.bno=b.uno
+		left join view_cub c on b.accy=c.accy and b.noa=c.noa
+		where a.cname=@makeno	
+		and b.noa is not null
+		
 		fetch next from cursor_table
 		into @makeno
 	end
@@ -2465,8 +2492,8 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 	
 	update @tmpb set gno='1'
 	
-	insert into @tmpb(gno,makeno,typea,mount1,weight1,mount2,weight2,weight3,weight4,mins)
-	select '2',makeno,typea,SUM(ISNULL(mount1,0)),SUM(ISNULL(weight1,0)),SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0))
+	insert into @tmpb(gno,pno,makeno,tmakeno,typea,mount1,weight1,mount2,weight2,weight3,weight4,mins)
+	select '2',4,makeno,makeno,typea,SUM(ISNULL(mount1,0)),SUM(ISNULL(weight1,0)),SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0))
 		,SUM(ISNULL(weight3,0)),SUM(ISNULL(weight4,0)),SUM(ISNULL(mins,0))
 	from @tmpb
 	where typea='進倉'
@@ -2502,10 +2529,14 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 			where x.accy=a.accy and x.noa=a.noa and y.groupano='A05') b
 	where len(ISNULL(pvcno,''))=0
 	
-	select gno
+	--換頁
+	insert into @tmpb(makeno,gno,pno)select makeno,'3',999 from @tmpb group by makeno
+	
+	select gno,pno
 		, cust a01
 		, pveno+' '+pve a02
-		, makeno a03
+		, makeno a03a
+		, tmakeno a03b
 		, bsize a04
 		, dbo.getComma(w01,0) a05
 		, contractno a06
@@ -2532,7 +2563,7 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		,mins b12
 		,memo b13
 	from @tmpb 
-	order by makeno,gno,pno;
+	order by makeno,pno;
 
 z_cub_rkp07:--z_cub_rkp07 包裝費用明細表
 	SET QUOTED_IDENTIFIER OFF 
