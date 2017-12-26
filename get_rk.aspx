@@ -135,7 +135,7 @@
 					alert(t_err);
 					return;
 				}
-				if($('#txtProductno').val().length>0 || $('#txtProduct').val().length>0){
+				/*if($('#txtProductno').val().length>0 || $('#txtProduct').val().length>0){
 					var t_weight = 0;
 					for(var i=0;i<q_bbsCount;i++){
 						t_weight = q_add(t_weight,q_float('txtWeight_'+i));
@@ -144,7 +144,7 @@
 						alert('重量異常!');
 						return;
 					}
-				}
+				}*/
 				
 				Lock(1, {
 					opacity : 0
