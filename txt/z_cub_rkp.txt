@@ -3233,7 +3233,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	left join @tmpUno c on a.uno=c.uno
 	where c.sel is not null
-	and case when ISNULL(a.gweight,0)!=0 then a.gweight else ISNULL(a.[weight],0) end!=0
+	and (charindex('盤點',b.typea)>0 or (case when ISNULL(a.gweight,0)!=0 then a.gweight else ISNULL(a.[weight],0) end)!=0)
 	
 	--- CUBT
 	insert into #z_cub_rkp03(datea,tablea,accy,noa,noq,uno,[weight])
@@ -3307,13 +3307,13 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		--假如還有庫存就不需要調整金額
 		if @xweight>=@weight
 		begin
-			--找最後一筆調整金額
+			--找最後一筆調整金額,  盤點的不改
 			set @diff = @xcost - isnull(@money,0)
 
 			if @diff!=0
 			begin
 				declare cursor_table2 cursor for
-				select sel,scost from #z_cub_rkp03 where uno=@xuno order by recno desc
+				select sel,scost from #z_cub_rkp03 where uno=@xuno and isnull(isucce,0)!=1 order by recno desc
 				open cursor_table2
 				fetch next from cursor_table2
 				into @sel,@scost
@@ -3455,13 +3455,13 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		--假如還有庫存就不需要調整金額
 		if @xweight>=@weight
 		begin
-			--找最後一筆調整金額
+			--找最後一筆調整金額,  盤點的不改
 			set @diff = @xcost - isnull(@money,0)
 
 			if @diff!=0
 			begin
 				declare cursor_table2 cursor for
-				select sel,scost from #z_cub_rkp03 where uno=@xuno order by recno desc
+				select sel,scost from #z_cub_rkp03 where uno=@xuno and isnull(isucce,0)!=1 order by recno desc
 				open cursor_table2
 				fetch next from cursor_table2
 				into @sel,@scost
