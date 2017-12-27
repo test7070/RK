@@ -8,7 +8,6 @@ z_cub_rk02:--z_cub_rk02
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	declare @t_chk nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	----------------------------------------------------------------------------------------------
-	----------------------------------------------------------------------------------------------
 	declare @tmpa table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -30,6 +29,7 @@ z_cub_rk02:--z_cub_rk02
 		,radius float
 		,[weight] float
 		,[mount] float
+		,spec nvarchar(max)
 
 		--皮膜
 		,pvcno nvarchar(20)
@@ -101,6 +101,11 @@ z_cub_rk02:--z_cub_rk02
 		delete @tmpa where datea<@t_bdate
 	else
 		delete @tmpa where datea<@t_bdate and w23=0
+		
+	update @tmpa set spec=isnull(c.product,b.spec)
+	from @tmpa a
+	left join view_uccb b on a.uno=b.uno
+	left join spec c on b.spec=c.noa	
 	-------------------------------------------------------------------------------------------------------
 	insert into @tmpa(gno,w01,w02,w03,w04,w05,w06
 		,w08,w09,w10,w11,w12
@@ -126,7 +131,7 @@ z_cub_rk02:--z_cub_rk02
 
 	select a.gno
 		,ROW_NUMBER()over(order by a.gno,a.accy,a.noa,a.noq) rr
-		,'' a01--盤點NO
+		,a.spec a01
 		,a.ordeno a02--合約書
 		,b.product a03--分類	
 		,a.makeno a04--製造批號	
@@ -247,6 +252,11 @@ z_cub_rk01:--z_cub_rk01
 	where b.datea between @t_bdate and @t_edate
 	and len(ISNULL(a.makeno,''))>0
 	order by a.makeno,b.datea
+	
+	update @tmp set spec=isnull(c.product,b.spec)
+	from @tmp a
+	left join view_uccb b on a.uno=b.uno
+	left join spec c on b.spec=c.noa
 
 	-- cucs
 	update @tmp set y01=weight6
@@ -521,8 +531,7 @@ z_cub_rk01:--z_cub_rk01
 		,size= case when len(ISNULL(a.size,''))=0 then b.size else a.size end
 	from @tmp a
 	outer apply(select * from @tmp where recno2=1 and accy=a.accy and noa=a.noa and noq=a.noq) b
-	
-	
+
 	select a.gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when b.recno=1 and len(a.datea)>0 then a.datea else '' end+'</a>' dd
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(a.recno as nvarchar) +'</a>' rr
