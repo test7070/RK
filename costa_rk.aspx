@@ -18,7 +18,7 @@
             q_desc = 1;
             q_tables = 's';
             var q_name = "costa";
-            var q_readonly = ['txtNoa'];
+            var q_readonly = ['txtNoa','txtPrice1','txtPrice2','txtPrice3','txtPrice4','txtPrice5','txtPrice6','txtPrice7','txtPrice8'];
             var q_readonlys = [];
             var bbmNum = [['txtPrice1',15,2,1],['txtPrice2',15,2,1],['txtPrice3',15,2,1],['txtPrice4',15,2,1]
             	,['txtPrice5',15,2,1],['txtPrice6',15,2,1],['txtPrice7',15,2,1],['txtPrice8',15,2,1]];
@@ -27,14 +27,34 @@
             var bbsMask = [];
             q_sqlCount = 6;
             brwCount = 6;
-            brwCount2 = 3;
+            brwCount2 = 6;
             brwList = [];
             brwNowPage = 0;
             brwKey = 'Noa';
             aPop = new Array(
 				['txtProductno_', 'btnProduct_', 'chgitem', 'noa,item', 'txtProductno_,txtProduct_', 'chgitem_b.aspx']);
 			var t_mech = '';
-			function sum() {}
+			function sum() {
+				var price1=0,price2=0,price3=0,price4=0,price5=0,price6=0,price7=0,price8=0;
+				for(var i=0;i<q_bbsCount;i++){
+					price1 = q_add(price1,q_float('txtPrice1_'+i));
+					price2 = q_add(price2,q_float('txtPrice2_'+i));
+					price3 = q_add(price3,q_float('txtPrice3_'+i));
+					price4 = q_add(price4,q_float('txtPrice4_'+i));
+					price5 = q_add(price5,q_float('txtPrice5_'+i));
+					price6 = q_add(price6,q_float('txtPrice6_'+i));
+					price7 = q_add(price7,q_float('txtPrice7_'+i));
+					price8 = q_add(price8,q_float('txtPrice8_'+i));
+				}
+				$('#txtPrice1').val(price1);
+				$('#txtPrice2').val(price2);
+				$('#txtPrice3').val(price3);
+				$('#txtPrice4').val(price4);
+				$('#txtPrice5').val(price5);
+				$('#txtPrice6').val(price6);
+				$('#txtPrice7').val(price7);
+				$('#txtPrice8').val(price8);
+			}
             
             $(document).ready(function() {
                 bbmKey = ['noa'];
@@ -108,17 +128,32 @@
             function bbsAssign() {
                 for (var i = 0; i < q_bbsCount; i++) {
 					$('#lblNo_' + i).text(i + 1);
-					if (!$('#btnMinus_' + i).hasClass('isAssign')) {
-						$('#txtProductno_' + i).bind('contextmenu', function(e) {
-                            //滑鼠右鍵/
-                            e.preventDefault();
-                            var n = $(this).attr('id').replace('txtProductno_', '');
-                            $('#btnProduct_'+n).click();
-                        });
-                       	$('#txtWages_'+i).change(function(e){sum();});
-                        $('#txtMakeless_'+i).change(function(e){sum();});
-                        $('#txtMoney_'+i).change(function(e){sum();});
-					}
+					if ($('#btnMinus_' + i).hasClass('isAssign'))
+						continue;
+					$('#txtPrice1_'+i).change(function(e){
+						sum();
+					});
+					$('#txtPrice2_'+i).change(function(e){
+						sum();
+					});
+					$('#txtPrice3_'+i).change(function(e){
+						sum();
+					});
+					$('#txtPrice4_'+i).change(function(e){
+						sum();
+					});
+					$('#txtPrice5_'+i).change(function(e){
+						sum();
+					});
+					$('#txtPrice6_'+i).change(function(e){
+						sum();
+					});
+					$('#txtPrice7_'+i).change(function(e){
+						sum();
+					});
+					$('#txtPrice8_'+i).change(function(e){
+						sum();
+					});
 				}
                 _bbsAssign();
             }
@@ -151,21 +186,38 @@
             function bbsSave(as) {
             	var chkNum = false;
             	try{
-            		var t_wages = $.trim(as['wages']);
-            		var t_makeless = $.trim(as['makeless']);
-            		var t_money = $.trim(as['money']);
-            		t_wages = t_wages.replace(',','');
-            		t_makeless = t_makeless.replace(',','');
-            		t_money = t_money.replace(',','');
+            		var t_price1 = $.trim(as['price1']);
+            		var t_price2 = $.trim(as['price2']);
+            		var t_price3 = $.trim(as['price3']);
+            		var t_price4 = $.trim(as['price4']);
+            		var t_price5 = $.trim(as['price5']);
+            		var t_price6 = $.trim(as['price6']);
+            		var t_price7 = $.trim(as['price7']);
+            		var t_price8 = $.trim(as['price8']);
             		
-            		t_wages = t_wages.length==0?0:parseFloat(t_wages);
-            		t_makeless = t_makeless.length==0?0:parseFloat(t_makeless);
-            		t_money = t_money.length==0?0:parseFloat(t_money);
+            		t_price1 = t_price1.replace(',','');
+            		t_price2 = t_price2.replace(',','');
+            		t_price3 = t_price3.replace(',','');
+            		t_price4 = t_price4.replace(',','');
+            		t_price5 = t_price5.replace(',','');
+            		t_price6 = t_price6.replace(',','');
+            		t_price7 = t_price7.replace(',','');
+            		t_price8 = t_price8.replace(',','');
+            		t_price1 = t_price1.length==0?0:parseFloat(t_price1);
+            		t_price2 = t_price2.length==0?0:parseFloat(t_price2);
+            		t_price3 = t_price3.length==0?0:parseFloat(t_price3);
+            		t_price4 = t_price4.length==0?0:parseFloat(t_price4);
+            		t_price5 = t_price5.length==0?0:parseFloat(t_price5);
+            		t_price6 = t_price6.length==0?0:parseFloat(t_price6);
+            		t_price7 = t_price7.length==0?0:parseFloat(t_price7);
+            		t_price8 = t_price8.length==0?0:parseFloat(t_price8);
             		
-            		if(t_wages!=0 || t_makeless!=0 || t_money!=0)
+            		if(as['makeno'].length>0 || t_price1!=0 || t_price2!=0 || t_price3!=0 || t_price4!=0
+        				|| t_price5!=0 || t_price6!=0 || t_price7!=0 || t_price8!=0)
             			chkNum = true;
-            	}catch(e){}
-            	           	
+            	}catch(e){
+            		
+            	}
                 if (!chkNum) {
                     as[bbsKey[1]] = '';
                     return;
@@ -435,40 +487,61 @@
 					<td colspan="3"><textarea id="txtMemo" rows="5" class="txt c1"> </textarea></td>
 				</tr>
 			</table>
-		</div>	
-		<!-- 2017/07/20 先暫時不用BBS -->
-		<div class='dbbs' style="display:none;">
+		</div>
+		<div style="width: 900px;">
+			<table>
+				<tr style='color:white; background:#003366;' > 				
+					<td align="center" colspan="1" rowspan="2" style="width:50px;"><input class="btn"  id="btnPlus" type="button" value='+' style="font-weight: bold;"  /></td>
+					<td align="center" colspan="1" rowspan="2" style="width:50px;"><a style="font-weight: bold;text-align: center;display: block;width:95%;"> </a></td>
+					<td align="center" colspan="1" rowspan="2" style="width:120px;"><a>製造批號</a></td>
+					<td align="center" colspan="4" rowspan="1" style="width:320px;"><a>生產</a></td>
+					<td align="center" colspan="4" rowspan="1" style="width:320px;"><a>裁切</a></td>
+				</tr>
+				<tr style='color:white; background:#003366;' > 	
+					<!--  -->
+					<!--  -->
+					<!-- 製造批號 -->
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>直接人工</a></td>
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>製造費用</a></td>
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>電費</a></td>
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>瓦斯費</a></td>
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>直接人工</a></td>
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>製造費用</a></td>
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>電費</a></td>
+					<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>瓦斯費</a></td>
+				</tr>
+			</table>
+		</div>
+		<div class='dbbs' style="width: 900px;">
 				<table id="tbbs" class='tbbs'>
-					<tr style='color:white; background:#003366;' >
-						<td style="width:20px;">
-							<input id="btnPlus" type="button" style="font-size: medium; font-weight: bold;" value="＋"/>
-						</td>
-						<td style="width:20px;"> </td>
-						<td style="width:150px;display:none;" align="center">製造批號</td>
-						<td style="width:80px;display:none;" align="center">工時比率</td>
-						<td style="width:200px;display:none;" align="center">品名</td>
-						<td style="width:100px;" align="center">工作站</td>
-						<td style="width:100px;" align="center">直接人工</td>
-						<td style="width:100px;" align="center">製造費用</td>
-						<td style="width:100px;" align="center">變動成本</td>
+					<tr style='color:white; background:#003366;display:none;' >
+						<td style="width:50px;"> </td>
+						<td style="width:50px;"> </td>
+						<td style="width:120px;" align="center">製造批號</td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>直接人工</a></td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>製造費用</a></td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>電費</a></td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>瓦斯費</a></td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>直接人工</a></td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>製造費用</a></td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>電費</a></td>
+						<td align="center" colspan="1" rowspan="1" style="width:80px;"><a>瓦斯費</a></td>
 					</tr>
 					<tr style='background:#cad3ff;'>
-						<td align="center">
+						<td style="width:50px;" align="center">
 							<input id="btnMinus.*" type="button" style="font-size: medium; font-weight: bold;" value="－"/>
 							<input id="txtNoq.*" type="text" style="display:none;"/>
 						</td>
-						<td><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
-						<td style="display:none;"><input id="txtMakeno.*" type="text" style="float:left;width:95%;"/> </td>
-						<td style="display:none;"><input id="txtMount.*" type="text" class="num" style="float:left;width:95%;"/> </td>
-						<td style="display:none;">
-							<input id="txtProductno.*" type="text" style="float:left;width:40%;"/> 
-							<input id="txtProduct.*" type="text" style="float:left;width:50%;"/>
-							<input id="btnProduct.*" type="button" style="display:none;"/>
-						</td>
-						<td><select id='cmbMechno.*' style="float:left;width:95%;"> </select></td>
-						<td><input id="txtWages.*" type="text" class="num" style="float:left;width:95%;"/> </td>
-						<td><input id="txtMakeless.*" type="text" class="num" style="float:left;width:95%;"/> </td>
-						<td><input id="txtMoney.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:50px;"><a id="lblNo.*" style="font-weight: bold;text-align: center;display: block;"> </a></td>
+						<td style="width:120px;"><input id="txtMakeno.*" type="text" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice1.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice2.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice3.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice4.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice5.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice6.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice7.*" type="text" class="num" style="float:left;width:95%;"/> </td>
+						<td style="width:80px;"><input id="txtPrice8.*" type="text" class="num" style="float:left;width:95%;"/> </td>
 					</tr>
 				</table>
 			</div>
