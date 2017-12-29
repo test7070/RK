@@ -75,7 +75,7 @@
 		,unit nvarchar(20)
 		,datea nvarchar(10)
 		,tggno nvarchar(20)
-		,tgg nvarchar(20)
+		,tgg nvarchar(100)
 		,hard nvarchar(max)
 		,uno nvarchar(30)
 		,shelflife nvarchar(20)

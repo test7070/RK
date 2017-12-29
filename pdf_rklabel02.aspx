@@ -66,7 +66,7 @@
 		,makeno nvarchar(30)
 		,pdate nvarchar(20) --製造日期
 		,custno nvarchar(20)
-		,cust nvarchar(30)
+		,cust nvarchar(100)
 		,ordeno nvarchar(20)
 		,ordenoq nvarchar(10)
 		,nweight float --淨重

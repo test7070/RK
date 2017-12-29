@@ -43,7 +43,7 @@
 		,noa nvarchar(20)
 		,noq nvarchar(10)
 		,pallet nvarchar(20)
-		,cust nvarchar(20)
+		,cust nvarchar(100)
 	)
 	insert into @tmp(accy,noa,noq,pallet,cust)
 	select a.accy,a.noa,a.noq,a.itemno,c.head
