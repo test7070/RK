@@ -290,6 +290,7 @@
 		<style type="text/css">
 			#dmain {
 				/*overflow: hidden;*/
+				width: 1800px;
 			}
 			.dview {
 				float: left;
@@ -378,9 +379,7 @@
 			input[type="text"], input[type="button"] {
 				font-size: medium;
 			}
-			.dbbs {
-				width: 800px;
-			}
+			.dbbs {}
 			.dbbs .tbbs {
 				margin: 0;
 				padding: 2px;
@@ -413,23 +412,36 @@
 	ondrop="event.dataTransfer.dropEffect='none';event.stopPropagation(); event.preventDefault();"
 	>
 		<!--#include file="../inc/toolbar.inc"-->
-		<div class="dview" id="dview" >
-			<table class="tview" id="tview" >
-				<tr>
-					<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
-					<td style="width:100px; color:black;"><a id='vewMon'> </a></td>
-					<td style="width:100px; color:black;"><a>直接人工</a></td>
-					<td style="width:100px; color:black;"><a>製造費用</a></td>
-				</tr>
-				<tr>
-					<td><input id="chkBrow.*" type="checkbox" style=''/></td>
-					<td id='mon' style="text-align: center;">~mon</td>
-					<td id='wages' style="text-align: center;">~wages</td>
-					<td id='makeless' style="text-align: center;">~makeless</td>
-				</tr>
-			</table>
-		</div>
-		<div class='dbbm'>
+		<div>
+			<div class="dview" id="dview" >
+				<table class="tview" id="tview" >
+					<tr>
+						<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
+						<td style="width:100px; color:black;"><a id='vewMon'> </a></td>
+						<td style="width:80px; color:black;"><a>直接人工</a></td>
+						<td style="width:80px; color:black;"><a>製造費用</a></td>
+						<td style="width:80px; color:black;"><a>電費</a></td>
+						<td style="width:80px; color:black;"><a>瓦斯費</a></td>
+						<td style="width:80px; color:black;"><a>直接人工</a></td>
+						<td style="width:80px; color:black;"><a>製造費用</a></td>
+						<td style="width:80px; color:black;"><a>電費</a></td>
+						<td style="width:80px; color:black;"><a>瓦斯費</a></td>	
+					</tr>
+					<tr>
+						<td><input id="chkBrow.*" type="checkbox" style=''/></td>
+						<td id='mon' style="text-align: center;">~mon</td>
+						<td id='price1' style="text-align: center;">~price1</td>
+						<td id='price2' style="text-align: center;">~price2</td>
+						<td id='price3' style="text-align: center;">~price3</td>
+						<td id='price4' style="text-align: center;">~price4</td>
+						<td id='price5' style="text-align: center;">~price5</td>
+						<td id='price6' style="text-align: center;">~price6</td>
+						<td id='price7' style="text-align: center;">~price7</td>
+						<td id='price8' style="text-align: center;">~price8</td>
+					</tr>
+				</table>
+			</div>
+			<div class='dbbm'>
 			<table class="tbbm" id="tbbm">
 				<tr style="height:1px;">
 					<td> </td>
@@ -487,6 +499,7 @@
 					<td colspan="3"><textarea id="txtMemo" rows="5" class="txt c1"> </textarea></td>
 				</tr>
 			</table>
+		</div>
 		</div>
 		<div style="width: 900px;">
 			<table>

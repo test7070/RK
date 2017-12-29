@@ -3874,25 +3874,29 @@ z_cub_rkp01:--z_cub_rkp01  費用攤提
 	
 	declare @t_mon nvarchar(max) = case when '#non' = [3] then '' else [3] end
 	--------------------------------------------------------------------------------------------------
-	declare @money01 float = 0 --人工費用
-	declare @money02 float = 0 --製造費用
-	declare @money03 float = 0 --電費
-	declare @money04 float = 0 --瓦斯費
-	
-	declare @tmins float = 0
-	declare @tmoney01 float=0
-	declare @tmoney02 float=0
-	declare @tmoney03 float=0
-	declare @tmoney04 float=0
-	
-	declare @sel int
-	declare @m01 float
-	declare @m02 float
-	declare @m03 float
-	declare @m04 float
+	declare @tmp table(
+		makeno nvarchar(30)
+		,m01 float --人工費用
+		,m02 float --製造費用
+		,m03 float --電費
+		,m04 float --瓦斯費
+		,totmins float --總工時
+		,tm01 float 
+		,tm02 float 
+		,tm03 float 
+		,tm04 float 
+	)
 	--生產  CUB
-	select @money01=0,@money02=0,@money03=0,@money04=0
-	select @money01=price1,@money02=price2,@money03=price3,@money04=price4 from costa where mon=@t_mon
+	insert into @tmp(makeno,m01,m02,m03,m04)
+	select isnull(a.makeno,'')
+		,sum(isnull(a.price1,0))
+		,sum(isnull(a.price2,0))
+		,sum(isnull(a.price3,0))
+		,sum(isnull(a.price4,0))
+	from costas a
+	left join costa b on a.noa=b.noa
+	where b.mon=@t_mon
+	group by isnull(a.makeno,'')
 	
 	IF OBJECT_ID('tempdb..#z_cub_rkp04a')is not null
 	BEGIN
@@ -3905,105 +3909,173 @@ z_cub_rkp01:--z_cub_rkp01  費用攤提
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,makeno nvarchar(30)
+		,tmakeno nvarchar(30)
 		,mins float
 		,money01 float
 		,money02 float
 		,money03 float
 		,money04 float
 	)
-	insert into #z_cub_rkp04a(tablea,datea,accy,noa,noq,mins)
-	select 'cubs',b.datea,a.accy,a.noa,a.noq,isnull(a.mins,0)
+	insert into #z_cub_rkp04a(tablea,datea,accy,noa,noq,makeno,tmakeno,mins)
+	select 'cubs',b.datea,a.accy,a.noa,a.noq,a.makeno,ISNULL(c.makeno,''),isnull(a.mins,0)
 	from view_cubs a
 	left join view_cub b on a.noa=b.noa
+	left join @tmp c on a.makeno=c.makeno
 	where left(b.datea,6)=@t_mon
 	and isnull(a.mins,0)!=0
 	order by a.accy,a.noa,a.noq
-	
-	set @tmins = 0
-	select @tmins = sum(mins) from #z_cub_rkp04a
-	
-	if ISNULL(@tmins,0)>0
-	begin
-		update #z_cub_rkp04a set money01 = round(@money01*mins/@tmins,0)
-			,money02 = round(@money02*mins/@tmins,0)
-			,money03 = round(@money03*mins/@tmins,0)
-			,money04 = round(@money04*mins/@tmins,0)
-	end
-	
-	--尾差由最後一筆攤提,但金額最多扣到0
-	select @tmoney01=0,@tmoney02=0,@tmoney03=0,@tmoney04=0
-	select @tmoney01=SUM(money01),@tmoney02=SUM(money02),@tmoney03=SUM(money03),@tmoney04=SUM(money04) from #z_cub_rkp04a
+	--工時統計
+	update @tmp set totmins=ISNULL(b.mins,0)
+	from @tmp a
+	left join (select tmakeno,SUM(ISNULL(mins,0)) mins
+		from #z_cub_rkp04a 
+		group by tmakeno) b on a.makeno=b.tmakeno
+	--初步分攤金額
+	update #z_cub_rkp04a set 
+		money01 = case when b.totmins=0 then 0 else round(b.m01*a.mins/b.totmins,0) end
+		,money02 = case when b.totmins=0 then 0 else round(b.m02*a.mins/b.totmins,0) end
+		,money03 = case when b.totmins=0 then 0 else round(b.m03*a.mins/b.totmins,0) end
+		,money04 = case when b.totmins=0 then 0 else round(b.m04*a.mins/b.totmins,0) end
+	from #z_cub_rkp04a a
+	left join @tmp b on a.tmakeno=b.makeno
 
-	set @tmoney01 = ISNULL(@tmoney01,0) - @money01
-	set @tmoney02 = ISNULL(@tmoney02,0) - @money02
-	set @tmoney03 = ISNULL(@tmoney03,0) - @money03
-	set @tmoney04 = ISNULL(@tmoney04,0) - @money04
-		
+	--統計金額
+	update @tmp set tm01=b.money01,tm02=b.money02,tm03=b.money03,tm04=b.money04
+	from @tmp a
+	left join (select tmakeno
+		,SUM(money01) money01 
+		,SUM(money02) money02 
+		,SUM(money03) money03 
+		,SUM(money04) money04 
+		from #z_cub_rkp04a group by tmakeno) b on a.makeno=b.tmakeno 
+
+	--尾差由最後一筆攤提,但金額最多扣到0
+	declare @makeno nvarchar(30)
+	declare @m01 float
+	declare @m02 float
+	declare @m03 float
+	declare @m04 float
+	declare @sel int
+	declare @money01 float
+	declare @money02 float
+	declare @money03 float
+	declare @money04 float
+	
 	declare cursor_table cursor for
-	select sel,money01,money02,money03,money04 from #z_cub_rkp04a order by datea,noa,noq
+	select makeno,tm01-m01,tm02-m02,tm03-m03,tm04-m04 from @tmp
 	open cursor_table
 	fetch next from cursor_table
-	into @sel,@m01,@m02,@m03,@m04
+	into @makeno,@m01,@m02,@m03,@m04
 	while(@@FETCH_STATUS <> -1)
 	begin	
-		if @m01 > 0 and @m01 >= @tmoney01
-		begin
-			update #z_cub_rkp04a set money01 = money01 - @tmoney01 where sel = @sel
-			set @tmoney01 = 0
-		end 
-		else if @m01 > 0 and @m01 < @tmoney01
-		begin
-			update #z_cub_rkp04a set money01 = 0 where sel = @sel
-			set @tmoney01 = @tmoney01 - @m01
-		end
 		
-		if @m02 > 0 and @m02 >= @tmoney02
-		begin
-			update #z_cub_rkp04a set money02 = money02 - @tmoney02 where sel = @sel
-			set @tmoney02 = 0
-		end 
-		else if @m02 > 0 and @m02 < @tmoney02
-		begin
-			update #z_cub_rkp04a set money02 = 0 where sel = @sel
-			set @tmoney02 = @tmoney02 - @m02
+		declare cursor_table2 cursor for
+		select sel,money01,money02,money03,money04 
+		from #z_cub_rkp04a 
+		where makeno=@makeno
+		order by datea desc,accy desc,noa desc,noq desc
+		open cursor_table2
+		fetch next from cursor_table2
+		into @sel,@money01,@money01,@money01,@money01
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			if @m01=0 and @m02=0 and @m03=0 and @m04=0
+			begin
+				break
+			end
+			
+			if @money01>0 and @money01>=@m01
+			begin
+				update #z_cub_rkp04a set money01 = money01 - @m01 where sel=@sel
+				set @m01 = 0
+			end
+			else if @money01>0 and @money01<@m01
+			begin 
+				update #z_cub_rkp04a set money01 = 0 where sel=@sel
+				set @m01 = @m01 - @money01
+			end
+			
+			if @money02>0 and @money02>=@m02
+			begin
+				update #z_cub_rkp04a set money02 = money02 - @m02 where sel=@sel
+				set @m02 = 0
+			end
+			else if @money02>0 and @money02<@m02
+			begin 
+				update #z_cub_rkp04a set money02 = 0 where sel=@sel
+				set @m02 = @m02 - @money02
+			end
+			
+			if @money03>0 and @money03>=@m03
+			begin
+				update #z_cub_rkp04a set money03 = money03 - @m03 where sel=@sel
+				set @m03 = 0
+			end
+			else if @money03>0 and @money03<@m03
+			begin 
+				update #z_cub_rkp04a set money03 = 0 where sel=@sel
+				set @m03 = @m03 - @money03
+			end
+			
+			if @money04>0 and @money04>=@m01
+			begin
+				update #z_cub_rkp04a set money04 = money04 - @m04 where sel=@sel
+				set @m01 = 0
+			end
+			else if @money04>0 and @money04<@m01
+			begin 
+				update #z_cub_rkp04a set money04 = 0 where sel=@sel
+				set @m04 = @m04 - @money04
+			end
+
+			fetch next from cursor_table2
+			into @sel,@money01,@money01,@money01,@money01
 		end
+		close cursor_table2
+		deallocate cursor_table2
 		
-		if @m03 > 0 and @m03 >= @tmoney03
-		begin
-			update #z_cub_rkp04a set money03 = money03 - @tmoney03 where sel = @sel
-			set @tmoney02 = 0
-		end 
-		else if @m03 > 0 and @m03 < @tmoney03
-		begin
-			update #z_cub_rkp04a set money03 = 0 where sel = @sel
-			set @tmoney03 = @tmoney03 - @m03
-		end
-		
-		if @m04 > 0 and @m04 >= @tmoney04
-		begin
-			update #z_cub_rkp04a set money04 = money04 - @tmoney04 where sel = @sel
-			set @tmoney04 = 0
-		end 
-		else if @m04 > 0 and @m04 < @tmoney04
-		begin
-			update #z_cub_rkp04a set money04 = 0 where sel = @sel
-			set @tmoney04 = @tmoney04 - @m04
-		end
-		
-		if @tmoney01=0 and @tmoney02=0 and @tmoney03=0 and @tmoney04=0
-		begin
-			break
-		end
+		--假如尾差依舊消不掉,直接找最後一筆消掉
+		update #z_cub_rkp04a set money01 = money01-@m01
+			,money02 = money02-@m02
+			,money03 = money03-@m03
+			,money04 = money04-@m04
+		from #z_cub_rkp04a a
+		outer apply (select top 1 sel from #z_cub_rkp04a order by datea desc,accy desc,noa desc,noq desc) b
+		where a.sel=b.sel
 		
 		fetch next from cursor_table
-		into @sel,@m01,@m02,@m03,@m04
+		into @makeno,@m01,@m02,@m03,@m04
 	end
 	close cursor_table
 	deallocate cursor_table
+	--TEST
+	--update @tmp set tm01=b.money01,tm02=b.money02,tm03=b.money03,tm04=b.money04
+	--from @tmp a
+	--left join (select tmakeno
+	--	,SUM(money01) money01 
+	--	,SUM(money02) money02 
+	--	,SUM(money03) money03 
+	--	,SUM(money04) money04 
+	--	from #z_cub_rkp04a group by tmakeno) b on a.makeno=b.tmakeno 
+		
+	--select * from @tmp
+	--select * from #z_cub_rkp04a where makeno='M175A25-1'
+	--select * from #z_cub_rkp04a
+	
 	-----------------------------------------------------------------------
 	--裁切  CUC
-	select @money01=0,@money02=0,@money03=0,@money04=0
-	select @money01=price5,@money02=price6,@money03=price7,@money04=price8 from costa where mon=@t_mon
+	delete @tmp
+	insert into @tmp(makeno,m01,m02,m03,m04)
+	select isnull(a.makeno,'')
+		,sum(isnull(a.price5,0))
+		,sum(isnull(a.price6,0))
+		,sum(isnull(a.price7,0))
+		,sum(isnull(a.price8,0))
+	from costas a
+	left join costa b on a.noa=b.noa
+	where b.mon=@t_mon
+	group by isnull(a.makeno,'')
 	
 	IF OBJECT_ID('tempdb..#z_cub_rkp04b')is not null
 	BEGIN
@@ -4016,102 +4088,137 @@ z_cub_rkp01:--z_cub_rkp01  費用攤提
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,makeno nvarchar(30)
+		,tmakeno nvarchar(30)
 		,mins float
 		,money01 float
 		,money02 float
 		,money03 float
 		,money04 float
 	)
-	insert into #z_cub_rkp04b(tablea,datea,accy,noa,noq,mins)
-	select 'cucs',b.datea,a.accy,a.noa,a.noq,isnull(a.mins,0)
+	insert into #z_cub_rkp04b(tablea,datea,accy,noa,noq,makeno,tmakeno,mins)
+	select 'cucs',b.datea,a.accy,a.noa,a.noq,a.cubno,ISNULL(c.makeno,''),isnull(a.mins,0)
 	from view_cucs a
 	left join view_cuc b on a.noa=b.noa
+	left join @tmp c on a.cubno=c.makeno
 	where left(b.datea,6)=@t_mon
 	and isnull(a.mins,0)!=0
 	order by a.accy,a.noa,a.noq
 	
-	set @tmins = 0
-	select @tmins = sum(mins) from #z_cub_rkp04b
-	
-	if ISNULL(@tmins,0)>0
-	begin
-		update #z_cub_rkp04b set money01 = round(@money01*mins/@tmins,0)
-			,money02 = round(@money02*mins/@tmins,0)
-			,money03 = round(@money03*mins/@tmins,0)
-			,money04 = round(@money04*mins/@tmins,0)
-	end
-	
-	--尾差由最後一筆攤提,但金額最多扣到0
-	select @tmoney01=0,@tmoney02=0,@tmoney03=0,@tmoney04=0
-	select @tmoney01=SUM(money01),@tmoney02=SUM(money02),@tmoney03=SUM(money03),@tmoney04=SUM(money04) from #z_cub_rkp04b
+	--工時統計
+	update @tmp set totmins=ISNULL(b.mins,0)
+	from @tmp a
+	left join (select tmakeno,SUM(ISNULL(mins,0)) mins
+		from #z_cub_rkp04b 
+		group by tmakeno) b on a.makeno=b.tmakeno
+	--初步分攤金額
+	update #z_cub_rkp04b set 
+		money01 = case when b.totmins=0 then 0 else round(b.m01*a.mins/b.totmins,0) end
+		,money02 = case when b.totmins=0 then 0 else round(b.m02*a.mins/b.totmins,0) end
+		,money03 = case when b.totmins=0 then 0 else round(b.m03*a.mins/b.totmins,0) end
+		,money04 = case when b.totmins=0 then 0 else round(b.m04*a.mins/b.totmins,0) end
+	from #z_cub_rkp04b a
+	left join @tmp b on a.tmakeno=b.makeno
 
-	set @tmoney01 = ISNULL(@tmoney01,0) - @money01
-	set @tmoney02 = ISNULL(@tmoney02,0) - @money02
-	set @tmoney03 = ISNULL(@tmoney03,0) - @money03
-	set @tmoney04 = ISNULL(@tmoney04,0) - @money04
-		
+	--統計金額
+	update @tmp set tm01=b.money01,tm02=b.money02,tm03=b.money03,tm04=b.money04
+	from @tmp a
+	left join (select tmakeno
+		,SUM(money01) money01 
+		,SUM(money02) money02 
+		,SUM(money03) money03 
+		,SUM(money04) money04 
+		from #z_cub_rkp04b group by tmakeno) b on a.makeno=b.tmakeno 
+
+	--尾差由最後一筆攤提,但金額最多扣到0
 	declare cursor_table cursor for
-	select sel,money01,money02,money03,money04 from #z_cub_rkp04b order by datea,noa,noq
+	select makeno,tm01-m01,tm02-m02,tm03-m03,tm04-m04 from @tmp
 	open cursor_table
 	fetch next from cursor_table
-	into @sel,@m01,@m02,@m03,@m04
+	into @makeno,@m01,@m02,@m03,@m04
 	while(@@FETCH_STATUS <> -1)
 	begin	
-		if @m01 > 0 and @m01 >= @tmoney01
-		begin
-			update #z_cub_rkp04b set money01 = money01 - @tmoney01 where sel = @sel
-			set @tmoney01 = 0
-		end 
-		else if @m01 > 0 and @m01 < @tmoney01
-		begin
-			update #z_cub_rkp04b set money01 = 0 where sel = @sel
-			set @tmoney01 = @tmoney01 - @m01
-		end
 		
-		if @m02 > 0 and @m02 >= @tmoney02
-		begin
-			update #z_cub_rkp04b set money02 = money02 - @tmoney02 where sel = @sel
-			set @tmoney02 = 0
-		end 
-		else if @m02 > 0 and @m02 < @tmoney02
-		begin
-			update #z_cub_rkp04b set money02 = 0 where sel = @sel
-			set @tmoney02 = @tmoney02 - @m02
+		declare cursor_table2 cursor for
+		select sel,money01,money02,money03,money04 
+		from #z_cub_rkp04b
+		where makeno=@makeno
+		order by datea desc,accy desc,noa desc,noq desc
+		open cursor_table2
+		fetch next from cursor_table2
+		into @sel,@money01,@money01,@money01,@money01
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			if @m01=0 and @m02=0 and @m03=0 and @m04=0
+			begin
+				break
+			end
+			
+			if @money01>0 and @money01>=@m01
+			begin
+				update #z_cub_rkp04b set money01 = money01 - @m01 where sel=@sel
+				set @m01 = 0
+			end
+			else if @money01>0 and @money01<@m01
+			begin 
+				update #z_cub_rkp04b set money01 = 0 where sel=@sel
+				set @m01 = @m01 - @money01
+			end
+			
+			if @money02>0 and @money02>=@m02
+			begin
+				update #z_cub_rkp04b set money02 = money02 - @m02 where sel=@sel
+				set @m02 = 0
+			end
+			else if @money02>0 and @money02<@m02
+			begin 
+				update #z_cub_rkp04b set money02 = 0 where sel=@sel
+				set @m02 = @m02 - @money02
+			end
+			
+			if @money03>0 and @money03>=@m03
+			begin
+				update #z_cub_rkp04b set money03 = money03 - @m03 where sel=@sel
+				set @m03 = 0
+			end
+			else if @money03>0 and @money03<@m03
+			begin 
+				update #z_cub_rkp04b set money03 = 0 where sel=@sel
+				set @m03 = @m03 - @money03
+			end
+			
+			if @money04>0 and @money04>=@m01
+			begin
+				update #z_cub_rkp04b set money04 = money04 - @m04 where sel=@sel
+				set @m01 = 0
+			end
+			else if @money04>0 and @money04<@m01
+			begin 
+				update #z_cub_rkp04b set money04 = 0 where sel=@sel
+				set @m04 = @m04 - @money04
+			end
+
+			fetch next from cursor_table2
+			into @sel,@money01,@money01,@money01,@money01
 		end
+		close cursor_table2
+		deallocate cursor_table2
 		
-		if @m03 > 0 and @m03 >= @tmoney03
-		begin
-			update #z_cub_rkp04b set money03 = money03 - @tmoney03 where sel = @sel
-			set @tmoney02 = 0
-		end 
-		else if @m03 > 0 and @m03 < @tmoney03
-		begin
-			update #z_cub_rkp04b set money03 = 0 where sel = @sel
-			set @tmoney03 = @tmoney03 - @m03
-		end
-		
-		if @m04 > 0 and @m04 >= @tmoney04
-		begin
-			update #z_cub_rkp04b set money04 = money04 - @tmoney04 where sel = @sel
-			set @tmoney04 = 0
-		end 
-		else if @m04 > 0 and @m04 < @tmoney04
-		begin
-			update #z_cub_rkp04b set money04 = 0 where sel = @sel
-			set @tmoney04 = @tmoney04 - @m04
-		end
-		
-		if @tmoney01=0 and @tmoney02=0 and @tmoney03=0 and @tmoney04=0
-		begin
-			break
-		end
+		--假如尾差依舊消不掉,直接找最後一筆消掉
+		update #z_cub_rkp04b set money01 = money01-@m01
+			,money02 = money02-@m02
+			,money03 = money03-@m03
+			,money04 = money04-@m04
+		from #z_cub_rkp04b a
+		outer apply (select top 1 sel from #z_cub_rkp04b order by datea desc,accy desc,noa desc,noq desc) b
+		where a.sel=b.sel
 		
 		fetch next from cursor_table
-		into @sel,@m01,@m02,@m03,@m04
+		into @makeno,@m01,@m02,@m03,@m04
 	end
 	close cursor_table
 	deallocate cursor_table
-	
+	----------------------------------------------------------------------------------------------------------
 	-- UPDATE DATA
 	declare @table nvarchar(20)
 	declare @accy nvarchar(20)
