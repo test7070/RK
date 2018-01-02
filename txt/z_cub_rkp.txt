@@ -3373,7 +3373,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @noa nvarchar(20)
 	declare @noq nvarchar(10)
 	declare @n int = 10
-	
+
 	while @n > 0
 	begin
 		declare cursor_table cursor for
@@ -3392,8 +3392,16 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 			from view_inas a
 			left join view_get b on a.noa=b.noa
 			where a.uno=@xuno and b.noa is not null 
+	
+			if exists(select * from #z_cub_rkp03 where tablea='gets' and noa=@noa)
+			begin
+				select @money=SUM(ISNULL(scost,0)) from #z_cub_rkp03 where tablea='gets' and noa=@noa
+			end
+			else
+			begin
+				select @money=SUM(ISNULL(scost,0)) from view_gets where noa=@noa
+			end
 			
-			select @money=SUM(ISNULL(scost,0)) from #z_cub_rkp03 where tablea='gets' and noa=@noa
 			insert into @tmpd(accy,noa,noq,uno,[money])
 			select @accy,@noa,@noq,@xuno,@money
 
@@ -3404,6 +3412,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		deallocate cursor_table
 		set @n = @n - 1
 	end
+	
 	---- 回寫ina total
 	declare cursor_table cursor for
 	select accy,noa,noq,[money] from @tmpd
@@ -3507,8 +3516,6 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	end
 	close cursor_table
 	deallocate cursor_table
-	
-
 	-----------------------------------------------------------------------
 	-- 更新資料  回寫到各TABLE
 	-----------------------------------------------------------------------
