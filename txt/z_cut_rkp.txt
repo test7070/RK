@@ -19,23 +19,47 @@ z_cut_rkp02:--z_cut_rkp02
 		,accy nvarchar(20)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,ordeno nvarchar(20)
+		,ordenoq nvarchar(10)
 		,makeno nvarchar(20)
+		,uno nvarchar(30)
 		,productno nvarchar(20)
 		,product nvarchar(max)
 		,size nvarchar(max)
 		,pvcno nvarchar(20)
 		,pvc nvarchar(max)
-		,custno nvarchar(20)
-		,cust nvarchar(max)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,hweight float
 		,mount float
-		,[weight] float
+		,weight float
+		,custno nvarchar(20)
+		,cust nvarchar(30)
+		,bno nvarchar(30)
+		,special nvarchar(20)
+		,memo nvarchar(max)
+		,datea nvarchar(20)
+		,storeno nvarchar(20)
+		,store nvarchar(50)
+		,place nvarchar(20)
+		,btime nvarchar(20)
+		,etime nvarchar(20)
+		,mins float
+		,sprice float
+		,total float
 	)
-	
-	insert into @tmp(gno,pno,accy,noa,noq,makeno,productno,product,size
-		,pvcno,pvc,custno,cust,mount,[weight])
-	select '1',1,a.accy,a.noa,a.noq,a.cname,a.productno,a.product
+	insert into @tmp(gno,pno,accy,noa,noq,ordeno,ordenoq
+		,makeno,uno,productno,product,size,pvcno,pvc
+		,dime,radius,width,lengthb,hweight,mount,weight,custno,cust
+		,bno,special,memo,datea,storeno,store,place,btime,etime,mins,sprice,total)
+	select '1' gno,1 pno,a.accy,a.noa,a.noq,a.ordeno,a.no2
+		,a.cname,a.uno,a.productno,a.product
 		,CAST(a.dime as nvarchar)+case when isnull(a.radius,0)=0 then '' else '+' end+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)  size
-		,a.spec,a.class,a.custno,a.comp,isnull(a.mount,0),isnull(a.[weight],0)
+		,a.spec,a.class
+		,a.dime,a.radius,a.width,a.lengthb,a.hweight,a.mount,a.weight,a.custno,a.cust
+		,a.bno,a.special,a.memo,a.datea,a.storeno,a.store,a.place,a.btime,a.etime,a.mins,a.sprice,a.total
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	where b.noa is not null
@@ -50,21 +74,35 @@ z_cut_rkp02:--z_cut_rkp02
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by productno,pvcno,size,makeno) recno from @tmp) b on a.sel=b.sel
 	
-	insert into @tmp(gno,pno,mount,[weight])
-	select '2',2,SUM(mount),SUM([weight]) from @tmp
+	insert into @tmp(gno,pno,hweight,mount,[weight],mins,total)
+	select '2',2,SUM([hweight]),SUM(mount),SUM([weight]),SUM([mins]),SUM([total]) from @tmp
 	
 	select gno
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,recno rr 
 		,"cut_rk?noa=\'"+noa+"\' and "+cast(recno as nvarchar)+"=$rr?"+accy ghref  
-		,makeno a01
-		,product a02
-		,size a03
-		,pvcno a04
-		,pvc a05
-		,cust a06
-		,dbo.getComma(mount,-1) a07
-		,dbo.getComma([weight],-1) a08
+		,ordeno+'-'+ordenoq a01
+		,makeno a02
+		,uno a03
+		,product a04
+		,pvcno a05
+		,pvc a06
+		,size a07
+		,dbo.getComma([hweight],-1) a08
+		,dbo.getComma([mount],-1) a09
+		,dbo.getComma([weight],-1) a10
+		,cust a11
+		,bno a12
+		,special a13
+		,memo a14
+		,datea a15
+		,store a16
+		,place a17
+		,btime a18
+		,etime a19
+		,dbo.getComma([mins],-1) a20
+		,dbo.getComma([sprice],-1) a21
+		,dbo.getComma([total],-1) a22
 	from @tmp
 	order by pno,recno;
 
