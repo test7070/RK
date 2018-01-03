@@ -58,7 +58,7 @@ z_cut_rkp02:--z_cut_rkp02
 		,a.cname,a.uno,a.productno,a.product
 		,CAST(a.dime as nvarchar)+case when isnull(a.radius,0)=0 then '' else '+' end+CAST(a.radius as nvarchar)+'*'+CAST(a.width as nvarchar)+'*'+CAST(a.lengthb as nvarchar)  size
 		,a.spec,a.class
-		,a.dime,a.radius,a.width,a.lengthb,a.hweight,a.mount,a.weight,a.custno,a.cust
+		,a.dime,a.radius,a.width,a.lengthb,a.hweight,a.mount,a.weight,a.custno,a.comp
 		,a.bno,a.special,a.memo,a.datea,a.storeno,a.store,a.place,a.btime,a.etime,a.mins,a.sprice,a.total
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
