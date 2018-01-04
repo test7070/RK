@@ -986,14 +986,16 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 		,[weight] decimal(20,5)
 		,price decimal(20,5)
 		,total decimal(20,5)
+		,datea nvarchar(20)
 	)
 	---------- 進
 	---- RC2
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.mount,0)
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0)
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[total],0)
+		,b.datea
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
@@ -1003,11 +1005,12 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- INA
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
 		,ISNULL(a.[total],0)
+		,b.datea
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
@@ -1017,11 +1020,12 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- CUTS 
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.bno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
 		,ISNULL(a.[total],0)
+		,b.datea
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.bno=c.uno
@@ -1035,11 +1039,12 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	--==============================
 	---------- 出
 	---- VCC
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,case when b.typea='1' then -1 else 1 end * case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
 		,case when b.typea='1' then -1 else 1 end * case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,case when b.typea='1' then -1 else 1 end *isnull(a.scost,0)
+		,b.datea
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
@@ -1049,11 +1054,12 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- GET
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,-1 * case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
 		,-1 * case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,-1 * isnull(a.scost,0)
+		,b.datea
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
@@ -1063,11 +1069,12 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- CUBT    皮膜、保護膜  都是看M  (weight)
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,0
 		,-1 * ISNULL(a.[weight],0)
 		,-1 * isnull(a.scost,0)
+		,b.datea
 	from view_cubt a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
@@ -1079,7 +1086,8 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 		
 	-- 重量為0 就當作庫存也沒有了
 	---update @tmpa set mount=0,total=0 where [weight] = 0
-	
+
+
 	--===============================================================================================
 	--盤點調整  
 	declare @tmpb table(
@@ -1427,10 +1435,33 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	--期末存貨
 
 	--------------------------------------------------------------------------------------------------
+	--以開帳資料為準
+	declare @tmp_itemb table(
+		uno nvarchar(30)
+	)
+	insert into @tmp_itemb(uno)
+	select a.uno
+	from @tmpa a
+	left join itemb b on a.uno=b.uno
+	where b.uno is not null and a.datea<=b.datea
+	group by a.uno
+	
+	delete @tmpa
+	from @tmpa a
+	left join itemb b on a.uno=b.uno
+	where b.uno is not null and a.datea<=b.datea
+	
+	insert into @tmpa(uno,mount,weight,price,total,datea)
+	select a.uno,1,a.mount,a.price,a.money,a.datea 
+	from itemb a
+	left join @tmp_itemb b on a.uno=b.uno
+	where b.uno is null
+	
 	-- tmpa 01
 	insert into @tmp(uno,mount01,weight01,total01)
 	select uno,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),round(SUM(ISNULL([total],0)),0)
-	from @tmpa 
+	from @tmpa a
+--	left join itemb 
 	group by uno
 	--重量0   數量 金額都歸0
 	---update @tmp set mount01=0,total01=0 where weight01=0

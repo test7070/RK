@@ -2,6 +2,8 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 		, @t_kind nvarchar(max),@t_bproductno nvarchar(max),@t_eproductno nvarchar(max))
 	returns @tmp table(		
 		sel int identity(1,1)
+		,gno nvarchar(20)
+		,pno int
 		,uno nvarchar(20)
 		--期初存貨
 		,mount01 decimal(20,5)
@@ -75,100 +77,108 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 		,[weight] decimal(20,5)
 		,price decimal(20,5)
 		,total decimal(20,5)
+		,datea nvarchar(20)
 	)
 	---------- 進
 	---- RC2
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.mount,0)
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0)
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[total],0)
+		,b.datea
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
-	
 	---- INA
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
 		,ISNULL(a.[total],0)
+		,b.datea
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- CUTS 
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.bno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
-		,round(c.sprice*ISNULL(a.[weight],0),0)
+		,ISNULL(a.[total],0)
+		,b.datea
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.bno=c.uno
 	where b.datea<@t_bdate
 	and len(a.bno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+
 	---- CUBU 沒有CUBU
 	--==============================
 	---------- 出
 	---- VCC
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,case when b.typea='1' then -1 else 1 end * case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
 		,case when b.typea='1' then -1 else 1 end * case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,case when b.typea='1' then -1 else 1 end *isnull(a.scost,0)
+		,b.datea
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- GET
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,-1 * case when isnull(a.gmount,0)!=0 then isnull(a.gmount,0) else ISNULL(a.mount,0) end
 		,-1 * case when isnull(a.[gweight],0)!=0 then isnull(a.[gweight],0) else ISNULL(a.[weight],0) end
 		,-1 * isnull(a.scost,0)
+		,b.datea
 	from view_gets a
 	left join view_get b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- CUBT    皮膜、保護膜  都是看M  (weight)
-	insert into @tmpa(uno,mount,[weight],total)	
+	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
 		,0
 		,-1 * ISNULL(a.[weight],0)
 		,-1 * isnull(a.scost,0)
+		,b.datea
 	from view_cubt a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
 	where b.datea<@t_bdate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 		
 	-- 重量為0 就當作庫存也沒有了
 	---update @tmpa set mount=0,total=0 where [weight] = 0
-	
+
+
 	--===============================================================================================
 	--盤點調整  
 	declare @tmpb table(
@@ -190,7 +200,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)>0
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -205,7 +215,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)>0
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -230,7 +240,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and a.typea='1'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -246,7 +256,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_get d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and d.noa is null --排除領料轉來的
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
@@ -256,13 +266,13 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	select a.bno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
-		,round(c.sprice*ISNULL(a.[weight],0),0)
+		,ISNULL(a.[total],0)
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.bno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.bno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -287,7 +297,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
 	---- GET
@@ -302,7 +312,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_cub d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0 
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -310,6 +320,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	and d.noa is not null -- 生產作業轉來的
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+
 	--===============================================================================================	
 	--本期領料
 	declare @tmpe table(
@@ -332,7 +343,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_cub d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -361,7 +372,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_get d on a.noa=d.noa
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -389,7 +400,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('盤點',b.typea)=0
 	and CHARINDEX('退料',b.typea)=0 
 	and CHARINDEX('報廢',b.typea)=0 
@@ -417,7 +428,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and b.typea='1'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -442,7 +453,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and b.typea='2'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -467,7 +478,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('報廢',b.typea)>0 
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -492,7 +503,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and a.typea='2'
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -507,7 +518,7 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	left join view_uccb c on a.uno=c.uno
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
-	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A8')
+	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and CHARINDEX('退料',b.typea)>0 
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
@@ -515,10 +526,33 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	--期末存貨
 
 	--------------------------------------------------------------------------------------------------
+	--以開帳資料為準
+	declare @tmp_itemb table(
+		uno nvarchar(30)
+	)
+	insert into @tmp_itemb(uno)
+	select a.uno
+	from @tmpa a
+	left join itemb b on a.uno=b.uno
+	where b.uno is not null and a.datea<=b.datea
+	group by a.uno
+	
+	delete @tmpa
+	from @tmpa a
+	left join itemb b on a.uno=b.uno
+	where b.uno is not null and a.datea<=b.datea
+	
+	insert into @tmpa(uno,mount,weight,price,total,datea)
+	select a.uno,1,a.mount,a.price,a.money,a.datea 
+	from itemb a
+	left join @tmp_itemb b on a.uno=b.uno
+	where b.uno is null
+	
 	-- tmpa 01
 	insert into @tmp(uno,mount01,weight01,total01)
 	select uno,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),round(SUM(ISNULL([total],0)),0)
-	from @tmpa 
+	from @tmpa a
+--	left join itemb 
 	group by uno
 	--重量0   數量 金額都歸0
 	---update @tmp set mount01=0,total01=0 where weight01=0
@@ -671,6 +705,37 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	-- 重量為0 就當作庫存也沒有了
 	-----update @tmp set mount12=0,total12=0 where weight12 = 0
 	
+	update @tmp set gno='1',pno=1
+	
+	insert into @tmp(gno,pno
+		,mount01,weight01,total01
+		,mount02,weight02,total02
+		,mount03,weight03,total03
+		,mount04,weight04,total04
+		,mount05,weight05,total05
+		,mount06,weight06,total06
+		,mount07,weight07,total07
+		,mount08,weight08,total08
+		,mount09,weight09,total09
+		,mount10,weight10,total10
+		,mount11,weight11,total11
+		,mount12,weight12,total12)
+	select '2',2
+		,SUM(ISNULL(mount01,0)),SUM(ISNULL(weight01,0)),SUM(ISNULL(total01,0))
+		,SUM(ISNULL(mount02,0)),SUM(ISNULL(weight02,0)),SUM(ISNULL(total02,0))
+		,SUM(ISNULL(mount03,0)),SUM(ISNULL(weight03,0)),SUM(ISNULL(total03,0))
+		,SUM(ISNULL(mount04,0)),SUM(ISNULL(weight04,0)),SUM(ISNULL(total04,0))
+		,SUM(ISNULL(mount05,0)),SUM(ISNULL(weight05,0)),SUM(ISNULL(total05,0))
+		,SUM(ISNULL(mount06,0)),SUM(ISNULL(weight06,0)),SUM(ISNULL(total06,0))
+		,SUM(ISNULL(mount07,0)),SUM(ISNULL(weight07,0)),SUM(ISNULL(total07,0))
+		,SUM(ISNULL(mount08,0)),SUM(ISNULL(weight08,0)),SUM(ISNULL(total08,0))
+		,SUM(ISNULL(mount09,0)),SUM(ISNULL(weight09,0)),SUM(ISNULL(total09,0))
+		,SUM(ISNULL(mount10,0)),SUM(ISNULL(weight10,0)),SUM(ISNULL(total10,0))
+		,SUM(ISNULL(mount11,0)),SUM(ISNULL(weight11,0)),SUM(ISNULL(total11,0))
+		,SUM(ISNULL(mount12,0)),SUM(ISNULL(weight12,0)),SUM(ISNULL(total12,0))
+	from @tmp
+	where pno=1
+	
 	-- 尾差
 	update @tmp set total12=0 where weight12=0 and total12 between -2 and 0
 
@@ -687,8 +752,5 @@ ALTER function [dbo].[material_rk](@t_bdate nvarchar(max), @t_edate nvarchar(max
 	update @tmp set price11 = round(total11/weight11,3) where weight11!=0
 	update @tmp set price12 = round(total12/weight12,3) where weight12!=0
 	
-	--select b.kind,a.* 
-	--from @tmp a
-	--left join view_uccb b on a.uno=b.uno
 	return
 	end
