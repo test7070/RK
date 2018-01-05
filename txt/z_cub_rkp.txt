@@ -1981,7 +1981,8 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 
 	update @tmp set total02=round(weight02*price02,0)
 		--,total03=round(weight03*price03,0)
-		,total04=round(weight04*price04,0),total05=round(weight05*price05,0)
+		,total04=round(weight04*price04,0)
+		,total05=round(weight05*price05,0)
 		,total06=round(weight06*price06,0),total07=round(weight07*price07,0)
 -----------------------------------------------------------------
 	--尾差修正
@@ -2023,11 +2024,11 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		begin
 			update @tmp set total03=@total10 where sel=@sel
 		end
-		else if @total04>0
+		else if @total04>=0
 		begin
 			update @tmp set total04=total04 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
 		end
-		else if @total05>0
+		/*else if @total05>0
 		begin
 			update @tmp set total05=total05 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
 		end
@@ -2038,7 +2039,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		else if @total07>0
 		begin
 			update @tmp set total07=total07 + (total01+total02+total03-total04-total05-total06-total07-total10) where sel=@sel
-		end
+		end*/
 		
 		fetch next from cursor_table
 		into @sel,@weight01,@weight02,@weight03,@weight04,@weight05,@weight06,@weight07,@weight10
@@ -2047,6 +2048,8 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	end
 	close cursor_table
 	deallocate cursor_table	
+	
+	update @tmp set price04 = case when weight04!=0 then ROUND(total04/weight04,4) else 0 end
 	-----------------------------------------------------------------
 	-- 期初資料排在前面 itema
 	update @tmp set recno= b.recno
@@ -2073,6 +2076,32 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,sum(isnull(total05,0)),sum(isnull(total06,0)),sum(isnull(total07,0)),sum(isnull(total10,0))
 		,sum(isnull(mins,0))
 	from @tmp	
+
+
+
+
+
+--select a.makeno,a.weight,a.total,b.mount,b.money 
+--from @tmp a
+--left join itema b on a.makeno=b.makeno
+--where len(isnull(a.makeno,''))>0
+--	--and( a.weight!=b.mount
+--and a.total!=b.money
+--	--)
+
+--select * from itema a 
+--left join @tmp b on a.makeno=b.makeno
+--where b.makeno is null	
+	
+--select a.makeno,a.weight01,a.total01,b.mount,b.money 
+--from @tmp a 
+--left join itema b on a.makeno=b.makeno
+--where b.makeno is not null
+--and a.total01 !=b.money	
+--return
+	
+--order by a.makeno
+--return
 
 	select gno
 		,@t_bdate + '~' + @t_edate a00

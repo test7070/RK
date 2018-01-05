@@ -244,5 +244,12 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
 		--update @tmpa set emoney=round(w23/w01*total,0)
 		update @tmpa set emoney=case when isnull(w23,0)>0 then total-m09-m10+m15 else 0 end
+		--開帳資料
+		update @tmpa set w23 = b.mount, emoney = b.money
+		from @tmpa a
+		left join itema b on a.makeno=b.makeno
+		where b.makeno is not null
+		and emoney!=0
+		
 		return
 	end
