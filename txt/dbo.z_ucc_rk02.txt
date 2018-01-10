@@ -1,317 +1,272 @@
 
-ALTER PROCEDURE [dbo].[z_ucc_rk02](
-	@t_stktype nvarchar(max)
-	,@t_kind nvarchar(max)
-	,@t_edate nvarchar(max)
-	,@t_store nvarchar(max))
-as
-begin
-	--庫存表 ref.z_ucc_rk02
-	------------------------------------------------------------------------
-	--  一個批號只會有一個倉庫一個儲位
-	IF OBJECT_ID('tempdb..#z_ucc_rk02_a')is not null
-	BEGIN
-		drop table #z_ucc_rk02_a
-	END
-	create table #z_ucc_rk02_a(
+
+ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
+	,@t_makeno nvarchar(max)
+	,@t_pvcno nvarchar(max) 
+	,@t_bcustno nvarchar(max) 
+	,@t_ecustno nvarchar(max))
+	returns @tmpa table(	
 		sel int identity(1,1)
-		,uno nvarchar(30)
-		,productno nvarchar(20)
-		
-		,mount decimal(25,8)
-		,[weight] decimal(25,8)
-		,[money] float
-		
-		,storeno nvarchar(20)
-		,place nvarchar(20)
-		
-		,tt nvarchar(10)
-		,tablea nvarchar(20)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,startdate nvarchar(30) --開帳日期
+		,makeno nvarchar(20)
+		,ordeaccy nvarchar(10)
+		,ordeno nvarchar(20)
+		,ordeno2 nvarchar(10)
 		,datea nvarchar(20)
-		
-		,emount decimal(25,8)
-		,eweight decimal(25,8)
-		,[emoney] float
-		,isLast int
-	)
-	--進貨(退貨不算)
-	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money]
-		,storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0)
-		,case when d.noa is null then isnull(a.[total],0) else ISNULL(d.cost,0) end
-		,case when ISNULL(b.typea,2)=2 then null else isnull(a.storeno,'') end
-		,case when ISNULL(b.typea,2)=2 then null else isnull(a.place,'') end
-		,case when ISNULL(b.typea,2)=2 then '21' else '01' end,'rc2'
-		,a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
-	from view_rc2s a
-	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
-	left join deli c on a.noa=c.rc2no
-	left join delis d on c.noa=d.noa and d.noq=a.noq
-	where case when len(isnull(a.datea,''))>0 then a.datea else b.datea end <=@t_edate
-	and len(ISNULL(a.uno,''))>0
-	--入庫
-	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money]
-		,storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0),isnull(a.[total],0)
-		,isnull(a.storeno,''),isnull(a.place,'')
-		,'02','ina',a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
-	from view_inas a
-	left join view_ina b on a.accy=b.accy and a.noa=b.noa
-	where case when len(isnull(a.datea,''))>0 then a.datea else b.datea end <=@t_edate
-	and len(ISNULL(a.uno,''))>0
-	--CUTS  成品進倉
-	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money]
-		,storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.bno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0),ISNULL(a.total,0)
-		,isnull(a.storeno,''),isnull(a.place,'')
-		,'03','cut',a.accy,a.noa,a.noq,case when len(isnull(a.datea,''))>0 then a.datea else b.datea end
-	from view_cuts a
-	left join view_cut b on a.accy=b.accy and a.noa=b.noa
-	where case when len(isnull(a.datea,''))>0 then a.datea else b.datea end <=@t_edate
-	and len(ISNULL(a.bno,''))>0
-	------------------------------------------------------------------------------------------------------
-	--調撥
-	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.uno,isnull(a.productno,''),isnull(a.mount,0),isnull(a.[weight],0)
-		,isnull(a.storeinno,''),isnull(a.place,'')
-		,'11','cng',a.accy,a.noa,a.noq,b.datea
-	from view_cngs a
-	left join view_cng b on a.accy=b.accy and a.noa=b.noa
-	where b.datea <=@t_edate
-	and len(ISNULL(a.uno,''))>0
-	
-	------------------------------------------------------------------------------------------------------
-	--出貨
-	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money],storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.uno,isnull(a.productno,'')
-		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
-		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
-		,ISNULL(a.scost,0)
-		,null,null
-		,case when ISNULL(b.typea,2)=2 then '04' else '22' end,'vcc',a.accy,a.noa,a.noq,b.datea
-	from view_vccs a
-	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
-	where b.datea <=@t_edate
-	and len(ISNULL(a.uno,''))>0
-	--領料
-	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money],storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.uno,isnull(a.productno,'')
-		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
-		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
-		,ISNULL(a.scost,0)
-		,null,null
-		,'23','get',a.accy,a.noa,a.noq,b.datea
-	from view_gets a
-	left join view_get b on a.accy=b.accy and a.noa=b.noa
-	where b.datea <=@t_edate
-	and len(ISNULL(a.uno,''))>0
-	--CUBT
-	insert into #z_ucc_rk02_a(uno,productno,mount,[weight],[money],storeno,place,tt,tablea,accy,noa,noq,datea)
-	select a.uno,isnull(a.productno,'')
-		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
-		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
-		,ISNULL(a.scost,0)
-		,null,null
-		,'24','cubt',a.accy,a.noa,a.noq,b.datea
-	from view_cubt a
-	left join view_cub b on a.accy=b.accy and a.noa=b.noa
-	where b.datea <=@t_edate
-	and len(ISNULL(a.uno,''))>0
-	
-	-----------------------------------------------------------------
-	-- update 倉庫、儲位
-	
+		,typea nvarchar(20)
+		,custno nvarchar(20)
+		,cust nvarchar(50)
+		,uno nvarchar(30)
+		,dime float--原鋼材規格
+		,width float
+		,lengthb float
+		,radius float
+		,[weight] float
+		,[mount] float
 
-	update #z_ucc_rk02_a set storeno=b.storeno,place=b.place 
-	from #z_ucc_rk02_a a
-	outer apply(select top 1 storeno,place
-		from #z_ucc_rk02_a 
-		where uno=a.uno and datea<=a.datea and storeno is not null
-		order by datea desc,tt desc) b
-
-
-/*	
-	
-	declare @datea nvarchar(20)
-	declare @storeno nvarchar(20)
-	declare @place nvarchar(20)
-	
-	declare cursor_table cursor for
-	select sel,uno,tt,datea
-	from #z_ucc_rk02_a 
-	where tt='04' or left(tt,1)='2'
-	order by datea,tt,accy,noa,noq
-	open cursor_table
-	fetch next from cursor_table
-	into @sel,@uno,@tt,@datea
-	while(@@FETCH_STATUS <> -1)
-	begin	
-		select @storeno = '',@place=''
-		select top 1 @storeno = storeno,@place=place
-		from #z_ucc_rk02_a 
-		where uno=@uno and datea<=@datea and storeno is not null
-		order by datea desc,tt desc
+		--皮膜
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
+		,pvcweight float
+		,pvcmount float
+		--保護膜
+		,pveno nvarchar(20)
+		,pve nvarchar(50)
+		,pveweight float
+		,pvemount float
+		--物料
+		,x01 float  --接著劑
+		,x02 float  --接著劑稀釋液	
+		,x03 float  --背漆
+		,x04 float	--背漆稀釋液
+		,x05 float  --面漆
+		-----------------------------
+		,total float --總投入成本(含直接人工、製造費用)
+		,emoney float  --期末半成品成本 - 樣品金額 - 報廢金額 + 盤盈金額
 		
-		update #z_ucc_rk02_a set storeno=@storeno,place=@place where sel=@sel
+		,w01 float--總投入重量
+		,w02 float--本期生產半成品
+		,w03 float--(a1)生產線廢料	
+		,w04 float--(a2)生產線分條餘料
+		,w05 float--待修品再投入   cucs.weight5	
+		,w06 float--成品再投入	   cucs.para
+		--,w07 nvarchar(40)--成品規格	
+		,w08 float--(1)進倉成品	   cuts.weight
+		,w09 float--(2)樣品	cucs.weight6
+		,m09 float--   樣品金額	cucs.m02
+		,w10 float--(2)報廢 cucs.weight7 
+		,m10 float--   報廢金額 cucs.m03
+		,w15 float--(2)盤盈	cucs.weight11
+		,m15 float--   盤盈金額 cucs.m04	
+		,w11 float--(b1)不良品	cucs.wright8  
+		,w12 float--(b2)尺寸損耗	cucs.wright9
+		,w13 float--(b3)頭尾(廠內)損耗	cucs.wright10
+		,w14 float--供應商求償   cucs.paraa
 		
+		,w16 float--不良品損耗率	w11/w01
+		,w17 float--尺寸損耗率	        w12/w01
+		,w18 float--頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		,w19 float--扣除求償損耗率	
+		
+		,w21 float--(3)損耗總重量(a1+a2+b1+b2+b3)	 w03+w04+w11+w12+w13
+		,w22 float--當月耗量(1+2+3)	  w08+w09+w10+w21
+		,w23 float--期末半成品結存(總投入量+待修品再投入+成品再投入-a1-a2-b1-b2-b3-進倉成品-樣品-報廢)  w01+w05+w06-w08-w09-w10-w21 
+		,w24 float--完工總損耗率 w16+w17+w18+w19
+		,memo nvarchar(max)
+	) as
+	begin
+		-- 開帳資料itema的金額數量會寫入CUBS
+		-- 因此和開帳資料有關的在此日期前不忽略不計
+		insert into @tmpa(accy,noa,noq,startdate,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount
+			,x01,x02,x03,x04,x05
+			,total)
+		select a.accy,a.noa,a.noq,isnull(d.datea,''),a.makeno,a.accy,a.ordeno,a.no2,b.datea,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
+			,a.x04,a.x05,a.x06,a.x07,a.x08
+			,isnull(a.total,0)
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
+		left join itema d on a.makeno=d.makeno 
+		where b.noa is not null 
+		and b.datea <=@t_edate
+		-------------------------------------------------------------------------------
+		declare @sel int
+		declare @accy nvarchar(10)
+		declare @noa nvarchar(20)
+		declare @noq nvarchar(10)
+		declare @productno nvarchar(20)
+		declare @product nvarchar(50)
+		declare @weight float
+		declare @mount float
+		declare @groupano nvarchar(20)
+		declare @totweight float
+		
+		-- PVC 皮膜
+		declare cursor_table cursor for
+		select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[wweight],0)),sum(isnull(a.[weight],0))
+		from view_cubt a
+		left join @tmpa b on a.accy=b.accy and a.noa=b.noa and a.nor=b.noq
+		where b.noa is not null
+		and a.kind = '1'
+		group by b.sel,b.accy,b.noa,b.noq
+		open cursor_table
 		fetch next from cursor_table
-		into @sel,@uno,@tt,@datea
-	end
-	close cursor_table
-	deallocate cursor_table*/
-	-----------------------------------------------------------------
-	declare @sel int
-	declare @uno nvarchar(30)
-	declare @tt nvarchar(20)
-	
-	declare @mount decimal(25,8)
-	declare @weight decimal(25,8)
-	declare @money float
-	declare @emount decimal(25,8)
-	declare @eweight decimal(25,8)
-	declare @emoney float
-	declare @isLast int
-	
-	declare cursor_table cursor for
-	select uno from #z_ucc_rk02_a group by uno
-	open cursor_table
-	fetch next from cursor_table
-	into @uno
-	while(@@FETCH_STATUS <> -1)
-	begin	
-		select @emount=0,@eweight=0,@emoney=0,@isLast=0
-		declare cursor_table2 cursor for
-		select sel,tt,mount,[weight],[money] from #z_ucc_rk02_a where uno=@uno order by datea,tt,accy,noa,noq
-		open cursor_table2
-		fetch next from cursor_table2
-		into @sel,@tt,@mount,@weight,@money
+		into @sel,@accy,@noa,@noq,@weight,@mount
 		while(@@FETCH_STATUS <> -1)
 		begin	
-			if LEFT(@tt,1)='0' 
-			begin
-				set @emount = @emount + @mount
-				set @eweight = @eweight + @weight
-				set @emoney = @emoney + @money
-			end
-			else if LEFT(@tt,1)='2' 
-			begin
-				set @emount = @emount - @mount
-				set @eweight = @eweight - @weight
-				set @emoney = @emoney - @money
-			end
-			set @isLast=@sel
+			select @productno = '', @product = ''
+			select top 1 @productno=productno,@product=product
+			from view_cubt 
+			where accy=@accy and noa=@noa and nor=@noq and kind='1'
+			order by noq
 			
-			update #z_ucc_rk02_a set emount=@emount,eweight=@eweight,emoney=@emoney where sel=@sel
-			fetch next from cursor_table2
-			into @sel,@tt,@mount,@weight,@money
+			update @tmpa set pvcno=@productno,pvc=@product,pvcweight=@weight,pvcmount=@mount where sel=@sel
+			
+			fetch next from cursor_table
+			into @sel,@accy,@noa,@noq,@weight,@mount
 		end
-		close cursor_table2
-		deallocate cursor_table2
-		
-		update #z_ucc_rk02_a set isLast=1 where sel=@sel
-		
+		close cursor_table
+		deallocate cursor_table
+		-------------------------------------------------------------------------------
+		-- PVE 保護膜
+		declare cursor_table cursor for
+		select b.sel,b.accy,b.noa,b.noq,sum(isnull(a.[wweight],0)),sum(isnull(a.[weight],0))
+		from view_cubt a
+		left join @tmpa b on a.accy=b.accy and a.noa=b.noa and a.nor=b.noq
+		where b.noa is not null
+		and a.kind = '2'
+		group by b.sel,b.accy,b.noa,b.noq
+		open cursor_table
 		fetch next from cursor_table
-		into @uno
+		into @sel,@accy,@noa,@noq,@weight,@mount
+		while(@@FETCH_STATUS <> -1)
+		begin	
+			select @productno = '', @product = ''
+			select top 1 @productno=productno,@product=product
+			from view_cubt 
+			where accy=@accy and noa=@noa and nor=@noq and kind='2'
+			order by noq
+			
+			update @tmpa set pveno=@productno,pve=@product,pveweight=@weight,pvemount=@mount where sel=@sel
+			
+			fetch next from cursor_table
+			into @sel,@accy,@noa,@noq,@weight,@mount
+		end
+		close cursor_table
+		deallocate cursor_table
+		-------------------------------------------------------------------------
+		--條件過濾1
+		if(len(@t_makeno)>0)
+			delete @tmpa where CHARINDEX(@t_makeno,makeno)=0
+		if(len(@t_pvcno)>0)	
+			delete @tmpa where isnull(pvcno,'')!=@t_pvcno
+		delete @tmpa where not(isnull(custno,'') between @t_bcustno and @t_ecustno)
+		-------------------------------------------------------------------------
+		--w01 總投入重量
+		update @tmpa set w01 = ISNULL([weight],0) + ISNULL([pvcweight],0) + ISNULL([pveweight],0) + ISNULL([x01],0) + ISNULL([x02],0) + ISNULL([x03],0) + ISNULL([x04],0) + ISNULL([x05],0)
+		--w02 本期生產半成品
+		update @tmpa set w02 = isnull(b.hweight,0)
+		from @tmpa a
+		left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+		where b.noa is not null
+		--w04 生產線分條餘料(a2) cucs.weight4
+		--w05 待修品再投入   cucs.weight5	
+		--w06 成品再投入	 cucs.para
+		--w09 樣品	cucs.weight6
+		--w10 報廢  cucs.weight7 
+		--w11 不良品(b1)	cucs.wright8  
+		--w12 尺寸損耗(b3)	cucs.wright9
+		--w13 頭尾(廠內)損耗(b4)	cucs.wright10
+		--w14 供應商求償   cucs.paraa
+		update @tmpa set w04=ISNULL(b.[weight4],0)
+			,w05=ISNULL(b.[weight5],0)
+			,w06=ISNULL(b.[para],0)
+			,w09=ISNULL(b.[weight6],0)
+			,w10=ISNULL(b.[weight7],0)
+			,w11=ISNULL(b.[weight8],0)
+			,w12=ISNULL(b.[weight9],0)
+			,w13=ISNULL(b.[weight10],0)
+			,w14=ISNULL(b.[paraa],0)
+			,w15=ISNULL(b.[weight11],0)
+			,m09=ISNULL(b.[m02],0)
+			,m10=ISNULL(b.[m03],0)
+			,m15=ISNULL(b.[m04],0)
+		from @tmpa a
+		left join(select a.cubno makeno
+			,SUM(ISNULL(a.weight4,0)) [weight4] 
+			,SUM(ISNULL(a.weight5,0)) [weight5] 
+			,SUM(ISNULL(a.weight6,0)) [weight6] 
+			,SUM(ISNULL(a.weight7,0)) [weight7]
+			,SUM(ISNULL(a.weight8,0)) [weight8]
+			,SUM(ISNULL(a.weight9,0)) [weight9]
+			,SUM(ISNULL(a.weight10,0)) [weight10]
+			,SUM(ISNULL(cast(a.para as float),0)) [para] 
+			,SUM(ISNULL(cast(a.paraa as float),0)) [paraa] 
+			,SUM(ISNULL(a.weight11,0)) [weight11]
+			,SUM(ISNULL(a.m02,0)) [m02]
+			,SUM(ISNULL(a.m03,0)) [m03]
+			,SUM(ISNULL(a.m04,0)) [m04] 
+			from view_cucs a 
+			left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+			left join itema c on a.cubno=c.makeno --忽略開帳日期前的
+			where b.datea<=@t_edate
+			and ((c.makeno is null) or (c.makeno is not null and b.datea<=c.datea))
+			group by a.cubno) b on a.makeno=b.makeno
+			
+		
+		--w03 生產線廢料(a1)   w01 - w02 - w04        --- 要回寫到cubs.price   
+		update @tmpa set w03 = cast(ISNULL(w01,0) as decimal(12,3))
+			-cast(ISNULL(w02,0) as decimal(12,3))
+			-cast(ISNULL(w04,0) as decimal(12,3))
+		
+		--w08 進倉成品 cuts.weight
+		update @tmpa set w08=ISNULL(b.[weight],0)
+		from @tmpa a
+		left join (select a.cname makeno,SUM(ISNULL(a.[weight],0)) [weight] 
+			from view_cuts a 
+			left join view_cut b on a.noa=b.noa
+			where b.datea<=@t_edate group by cname) b on a.makeno=b.makeno
+		-------------------------------------------------------------------------------
+		--w15 原物料損耗  ???
+		--w16 不良品損耗率	w11/w01
+		--w17 尺寸損耗率	        w12/w01
+		--w18 頭尾(廠內)損耗率	(w03+w04+w13)/w01
+		--w19 扣除求償損耗率	
+		--w21 (3)損耗總重量(a1+a2+b1+b2+b3)	 w03+w04+w11+w12+w13
+		--w22 當月耗量(1+2+3)	w08+w09+w10+w21
+		--w23 期末半成品結存(總投入量+待修品再投入+成品再投入-a1-a2-b1-b2-b3-進倉成品-樣品-報廢)  w01+w05+w06-w08-w09-w10-w21
+		--w24 完工總損耗率 w16+w17+w18+w19
+		update @tmpa set   
+			w16=case when ISNULL(w01,0)=0 then 0 else round(w11/w01*100,2) end
+			,w17=case when ISNULL(w01,0)=0 then 0 else round(w12/w01*100,2) end
+			,w18=case when ISNULL(w01,0)=0 then 0 else round((w03+w04+w13)/w01*100,2) end
+			,w19=case when ISNULL(w01,0)=0 then 0 else round((w14)/w01*100,2) end
+			,w21=ISNULL(w03,0)+ISNULL(w04,0)+ISNULL(w11,0)+ISNULL(w12,0)+ISNULL(w13,0)
+
+		update @tmpa set w22=ISNULL(w08,0)+ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)
+			--加盤盈
+			,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
+			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
+		--update @tmpa set emoney=round(w23/w01*total,0)
+		update @tmpa set emoney=case when isnull(w23,0)>0 then total-m09-m10+m15 else 0 end
+		
+		--開帳資料
+		--update @tmpa set w23 = b.mount, emoney = b.money
+		--from @tmpa a
+		--left join itema b on a.makeno=b.makeno
+		--where b.makeno is not null
+		--and emoney!=0
+		
+		return
 	end
-	close cursor_table
-	deallocate cursor_table
-	------------------------------------------------------
-	IF OBJECT_ID('tempdb..#z_ucc_rk02_b')is not null
-	BEGIN
-		drop table #z_ucc_rk02_b
-	END
-	create table #z_ucc_rk02_b(
-		sel int identity(1,1)
-		,pno int
-		,gno nvarchar(10)
-		,kind nvarchar(20)
-		,ckind nvarchar(20)
-		,datea nvarchar(20)
-		,uno nvarchar(30)
-		,makeno nvarchar(30)
-		,productno nvarchar(30)
-		,product nvarchar(50)
-		,spec nvarchar(50)
-		,cspec nvarchar(50)
-		,zspec nvarchar(50)
-		,size nvarchar(50)
-		,dime decimal(25,8)
-		,width decimal(25,8)
-		,lengthb decimal(25,8)
-		,radius decimal(25,8)
-		,mount decimal(25,8)
-		,[weight] decimal(25,8)
-		,price decimal(25,8)
-		,total decimal(25,8)
-		,uno2 nvarchar(30)
-		,ordeno nvarchar(20)
-		,ordeno2 nvarchar(20)
-		,[contract] nvarchar(max)--合約編號
-		,custno nvarchar(20)--客戶名稱
-		,cust nvarchar(100)
-		,storeno nvarchar(20)
-		,store nvarchar(20)
-		,place nvarchar(20)
-	)
-	insert into #z_ucc_rk02_b(pno,gno,kind,ckind,datea,uno,productno,product 
-	,spec,cspec,size,dime,width,lengthb,radius 
-	,mount,[weight],price,total,uno2
-	,storeno,store,place) 
-	select 1,'1',b.kind,c.item,b.datea,a.uno,isnull(b.productno,''),b.product 
-	,b.spec,d.product,isnull(b.size,''),b.dime,b.width,b.lengthb,b.radius 
-	,a.emount,a.[eweight],b.sprice,a.emoney,b.uno2 
-	,a.storeno,e.store,a.place
-	from #z_ucc_rk02_a a
-	left join view_uccb b on a.uno=b.uno 
-	left join dbo.fnSplit(@t_stktype) c on b.kind=c.n 
-	left join spec d on b.spec=d.noa 
-	left join store e on a.storeno=e.noa
-	where a.isLast=1
-	and (len(@t_kind)=0 or b.kind=@t_kind) 
-	and ISNULL(a.eweight,0)!=0
-	and (len(@t_store)=0 or charindex(','+a.storeno+',',','+@t_store+',')>0)
-	
-	update #z_ucc_rk02_b set zspec=case when len(ISNULL(cspec,''))>0 then cspec else spec end
-	
-	update #z_ucc_rk02_b set makeno=b.cname,ordeno=b.ordeno,ordeno2=b.no2
-	from #z_ucc_rk02_b a
-	left join view_cuts b on b.bno=a.uno
-	where b.noa is not null
-	
-	update #z_ucc_rk02_b set [contract]=replace(b.memo,'chr(10)',' '),custno=c.custno,cust=c.nick
-	from #z_ucc_rk02_b a
-	left join view_ordes b on a.ordeno=b.noa and a.ordeno2=b.no2
-	left join view_orde c on b.accy=c.accy and b.noa=c.noa
-	where b.noa is not null
-	
-	update #z_ucc_rk02_b set cust=isnull(a.cust,'')+' <a style="color:red">'+ISNULL(c.nick,'')+'</a>'
-	from #z_ucc_rk02_b a
-	left join view_uccb b on a.uno=b.uno and b.tablea='rc2s'
-	left join view_rc2 c on b.accy=c.accy and b.noa=c.noa
-	where b.noa is not null
-	
-	update #z_ucc_rk02_b set cust=isnull(a.cust,'')+' <a style="color:blue">'+ISNULL(c.cust,'')+'</a>'
-	from #z_ucc_rk02_b a
-	left join view_uccb b on a.uno=b.uno and b.tablea='inas'
-	left join view_ina c on b.accy=c.accy and b.noa=c.noa
-	where b.noa is not null
-	
-	update #z_ucc_rk02_b set size=case kind when 'A1' then CAST(cast(dime as float) as nvarchar)+'*'+CAST(cast(width as float) as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(cast(lengthb as float) as nvarchar) else 'COIL' end
-			when 'A4' then CAST(cast(dime as float) as nvarchar)+'*'+CAST(cast(width as float) as nvarchar)+'mm'
-			when 'A5' then CAST(cast(dime as float) as nvarchar)+'*'+CAST(cast(width as float) as nvarchar)+'mm'
-			when 'A7' then CAST(cast(dime as float) as nvarchar)+'+'+CAST(cast(radius as float) as nvarchar)+'*'+CAST(cast(width as float) as nvarchar)+'*' + case when ISNULL(lengthb,0)>0 then CAST(cast(lengthb as float) as nvarchar) else 'COIL' end
-			else '' end
-	update #z_ucc_rk02_b set product=b.product
-	from #z_ucc_rk02_b a
-	left join ucc b on a.productno=b.noa
-	where len(ISNULL(a.product,''))=0
-	
-	select kind,datea,uno,makeno,size,weight,price,total,storeno,store,place from #z_ucc_rk02_b
-	
-	drop table #z_ucc_rk02_a
-	drop table #z_ucc_rk02_b
-end
-	
+
+
+
+
+
+GO
+
+

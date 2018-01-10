@@ -3868,12 +3868,12 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	
 	-------------------------------------------------------------------------------------
 	--開帳庫存
-	update cubs105 set total= b.money,sprice=b.price,price=b.price
+	update cubs105 set hweight=b.mount,total= b.money,sprice=b.price,price=b.price
 	from cubs105 a
 	left join itema b on a.makeno=b.makeno
 	where b.makeno is not null
 
-	update cubs106 set total= b.money,sprice=b.price,price=b.price
+	update cubs106 set hweight=b.mount,total= b.money,sprice=b.price,price=b.price
 	from cubs106 a
 	left join itema b on a.makeno=b.makeno
 	where b.makeno is not null

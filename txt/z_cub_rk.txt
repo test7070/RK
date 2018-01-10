@@ -188,6 +188,7 @@ z_cub_rk01:--z_cub_rk01
 		,accy nvarchar(20)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,startdate nvarchar(20)
 		,makeno nvarchar(30)
 		,custno nvarchar(20)
 		,cust nvarchar(50)
@@ -237,18 +238,19 @@ z_cub_rk01:--z_cub_rk01
 		,y04 float --尺寸耗損
 		,y05 float --頭尾耗損
 	)				
-	insert into @tmp(gno,recno,recno2,datea,accy,noa,noq,makeno,custno,cust
+	insert into @tmp(gno,recno,recno2,datea,accy,noa,noq,startdate,makeno,custno,cust
 		,uno,spec,dime,width,size,[weight]
 		,w01,w02,w03,w04,w05
 		,x02,x03,x06)
 	select '1',ROW_NUMBER()over(order by b.datea,a.makeno),1,b.datea 
-		,a.accy,a.noa,a.noq,a.makeno,a.custno,a.comp
+		,a.accy,a.noa,a.noq,ISNULL(c.datea,''),a.makeno,a.custno,a.comp
 		,a.uno,a.size,a.dime,a.width
 		,CAST(ISNULL(a.dime,0) as nvarchar)+' * '+CAST(ISNULL(a.width,0) as nvarchar),ISNULL(a.[weight],0)
 		,a.x04,a.x05,a.x06,a.x07,a.x08
 		,a.w09,a.hweight,a.price
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	left join itema c on a.makeno=c.makeno
 	where b.datea between @t_bdate and @t_edate
 	and len(ISNULL(a.makeno,''))>0
 	order by a.makeno,b.datea
@@ -265,12 +267,16 @@ z_cub_rk01:--z_cub_rk01
 		,y04=weight9
 		,y05=weight10
 	from @tmp a
-	outer apply(select SUM(ISNULL(weight6,0)) weight6 
-		,SUM(ISNULL(weight7,0)) weight7 
-		,SUM(ISNULL(weight8,0)) weight8 
-		,SUM(ISNULL(weight9,0)) weight9 
-		,SUM(ISNULL(weight10,0)) weight10 
-		from view_cucs where cubno=a.makeno) b
+	outer apply(select SUM(ISNULL(x.weight6,0)) weight6 
+		,SUM(ISNULL(x.weight7,0)) weight7 
+		,SUM(ISNULL(x.weight8,0)) weight8 
+		,SUM(ISNULL(x.weight9,0)) weight9 
+		,SUM(ISNULL(x.weight10,0)) weight10 
+		from view_cucs x
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa 
+		where x.cubno=a.makeno
+		and y.datea>a.startdate
+		) b
 
 	---------------------------------------------------------------------------------
 	declare @sel int
