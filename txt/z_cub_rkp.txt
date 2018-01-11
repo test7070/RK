@@ -2674,6 +2674,7 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,datea nvarchar(20)
 		,makeno nvarchar(20),
 		custno nvarchar(20),
 		cust nvarchar(50),
@@ -2732,6 +2733,8 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		--半成品
 		money11a float,--直接人工
 		money12a float,--製造費用
+		money13a float,--電費
+		money14a float,--瓦斯費
 		--成品
 		money11b float,--直接人工
 		money12b float,--製造費用
@@ -2745,9 +2748,9 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		memo nvarchar(max)
 	)
 	--鋼捲
-	insert into @tmp(gno,pno,accy,noa,noq,makeno,custno,cust,dime,radius,width,lengthb
+	insert into @tmp(gno,pno,accy,noa,noq,datea,makeno,custno,cust,dime,radius,width,lengthb
 		,uno01,weight01,money01)
-	select '1',1,a.accy,a.noa,a.noq,a.makeno,a.custno,a.comp,a.dime,a.radius,a.width,a.lengthb
+	select '1',1,a.accy,a.noa,a.noq,b.datea,a.makeno,a.custno,a.comp,a.dime,a.radius,a.width,a.lengthb
 		,a.uno,a.x01,a.y01
 	from view_cubs a
 	left join view_cub b on a.noa=b.noa
@@ -2760,7 +2763,6 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		outer apply(select top 1 * from view_cubt where a.accy=accy and a.noa=noa and a.noq=nor and kind='1' and productno=@t_pvcno) b
 		where b.noa is null
 	
-
 	--皮膜
 	update @tmp set mount02=c.[weight],weight02=b.x02,money02=b.y02
 		,pvc=c.productno
@@ -2828,7 +2830,13 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	end
 	close cursor_table
 	deallocate cursor_table
-	
+
+--select *
+--from(
+--select makeno,SUM(isnull(money03,0)) money03 from @tmp group by makeno) a
+--left join view_cubs b on a.makeno=b.makeno 
+--where a.money03!=b.y03
+--return	
 	update @tmp set 
 		weight04=b.x04,money04=b.y04  --A01 接著劑
 		,weight05=b.x05,money05=b.y05 --A02 接著劑稀釋劑
@@ -2841,18 +2849,20 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		,weight11=b.hweight           --完工重量
 		,money11a=b.w01               --直接人工
 		,money12a=b.w02               --製造費用
+		,money13a=b.w04               --電費
+		,money14a=b.w05              --瓦斯費
+		,weight12=b.hweight --成品重量
+		,money13 = b.total --總計
 	from @tmp a
 	left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq and pno=1
 	where b.noa is not null
-	
-	update @tmp set 
-		money11b = 0   --成品 直接人工
-		,money12b = 0  --成品 製造費用
-		,weight12 =b.[weight]  --成品重量
-		,money13 = ISNULL(money10,0) + ISNULL(money11a,0)+ ISNULL(money12a,0) --總計
-	from @tmp a
-	left join (select cname,SUM(ISNULL([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.cname
-	where a.pno=1
+
+	--update @tmp set 
+	--	money11b = 0   --成品 直接人工
+	--	,money12b = 0  --成品 製造費用
+	--from @tmp a
+	--left join (select cname,SUM(ISNULL([weight],0)) [weight] from view_cuts group by cname) b on a.makeno=b.cname
+	--where a.pno=1
 	
 	update @tmp set price10=case when weight12=0 then 0 else round(money13/weight12,2) end
 		,rate01 = case when weight10=0 then 0 else round((isnull(weight10,0)-isnull(weight12,0))/weight10*100,2) end
@@ -2875,19 +2885,18 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 	left join (select sel,ROW_NUMBER()over(order by makeno,accy,noa,noq) recno from @tmp where pno=1) b on a.sel=b.sel
 	where b.sel is not null
 	
-	
-		
-	
 	insert into @tmp(gno,pno,makeno,weight01,money01,mount02,weight02,money02
 		,mount03,weight03,money03,weight04,money04,weight05,money05,weight06,money06
-		,weight07,money07,weight08,money08,weight10,money10,weight11,money11a,money12a,money11b,money12b
+		,weight07,money07,weight08,money08,weight10,money10,weight11
+		,money11a,money12a,money13a,money14a,money11b,money12b
 		,weight12,money13)
 	select '3',3,CHAR(255),sum(isnull(weight01,0)),sum(isnull(money01,0)),sum(isnull(mount02,0))
 		,sum(isnull(weight02,0)),sum(isnull(money02,0))
 		,sum(isnull(mount03,0)),sum(isnull(weight03,0)),sum(isnull(money03,0)),sum(isnull(weight04,0)),sum(isnull(money04,0))
 		,sum(isnull(weight05,0)),sum(isnull(money05,0)),sum(isnull(weight06,0)),sum(isnull(money06,0))
 		,sum(isnull(weight07,0)),sum(isnull(money07,0)),sum(isnull(weight08,0)),sum(isnull(money08,0))
-		,sum(isnull(weight10,0)),sum(isnull(money10,0)),sum(isnull(weight11,0)),sum(isnull(money11a,0)),sum(isnull(money12a,0))
+		,sum(isnull(weight10,0)),sum(isnull(money10,0)),sum(isnull(weight11,0))
+		,sum(isnull(money11a,0)),sum(isnull(money12a,0)),sum(isnull(money13a,0)),sum(isnull(money14a,0))
 		,sum(isnull(money11b,0)),sum(isnull(money12b,0)),sum(isnull(weight12,0)),sum(isnull(money13,0))
 	from @tmp
 
@@ -2950,8 +2959,8 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		
 		,dbo.getComma(money11a,-1) a41        --半成品 直接人工
 		,dbo.getComma(money12a,-1) a42        --半成品 製造費用
-		,dbo.getComma(money11b,-1) a43        --成品 直接人工
-		,dbo.getComma(money12b,-1) a44        --成品 製造費用
+		,dbo.getComma(money13a,-1) a43        --半成品 電費
+		,dbo.getComma(money14a,-1) a44        --半成品 瓦斯費
 		,dbo.getComma(weight12,-1) a45        --成品重量
 		,dbo.getComma(money13,-1) a46         --總計
 		,price10 a47                          --單位成本
@@ -2959,7 +2968,7 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		,mon a49                              --完工月份
 	from @tmp
 	order by makeno,accy,noa,noq,pno;
-
+	
 z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	---  要先計算  人工費用、製造費用、電費、瓦斯費
 	SET QUOTED_IDENTIFIER OFF 
