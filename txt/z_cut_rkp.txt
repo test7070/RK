@@ -1,3 +1,135 @@
+z_cut_rkp03:--z_cut_rkp03
+	SET QUOTED_IDENTIFIER OFF 
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_noa nvarchar(max) = case when '#non' = N[3] then '' else N[3] end
+	declare @t_bdate nvarchar(20) = case when '#non' = N[4] then '' else N[4] end
+	declare @t_edate nvarchar(20) = case when '#non' = N[5] then char(255) else N[5] end
+	declare @t_bcustno nvarchar(20) = case when '#non' = N[6] then '' else N[6] end
+	declare @t_ecustno nvarchar(20) = case when '#non' = N[7] then char(255) else N[7] end
+	declare @t_makeno nvarchar(max) = case when '#non' = N[8] then '' else N[8] end
+	declare @t_product nvarchar(max) = case when '#non' = N[9] then '' else N[9] end
+	declare @t_pvc nvarchar(max) = case when '#non' = N[10] then '' else N[10] end
+	-------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,pno int
+		,recno int
+		,accy nvarchar(20)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,ordeno nvarchar(20)
+		,ordenoq nvarchar(10)
+		,makeno nvarchar(20)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(max)
+		,size nvarchar(max)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(max)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,hweight float
+		,mount float
+		,weight float
+		,custno nvarchar(20)
+		,cust nvarchar(30)
+		,bno nvarchar(30)
+		,special nvarchar(20)
+		,memo nvarchar(max)
+		,datea nvarchar(20)
+		,storeno nvarchar(20)
+		,store nvarchar(50)
+		,place nvarchar(20)
+		,btime nvarchar(20)
+		,etime nvarchar(20)
+		,mins float
+		,sprice float
+		,total float
+	)
+	insert into @tmp(gno,pno,accy,noa,noq,ordeno,ordenoq
+		,makeno,uno,productno,product,size,pvcno,pvc
+		,dime,radius,width,lengthb,hweight,mount,weight,custno,cust
+		,bno,special,memo,datea,storeno,store,place,btime,etime,mins,sprice,total)
+	select '1' gno,1 pno,a.accy,a.noa,a.noq,a.ordeno,a.no2
+		,a.cname,a.uno,a.productno,a.product
+		,ISNULL(a.size,'')+' '+case when len(isnull(a.style,''))>0 then a.style+' ' else '' end
+			+case when ISNULL(a.dime,0)!=0 then cast(a.dime as nvarchar) else '' end
+			+case when ISNULL(a.radius,0)!=0 then '+'+cast(a.radius as nvarchar) else '' end
+			+case when ISNULL(a.width,0)!=0 then '*'+cast(a.width as nvarchar) else '' end
+			+case when ISNULL(a.lengthb,0)!=0 then '*'+cast(a.lengthb as nvarchar) 
+				when a.dime=0 and a.width=0 and a.radius=0 and a.lengthb=0 then '' else '*COIL' end
+		,a.spec,a.class
+		,a.dime,a.radius,a.width,a.lengthb,a.hweight,a.mount,a.weight,a.custno,a.comp
+		,a.bno,a.special,a.memo,a.datea,a.storeno,a.store,a.place,a.btime,a.etime,a.mins,a.sprice,a.total
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.noa is not null
+	and (len(isnull(@t_noa,''))=0 or a.noa=@t_noa)
+	and a.datea between @t_bdate and @t_edate
+	and ISNULL(a.custno,'') between @t_bcustno and @t_ecustno
+	and (len(isnull(@t_makeno,''))=0 or CHARINDEX(@t_makeno,a.cname)>0)
+	and (len(isnull(@t_product,''))=0 or CHARINDEX(@t_product,a.productno)>0 or CHARINDEX(@t_product,a.product)>0)
+	and (len(isnull(@t_pvc,''))=0 or CHARINDEX(@t_pvc,a.spec)>0 or CHARINDEX(@t_pvc,a.[class])>0)
+	
+	
+	declare @tmpb table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,pno int
+		,recno int
+		,makeno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,size nvarchar(max)
+		,pvcno nvarchar(20)
+		,pvc nvarchar(50)
+		,custno nvarchar(30)
+		,cust nvarchar(max)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,hweight float
+		,mount float
+		,weight float
+	)
+	insert into @tmpb(gno,pno,makeno,productno,product,size,pvcno,pvc,custno,cust
+		,dime,radius,width,lengthb,hweight,mount,[weight])
+	select '1',1,makeno,productno,product,size,pvcno,pvc,custno,cust
+		,dime,radius,width,lengthb
+		,sum(isnull([hweight],0)),sum(isnull(mount,0)),sum(isnull([weight],0))
+	from @tmp
+	group by makeno,productno,product,size,pvcno,pvc,custno,cust
+		,dime,radius,width,lengthb
+
+	update @tmpb set recno=b.recno
+	from @tmpb a
+	left join (select sel,ROW_NUMBER()over(order by makeno,productno,product,size,pvcno,pvc,custno,cust
+		,dime,radius,width,lengthb) recno from @tmpb) b on a.sel=b.sel
+	
+	insert into @tmpb(gno,pno,hweight,mount,[weight])
+	select '2',2,sum(isnull([hweight],0)),sum(isnull(mount,0)),sum(isnull([weight],0))
+	from @tmpb
+	where pno=1
+	
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,recno rr
+		,makeno a01
+		,product a02
+		,size a03 
+		,pvcno a04
+		,pvc a05
+		,cust a06
+		,dbo.getComma(hweight,-1) a07
+		,dbo.getComma(mount,-1) a08
+		,dbo.getComma(weight,-1) a09
+	from @tmpb order by pno,recno;
+
 z_cut_rkp02:--z_cut_rkp02
 	SET QUOTED_IDENTIFIER OFF 
 	declare @t_path nvarchar(max) = '[1]'
