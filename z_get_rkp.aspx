@@ -37,10 +37,28 @@
 						type : '8', //[4]   標籤用     2
 						name : 'showacomp',
 						value : "1@顯示公司抬頭".split(',')
+					},{
+						type : '5', //[5] 3
+						name : 'xkind',
+						value : [q_getPara('report.all')].concat(q_getPara('sys.stktype').split(','))
+					},{
+                        type : '1',//[6][7] 4
+                        name : 'xdate'
+                    }, {
+						type : '2', //[8][9] 5
+						name : 'xproduct',
+						dbf : 'ucc',
+						index : 'noa,product',
+						src : 'ucc_b.aspx'
 					}]
 				});
 				q_popAssign();
 				$('#chkShowacomp').children().eq(0).prop('checked',true);
+				
+				$('#txtXdate1').mask('999/99/99');
+				$('#txtXdate1').datepicker();
+				$('#txtXdate2').mask('999/99/99');
+				$('#txtXdate2').datepicker();
 
 	            var t_para = new Array();
 	            try{

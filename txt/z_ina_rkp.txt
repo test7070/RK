@@ -1,3 +1,106 @@
+z_ina_rkp03:--z_ina_rkp03   
+	SET QUOTED_IDENTIFIER OFF
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_stktype nvarchar(max) = '[3]'
+	declare @t_noa nvarchar(max) = case when '#non' = [4] then '' else [4] end
+	declare @t_merge nvarchar(max) = case when '#non' = [5] then '' else [5] end
+	declare @t_kind nvarchar(max) = case when '#non' = [6] then '' else [6] end
+	declare @t_bdate nvarchar(20) = case when '#non' = [7] then '' else [7] end
+	declare @t_edate nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
+	declare @t_bproductno nvarchar(20) = case when '#non' = [9] then '' else [9] end
+	declare @t_eproductno nvarchar(20) = case when '#non' = [10] then char(255) else [10] end
+	-------------------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,pno int
+		,datea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,kind nvarchar(20)
+		,ckind nvarchar(20)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,dime float
+		,width float
+		,lengthb float
+		,spec nvarchar(20)
+		,cspec nvarchar(50)
+		,size nvarchar(50)
+		,[source] nvarchar(50)
+		,storeno nvarchar(20)
+		,store nvarchar(50)
+		,place nvarchar(20)
+		,mount float
+		,weight float
+		,unit nvarchar(20)
+		,uno2 nvarchar(30)
+		,descr nvarchar(50)
+		,memo nvarchar(max)
+	)
+	insert into @tmp(gno,pno,datea,accy,noa,noq,kind,ckind,uno,productno,product
+		,dime,width,lengthb,spec,cspec,size,[source],storeno,store
+		,place,mount,weight,unit,uno2,descr,memo)
+	select '1',1,b.datea,a.accy,a.noa,a.noq,b.kind,'' ckind,a.uno,a.productno,a.product
+		,a.dime,a.width,a.lengthb,a.spec,'' cspec,a.size,a.[source],a.storeno,a.store
+		,a.place,a.mount,a.weight,a.unit,a.uno2,a.descr
+		,replace(a.memo,'chr(10)','')
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	where b.noa is not null
+	and (len(@t_noa)=0 or a.noa=@t_noa)	
+	and (len(@t_kind)=0 or b.kind=@t_kind)
+	and isnull(b.datea,'') between @t_bdate and @t_edate
+	and ISNULL(a.productno,'') between @t_bproductno and @t_eproductno
+	order by left(a.noa,1) desc,b.datea,a.accy,a.noa,a.noq
+	
+	update @tmp set store=b.store
+	from @tmp a
+	left join store b on a.storeno=b.noa
+	where len(ISNULL(a.store,''))=0
+	
+	update @tmp set ckind=ISNULL(b.item,a.kind)
+	from @tmp a
+	left join dbo.fnSplit(@t_stktype) b on a.kind=b.n
+	
+	update @tmp set cspec=ISNULL(b.product,a.spec)
+	from @tmp a
+	left join spec b on a.spec=b.noa
+	
+	insert into @tmp(gno,pno,mount,weight)
+	select '2',2,SUM(isnull(mount,0)),SUM(ISNULL(weight,0))
+	from @tmp
+	where pno=1
+	
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
+		,ckind a01
+		,noa+'-'+noq a02
+		,datea a03
+		,uno a04
+		,productno a05
+		,product a06
+		,dime a07
+		,width a08
+		,lengthb a09
+		,cspec a10
+		,[source] a11
+		,storeno a12
+		,store a13
+		,place a14
+		,unit a15
+		,dbo.getComma(mount,-1) a16
+		,dbo.getComma(weight,-1) a17
+		,uno2 a18
+		,descr a19
+		,memo a20
+	from @tmp
+	order by pno,sel;
+
 z_ina_rkp02:--z_ina_rkp02   ref.z_rc2_rkp01
 	SET QUOTED_IDENTIFIER OFF
 	declare @t_path nvarchar(max) = '[1]'

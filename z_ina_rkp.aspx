@@ -41,6 +41,19 @@
 						type : '8', //[5] 2
 						name : 'merge',
 						value : ('1@合併').split(',')
+					},{
+						type : '5', //[6] 3
+						name : 'xkind',
+						value : [q_getPara('report.all')].concat(q_getPara('sys.stktype').split(','))
+					},{
+                        type : '1',//[7][8] 4
+                        name : 'xdate'
+                    }, {
+						type : '2', //[9][10] 5
+						name : 'xproduct',
+						dbf : 'ucc',
+						index : 'noa,product',
+						src : 'ucc_b.aspx'
 					}]
 				});
 				q_popAssign();
