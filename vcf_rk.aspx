@@ -139,7 +139,7 @@
 			}
 
 			function btnPrint() {
-				q_box("z_vcf_rk.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + JSON.stringify({noa:trim($('#txtNoa').val())}) + ";" + r_accy + "_" + r_cno, 'vcf_rk', "95%", "95%", m_print);
+				q_box("z_vcf_rkp.aspx?" + r_userno + ";" + r_name + ";" + q_time + ";" + JSON.stringify({noa:trim($('#txtNoa').val())}) + ";" + r_accy + "_" + r_cno, 'vcf_rk', "95%", "95%", m_print);
             }
 
 			function btnOk() {

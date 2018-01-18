@@ -31,8 +31,25 @@
 						name : 'db',
 						value : q_db
 					},{
-						type : '6', //[3]
+                        type : '0',  //[3]
+                        name : 'xstktype',
+                        value : q_getPara('sys.stktype')
+                    },{
+						type : '6', //[4]  1
 						name : 'noa'
+					},{
+						type : '5', //[5]  2
+						name : 'xkind',
+						value : [q_getPara('report.all')].concat(q_getPara('sys.stktype').split(','))
+					},{
+                        type : '1',//[6][7] 3
+                        name : 'xdate'
+                    }, {
+						type : '2', //[8][9] 4
+						name : 'xproduct',
+						dbf : 'ucc',
+						index : 'noa,product',
+						src : 'ucc_b.aspx'
 					}]
 				});
 				q_popAssign();
