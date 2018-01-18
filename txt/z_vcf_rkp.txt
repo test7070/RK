@@ -1,0 +1,68 @@
+z_vcf_rkp03:--z_vcf_rkp03
+	SET QUOTED_IDENTIFIER OFF 
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	declare @t_bdate nvarchar(20) = case when '#non' = [3] then '' else [3] end
+	declare @t_edate nvarchar(20) = case when '#non' = [4] then char(255) else [4] end
+	declare @t_makeno nvarchar(max) = case when '#non' = [5] then '' else [5] end
+	declare @t_uno nvarchar(max) = case when '#non' = [6] then '' else [6] end
+	declare @t_bproductno nvarchar(20) = case when '#non' = [7] then '' else [7] end
+	declare @t_eproductno nvarchar(20) = case when '#non' = [8] then char(255) else [8] end
+	--------------------------------------------------------------------------------------------------
+	declare @tmp table(
+		sel int identity(1,1)
+		,recno int
+		,gno nvarchar(10)
+		,pno int
+		,datea nvarchar(20)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,nor nvarchar(10)
+		,makeno nvarchar(30)
+		,uno nvarchar(30)
+		,productno nvarchar(20)
+		,product nvarchar(50)
+		,totweight float
+		,weight float
+		,memo nvarchar(max) 
+	)
+	insert into @tmp(gno,pno,datea,noa,noq,nor
+		,makeno,uno,productno,product,memo,totweight)
+	select '1',1,b.datea,a.noa,a.noq,c.noq nor
+		,c.uno makeno,a.uno uno,a.productno,a.product,a.memo,a.weight
+	from vcfs a
+	left join vcf b on a.noa=b.noa
+	left join vcft c on a.noa=c.noa
+	where b.datea between @t_bdate and @t_edate
+	and ISNULL(a.productno,'') between @t_bproductno and @t_eproductno
+	and (len(@t_makeno)=0 or @t_makeno=c.uno)
+	and (len(@t_uno)=0 or @t_uno=a.uno)
+	
+	update @tmp set weight=ISNULL(c.weight,0)
+	from @tmp a
+	left join view_cub b on a.makeno=b.vcceno
+	left join view_cubu c on b.noa=c.noa and a.noa=c.ordeno and a.noq=c.no2
+	-----------------------------------------------------------------------------------------
+	update @tmp set recno=b.recno
+	from @tmp a
+	left join (select sel,ROW_NUMBER()over(PARTITION by datea,noa,noq order by nor) recno from @tmp) b on a.sel=b.sel
+	update @tmp set gno='2' where recno!=1
+	
+	insert into @tmp(gno,pno,weight)
+	select '3',3,sum(weight) from @tmp where pno=1
+	
+	select gno
+		,'<img src="'+@t_path+'getlogo.aspx?noa=lienchy'+CHAR(38)+'db='+@t_db+'"/>' logo
+		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
+		,noa+'-'+noq a01
+		,datea a02 
+		,uno a03
+		,productno a04
+		,product a05
+		,dbo.getComma(totweight,-1) a06
+		,makeno a07
+		,dbo.getComma(weight,-1) a08
+		,memo a09
+	from @tmp 
+	order by pno,datea,noa,noq,recno;
