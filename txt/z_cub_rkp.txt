@@ -798,6 +798,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join (select sel,ROW_NUMBER()over(order by sel) recno from @tmp) b on a.sel=b.sel
 	
 	select gno
+		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
 		,sel rr
 		,typea a01
 		,dime a02
@@ -1727,6 +1728,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		delete #z_cub_rkp06 where gno='2'
 	
 	select gno
+		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
 		,uno b02
 		,recno rr
 		,dime a01
@@ -1994,7 +1996,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	from @tmp	
 
 	select gno
-		,@t_bdate + '~' + @t_edate a00
+		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
 		,recno rr
 		,dime a01
 		,radius a02
@@ -2184,6 +2186,7 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	where gno='1'
 	
 	select gno
+		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
 		,row_number()over(order by gno,makeno) rr
 		,CAST(ROW_NUMBER()over(order by gno,makeno) as nvarchar) rr
 		,CAST(dime as nvarchar) a01
