@@ -1306,18 +1306,25 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	
 	insert into @tmp(makeno,weight)
 	select a.cname,SUM(ISNULL(a.weight,0))
-	from view_cuts a left join view_cut b on a.accy=b.accy and a.noa=b.noa 
+	from view_cuts a 
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa 
 	where a.datea between @t_bdate and @t_edate
 	and (len(@t_makeno)=0 or a.cname=@t_makeno)
 	and len(isnull(a.cname,''))>0
 	group by a.cname
 		
-	update @tmp set dime = b.dime, pvcno= b.spec, radius=b.radius,width=b.width,lengthb=b.lengthb,custno=b.custno,cust=b.comp 
-	from @tmp a
-	left join view_cuts b on a.makeno=b.cname and len(b.spec)>0
-	where b.noa is not null
-	--outer apply(select top 1 dime,spec from view_cuts where cname=a.makeno and len(spec)>0) b
 	
+	update @tmp set dime = b.dime, pvcno= b.spec, radius=isnull(b.radius,0),width=b.width,lengthb=b.lengthb,custno=b.custno,cust=b.comp 
+	from @tmp a
+	outer apply(select top 1 * from view_cuts where cname=a.makeno and len(spec)>0 order by noa desc) b
+	where b.noa is not null
+	--補齊資料
+	update @tmp set radius = b.radius 
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	where b.noa is not null	and a.radius=0
+
+
 	update @tmp set recno=b.recno
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(order by dime,makeno,pvcno) recno from @tmp ) b on a.sel=b.sel
@@ -1781,6 +1788,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,recno int
 		,makeno nvarchar(30)
 		,tmakeno nvarchar(30)
+		,uno nvarchar(30)
 		,dime float
 		,width float
 		,lengthb float
@@ -1839,10 +1847,10 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,spec nvarchar(max)
 		,cspec nvarchar(max)
 	)
-	insert into @tmp(gno,pno,makeno,date_cub,[weight],total
+	insert into @tmp(gno,pno,makeno,uno,date_cub,[weight],total
 		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
 		,mins,accy,noa,noq)
-	select '1',1,a.makeno,b.datea,a.hweight
+	select '1',1,a.makeno,isnull(a.uno,''),b.datea,a.hweight
 		--原物料成本+費用
 		,isnull(a.total,0) 
 		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
@@ -1864,6 +1872,13 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	update @tmp set pvcno=ISNULL(b.productno,''),pvc=ISNULL(b.product,'')
 	from @tmp a
 	outer apply (select top 1 productno,product from view_cubt where noa=a.noa and nor=a.noq and kind='1' order by noq) b
+--皮膜(再投入)	
+	update @tmp set pvcno=ISNULL(b.spec,a.pvcno),pvc=ISNULL(b.class,a.pvc)
+	from @tmp a
+	left join view_cuts b on a.uno=b.bno
+	where len(a.uno)>0 
+	and b.noa is not null
+	
 	
 	/*update @tmp set pvcno=ISNULL(b.scolor,''),pvc=ISNULL(b.[class],'')
 	from @tmp a
@@ -2008,37 +2023,36 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,cust a07
 		,cspec a08
 		--期初存貨								
-
 		,dbo.getComma(weight01,-1) a09
-		,dbo.getComma(price01,-1) a10
+		,dbo.getComma(price01,4) a10
 		,dbo.getComma(total01,-1) a11
 		--盤點調整			
 		,dbo.getComma(weight02,-1) a12
-		,dbo.getComma(price02,-1) a13
+		,dbo.getComma(price02,4) a13
 		,dbo.getComma(total02,-1) a14
 		--本期完工投入
 		,dbo.getComma(weight03,-1) a15
-		,dbo.getComma(price03,-1) a16
+		,dbo.getComma(price03,4) a16
 		,dbo.getComma(total03,-1) a17			
 		--本期耗料
 		,dbo.getComma(weight04,-1) a18
-		,dbo.getComma(price04,-1) a19
+		,dbo.getComma(price04,4) a19
 		,dbo.getComma(total04,-1) a20			
 		--本期樣品 
 		,dbo.getComma(weight05,-1) a21
-		,dbo.getComma(price05,-1) a22
+		,dbo.getComma(price05,4) a22
 		,dbo.getComma(total05,-1) a23
 		--本期報廢	
 		,dbo.getComma(weight06,-1) a24
-		,dbo.getComma(price06,-1) a25
+		,dbo.getComma(price06,4) a25
 		,dbo.getComma(total06,-1) a26	
 		--本期領用
 		,dbo.getComma(weight07,-1) a27
-		,dbo.getComma(price07,-1) a28
+		,dbo.getComma(price07,4) a28
 		,dbo.getComma(total07,-1) a29
 		--期末存貨
 		,dbo.getComma(weight10,-1) a30
-		,dbo.getComma(price10,-1) a31
+		,dbo.getComma(price10,4) a31
 		,dbo.getComma(total10,-1) a32
 		,mins t01
 	from @tmp order by pno,recno;
@@ -2079,6 +2093,7 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		width float,
 		lengthb float,
 		makeno nvarchar(20),
+		uno nvarchar(30),
 		custno nvarchar(20),
 		cust nvarchar(50),
 		productno nvarchar(20),
@@ -2112,10 +2127,10 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		,cspec nvarchar(50)
 	)
 	insert into @tmp(cubno,cubnoq,gno,dime,radius,width,lengthb
-		,makeno,custno,cust,productno,product,timea,weight01,weight02,ordeno,no2
+		,makeno,uno,custno,cust,productno,product,timea,weight01,weight02,ordeno,no2
 		,money01,money02,money03,money04,money05)
 	select a.noa,a.noq, '1',a.dime,a.radius,a.width,a.lengthb
-		,a.makeno,a.custno,a.comp,a.productno,a.product
+		,a.makeno,a.uno,a.custno,a.comp,a.productno,a.product
 		,a.mins,a.w03,a.hweight,a.ordeno,a.no2
 		,ISNULL(a.y01,0)+ISNULL(a.y02,0)+ISNULL(a.y03,0)+ISNULL(a.y04,0)
 			+ISNULL(a.y05,0)+ISNULL(a.y06,0)+ISNULL(a.y07,0)+ISNULL(a.y08,0)
@@ -2154,6 +2169,12 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	from @tmp a
 	outer apply (select top 1 productno,product from view_cubt where noa=a.cubno and nor=a.cubnoq and kind='2' order by noq) b
 	
+	--皮膜(再投入)	
+	update @tmp set pvcno=ISNULL(b.spec,a.pvcno),pvc=ISNULL(b.class,a.pvc)
+	from @tmp a
+	left join view_cuts b on a.uno=b.bno
+	where b.noa is not null
+
 
 	update @tmp set money06=ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)+ISNULL(money04,0)+ISNULL(money05,0)
 	--小計
@@ -2213,8 +2234,8 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 		,dbo.getComma(money05,0) a22
 		,dbo.getComma(rate05,-1) a23
 		,dbo.getComma(money06,0) a24
-		,dbo.getComma(price01,-1) a25
-		,dbo.getComma(price02,-1) a26
+		,dbo.getComma(price01,4) a25
+		,dbo.getComma(price02,4) a26
 		,mon a27
 	from @tmp
 	order by gno,makeno;
