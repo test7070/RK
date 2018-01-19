@@ -8,6 +8,8 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,startdate nvarchar(30) --開帳日期
+		,strweight float
 		,makeno nvarchar(20)
 		,ordeaccy nvarchar(10)
 		,ordeno nvarchar(20)
@@ -52,6 +54,7 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		,w06 float--成品再投入	   cucs.para
 		--,w07 nvarchar(40)--成品規格	
 		,w08 float--(1)進倉成品	   cuts.weight
+		,m08 float--   成品金額	   cuts.total
 		,w09 float--(2)樣品	cucs.weight6
 		,m09 float--   樣品金額	cucs.m02
 		,w10 float--(2)報廢 cucs.weight7 
@@ -75,15 +78,19 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		,memo nvarchar(max)
 	) as
 	begin
-		insert into @tmpa(accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount
+		-- 開帳資料itema的金額數量會寫入CUBS
+		-- 因此和開帳資料有關的在此日期前不忽略不計
+		insert into @tmpa(accy,noa,noq,startdate,strweight,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust,uno,dime,width,lengthb,radius,[weight],mount
 			,x01,x02,x03,x04,x05
 			,total)
-		select a.accy,a.noa,a.noq,a.makeno,a.accy,a.ordeno,a.no2,b.datea,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
+		--期初庫存  結轉時已有寫入 hweight	
+		select a.accy,a.noa,a.noq,isnull(d.datea,''),isnull(a.hweight,''),a.makeno,a.accy,a.ordeno,a.no2,b.datea,c.custpro,a.custno,a.comp,a.uno,a.dime,a.width,a.lengthb,a.radius,a.[weight],a.mount
 			,a.x04,a.x05,a.x06,a.x07,a.x08
 			,isnull(a.total,0)
 		from view_cubs a
 		left join view_cub b on a.accy=b.accy and a.noa=b.noa
 		left join view_ordes c on a.ordeno=c.noa and a.no2=c.no2
+		left join itema d on a.makeno=d.makeno 
 		where b.noa is not null 
 		and b.datea <=@t_edate
 		-------------------------------------------------------------------------------
@@ -161,11 +168,13 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		-------------------------------------------------------------------------
 		--w01 總投入重量
 		update @tmpa set w01 = ISNULL([weight],0) + ISNULL([pvcweight],0) + ISNULL([pveweight],0) + ISNULL([x01],0) + ISNULL([x02],0) + ISNULL([x03],0) + ISNULL([x04],0) + ISNULL([x05],0)
-		--w02 本期生產半成品
-		update @tmpa set w02 = isnull(b.hweight,0)
+		--w02 本期生產半成品, 期初開帳的由itema抓
+		update @tmpa set w02 = case when c.makeno is not null then c.hweight else isnull(b.hweight,0) end
 		from @tmpa a
 		left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+		left join itema c on a.makeno=c.makeno
 		where b.noa is not null
+		
 		--w04 生產線分條餘料(a2) cucs.weight4
 		--w05 待修品再投入   cucs.weight5	
 		--w06 成品再投入	 cucs.para
@@ -185,30 +194,40 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			,w13=ISNULL(b.[weight10],0)
 			,w14=ISNULL(b.[paraa],0)
 			,w15=ISNULL(b.[weight11],0)
-			,m09=ISNULL(b.[m02],0)
+		from @tmpa a
+		outer apply(select x.cubno makeno
+			,SUM(ISNULL(x.weight4,0)) [weight4] 
+			,SUM(ISNULL(x.weight5,0)) [weight5] 
+			,SUM(ISNULL(x.weight6,0)) [weight6] 
+			,SUM(ISNULL(x.weight7,0)) [weight7]
+			,SUM(ISNULL(x.weight8,0)) [weight8]
+			,SUM(ISNULL(x.weight9,0)) [weight9]
+			,SUM(ISNULL(x.weight10,0)) [weight10]
+			,SUM(ISNULL(cast(x.para as float),0)) [para]
+			,SUM(ISNULL(cast(x.paraa as float),0)) [paraa] 
+			,SUM(ISNULL(x.weight11,0)) [weight11]
+			from view_cucs x 
+			left join view_cuc y on x.accy=y.accy and x.noa=y.noa
+			where x.cubno = a.makeno
+		--	and y.datea>a.startdate
+			and y.datea<=@t_edate
+			group by x.cubno) b
+		
+		update @tmpa set m09=ISNULL(b.[m02],0)
 			,m10=ISNULL(b.[m03],0)
 			,m15=ISNULL(b.[m04],0)
 		from @tmpa a
-		left join(select a.cubno makeno
-			,SUM(ISNULL(a.weight4,0)) [weight4] 
-			,SUM(ISNULL(a.weight5,0)) [weight5] 
-			,SUM(ISNULL(a.weight6,0)) [weight6] 
-			,SUM(ISNULL(a.weight7,0)) [weight7]
-			,SUM(ISNULL(a.weight8,0)) [weight8]
-			,SUM(ISNULL(a.weight9,0)) [weight9]
-			,SUM(ISNULL(a.weight10,0)) [weight10]
-			,SUM(ISNULL(cast(a.para as float),0)) [para] 
-			,SUM(ISNULL(cast(a.paraa as float),0)) [paraa] 
-			,SUM(ISNULL(a.weight11,0)) [weight11]
-			,SUM(ISNULL(a.m02,0)) [m02]
-			,SUM(ISNULL(a.m03,0)) [m03]
-			,SUM(ISNULL(a.m04,0)) [m04] 
-			from view_cucs a 
-			left join view_cuc b on a.accy=b.accy and a.noa=b.noa
-			where b.datea<=@t_edate
-			group by a.cubno) b on a.makeno=b.makeno
+		outer apply(select x.cubno makeno
+			,SUM(ISNULL(x.m02,0)) [m02]
+			,SUM(ISNULL(x.m03,0)) [m03]
+			,SUM(ISNULL(x.m04,0)) [m04] 
+			from view_cucs x 
+			left join view_cuc y on x.accy=y.accy and x.noa=y.noa
+			where x.cubno = a.makeno
+			and y.datea>a.startdate
+			and y.datea<=@t_edate
+			group by x.cubno) b
 			
-		
 		--w03 生產線廢料(a1)   w01 - w02 - w04        --- 要回寫到cubs.price   
 		update @tmpa set w03 = cast(ISNULL(w01,0) as decimal(12,3))
 			-cast(ISNULL(w02,0) as decimal(12,3))
@@ -217,10 +236,27 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		--w08 進倉成品 cuts.weight
 		update @tmpa set w08=ISNULL(b.[weight],0)
 		from @tmpa a
-		left join (select a.cname makeno,SUM(ISNULL(a.[weight],0)) [weight] 
-			from view_cuts a 
-			left join view_cut b on a.noa=b.noa
-			where b.datea<=@t_edate group by cname) b on a.makeno=b.makeno
+		outer apply (select x.cname makeno
+			,SUM(ISNULL(x.[weight],0)) [weight] 
+			,SUM(ISNULL(x.[total],0)) [total] 
+			from view_cuts x 
+			left join view_cut y on x.accy=y.accy and x.noa=y.noa
+			where x.cname = a.makeno
+			--and y.datea>a.startdate
+			and y.datea<=@t_edate 
+			group by x.cname) b
+			
+		update @tmpa set m08=ISNULL(b.[scost],0)
+		from @tmpa a
+		outer apply (select x.cname makeno
+			,SUM(ISNULL(x.[weight],0)) [weight] 
+			,SUM(ISNULL(x.[scost],0)) [scost] 
+			from view_cuts x 
+			left join view_cut y on x.accy=y.accy and x.noa=y.noa
+			where x.cname = a.makeno
+			and y.datea>a.startdate
+			and y.datea<=@t_edate 
+			group by x.cname) b
 		-------------------------------------------------------------------------------
 		--w15 原物料損耗  ???
 		--w16 不良品損耗率	w11/w01
@@ -241,15 +277,12 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		update @tmpa set w22=ISNULL(w08,0)+ISNULL(w09,0)+ISNULL(w10,0)+ISNULL(w21,0)
 			--加盤盈
 			,w23 = round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
+			
+			/*,w23 = case when datea>startdate then round(ISNULL(w01,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0)-ISNULL(w21,0),2) + ISNULL(w15,0)
+				else round(ISNULL(strweight,0)+ISNULL(w05,0)+ISNULL(w06,0)-ISNULL(w08,0)-ISNULL(w09,0)-ISNULL(w10,0),2) + ISNULL(w15,0) end*/
 			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
 		--update @tmpa set emoney=round(w23/w01*total,0)
-		update @tmpa set emoney=case when isnull(w23,0)>0 then total-m09-m10+m15 else 0 end
-		--開帳資料
-		update @tmpa set w23 = b.mount, emoney = b.money
-		from @tmpa a
-		left join itema b on a.makeno=b.makeno
-		where b.makeno is not null
-		and emoney!=0
+		update @tmpa set emoney=case when isnull(w23,0)>0 then total-m08-m09-m10+m15 else 0 end
 		
 		return
 	end

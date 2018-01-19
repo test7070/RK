@@ -425,6 +425,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	)
 	insert into @tmp01(kind,datea,uno,makeno,size,weight,price,total,storeno,store,place)
 	execute [dbo].[z_ucc_rk02] @x_stktype,@x_kind,@x_edate,@x_storeno
+	
+	
 	-----------------------------------------------------------------------------------------------------
 	--期初
 	update @tmp set w01=b.weight,p01=b.price,m01=b.total
@@ -432,8 +434,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp01 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w01,m01)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w01,m01)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp01 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -464,8 +466,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp02 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w02,m02)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w02,m02)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp02 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -497,8 +499,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp03 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w03,m03)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w03,m03)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp03 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -528,8 +530,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp04 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w04,m04)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w04,m04)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp04 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -551,7 +553,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	and a.datea between @t_bdate and @t_edate
 	and len(ISNULL(a.bno,''))>0
 	group by a.bno
-	
+
+
 	update @tmp set w05=b.weight
 		,p05=case when b.weight!=0 then round(b.total/b.weight,2) else 0 end
 		,m05=b.total
@@ -559,8 +562,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp05 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w05,m05)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w05,m05)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp05 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -593,8 +596,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp06 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w06,m06)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w06,m06)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp06 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -626,8 +629,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp07 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w07,m07)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w07,m07)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp07 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -658,8 +661,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp08 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w08,m08)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w08,m08)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp08 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -690,8 +693,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp09 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w09,m09)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w09,m09)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp09 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
@@ -719,8 +722,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp10 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	insert into @tmp(uno,w10,m10)
-	select a.uno,a.weight,a.total
+	insert into @tmp(gno,pno,uno,w10,m10)
+	select '1',1,a.uno,a.weight,a.total
 	from @tmp10 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null 
@@ -838,7 +841,6 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,dbo.getComma(m10,-1) b27
 	from @tmp	
 	order by gno,sel;
-
 	
 
 z_cub_rkp08_old:--z_cub_rkp08	製成品彙總表
@@ -1327,7 +1329,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 
 	update @tmp set recno=b.recno
 	from @tmp a
-	left join (select sel,ROW_NUMBER()over(order by dime,makeno,pvcno) recno from @tmp ) b on a.sel=b.sel
+	left join (select sel,ROW_NUMBER()over(order by makeno,pvcno,dime) recno from @tmp ) b on a.sel=b.sel
 
 	declare cursor_table cursor for 
 	select makeno,weight,dime,radius,width,lengthb,pvcno,cust,recno from @tmp order by recno
@@ -1391,7 +1393,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		
 	
 		--在製品完工單價
-		update #z_cub_rkp06 set p01 = case when w01 =0 then 0 else ROUND(m01/w01,2) end where makeno=@makeno
+		update #z_cub_rkp06 set p01 = case when w01 =0 then 0 else ROUND(m01/w01,4) end where makeno=@makeno
 		--在製品樣品重,在製品報廢重,在製品盤盈
 		update #z_cub_rkp06 set w02 = ISNULL(b.weight6,0),w03 = ISNULL(b.weight7,0),w04 = ISNULL(b.weight11,0)
 		from #z_cub_rkp06 a
@@ -1558,7 +1560,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	--製成品成本金額  =  在製品完工成本 - 在製品樣品成本 - 在製品報廢成本 - 在製品盤盈成本 + 加工成本
 	update #z_cub_rkp06 set money07= m01 - m02 - m03 - m04 + money06
 	--製成品單位成本 = 製成品成本金額 / 進倉重
-	update #z_cub_rkp06 set price07 = case when ISNULL(weight01,0)=0 then 0 else ROUND(money07/weight01,2) end
+	update #z_cub_rkp06 set price07 = case when ISNULL(weight01,0)=0 then 0 else ROUND(money07/weight01,4) end
 
 	-------------------------------------------------------------------------------------------------------
 	select @recno = MAX(recno) from #z_cub_rkp06
@@ -1745,10 +1747,10 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,pvcno a04
 		,makeno a05
 		,cust a06
-		,weight01 a07
-		,weight02 a08
-		,weight03 a09
-		,weight04 a10
+		,dbo.getComma(weight01,2) a07
+		,dbo.getComma(weight02,2) a08
+		,dbo.getComma(weight03,2) a09
+		,dbo.getComma(weight04,2) a10
 		,rate05 a11
 		,case when ISNULL(status01,0)=1 then 'V' else '' end a12
 		,case when ISNULL(status02,0)=1 then 'V' else '' end a13
@@ -1757,15 +1759,15 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,case when ISNULL(status05,0)=1 then 'V' else '' end a16
 		,w01 a17
 		,m01 a18
-		,money01 a19
-		,money02 a20
-		,money03 a21
-		,money04 a22
-		,money05 a23
-		,money06 a24
-		,price06 a25
-		,money07 a26
-		,price07 a27
+		,dbo.getComma(money01,-1) a19
+		,dbo.getComma(money02,-1) a20
+		,dbo.getComma(money03,-1) a21
+		,dbo.getComma(money04,-1) a22
+		,dbo.getComma(money05,-1) a23
+		,dbo.getComma(money06,-1) a24
+		,dbo.getComma(price06,4) a25
+		,dbo.getComma(money07,-1) a26
+		,dbo.getComma(price07,4) a27
 		,datea a28
 	from #z_cub_rkp06 
 	order by recno,makeno,gno,pno
@@ -3801,7 +3803,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	from cubs106 a
 	left join itema b on a.makeno=b.makeno
 	where b.makeno is not null
-
+	
+	--z_cub_rkp06 計算 cuts.total
 	-- 計算成品的金額
 	declare @tmpCuts_1 table(
 		sel int identity(1,1)
@@ -3900,7 +3903,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	while(@@FETCH_STATUS <> -1)
 	begin
 		set @cmd =
-		"update cuts"+@accy+" set total=b.cost
+		"update cuts"+@accy+" set scost=b.cost
 		 from cuts"+@accy+" a
 		 left join #z_cub_rkp03a b on a.noa=b.noa and a.noq=b.noq
 		 where b.accy=@accy"
