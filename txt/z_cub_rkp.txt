@@ -3063,7 +3063,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	end 
 	close cursor_table 
 	deallocate cursor_table 
-	
+
+
 	--- 寫入SPRICE
 	delete sprice 
 	from sprice a
@@ -3780,23 +3781,116 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	left join itema b on a.makeno=b.makeno
 	where b.makeno is not null
 
-	---- 計算成品的金額
-	--declare @tmpCuts table(
-	--	sel int identity(1,1)
-	--	,accy nvarchar(10)
-	--	,noa nvarchar(20)
-	--	,noq nvarchar(10)
-	--	,makeno nvarchar(20)
-	--	,[weight] float --入庫重量 
-	--	,cost float 
-	--)
-	--insert into @tmpCuts(accy,noa,noq,makeno,[weight])
-	--select a.accy,a.noa,a.noq,a.cname,a.[weight]
-	--from view_cuts a
-	--left join view_cut b on a.accy=b.accy and a.noa=b.noa
-	--where b.datea between @bdate and @edate
-	--and len(ISNULL(a.cname,'')) > 0
+	-- 計算成品的金額
+	declare @tmpCuts_1 table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,[weight] float --入庫重量 
+		,cost float 
+	)
+	insert into @tmpCuts_1(accy,noa,noq,makeno,[weight])
+	select a.accy,a.noa,a.noq,a.cname,a.[weight]
+	from view_cuts a
+	left join view_cut b on a.accy=b.accy and a.noa=b.noa
+	where b.datea between @bdate and @edate
+	and len(ISNULL(a.cname,'')) > 0
 	
+	--半成品成本
+	declare @tmpCuts_2 table(
+		sel int identity(1,1)
+		,makeno nvarchar(20)
+		,[weight] float --入庫重量 
+		,total float 
+		,xweight float --成品進倉的總重
+		,xtotal float
+	)
+	insert into @tmpCuts_2(makeno)
+	select makeno from @tmpCuts_1 group by makeno
+	update @tmpCuts_2 set [weight]=ISNULL(b.hweight,0),total=ISNULL(b.total,0)
+	from @tmpCuts_2 a
+	left join view_cubs b on a.makeno=b.makeno
+	--忽略CUBS不存在的
+	delete @tmpCuts_2
+	from @tmpCuts_2 a
+	left join view_cubs b on a.makeno=b.makeno
+	where b.noa is null
+	
+	--相關的成品進倉品項
+	IF OBJECT_ID('tempdb..#z_cub_rkp03a')is not null
+	BEGIN
+		drop table #z_cub_rkp03a
+	END
+	create table #z_cub_rkp03a(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,[weight] float --入庫重量 
+		,cost float 
+	)
+	insert into #z_cub_rkp03a(accy,noa,noq,makeno,weight)
+	select a.accy,a.noa,a.noq,a.cname,ISNULL(a.weight,0)
+	from view_cuts a
+	left join @tmpCuts_2 b on a.cname=b.makeno
+	where b.makeno is not null
+	order by a.datea,a.accy,a.noa,a.noq
+	
+	update @tmpCuts_2 set xweight = ISNULL(b.weight,0)
+	from @tmpCuts_2 a
+	left join (select makeno,SUM(weight) weight from #z_cub_rkp03a group by makeno) b on a.makeno=b.makeno
+	
+	update #z_cub_rkp03a set cost = case when b.xweight=0 then 0 else round(b.total*a.weight/b.xweight,0) end
+	from #z_cub_rkp03a a
+	left join @tmpCuts_2 b on a.makeno=b.makeno
+	
+	update @tmpCuts_2 set xtotal = ISNULL(b.cost,0)
+	from @tmpCuts_2 a
+	left join (select makeno,SUM(cost) cost from #z_cub_rkp03a group by makeno) b on a.makeno=b.makeno
+	--尾差修正 (由最後一筆修正)
+	declare @makeno nvarchar(30)
+	
+	declare cursor_table cursor for
+	select makeno,total-xtotal from @tmpCuts_2 where total!=xtotal
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno,@diff
+	while(@@FETCH_STATUS <> -1)
+	begin
+		update #z_cub_rkp03a set cost = a.cost + @diff
+		from #z_cub_rkp03a a
+		outer apply(select top 1 sel from #z_cub_rkp03a where makeno=@makeno order by sel) b
+		where a.sel=b.sel
+		fetch next from cursor_table
+		into @makeno,@diff
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	-----資料回寫
+	declare cursor_table cursor for
+	select accy from #z_cub_rkp03a group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update cuts"+@accy+" set total=b.cost
+		 from cuts"+@accy+" a
+		 left join #z_cub_rkp03a b on a.noa=b.noa and a.noq=b.noq
+		 where b.accy=@accy"
+		execute sp_executesql @cmd,N'@accy nvarchar(10)'
+		,@accy=@accy
+		
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
 	-------------------------------------------------------------------------------------------------------
 	set @n=0
 	select @n=count(1) from #z_cub_rkp03
