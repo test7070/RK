@@ -39,14 +39,26 @@
 						value : "1@顯示公司抬頭".split(',')
 					},{
 						type : '5', //[5] 3
-						name : 'xkind',
-						value : [q_getPara('report.all')].concat(q_getPara('sys.stktype').split(','))
+						name : 'xtype',
+						value : [q_getPara('report.all')].concat('領料單,加寄庫出貨,退料,盤點,報廢'.split(','))
 					},{
                         type : '1',//[6][7] 4
                         name : 'xdate'
                     }, {
 						type : '2', //[8][9] 5
 						name : 'xproduct',
+						dbf : 'ucc',
+						index : 'noa,product',
+						src : 'ucc_b.aspx'
+					},{
+						type : '2', //[10][11]  6
+						name : 'xcust',
+						dbf : 'cust',
+						index : 'noa,comp',
+						src : 'cust_b.aspx'
+					}, {
+						type : '2', //[12][13] 7
+						name : 'xproduct2',
 						dbf : 'ucc',
 						index : 'noa,product',
 						src : 'ucc_b.aspx'

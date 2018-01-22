@@ -19,7 +19,7 @@
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
             var q_readonlys = ['txtCname'];
             var bbmNum = [];
-            var bbsNum = [['txtHours', 10, 0, 1], ['txtHweight', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 3, 1], ['txtSprice'], ['txtTotal']];
+            var bbsNum = [['txtHours', 10, 0, 1], ['txtHweight', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 3, 1], ['txtSprice'], ['txtTotal'], ['txtScost']];
             var bbmMask = [];
             var bbsMask = [];
             q_sqlCount = 6;
@@ -701,7 +701,7 @@
 					<td align="center" style="width:100px;">結束時間</td>	
 					<td align="center" style="width:80px;">施工工時(分)</td>
 					<td style="width:100px;">單價</td>
-					<td style="width:100px;">金額</td>
+					<td style="width:100px;">成本(不含費用)<br>成本金額</td>
 				</tr>
 				<tr style='background:#cad3ff;'>
 					<td align="center">
@@ -751,7 +751,10 @@
 					<td><input id="txtEtime.*" type="text" class="txt" style="float:left;width:95%;"/></td>
 					<td><input id="txtMins.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
 					<td><input id="txtSprice.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
-					<td><input id="txtTotal.*" type="text" class="txt num" style="float:left;width:95%;"/></td>
+					<td>
+						<input id="txtScost.*" type="text" class="txt num" style="float:left;width:95%;"/>
+						<input id="txtTotal.*" type="text" class="txt num" style="float:left;width:95%;"/>
+					</td>
 					<!-- total  當執行製成品單位成本表(z_cub_rkp05)時會寫入  -->
 				</tr>
 			</table>

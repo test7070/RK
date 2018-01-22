@@ -1277,7 +1277,8 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		no2 nvarchar(10),
 		accy nvarchar(10),
 		noa nvarchar(20),
-		noq nvarchar(10)
+		noq nvarchar(10),
+		mins float --裁切工時
 	)
 	declare @makeno nvarchar(20)
 	declare @dime float
@@ -1401,19 +1402,23 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		where a.makeno=@makeno
 		update #z_cub_rkp06 set m02 = ROUND(w02*p01,0),m03 = ROUND(w03*p01,0),m04 = ROUND(w04*p01,0) where makeno=@makeno
 		--加工成本 分條  (不含樣品、報廢、盤盈)
-		update #z_cub_rkp06 set money01=ISNULL(b.mm,0)
+		update #z_cub_rkp06 set money01=ISNULL(b.mm,0),mins=ISNULL(a.mins,0) + ISNULL(b.mins,0)
 		from #z_cub_rkp06 a
-		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm from view_cucs x
+		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm 
+			,SUM(ISNULL(x.mins,0)) mins
+			from view_cucs x
 			left join view_cuc y on x.accy=y.accy and x.noa=y.noa
-			where x.cubno=@makeno and y.typea='分條作業'
+			where x.cubno=@makeno and (y.typea='分條作業' or y.typea='重工' or y.typea='挑板')
 			and ISNULL(x.weight6,0)=0
 			and ISNULL(x.weight7,0)=0
 			and ISNULL(x.weight11,0)=0) b
 		where a.makeno=@makeno
 		--加工成本 二呎 (不含樣品、報廢、盤盈)
-		update #z_cub_rkp06 set money02=ISNULL(b.mm,0)
+		update #z_cub_rkp06 set money02=ISNULL(b.mm,0),mins=ISNULL(a.mins,0) + ISNULL(b.mins,0)
 		from #z_cub_rkp06 a
-		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm from view_cucs x
+		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm 
+			,SUM(ISNULL(x.mins,0)) mins
+			from view_cucs x
 			left join view_cuc y on x.accy=y.accy and x.noa=y.noa
 			where x.cubno=@makeno and y.typea='二呎裁切'
 			and ISNULL(x.weight6,0)=0
@@ -1421,9 +1426,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 			and ISNULL(x.weight11,0)=0) b
 		where a.makeno=@makeno
 		--加工成本 三呎 (不含樣品、報廢、盤盈)
-		update #z_cub_rkp06 set money03=ISNULL(b.mm,0)
+		update #z_cub_rkp06 set money03=ISNULL(b.mm,0),mins=ISNULL(a.mins,0) + ISNULL(b.mins,0)
 		from #z_cub_rkp06 a
-		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm from view_cucs x
+		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm 
+			,SUM(ISNULL(x.mins,0)) mins
+			from view_cucs x
 			left join view_cuc y on x.accy=y.accy and x.noa=y.noa
 			where x.cubno=@makeno and y.typea='三呎裁切'
 			and ISNULL(x.weight6,0)=0
@@ -1431,9 +1438,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 			and ISNULL(x.weight11,0)=0) b
 		where a.makeno=@makeno
 		--加工成本 四呎 (不含樣品、報廢、盤盈)
-		update #z_cub_rkp06 set money04=ISNULL(b.mm,0)
+		update #z_cub_rkp06 set money04=ISNULL(b.mm,0),mins=ISNULL(a.mins,0) + ISNULL(b.mins,0)
 		from #z_cub_rkp06 a
-		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm from view_cucs x
+		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm 
+			,SUM(ISNULL(x.mins,0)) mins
+			from view_cucs x
 			left join view_cuc y on x.accy=y.accy and x.noa=y.noa
 			where x.cubno=@makeno and y.typea='四呎裁切'
 			and ISNULL(x.weight6,0)=0
@@ -1441,9 +1450,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 			and ISNULL(x.weight11,0)=0) b
 		where a.makeno=@makeno
 		--加工成本 十呎 (不含樣品、報廢、盤盈)
-		update #z_cub_rkp06 set money05=ISNULL(b.mm,0)
+		update #z_cub_rkp06 set money05=ISNULL(b.mm,0),mins=ISNULL(a.mins,0) + ISNULL(b.mins,0)
 		from #z_cub_rkp06 a
-		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm from view_cucs x
+		outer apply(select SUM(ISNULL(x.w01,0)+ISNULL(x.w02,0)+ISNULL(x.w04,0)+ISNULL(x.w05,0)) mm 
+			,SUM(ISNULL(x.mins,0)) mins
+			from view_cucs x
 			left join view_cuc y on x.accy=y.accy and x.noa=y.noa
 			where x.cubno=@makeno and y.typea='十呎裁切'
 			and ISNULL(x.weight6,0)=0
@@ -1499,11 +1510,6 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 			,m02 = round(weight01/@weight01 * @m02,0) 
 			,m03 = round(weight01/@weight01 * @m03,0) 
 			,m04 = round(weight01/@weight01 * @m04,0)
-			,money01 = round(weight01/@weight01 * @money01,0)  
-			,money02 = round(weight01/@weight01 * @money02,0)  
-			,money03 = round(weight01/@weight01 * @money03,0)  
-			,money04 = round(weight01/@weight01 * @money04,0)  
-			,money05 = round(weight01/@weight01 * @money05,0)   
 		where makeno=@makeno and @weight01!=0 and gno='2'
 		--最後一筆修正尾差
 		update #z_cub_rkp06 set weight02 = a.weight02 + (@weight02-isnull(c.weight02,0))
@@ -1517,11 +1523,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 			,m02 = a.m02 + (@m02-isnull(c.m02,0))
 			,m03 = a.m03 + (@m03-isnull(c.m03,0))
 			,m04 = a.m04 + (@m04-isnull(c.m04,0))
-			,money01 = a.money01 + (@money01-isnull(c.money01,0))
-			,money02 = a.money02 + (@money02-isnull(c.money02,0))
-			,money03 = a.money03 + (@money03-isnull(c.money03,0))
-			,money04 = a.money04 + (@money04-isnull(c.money04,0))
-			,money05 = a.money05 + (@money05-isnull(c.money05,0))
+			--,money01 = a.money01 + (@money01-isnull(c.money01,0))
+			--,money02 = a.money02 + (@money02-isnull(c.money02,0))
+			--,money03 = a.money03 + (@money03-isnull(c.money03,0))
+			--,money04 = a.money04 + (@money04-isnull(c.money04,0))
+			--,money05 = a.money05 + (@money05-isnull(c.money05,0))
 		from #z_cub_rkp06 a
 		outer apply(select top 1 * from #z_cub_rkp06 where gno='2' and makeno=@makeno order by sel desc) b
 		outer apply(select SUM(ISNULL(weight02,0)) weight02 
@@ -1535,11 +1541,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 			,SUM(ISNULL(m02,0)) m02
 			,SUM(ISNULL(m03,0)) m03
 			,SUM(ISNULL(m04,0)) m04
-			,SUM(ISNULL(money01,0)) money01
-			,SUM(ISNULL(money02,0)) money02
-			,SUM(ISNULL(money03,0)) money03
-			,SUM(ISNULL(money04,0)) money04
-			,SUM(ISNULL(money05,0)) money05
+			--,SUM(ISNULL(money01,0)) money01
+			--,SUM(ISNULL(money02,0)) money02
+			--,SUM(ISNULL(money03,0)) money03
+			--,SUM(ISNULL(money04,0)) money04
+			--,SUM(ISNULL(money05,0)) money05
 			from #z_cub_rkp06 where gno='2' and makeno=@makeno ) c
 		where a.sel=b.sel
 		
@@ -1565,10 +1571,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	-------------------------------------------------------------------------------------------------------
 	select @recno = MAX(recno) from #z_cub_rkp06
 	insert into #z_cub_rkp06(recno,gno,weight01,weight02,weight03,weight04,weight05,w01,m01,w02,m02,w03,m03,w04,m04
-		,money01,money02,money03,money04,money05,money06,money07)
+		,money01,money02,money03,money04,money05,money06,money07,mins)
 	select @recno+1,'3',sum(isnull(weight01,0)),sum(isnull(weight02,0)),sum(isnull(weight03,0)),sum(isnull(weight04,0)),sum(isnull(weight05,0))
 		,sum(isnull(w01,0)),sum(isnull(m01,0)),sum(isnull(w02,0)),sum(isnull(m02,0)),sum(isnull(w03,0)),sum(isnull(m03,0)),sum(isnull(w04,0)),sum(isnull(m04,0))
 		,sum(isnull(money01,0)),sum(isnull(money02,0)),sum(isnull(money03,0)),sum(isnull(money04,0)),sum(isnull(money05,0)),sum(isnull(money06,0)),sum(isnull(money07,0))
+		,sum(isnull(mins,0))
 	from #z_cub_rkp06
 	where gno='1'
 	
@@ -1769,6 +1776,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,dbo.getComma(money07,-1) a26
 		,dbo.getComma(price07,4) a27
 		,datea a28
+		,dbo.getComma(mins,-1) a30
 	from #z_cub_rkp06 
 	order by recno,makeno,gno,pno
 	drop table #z_cub_rkp06;
