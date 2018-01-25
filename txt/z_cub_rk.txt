@@ -48,6 +48,9 @@ z_cub_rk02:--z_cub_rk02
 		,x04 float	--背漆稀釋液
 		,x05 float  --面漆
 		-----------------------------
+		,total float --總投入成本(含直接人工、製造費用)
+		,emoney float  --期末半成品成本 - 樣品金額 - 報廢金額 + 盤盈金額
+		
 		,w01 float--總投入重量
 		,w02 float--本期生產半成品
 		,w03 float--(a1)生產線廢料	
@@ -56,6 +59,7 @@ z_cub_rk02:--z_cub_rk02
 		,w06 float--成品再投入	   cucs.para
 		--,w07 nvarchar(40)--成品規格	
 		,w08 float--(1)進倉成品	   cuts.weight
+		,m08 float
 		,w09 float--(2)樣品	cucs.weight6
 		,m09 float--   樣品金額	cucs.m02
 		,w10 float--(2)報廢 cucs.weight7 
@@ -85,7 +89,7 @@ z_cub_rk02:--z_cub_rk02
 		,w01,w02,w03,w04,w05,w06,w08,w09,w10
 		,w11,w12,w13,w14,w15,w16,w17,w18,w19
 		,w21,w22,w23,w24,memo
-		,m09,m10,m15)
+		,m08,m09,m10,m15,total,emoney)
 	select '1',accy,noa,noq,makeno,ordeaccy,ordeno,ordeno2,datea,typea,custno,cust
 		,uno,dime,width,lengthb,radius,[weight],mount
 		,pvcno,pvc,pvcweight,pvcmount,pveno,pve,pveweight,pvemount
@@ -93,7 +97,7 @@ z_cub_rk02:--z_cub_rk02
 		,w01,w02,w03,w04,w05,w06,w08,w09,w10
 		,w11,w12,w13,w14,w15,w16,w17,w18,w19
 		,w21,w22,w23,w24,memo 
-		,m09,m10,m15
+		,m08,m09,m10,m15,total,emoney
 		from dbo.z_cub_rk02(@t_bdate,@t_edate,@t_makeno,@t_pvcno,@t_bcustno,@t_ecustno)
 
 	----條件過濾2
@@ -110,24 +114,15 @@ z_cub_rk02:--z_cub_rk02
 	insert into @tmpa(gno,w01,w02,w03,w04,w05,w06
 		,w08,w09,w10,w11,w12
 		,w13,w14,w15,w16,w17,w18
-		,w19,w21,w22,w23,w24)
+		,w19,w21,w22,w23,w24
+		,m08,m09,m10,m15,total,emoney)
 	select '2',SUM(ISNULL(w01,0)),SUM(ISNULL(w02,0)),SUM(ISNULL(w03,0)),SUM(ISNULL(w04,0)),SUM(ISNULL(w05,0)),SUM(ISNULL(w06,0))
 		,SUM(ISNULL(w08,0)),SUM(ISNULL(w09,0)),SUM(ISNULL(w10,0)),SUM(ISNULL(w11,0)),SUM(ISNULL(w12,0))
 		,SUM(ISNULL(w13,0)),SUM(ISNULL(w14,0)),SUM(ISNULL(w15,0)),SUM(ISNULL(w16,0)),SUM(ISNULL(w17,0)),SUM(ISNULL(w18,0))
 		,SUM(ISNULL(w19,0)),SUM(ISNULL(w21,0)),SUM(ISNULL(w22,0)),SUM(ISNULL(w23,0)),SUM(ISNULL(w24,0))
+		,SUM(ISNULL(m08,0)),SUM(ISNULL(m09,0)),SUM(ISNULL(m10,0)),SUM(ISNULL(m15,0))
+		,SUM(ISNULL(total,0)),SUM(ISNULL(emoney,0))
 	from @tmpa	
-
---select * from @tmpa
-
---delete test.dbo.z_cub_rk02
---insert into test.dbo.z_cub_rk02(makeno,weight)
---select makeno,w23 
---from @tmpa
---where makeno is not null
---order by makeno
-
---select * from test.dbo.z_cub_rk02 where makeno='M175A20-5'
---return
 
 	select a.gno
 		,ROW_NUMBER()over(order by a.gno,a.accy,a.noa,a.noq) rr
@@ -141,6 +136,7 @@ z_cub_rk02:--z_cub_rk02
 		,CAST(a.dime as nvarchar)+'*'+CAST(a.width as nvarchar) a08--原鋼材規格	
 
 		,a.w01 a09--總投入重量	
+		,dbo.getComma(a.total,0) b09
 		,a.w02 a10--本期生產半成品
 		,a.w03 a11--(a1)生產線廢料
 		,a.w04 a12--(a2)生產線分條餘料
@@ -148,8 +144,13 @@ z_cub_rk02:--z_cub_rk02
 		,a.w06 a14--成品再投入
 		,CAST(c.dime as nvarchar)+'+'+CAST(c.radius as nvarchar)+'*'+CAST(c.width as nvarchar)+'*'+case when c.lengthb=0 then 'C' else CAST(c.lengthb as nvarchar) end a15--成品規格
 		,a.w08 a16--(1)進倉成品
+		,dbo.getComma(a.m08,0) b16
 		,a.w09 a17--(2)樣品
+		,dbo.getComma(a.m09,0) b17
 		,a.w10 a18--(2)報廢
+		,dbo.getComma(a.m10,0) b18
+		,a.w15 a32--(2)盤盈
+		,dbo.getComma(a.m15,0) b32
 		
 		,a.w11 a19--(b1)不良品損耗
 		,a.w12 a20--(b2)尺寸損耗
@@ -162,9 +163,9 @@ z_cub_rk02:--z_cub_rk02
 		,a.w21 a27--(3)損耗總重量
 		,a.w22 a28--當月耗量
 		,a.w23 a29--期末半成品結存
+		,dbo.getComma(a.emoney,0) b29
 		,case when ISNULL(a.w24,0)=0 then '' else dbo.getComma(a.w24,2)+'%' end a30--完工總損耗率
 		,'' a31--異常說明
-		,a.w15 a32--(2)報廢
 	from @tmpa a
 	left join adpro b on a.typea=b.noa
 	outer apply(select top 1 * from view_cuts where cname=a.makeno) c

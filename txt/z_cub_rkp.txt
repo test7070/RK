@@ -3011,15 +3011,36 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	
 	declare @t_bdate nvarchar(10) = case when '#non'=[4] then '' else [4] end
 	declare @t_edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
-	-------------------------------------------------------------------------------------
+	--=============================================================================================
+	--=============================================================================================
+	-- 半成品
 	declare @y01 float,@y02 float,@y03 float,@y04 float,@y05 float,@y06 float,@y07 float,@y08 float,@total float
 	declare @n int = 0
-	
+
+	IF OBJECT_ID('tempdb..#z_cub_rkp03_aa')is not null
+	BEGIN
+		drop table #z_cub_rkp03_aa
+	END
+	create table #z_cub_rkp03_aa(
+		accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,y01 float
+		,y02 float
+		,y03 float
+		,y04 float
+		,y05 float
+		,y06 float
+		,y07 float
+		,y08 float
+		,total float
+	)
+
 	declare @accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10),@makeno nvarchar(30)
 	declare cursor_table cursor for
 		select a.accy,a.noa,a.noq,a.makeno 
 		from view_cubs a
-		left join view_cub b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa 
 		where len(isnull(a.makeno,''))>0 
 		and b.datea between @t_bdate and @t_edate
 		order by a.accy,a.noa,a.noq
@@ -3028,30 +3049,254 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	into @accy,@noa,@noq,@makeno
 	while(@@FETCH_STATUS <> -1)
 	begin
-		select @y01=0,@y02=0,@y03=0,@y04=0,@y05=0,@y06=0,@y07=0,@y08=0,@total=0
-		select @y01=x01,@y02=x02,@y03=x03,@y04=y01,@y05=y02,@y06=y03,@y07=y04,@y08=y05,@total=total
+		insert into #z_cub_rkp03_aa(accy,noa,noq
+			,y01,y02,y03,y04,y05,y06,y07,y08,total)
+		select @accy,@noa,@noq,x01,x02,x03
+			,y01,y02,y03,y04,y05,total
 		from dbo.makecost_rk(@makeno)
-		--print cast(@n as nvarchar)+'    '+@accy+','+@noa+','+@noq+','+@makeno
-		set @cmd =
-		"update cubs"+@accy+" set y01=@y01,y02=@y02,y03=@y03,y04=@y04,y05=@y05,y06=@y06,y07=@y07,y08=@y08
-			,total=@total
-		where noa=@noa and noq=@noq"
-		execute sp_executesql @cmd,N'@noa nvarchar(20),@noq nvarchar(10),@y01 float,@y02 float,@y03 float,@y04 float,@y05 float,@y06 float,@y07 float,@y08 float,@total float'
-			,@noa=@noa,@noq=@noq,@y01=@y01,@y02=@y02,@y03=@y03,@y04=@y04,@y05=@y05,@y06=@y06,@y07=@y07,@y08=@y08,@total=@total
-		--set @n = @n + 1
+		
 		fetch next from cursor_table
 		into @accy,@noa,@noq,@makeno
 	end
 	close cursor_table
 	deallocate cursor_table
+	---update
+	declare cursor_table cursor for
+		select accy from #z_cub_rkp03_aa group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update cubs"+@accy+" set y01=b.y01,y02=b.y02,y03=b.y03
+			,y04=b.y04,y05=b.y05,y06=b.y06,y07=b.y07,y08=b.y08
+			,total=b.total
+		from cubs"+@accy+" a
+		left join #z_cub_rkp03_aa b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+		,@accy=@accy,@noa=@noa,@noq=@noq
+
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
 	
-	declare @tmp table(
-		gno nvarchar(10)
-		,uno nvarchar(30)
-		,msg nvarchar(max)
+	drop table #z_cub_rkp03_aa
+	--=============================================================================================
+	--=============================================================================================
+	--出貨領料
+	IF OBJECT_ID('tempdb..#z_cub_rkp03_bb')is not null
+	BEGIN
+		drop table #z_cub_rkp03_bb
+	END
+	create table #z_cub_rkp03_bb(
+		accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,cost float
 	)
-	select '1','','完成'
-	;	
+	declare @cost float
+
+	--=============================================================================================
+	-- VCC
+	delete #z_cub_rkp03_bb
+	declare cursor_table cursor for
+		select a.accy,a.noa,a.noq 
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa 
+		where len(isnull(a.uno,''))>0 
+		and b.datea between @t_bdate and @t_edate
+		order by a.accy,a.noa,a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa,@noq
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cost = dbo.cost_rk('vccs',@accy,@noa,@noq) 
+		insert into #z_cub_rkp03_bb(accy,noa,noq,cost)
+		select @accy,@noa,@noq,@cost
+		
+		fetch next from cursor_table
+		into @accy,@noa,@noq
+	end
+	close cursor_table
+	deallocate cursor_table
+	---update
+	declare cursor_table cursor for
+		select accy from #z_cub_rkp03_bb group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update vccs"+@accy+" set scost=b.cost
+		from vccs"+@accy+" a
+		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+		,@accy=@accy,@noa=@noa,@noq=@noq
+
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+	--=============================================================================================
+	-- GET
+	delete #z_cub_rkp03_bb
+	declare cursor_table cursor for
+		select a.accy,a.noa,a.noq 
+		from view_gets a
+		left join view_get b on a.accy=b.accy and a.noa=b.noa 
+		where len(isnull(a.uno,''))>0 
+		and b.datea between @t_bdate and @t_edate
+		order by a.accy,a.noa,a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa,@noq
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cost = dbo.cost_rk('gets',@accy,@noa,@noq) 
+		insert into #z_cub_rkp03_bb(accy,noa,noq,cost)
+		select @accy,@noa,@noq,@cost
+		
+		fetch next from cursor_table
+		into @accy,@noa,@noq
+	end
+	close cursor_table
+	deallocate cursor_table
+	---update
+	declare cursor_table cursor for
+		select accy from #z_cub_rkp03_bb group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update gets"+@accy+" set scost=b.cost
+		from gets"+@accy+" a
+		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+		,@accy=@accy,@noa=@noa,@noq=@noq
+
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+	--=============================================================================================
+	-- CUBT
+	delete #z_cub_rkp03_bb
+	declare cursor_table cursor for
+		select a.accy,a.noa,a.noq 
+		from view_cubt a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa 
+		where len(isnull(a.ucolor,''))>0 
+		and b.datea between @t_bdate and @t_edate
+		order by a.accy,a.noa,a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa,@noq
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cost = dbo.cost_rk('cubt',@accy,@noa,@noq) 
+		insert into #z_cub_rkp03_bb(accy,noa,noq,cost)
+		select @accy,@noa,@noq,@cost
+		
+		fetch next from cursor_table
+		into @accy,@noa,@noq
+	end
+	close cursor_table
+	deallocate cursor_table
+	---update
+	declare cursor_table cursor for
+		select accy from #z_cub_rkp03_bb group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update cubt"+@accy+" set scost=b.cost
+		from cubt"+@accy+" a
+		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+		,@accy=@accy,@noa=@noa,@noq=@noq
+
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+	drop table #z_cub_rkp03_bb
+	--=============================================================================================
+	--=============================================================================================
+	--成品進倉
+	IF OBJECT_ID('tempdb..#z_cub_rkp03_cc')is not null
+	BEGIN
+		drop table #z_cub_rkp03_cc
+	END
+	create table #z_cub_rkp03_cc(
+		accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,cost float
+	)
+	declare @uno nvarchar(30)
+	declare @date nvarchar(20)
+	
+	declare cursor_table cursor for
+		select a.accy,a.noa,a.noq,a.bno,a.datea 
+		from view_cuts a
+		where len(isnull(a.bno,''))>0 
+		and a.datea between @t_bdate and @t_edate
+		order by a.accy,a.noa,a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa,@noq,@uno,@date
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cost = 0
+		select @cost = [money] from dbo.money_rk(@uno,@date)
+		insert into #z_cub_rkp03_cc(accy,noa,noq,cost)
+		select @accy,@noa,@noq,@cost
+		
+		fetch next from cursor_table
+		into @accy,@noa,@noq,@uno,@date
+	end
+	close cursor_table
+	deallocate cursor_table
+	---update
+	declare cursor_table cursor for
+		select accy from #z_cub_rkp03_cc group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update cuts"+@accy+" set scost=b.cost
+		from cuts"+@accy+" a
+		left join #z_cub_rkp03_cc b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
+		,@accy=@accy,@noa=@noa,@noq=@noq
+
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+	drop table #z_cub_rkp03_cc
+	------------------------------------------------------------------------
+	select '1' gno,'' uno,'Done!' msg;	
 	
 z_cub_rkp03X: -- z_cub_rkp03X  成本結轉
 	---  要先計算  人工費用、製造費用、電費、瓦斯費
