@@ -3002,8 +3002,58 @@ z_cub_rkp05:--z_cub_rkp05 分批成本表
 		,mon a49                              --完工月份
 	from @tmp
 	order by makeno,accy,noa,noq,pno;
-	
 z_cub_rkp03: -- z_cub_rkp03  成本結轉
+	---  要先計算  人工費用、製造費用、電費、瓦斯費
+	SET QUOTED_IDENTIFIER OFF 
+	declare @cmd nvarchar(max)
+	declare @t_path nvarchar(max) = '[1]'
+	declare @t_db nvarchar(max) = '[2]'
+	
+	declare @t_bdate nvarchar(10) = case when '#non'=[4] then '' else [4] end
+	declare @t_edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
+	-------------------------------------------------------------------------------------
+	declare @y01 float,@y02 float,@y03 float,@y04 float,@y05 float,@y06 float,@y07 float,@y08 float,@total float
+	declare @n int = 0
+	
+	declare @accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10),@makeno nvarchar(30)
+	declare cursor_table cursor for
+		select a.accy,a.noa,a.noq,a.makeno 
+		from view_cubs a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+		where len(isnull(a.makeno,''))>0 
+		and b.datea between @t_bdate and @t_edate
+		order by a.accy,a.noa,a.noq
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa,@noq,@makeno
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @y01=0,@y02=0,@y03=0,@y04=0,@y05=0,@y06=0,@y07=0,@y08=0,@total=0
+		select @y01=x01,@y02=x02,@y03=x03,@y04=y01,@y05=y02,@y06=y03,@y07=y04,@y08=y05,@total=total
+		from dbo.makecost_rk(@makeno)
+		--print cast(@n as nvarchar)+'    '+@accy+','+@noa+','+@noq+','+@makeno
+		set @cmd =
+		"update cubs"+@accy+" set y01=@y01,y02=@y02,y03=@y03,y04=@y04,y05=@y05,y06=@y06,y07=@y07,y08=@y08
+			,total=@total
+		where noa=@noa and noq=@noq"
+		execute sp_executesql @cmd,N'@noa nvarchar(20),@noq nvarchar(10),@y01 float,@y02 float,@y03 float,@y04 float,@y05 float,@y06 float,@y07 float,@y08 float,@total float'
+			,@noa=@noa,@noq=@noq,@y01=@y01,@y02=@y02,@y03=@y03,@y04=@y04,@y05=@y05,@y06=@y06,@y07=@y07,@y08=@y08,@total=@total
+		--set @n = @n + 1
+		fetch next from cursor_table
+		into @accy,@noa,@noq,@makeno
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	declare @tmp table(
+		gno nvarchar(10)
+		,uno nvarchar(30)
+		,msg nvarchar(max)
+	)
+	select '1','','完成'
+	;	
+	
+z_cub_rkp03X: -- z_cub_rkp03X  成本結轉
 	---  要先計算  人工費用、製造費用、電費、瓦斯費
 	SET QUOTED_IDENTIFIER OFF 
 	declare @cmd nvarchar(max)
