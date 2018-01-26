@@ -1,0 +1,265 @@
+--z_cub_rkp.txt  z_cub_rkp03 會用到
+--半成品成本
+ALTER function [dbo].[makecost_rk](@t_makeno nvarchar(30))
+returns @result table(
+	makeno nvarchar(30)
+	,[weight] float --生產重量
+	,x01 float --鋼捲成本
+	,x02 float --皮膜成本	
+	,x03 float --保護膜成本	
+	,y01 float --接著劑成本	
+	,y02 float --接著劑稀釋液成本	
+	,y03 float --背漆成本	
+	,y04 float --背漆稀釋液成本	
+	,y05 float --面漆成本
+	,z01 float--直接人工	
+	,z02 float--製造費用	
+	,z03 float--電費	
+	,z04 float--瓦斯費
+	,[money] float
+	,total float
+	
+	,wx01 float --鋼捲重
+	,wx02 float --皮膜重	
+	,wx03 float --保護膜重
+	,wy01 float --接著劑重	
+	,wy02 float --接著劑稀釋液重	
+	,wy03 float --背漆重	
+	,wy04 float --背漆稀釋液重	
+	,wy05 float --面漆重
+	,ww float--投入重量
+) as
+begin
+	insert into @result(makeno,[weight]
+		,x01,x02,x03
+		,y01,y02,y03,y04,y05
+		,[money]
+		,z01,z02,z03,z04
+		,[total]
+		,wx01,wx02,wx03
+		,wy01,wy02,wy03,wy04,wy05
+		,ww)
+	select top 1 @t_makeno,hweight
+		,0,0,0
+		,0,0,0,0,0
+		,0
+		,isnull(w01,0),isnull(w02,0),isnull(w04,0),isnull(w05,0)
+		,0
+		,0,0,0
+		,0,0,0,0,0
+		,0
+	from view_cubs 
+	where makeno=@t_makeno
+	
+	declare @weight float,@money float
+	declare @table nvarchar(20),@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)
+	--==========================================================================================
+	--鋼捲成本
+	declare cursor_table cursor for
+		select 'gets',c.accy,a.noa,c.noq
+		from view_cubs a 
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		left join view_gets c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
+		where a.makeno=@t_makeno
+	open cursor_table
+	fetch next from cursor_table
+	into @table,@accy,@noa,@noq
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @weight = 0,@money=0
+		select @weight=[weight],@money=[money] from dbo.cost_rk(@table,@accy,@noa,@noq)
+		update @result set wx01 = wx01 + @weight, x01 = x01 + @money
+			
+		fetch next from cursor_table
+		into @table,@accy,@noa,@noq
+	end
+	close cursor_table
+	deallocate cursor_table
+	--==========================================================================================
+	--皮膜成本
+	declare cursor_table cursor for
+		select 'cubt',b.accy,b.noa,b.noq
+		from view_cubs a 
+		left join view_cubt b on b.accy=a.accy and b.noa=a.noa and b.nor=a.noq
+		where a.makeno=@t_makeno
+		and b.kind='1'
+	open cursor_table
+	fetch next from cursor_table
+	into @table,@accy,@noa,@noq
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @weight = 0,@money=0
+		select @weight=[weight],@money=[money] from dbo.cost_rk(@table,@accy,@noa,@noq)
+		update @result set wx02 = wx02 + @weight, x02 = x02 + @money
+		
+		fetch next from cursor_table
+		into @table,@accy,@noa,@noq
+	end
+	close cursor_table
+	deallocate cursor_table
+	--==========================================================================================
+	--保護膜成本
+	declare cursor_table cursor for
+		select 'cubt',b.accy,b.noa,b.noq
+		from view_cubs a 
+		left join view_cubt b on b.accy=a.accy and b.noa=a.noa and b.nor=a.noq
+		where a.makeno=@t_makeno
+		and b.kind='2'
+	open cursor_table
+	fetch next from cursor_table
+	into @table,@accy,@noa,@noq
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @weight = 0,@money=0
+		select @weight=[weight],@money=[money] from dbo.cost_rk(@table,@accy,@noa,@noq)
+		update @result set wx03 = wx03 + @weight, x03 = x03 + @money
+		
+		fetch next from cursor_table
+		into @table,@accy,@noa,@noq
+	end
+	close cursor_table
+	deallocate cursor_table
+	--==========================================================================================
+	--物料成本
+	declare @tmpa table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,groupano nvarchar(20)
+		,[weight] float
+		,[money] float
+	)
+	declare @groupano nvarchar(30)
+	declare cursor_table cursor for
+		select c.accy,a.noa,c.noq,d.groupano
+		from (select accy,noa from view_cubs where makeno=@t_makeno group by accy,noa) a 
+		left join view_cubu b on a.accy=b.accy and a.noa=b.noa
+		left join view_gets c on b.accy=c.accy and b.noa=c.noa and b.ucolor=c.uno
+		left join ucc d on b.productno=d.noa
+		where c.noa is not null
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa,@noq,@groupano
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @weight = 0,@money=0
+		select @weight=[weight],@money=[money] from dbo.cost_rk(@table,@accy,@noa,@noq)
+	
+		insert into @tmpa(accy,noa,noq,groupano,[weight],[money])
+		select @accy,@noa,@noq,@groupano,@weight,@money
+		
+		fetch next from cursor_table
+		into @accy,@noa,@noq,@groupano
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	declare @tmpb table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(30)
+		,[length] float
+		,cost float
+	)
+	insert into @tmpb(accy,noa,noq,makeno,[length])
+	select b.accy,b.noa,b.noq,b.makeno,isnull(b.w09,0)
+	from (select accy,noa from view_cubs where makeno=@t_makeno group by accy,noa) a
+	left join view_cubs b on a.accy=b.accy and a.noa=b.noa
+	----------------------------------------------------
+	declare @totlength float = 0
+	select @totlength=SUM([length]) from @tmpb
+	
+	declare @tmpc table(
+		sel int identity(1,1)
+		,accy nvarchar(20)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,groupano nvarchar(20)
+		,cubaccy nvarchar(10)
+		,cubno nvarchar(20)
+		,cubnoq nvarchar(10)
+		,makeno nvarchar(30)
+		,[weight] float
+		,[money] float
+	)
+	insert into @tmpc(accy,noa,noq,groupano,cubaccy,cubno,cubnoq,makeno,[weight],[money])
+	select a.accy,a.noa,a.noq,a.groupano,b.accy,b.noa,b.noq,b.makeno
+		,case when @totlength=0 then 0 else round(a.[weight]*b.[length]/@totlength,0) end
+		,case when @totlength=0 then 0 else round(a.[money]*b.[length]/@totlength,0) end
+	from @tmpa a,@tmpb b
+	order by b.accy,b.noa,b.noq
+	
+	--尾差修正
+	declare @diffw float
+	declare @diffm float
+	
+	declare cursor_table cursor for
+		select a.accy,a.noa,a.noq,a.[weight]-b.[weight],a.[money]-b.[money]
+		from @tmpa a
+		left join (select accy,noa,noq
+			,sum(ISNULL([weight],0)) [weight] 
+			,sum(ISNULL([money],0)) [money] 
+			from @tmpc group by accy,noa,noq) b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
+		where a.[weight]!=b.[weight] 
+		or a.[money]!=b.[money]
+	open cursor_table
+	fetch next from cursor_table
+	into @accy,@noa,@noq,@diffw,@diffm
+	while(@@FETCH_STATUS <> -1)
+	begin
+		update @tmpc set [weight] = a.[weight] + @diffw,[money] = a.[money] + @diffm
+		from @tmpc a
+		outer apply(select top 1 sel from @tmpc where accy=@accy and noa=@noa and noq=@noq order by sel desc) b
+		where a.sel=b.sel
+		
+		fetch next from cursor_table
+		into @accy,@noa,@noq,@diffw,@diffm
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	
+	update @result set wy01 = a.wy01 + isnull(b.[weight],0),y01 = a.y01 + isnull(b.[money],0)
+	from @result a
+	outer apply(select SUM(ISNULL([weight],0)) [weight] 
+		,SUM(ISNULL([money],0)) [money] 
+		from @tmpc where makeno=@t_makeno and groupano='A01') b
+	
+	update @result set wy02 = a.wy02 + isnull(b.[weight],0),y02 = a.y02 + isnull(b.[money],0)
+	from @result a
+	outer apply(select SUM(ISNULL([weight],0)) [weight] 
+		,SUM(ISNULL([money],0)) [money] 
+		from @tmpc where makeno=@t_makeno and groupano='A02') b
+		
+	update @result set wy03 = a.wy03 + isnull(b.[weight],0),y03 = a.y03 + isnull(b.[money],0)
+	from @result a
+	outer apply(select SUM(ISNULL([weight],0)) [weight] 
+		,SUM(ISNULL([money],0)) [money] 
+		from @tmpc where makeno=@t_makeno and groupano='A03') b
+	
+	update @result set wy04 = a.wy04 + isnull(b.[weight],0),y04 = a.y04 + isnull(b.[money],0)
+	from @result a
+	outer apply(select SUM(ISNULL([weight],0)) [weight] 
+		,SUM(ISNULL([money],0)) [money] 
+		from @tmpc where makeno=@t_makeno and groupano='A04') b
+				
+	update @result set wy05 = a.wy05 + isnull(b.[weight],0),y05 = a.y05 + isnull(b.[money],0)
+	from @result a
+	outer apply(select SUM(ISNULL([weight],0)) [weight] 
+		,SUM(ISNULL([money],0)) [money] 
+		from @tmpc where makeno=@t_makeno and groupano='A05') b
+
+	update @result set ww = wx01+wx02+wx03+wy01+wy02+wy03+wy04+wy05
+		,[money] = x01+x02+x03+y01+y02+y03+y04+y05
+		,total = x01+x02+x03+y01+y02+y03+y04+y05+z01+z02+z03+z04 
+	from @result 
+	
+	update @result set [money]=b.[money],total=b.[money]
+	from @result a
+	left join itema b on a.makeno=b.makeno
+	where b.makeno is  not null
+	return
+end

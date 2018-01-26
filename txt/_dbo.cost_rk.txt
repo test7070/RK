@@ -1,0 +1,146 @@
+--z_cub_rkp.txt  z_cub_rkp03 會用到
+--領料成本
+alter function [dbo].[cost_rk](@tablea nvarchar(20)
+	,@accy nvarchar(10)
+	,@noa nvarchar(20)
+	,@noq nvarchar(10))
+returns @result table(
+	uno nvarchar(30),[weight] float,[money] float
+) as
+begin
+	declare @xweight float = 0
+	declare @xmoney float = 0
+	-------------------------------------------------------------
+	declare @money float 
+	declare @uno nvarchar(30)
+	declare @date nvarchar(20)
+	declare @datea nvarchar(10)
+	declare @mount float
+	declare @weight float
+	declare @sprice float
+	--===============================================================================================
+	select @uno = ''
+	if @tablea='vccs'
+	begin
+		select @uno = a.uno,@date=b.datea,@xweight=isnull(a.weight,0)
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where a.accy=@accy and a.noa=@noa and a.noq=@noq
+	end
+	else if @tablea='gets'
+	begin
+		select @uno = a.uno,@date=b.datea,@xweight=isnull(a.gweight,0)
+		from view_gets a
+		left join view_get b on a.accy=b.accy and a.noa=b.noa
+		where a.accy=@accy and a.noa=@noa and a.noq=@noq
+	end
+	else if @tablea='cubt'
+	begin
+		select @uno = a.uno,@date=b.datea,@xweight=isnull(a.wweight,0)
+		from view_cubt a
+		left join view_cub b on a.accy=b.accy and a.noa=b.noa
+		where a.accy=@accy and a.noa=@noa and a.noq=@noq
+	end
+	insert into @result(uno,[weight],[money])
+	select @uno,@xweight,0
+	
+	if len(@uno)=0
+		return 
+
+	--找出領料,以便攤成本
+	declare @tmp table(
+		sel int identity(1,1)
+		,tablea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,datea nvarchar(10)
+		,mount float
+		,[weight] float
+		,[money] float
+		,isucce bit --盤點
+	)
+	--出貨
+	insert into @tmp(tablea,accy,noa,noq,datea,mount,[weight])
+	select 'vcc',a.accy,a.noa,a.noq,b.datea
+		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
+		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	where uno=@uno
+	and isnull(b.typea,'')='1'
+	and b.datea<=@date
+	--退貨(找上一筆的出貨單來退掉)
+	declare cursor_table cursor for
+		select b.datea
+			,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
+			,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where a.uno=@uno
+		and isnull(b.typea,'')='2'
+		and b.datea<=@date
+	open cursor_table
+	fetch next from cursor_table
+	into @datea,@mount,@weight
+	while(@@FETCH_STATUS <> -1)
+	begin
+		update @tmp set mount=isnull(a.mount,0) - isnull(@mount,0)
+			,[weight]=isnull(a.[weight],0) - isnull(@weight,0)
+		from @tmp a
+		outer apply(select top 1 sel from @tmp 
+		where datea<=@datea 
+		order by datea desc,noa desc,noq desc) b
+		where a.sel=b.sel
+		
+		fetch next from cursor_table
+		into @datea,@mount,@weight
+	end
+	close cursor_table
+	deallocate cursor_table
+	--領料
+	insert into @tmp(tablea,accy,noa,noq,datea,mount,[weight],[money],isucce)
+	select 'get',a.accy,a.noa,a.noq,b.datea
+		,case when isnull(a.gmount,0)!=0 then a.gmount else isnull(a.mount,0) end
+		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		,case when b.typea='盤點' then isnull(a.scost,0) else 0 end
+		,case when b.typea='盤點' then 1 else 0 end
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	where a.uno=@uno	
+	and b.datea<=@date
+	--生產作業皮膜、保護膜 CUBT
+	insert into @tmp(tablea,accy,noa,noq,datea,mount,[weight])
+	select 'cubt',a.accy,a.noa,a.noq,b.datea
+		,0 
+		,isnull(a.[weight],0) --只看M
+	from view_cubt a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where a.uno=@uno	
+	and b.datea<=@date
+
+	----===============================================================================================
+	select @weight=0,@money=0,@sprice=0
+	select @weight=[weight],@money=[money] from [dbo].[money_rk](@uno,@date) --進貨總成本
+	select @sprice=case when @weight=0 then 0 else round(@money/@weight,4) end
+	
+	update @tmp set [money] = round([weight]*@sprice,0) where isnull(isucce,0)=0
+	
+	declare @totweight float = 0,@totmoney float =0
+	select @totweight = SUM(isnull(weight,0)) from @tmp
+	
+	if @totweight>=@weight
+	begin
+		---- 無庫存，須計算尾差，由最後一筆調整(不能是盤點的)
+		select @totmoney = SUM([money]) from @tmp
+
+		update @tmp set [money] = a.[money] - (@totmoney-@money)
+		from @tmp a
+		outer apply (select top 1 sel from @tmp where isnull(isucce,0)=0 order by  datea desc,accy desc,noa desc,noq desc) b
+		where a.sel=b.sel
+	end
+	select @xmoney = 0
+	select @xmoney=[money] from @tmp where accy=@accy and noa=@noa and noq=@noq
+	update @result set [money]=@xmoney
+	return
+end

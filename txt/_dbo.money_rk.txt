@@ -1,0 +1,164 @@
+--z_cub_rkp.txt  z_cub_rkp03 會用到
+--進貨、入庫成本
+ALTER function [dbo].[money_rk](@t_uno nvarchar(30),@t_date nvarchar(20))
+returns @result table(
+	[weight] float,[money] float
+) as
+begin
+	declare @cost float = 0
+	declare @tmpweight float
+	declare @tmpmoney float
+	declare @xweight float = 0 --庫存量
+	declare @xmoney float = 0--庫存金額
+	declare @date nvarchar(20)
+	declare @weight float
+	--===============================================================================================
+	-- 進貨
+	------ 進口報單轉來的要注意
+	select @tmpweight=0,@tmpmoney=0
+	select @tmpweight=SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.weight,0)) 
+		,@tmpmoney=SUM(case when b.typea='1' then 1 else -1 end * case when e.noa is not null then ISNULL(e.cost,0) else ISNULL(a.total,0) end) 
+	from view_rc2s a
+	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
+	left join deli d on a.noa=d.rc2no
+	left join delis e on d.noa=e.noa and a.noq=e.noq
+	where a.uno=@t_uno
+	and b.datea<=@t_date
+	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
+	--===============================================================================================
+	-- 入庫
+	------ 非領料組合來的
+	select @tmpweight=0,@tmpmoney=0
+	select @tmpweight=SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.weight,0)) 
+		,@tmpmoney=SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.total,0)) 
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join view_get c on a.noa=c.noa
+	where a.uno=@t_uno
+	and b.datea<=@t_date
+	and c.noa is null
+	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
+	------ 領料組合
+	select @tmpweight=0,@tmpmoney=0
+	select @tmpweight=SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.weight,0)) 
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	left join view_get c on a.noa=c.noa
+	where a.uno=@t_uno
+	and b.datea<=@t_date
+	and c.noa is null
+	select @xweight=@xweight+isnull(@tmpweight,0)
+
+	declare @inaccy nvarchar(10),@innoa nvarchar(20),@innoq nvarchar(10)
+	declare @accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)
+	declare @ymoney float
+	
+	declare cursor_table cursor for
+		select a.accy,a.noa,a.noq,d.accy,d.noa,d.noq,c.datea
+		from view_inas a
+		left join view_ina b on a.accy=b.accy and a.noa=b.noa
+		left join view_get c on a.noa=c.noa
+		left join view_gets d on c.accy=d.accy and c.noa=d.noa
+		where a.uno=@t_uno
+		and b.datea<=@t_date
+		and c.noa is not null
+	open cursor_table
+	fetch next from cursor_table
+	into @inaccy,@innoa,@innoq,@accy,@noa,@noq,@date
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @ymoney=0
+		select @ymoney=[money] from dbo.cost_rk('gets',@accy,@noa,@noq)
+		set @xmoney=@xmoney+isnull(@ymoney,0)
+		
+		fetch next from cursor_table
+		into @inaccy,@innoa,@innoq,@accy,@noa,@noq,@date
+	end
+	close cursor_table
+	deallocate cursor_table
+	--===============================================================================================
+	-- 成品進倉
+	declare @tmpa table(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,datea nvarchar(20)
+		,makeno nvarchar(20)
+		,uno nvarchar(30)
+		,[weight] float
+		,cost float
+	)
+	--期初轉入的忽略
+	insert into @tmpa(accy,noa,noq,datea,makeno,uno,[weight],cost)
+	select b.accy,b.noa,b.noq,b.datea,a.makeno,b.bno,b.[weight],isnull(b.total,0)
+	from (select cname makeno from view_cuts where bno=@t_uno and len(cname)>0) a
+	left join view_cuts b on a.makeno=b.cname
+	left join view_cut c on b.accy=c.accy and b.noa=c.noa
+	order by b.datea,b.accy,b.noa,b.noq
+	
+	declare @tmpb table(
+		sel int identity(1,1)
+		,makeno nvarchar(30)
+		,[weight] float
+		,[money] float
+	)
+	declare @makeno nvarchar(30)
+	
+	insert into @tmpb(makeno,[weight],[money])
+	select makeno,sum([weight]),sum([cost]) 
+	from @tmpa where len(noa)=5 group by makeno
+
+	declare cursor_table cursor for
+		select makeno,sum([weight]) from @tmpa where len(noa)!=5 group by makeno
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno,@weight
+	while(@@FETCH_STATUS <> -1)
+	begin
+		insert into @tmpb(makeno,[weight],[money])
+		select makeno,@weight,[total] from dbo.makecost_rk(@makeno)
+		
+		fetch next from cursor_table
+		into @makeno,@weight
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	update @tmpa set cost= case when b.[weight]=0 then 0 else round(b.[money]*a.[weight]/b.[weight],0) end
+	from @tmpa a
+	left join @tmpb b on a.makeno=b.makeno
+	where len(a.noa)!=5
+		
+	------修正尾差
+	declare @diff float
+	declare cursor_table cursor for
+		select a.makeno,a.[money]-b.cost 
+		from @tmpb a
+		left join (select makeno,sum(isnull(cost,0)) cost from @tmpa group by makeno) b on a.makeno=b.makeno
+		where a.[money]!=b.cost
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno,@diff
+	while(@@FETCH_STATUS <> -1)
+	begin
+		update @tmpa set cost = ISNULL(a.cost,0) + @diff 
+		from @tmpa a
+		outer apply(select top 1 sel from @tmpa where makeno=@makeno and len(a.noa)!=5 order by sel) b
+		where a.sel=b.sel
+		
+		fetch next from cursor_table
+		into @makeno,@diff
+	end
+	close cursor_table
+	deallocate cursor_table
+	
+	select @tmpweight=0,@tmpmoney=0
+	select @tmpweight=[weight],@tmpmoney=[cost]
+	from @tmpa 
+	where uno=@t_uno
+	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
+	--===============================================================================================
+	insert into @result([weight],[money])values(@xweight,@xmoney)
+	return
+end
