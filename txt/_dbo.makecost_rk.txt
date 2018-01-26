@@ -30,6 +30,8 @@ returns @result table(
 	,ww float--投入重量
 ) as
 begin
+	declare @datea nvarchar(20)
+	
 	insert into @result(makeno,[weight]
 		,x01,x02,x03
 		,y01,y02,y03,y04,y05
@@ -56,14 +58,14 @@ begin
 	--==========================================================================================
 	--鋼捲成本
 	declare cursor_table cursor for
-		select 'gets',c.accy,a.noa,c.noq
+		select 'gets',c.accy,a.noa,c.noq,b.datea
 		from view_cubs a 
 		left join view_cub b on a.accy=b.accy and a.noa=b.noa
 		left join view_gets c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
 		where a.makeno=@t_makeno
 	open cursor_table
 	fetch next from cursor_table
-	into @table,@accy,@noa,@noq
+	into @table,@accy,@noa,@noq,@datea
 	while(@@FETCH_STATUS <> -1)
 	begin
 		select @weight = 0,@money=0
@@ -71,21 +73,22 @@ begin
 		update @result set wx01 = wx01 + @weight, x01 = x01 + @money
 			
 		fetch next from cursor_table
-		into @table,@accy,@noa,@noq
+		into @table,@accy,@noa,@noq,@datea
 	end
 	close cursor_table
 	deallocate cursor_table
 	--==========================================================================================
 	--皮膜成本
 	declare cursor_table cursor for
-		select 'cubt',b.accy,b.noa,b.noq
+		select 'cubt',b.accy,b.noa,b.noq,c.datea
 		from view_cubs a 
 		left join view_cubt b on b.accy=a.accy and b.noa=a.noa and b.nor=a.noq
+		left join view_cub c on a.accy=c.accy and a.noa=c.noa
 		where a.makeno=@t_makeno
 		and b.kind='1'
 	open cursor_table
 	fetch next from cursor_table
-	into @table,@accy,@noa,@noq
+	into @table,@accy,@noa,@noq,@datea
 	while(@@FETCH_STATUS <> -1)
 	begin
 		select @weight = 0,@money=0
@@ -93,21 +96,22 @@ begin
 		update @result set wx02 = wx02 + @weight, x02 = x02 + @money
 		
 		fetch next from cursor_table
-		into @table,@accy,@noa,@noq
+		into @table,@accy,@noa,@noq,@datea
 	end
 	close cursor_table
 	deallocate cursor_table
 	--==========================================================================================
 	--保護膜成本
 	declare cursor_table cursor for
-		select 'cubt',b.accy,b.noa,b.noq
+		select 'cubt',b.accy,b.noa,b.noq,c.datea
 		from view_cubs a 
 		left join view_cubt b on b.accy=a.accy and b.noa=a.noa and b.nor=a.noq
+		left join view_cub c on a.accy=c.accy and a.noa=c.noa
 		where a.makeno=@t_makeno
 		and b.kind='2'
 	open cursor_table
 	fetch next from cursor_table
-	into @table,@accy,@noa,@noq
+	into @table,@accy,@noa,@noq,@datea
 	while(@@FETCH_STATUS <> -1)
 	begin
 		select @weight = 0,@money=0
@@ -115,7 +119,7 @@ begin
 		update @result set wx03 = wx03 + @weight, x03 = x03 + @money
 		
 		fetch next from cursor_table
-		into @table,@accy,@noa,@noq
+		into @table,@accy,@noa,@noq,@datea
 	end
 	close cursor_table
 	deallocate cursor_table
@@ -126,31 +130,33 @@ begin
 		,accy nvarchar(10)
 		,noa nvarchar(20)
 		,noq nvarchar(10)
+		,datea nvarchar(20)
 		,groupano nvarchar(20)
 		,[weight] float
 		,[money] float
 	)
 	declare @groupano nvarchar(30)
 	declare cursor_table cursor for
-		select c.accy,a.noa,c.noq,d.groupano
+		select c.accy,a.noa,c.noq,d.groupano,e.datea
 		from (select accy,noa from view_cubs where makeno=@t_makeno group by accy,noa) a 
 		left join view_cubu b on a.accy=b.accy and a.noa=b.noa
 		left join view_gets c on b.accy=c.accy and b.noa=c.noa and b.ucolor=c.uno
 		left join ucc d on b.productno=d.noa
+		left join view_get e on c.accy=e.accy and c.noa=e.noa
 		where c.noa is not null
 	open cursor_table
 	fetch next from cursor_table
-	into @accy,@noa,@noq,@groupano
+	into @accy,@noa,@noq,@groupano,@datea
 	while(@@FETCH_STATUS <> -1)
 	begin
 		select @weight = 0,@money=0
-		select @weight=[weight],@money=[money] from dbo.cost_rk(@table,@accy,@noa,@noq)
+		select @weight=[weight],@money=[money] from dbo.cost_rk('gets',@accy,@noa,@noq)
 	
 		insert into @tmpa(accy,noa,noq,groupano,[weight],[money])
 		select @accy,@noa,@noq,@groupano,@weight,@money
 		
 		fetch next from cursor_table
-		into @accy,@noa,@noq,@groupano
+		into @accy,@noa,@noq,@groupano,@datea
 	end
 	close cursor_table
 	deallocate cursor_table

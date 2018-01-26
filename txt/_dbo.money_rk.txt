@@ -29,8 +29,8 @@ begin
 	-- 入庫
 	------ 非領料組合來的
 	select @tmpweight=0,@tmpmoney=0
-	select @tmpweight=SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.weight,0)) 
-		,@tmpmoney=SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.total,0)) 
+	select @tmpweight=SUM(ISNULL(a.weight,0)) 
+		,@tmpmoney=SUM(ISNULL(a.total,0)) 
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
 	left join view_get c on a.noa=c.noa
@@ -40,13 +40,13 @@ begin
 	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
 	------ 領料組合
 	select @tmpweight=0,@tmpmoney=0
-	select @tmpweight=SUM(case when b.typea='1' then 1 else -1 end * ISNULL(a.weight,0)) 
+	select @tmpweight=SUM(ISNULL(a.weight,0)) 
 	from view_inas a
 	left join view_ina b on a.accy=b.accy and a.noa=b.noa
 	left join view_get c on a.noa=c.noa
 	where a.uno=@t_uno
 	and b.datea<=@t_date
-	and c.noa is null
+	and c.noa is not null
 	select @xweight=@xweight+isnull(@tmpweight,0)
 
 	declare @inaccy nvarchar(10),@innoa nvarchar(20),@innoq nvarchar(10)

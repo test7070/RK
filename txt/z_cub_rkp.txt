@@ -3011,6 +3011,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	
 	declare @t_bdate nvarchar(10) = case when '#non'=[4] then '' else [4] end
 	declare @t_edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
+	
+	declare @accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10),@makeno nvarchar(30)
 	--=============================================================================================
 	--=============================================================================================
 	--半成品

@@ -118,7 +118,6 @@ begin
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where a.uno=@uno	
 	and b.datea<=@date
-
 	----===============================================================================================
 	select @weight=0,@money=0,@sprice=0
 	select @weight=[weight],@money=[money] from [dbo].[money_rk](@uno,@date) --進貨總成本
