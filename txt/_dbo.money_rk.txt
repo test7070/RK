@@ -102,7 +102,7 @@ begin
 	where b.datea<=@t_date
 	order by b.datea,b.accy,b.noa,b.noq
 	--取得生產成本單價
-	-- cubs.hweight = cuts.weight + (cucs.weight8+cucs.weight9+cucs.weight10)
+	-- cubs.hweight = cuts.weight + (cucs.weight4 + cucs.weight8+cucs.weight9+cucs.weight10)
 	declare @tmpb table(
 		sel int identity(1,1)
 		,makeno nvarchar(30)
