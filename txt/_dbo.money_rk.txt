@@ -1,4 +1,3 @@
---z_cub_rkp.txt  z_cub_rkp03 會用到
 --進貨、入庫成本
 ALTER function [dbo].[money_rk](@t_uno nvarchar(30),@t_date nvarchar(20))
 returns @result table(
@@ -12,6 +11,10 @@ begin
 	declare @xmoney float = 0--庫存金額
 	declare @date nvarchar(20)
 	declare @weight float
+	declare @money float
+	declare @makeno nvarchar(30)
+	declare @waste float
+	declare @diff float
 	--===============================================================================================
 	-- 進貨
 	------ 進口報單轉來的要注意
@@ -87,71 +90,89 @@ begin
 		,makeno nvarchar(20)
 		,uno nvarchar(30)
 		,[weight] float
+		,price float
 		,cost float
 	)
 	--期初轉入的忽略
 	insert into @tmpa(accy,noa,noq,datea,makeno,uno,[weight],cost)
 	select b.accy,b.noa,b.noq,b.datea,a.makeno,b.bno,b.[weight],isnull(b.total,0)
-	from (select cname makeno from view_cuts where bno=@t_uno and len(cname)>0) a
+	from (select cname makeno from view_cuts where bno=@t_uno and len(cname)>0 and datea<=@t_date) a
 	left join view_cuts b on a.makeno=b.cname
 	left join view_cut c on b.accy=c.accy and b.noa=c.noa
+	where b.datea<=@t_date
 	order by b.datea,b.accy,b.noa,b.noq
-	
+	--取得生產成本單價
+	-- cubs.hweight = cuts.weight + (cucs.weight8+cucs.weight9+cucs.weight10)
 	declare @tmpb table(
 		sel int identity(1,1)
 		,makeno nvarchar(30)
 		,[weight] float
 		,[money] float
+		
+		,waste float --損耗重  cucs.weight8+cucs.weight9+cucs.weight10
 	)
-	declare @makeno nvarchar(30)
-	
-	insert into @tmpb(makeno,[weight],[money])
-	select makeno,sum([weight]),sum([cost]) 
-	from @tmpa where len(noa)=5 group by makeno
 
 	declare cursor_table cursor for
-		select makeno,sum([weight]) from @tmpa where len(noa)!=5 group by makeno
+		select makeno from @tmpa group by makeno
 	open cursor_table
 	fetch next from cursor_table
-	into @makeno,@weight
+	into @makeno 
 	while(@@FETCH_STATUS <> -1)
 	begin
 		insert into @tmpb(makeno,[weight],[money])
-		select makeno,@weight,[total] from dbo.makecost_rk(@makeno)
+		select @makeno,[weight],total from dbo.makecost_rk(@makeno)
 		
 		fetch next from cursor_table
-		into @makeno,@weight
+		into @makeno 
 	end
 	close cursor_table
 	deallocate cursor_table
 	
-	update @tmpa set cost= case when b.[weight]=0 then 0 else round(b.[money]*a.[weight]/b.[weight],0) end
+	update @tmpb set waste=isnull(b.[weight],0)
+	from @tmpb a
+	outer apply (select SUM(ISNULL(x.weight8,0)+ISNULL(x.weight9,0)+ISNULL(x.weight10,0)) [weight] 
+		from view_cucs x
+		left join view_cuc y on x.accy=y.accy and x.noa=y.noa
+		where x.cubno=a.makeno
+		and y.datea<=@t_date) b 
+	
+	--修正尾差
+	update @tmpa set price = case when ISNULL(b.[weight],0)=0 then 0 else ROUND(b.[money]/b.[weight],4) end
 	from @tmpa a
-	left join @tmpb b on a.makeno=b.makeno
+	left join @tmpb b on a.makeno=b.makeno	
 	where len(a.noa)!=5
-		
-	------修正尾差
-	declare @diff float
+	
+	update @tmpa set cost = round([weight]*ISNULL(price,0),0) 
+	
 	declare cursor_table cursor for
-		select a.makeno,a.[money]-b.cost 
-		from @tmpb a
-		left join (select makeno,sum(isnull(cost,0)) cost from @tmpa group by makeno) b on a.makeno=b.makeno
-		where a.[money]!=b.cost
+		select makeno,[weight],[money],waste from @tmpb
 	open cursor_table
 	fetch next from cursor_table
-	into @makeno,@diff
+	into @makeno,@weight,@money,@waste
 	while(@@FETCH_STATUS <> -1)
 	begin
-		update @tmpa set cost = ISNULL(a.cost,0) + @diff 
-		from @tmpa a
-		outer apply(select top 1 sel from @tmpa where makeno=@makeno and len(a.noa)!=5 order by sel) b
-		where a.sel=b.sel
+		select @tmpweight=0,@tmpmoney=0
+		select @tmpweight=SUM(ISNULL([weight],0)),@tmpmoney=SUM(ISNULL([cost],0)) 
+		from @tmpa where makeno=@makeno
+		
+		if @weight <= @tmpweight + @waste
+		begin
+			set @diff = @money-@tmpmoney
+			update @tmpa set cost = ISNULL(a.cost,0) + @diff 
+			from @tmpa a
+			outer apply(select top 1 sel from @tmpa where makeno=@makeno and len(a.noa)!=5 order by sel desc) b
+			where a.sel=b.sel
+		end
 		
 		fetch next from cursor_table
-		into @makeno,@diff
+		into @makeno,@weight,@money,@waste 
 	end
 	close cursor_table
 	deallocate cursor_table
+	
+	--select * from @tmpb
+	--select SUM(weight),SUM(cost) from @tmpa
+	--select * from @tmpa
 	
 	select @tmpweight=0,@tmpmoney=0
 	select @tmpweight=[weight],@tmpmoney=[cost]
