@@ -1856,20 +1856,26 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,noq nvarchar(10)
 		,spec nvarchar(max)
 		,cspec nvarchar(max)
+		,x01 float
+		,y01 float
 	)
 	insert into @tmp(gno,pno,makeno,uno,date_cub,[weight],total
 		,dime,width,lengthb,radius,ordeno,ordeno2,custno,cust,size
-		,mins,accy,noa,noq)
+		,mins,accy,noa,noq
+		,x01,y01)
 	select '1',1,a.makeno,isnull(a.uno,''),b.datea,a.hweight
 		--原物料成本+費用
 		,isnull(a.total,0) 
 		,a.dime,a.width,a.lengthb,a.radius,a.ordeno,a.no2,a.custno,a.comp,a.size
 		,case when b.datea>=@t_bdate then a.mins else 0 end
 		,a.accy,a.noa,a.noq
+		,a.x01,a.y01
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_edate
 	and (len(@t_makeno)=0 or a.makeno=@t_makeno)
+	
+
 	
 --規格
 	update @tmp set spec = b.spec,cspec=c.product
@@ -1904,12 +1910,14 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	update @tmp set weight01=isnull(b.w23,0),total01=isnull(b.emoney,0)
 	from @tmp a
 	left join dbo.z_cub_rk02('',@bbdate,'','','',@t_ecustno) b on a.makeno=b.makeno
+
 	
 	-- 期末存貨
 	update @tmp set weight10=ISNULL(b.w23,0),total10=isnull(b.emoney,0)
 	from @tmp a
 	left join dbo.z_cub_rk02(@t_bdate,@t_edate,'','','',@t_ecustno) b on a.makeno=b.makeno
-	
+
+
 	--本期盤點調整
 	update @tmp set weight02=ISNULL(b.weight11,0)
 		,total02=ISNULL(b.m04,0)
@@ -1941,7 +1949,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	--	本期領用
 	declare @makeno nvarchar(max)
 	declare @aa nvarchar(max)
-	
+
 	declare cursor_table cursor for
 	select makeno
 	from view_cubs a
@@ -1958,9 +1966,9 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		begin
 			set @aa =reverse( RIGHT(@aa,LEN(@aa)-CHARINDEX('-',@aa)))
 		end
-		
-		update @tmp set weight07=ISNULL(a.weight07,0) + isnull(b.weight03,0)
-			,total07=ISNULL(a.total07,0) + isnull(b.total03,0)
+	
+		update @tmp set weight07=ISNULL(a.weight07,0) + isnull(b.x01,0)
+			,total07=ISNULL(a.total07,0) + isnull(b.y01,0)
 		from @tmp a
 		outer apply(select * from @tmp where makeno=@makeno) b
 		where a.makeno=@aa
@@ -1975,6 +1983,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	-- 本期耗料 =  前期庫存 + 盤點調整 + 本期完工投入 - 本期樣品 - 本期報廢 - 本期領用 - 期末存貨
 	update @tmp set weight04 = ISNULL(weight01,0) + ISNULL(weight02,0) +ISNULL(weight03,0) - ISNULL(weight05,0) - ISNULL(weight06,0)- ISNULL(weight07,0)- ISNULL(weight10,0)
 		,total04 = ISNULL(total01,0) + ISNULL(total02,0) +ISNULL(total03,0) - ISNULL(total05,0) - ISNULL(total06,0)- ISNULL(total07,0)- ISNULL(total10,0)
+		
 	------------------------------------------------------------------------------------------	
 	--刪除都是0的
 	delete @tmp where ISNULL(weight01,0)=0 and ISNULL(weight02,0)=0 and ISNULL(weight03,0)=0
