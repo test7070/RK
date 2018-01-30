@@ -172,7 +172,7 @@ begin
 	from @tmpc a
 	left join @tmpb b on a.makeno=b.makeno
 
-	update @tmpc set price2 = round(total/[weight],4)
+	update @tmpc set price2 = round(case when [weight]=0 then 0 else total/[weight] end,4)
 	update @tmpa set price = b.price2,cost=round(a.[weight]*b.price2,0)
 	from @tmpa a
 	left join @tmpc b on a.makeno=b.makeno and a.mon=b.mon
@@ -214,5 +214,6 @@ begin
 	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
 	--===============================================================================================
 	insert into @result([weight],[money])values(@xweight,@xmoney)
+	
 	return
 end

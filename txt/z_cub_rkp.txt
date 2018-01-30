@@ -2180,11 +2180,11 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	outer apply (select top 1 productno,product from view_cubt where noa=a.cubno and nor=a.cubnoq and kind='2' order by noq) b
 	
 	--皮膜(再投入)	
-	update @tmp set pvcno=ISNULL(b.spec,a.pvcno),pvc=ISNULL(b.class,a.pvc)
+	update @tmp set pvcno=case when len(a.pvcno)>0 then a.pvcno else ISNULL(b.spec,a.pvcno) end
+		,pvc=case when len(a.pvc)>0 then a.pvc else  ISNULL(b.class,a.pvc) end
 	from @tmp a
 	left join view_cuts b on a.uno=b.bno
 	where b.noa is not null
-
 
 	update @tmp set money06=ISNULL(money01,0)+ISNULL(money02,0)+ISNULL(money03,0)+ISNULL(money04,0)+ISNULL(money05,0)
 	--小計
@@ -3313,7 +3313,9 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	end
 	close cursor_table
 	deallocate cursor_table
-	drop table #z_cub_rkp03_cc;		
+	drop table #z_cub_rkp03_cc
+	
+	select 0 gno, '' uno,'' msg;			
 	
 z_cub_rkp03X: -- z_cub_rkp03X  成本結轉
 	---  要先計算  人工費用、製造費用、電費、瓦斯費
