@@ -288,16 +288,14 @@
 
 		</script>
 		<style type="text/css">
-			#dmain {
-				/*overflow: hidden;*/
-				width: 1800px;
-			}
+			
 			.dview {
 				float: left;
 				border-width: 0px;
 			}
 			.tview {
 				border: 5px solid gray;
+				border-top: 0px;
 				font-size: medium;
 				background-color: black;
 			}
@@ -305,6 +303,22 @@
 				height: 35px;
 			}
 			.tview td {
+				padding: 2px;
+				text-align: center;
+				border-width: 0px;
+				background-color: #FFFF66;
+				color: blue;
+			}
+			.tview2 {
+				border: 5px solid gray;
+				border-bottom: 0px;
+				font-size: medium;
+				background-color: black;
+			}
+			.tview2 tr {
+				height: 35px;
+			}
+			.tview2 td {
 				padding: 2px;
 				text-align: center;
 				border-width: 0px;
@@ -412,32 +426,50 @@
 	ondrop="event.dataTransfer.dropEffect='none';event.stopPropagation(); event.preventDefault();"
 	>
 		<!--#include file="../inc/toolbar.inc"-->
-		<div>
+		<div style="width: 1800px;">
 			<div class="dview" id="dview" >
-				<table class="tview" id="tview" >
+				<table class="tview2" style="width:800px">
 					<tr>
-						<td style="width:20px; color:black;"><a id='vewChk'> </a></td>
-						<td style="width:100px; color:black;"><a id='vewMon'> </a></td>
-						<td style="width:80px; color:black;"><a>直接人工</a></td>
-						<td style="width:80px; color:black;"><a>製造費用</a></td>
-						<td style="width:80px; color:black;"><a>電費</a></td>
-						<td style="width:80px; color:black;"><a>瓦斯費</a></td>
-						<td style="width:80px; color:black;"><a>直接人工</a></td>
-						<td style="width:80px; color:black;"><a>製造費用</a></td>
-						<td style="width:80px; color:black;"><a>電費</a></td>
-						<td style="width:80px; color:black;"><a>瓦斯費</a></td>	
+						<td style="width:20px;min-width:20px; color:black;" rowspan="2"> </td>
+						<td style="width:100px;min-width:100px; color:black;" rowspan="2">月份</td>
+						<td style="width:320px;min-width:320px; color:black;" colspan="4"><a>生產</a></td>
+						<td style="width:320px;min-width:320px; color:black;" colspan="4"><a>裁切</a></td>
 					</tr>
 					<tr>
-						<td><input id="chkBrow.*" type="checkbox" style=''/></td>
-						<td id='mon' style="text-align: center;">~mon</td>
-						<td id='price1' style="text-align: center;">~price1</td>
-						<td id='price2' style="text-align: center;">~price2</td>
-						<td id='price3' style="text-align: center;">~price3</td>
-						<td id='price4' style="text-align: center;">~price4</td>
-						<td id='price5' style="text-align: center;">~price5</td>
-						<td id='price6' style="text-align: center;">~price6</td>
-						<td id='price7' style="text-align: center;">~price7</td>
-						<td id='price8' style="text-align: center;">~price8</td>
+						<td style="width:80px;min-width:80px; color:black;"><a>直接人工</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>製造費用</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>電費</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>瓦斯費</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>直接人工</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>製造費用</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>電費</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>瓦斯費</a></td>	
+					</tr>
+				</table>
+				<table class="tview" id="tview"  style="width:800px">
+					<tr style="display:none;">
+						<td style="width:20px;min-width:20px; color:black;"><a id='vewChk'> </a></td>
+						<td style="width:100px;min-width:100px; color:black;"><a id='vewMon'> </a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>直接人工</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>製造費用</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>電費</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>瓦斯費</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>直接人工</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>製造費用</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>電費</a></td>
+						<td style="width:80px;min-width:80px; color:black;"><a>瓦斯費</a></td>	
+					</tr>
+					<tr>
+						<td style="text-align: center;width:20px;min-width:20px;"><input id="chkBrow.*" type="checkbox" style=''/></td>
+						<td id='mon' style="text-align: center;width:100px;min-width:100px;">~mon</td>
+						<td id='price1' style="text-align: center;width:80px;min-width:80px;">~price1</td>
+						<td id='price2' style="text-align: center;width:80px;min-width:80px;">~price2</td>
+						<td id='price3' style="text-align: center;width:80px;min-width:80px;">~price3</td>
+						<td id='price4' style="text-align: center;width:80px;min-width:80px;">~price4</td>
+						<td id='price5' style="text-align: center;width:80px;min-width:80px;">~price5</td>
+						<td id='price6' style="text-align: center;width:80px;min-width:80px;">~price6</td>
+						<td id='price7' style="text-align: center;width:80px;min-width:80px;">~price7</td>
+						<td id='price8' style="text-align: center;width:80px;min-width:80px;">~price8</td>
 					</tr>
 				</table>
 			</div>
