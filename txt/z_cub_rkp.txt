@@ -2568,7 +2568,16 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @t_bdate nvarchar(10) = case when '#non'=[4] then '' else [4] end
 	declare @t_edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
 	
+	--=============================================================================================
 	declare @accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10),@makeno nvarchar(30)
+	declare @cost float
+	declare @uno nvarchar(30)
+	declare @date nvarchar(20)
+	declare @mon nvarchar(20)
+	declare @weight float
+	declare @totweight float
+	declare @m01 float,@m02 float,@m03 float,@m04 float
+	declare @totm01 float,@totm02 float,@totm03 float,@totm04 float
 	--=============================================================================================
 	--=============================================================================================
 	--半成品
@@ -2945,6 +2954,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	
 	update #z_cub_rkp03_cc set total=ISNULL(cost,0)+ISNULL(m01,0)+ISNULL(m02,0)+ISNULL(m03,0)+ISNULL(m04,0)
 
+--select * from #z_cub_rkp03_cc where makeno='M175428-1'
+--return
 	---update
 	declare cursor_table cursor for
 		select accy from #z_cub_rkp03_cc group by accy
