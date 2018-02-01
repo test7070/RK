@@ -426,7 +426,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	insert into @tmp01(kind,datea,uno,makeno,size,weight,price,total,storeno,store,place)
 	execute [dbo].[z_ucc_rk02] @x_stktype,@x_kind,@x_edate,@x_storeno
 	
-	
+	delete @tmp where not((len(@t_makeno)=0 or makeno=@t_makeno) and (len(@t_uno)=0 or uno=@t_uno))
 	-----------------------------------------------------------------------------------------------------
 	--期初
 	update @tmp set w01=b.weight,p01=b.price,m01=b.total
@@ -728,6 +728,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null 
 	-----------------------------------------------------------------------------------------------------
+	delete @tmp where not((len(@t_makeno)=0 or makeno=@t_makeno) and (len(@t_uno)=0 or uno=@t_uno) and (len(@t_ordeno)=0 or ordeno=@t_ordeno))
+	
 	update @tmp set w01=ISNULL(w01,0)
 		,w02=ISNULL(w02,0)
 		,w03=ISNULL(w03,0)
@@ -802,7 +804,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	
 	select gno
 		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
-		,sel rr
+		,recno rr
 		,typea a01
 		,dime a02
 		,radius a03
@@ -840,7 +842,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,dbo.getComma(p10,-1) b26
 		,dbo.getComma(m10,-1) b27
 	from @tmp	
-	order by gno,sel;
+	order by gno,recno;
 	
 
 z_cub_rkp08_old:--z_cub_rkp08	製成品彙總表
@@ -1293,7 +1295,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	declare @totTweight decimal(25,2)
 	
 	declare cursor_table cursor for
-	select makeno from @tmpa where makeno='M175835-1' group by makeno
+	select makeno from @tmpa group by makeno
 	open cursor_table
 	fetch next from cursor_table
 	into @makeno
