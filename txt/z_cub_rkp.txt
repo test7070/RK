@@ -1218,36 +1218,33 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
 	--------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
 	IF OBJECT_ID('tempdb..#z_cub_rkp04')is not null
 	BEGIN
 		drop table #z_cub_rkp04
 	END
 	select * into #z_cub_rkp04 from [dbo].[z_cub_rkp04](@t_bdate,@t_edate,@t_makeno)
 	
-	declare @tmp table(
+	declare @tmpa table(
 		sel int identity(1,1)
-		,gno nvarchar(20)
-		,pno int
-		,recno int
-		,dime float    --鋼板厚
-		,radius float  --皮膜厚
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,datea nvarchar(20)
+		,makeno nvarchar(30)
+		,dime float
+		,radius float
 		,width float
 		,lengthb float
-		,cdime nvarchar(max)   --鋼板厚
-		,cradius nvarchar(max)  --皮膜厚
-		,cwidth nvarchar(max)
-		,clengthb nvarchar(max)
-		,pvcno nvarchar(20)
+		,pvcno nvarchar(30)
 		,pvc nvarchar(50)
-		,makeno nvarchar(30)
-		,custno nvarchar(20)
-		,cust nvarchar(50)
-		
+		,cust nvarchar(max)
+		,cost float -- 在製品成本
 		,[weight] float -- 進倉重量
-		,w01 float -- 不良損耗
-		,w02 float -- 尺寸損耗
-		,w03 float -- 頭尾損耗
+		,total float -- 製成品金額
+		
+		,w01 decimal(25,2) -- 不良損耗
+		,w02 decimal(25,2) -- 尺寸損耗
+		,w03 decimal(25,2) -- 頭尾損耗
 		,isx01 bit-- 分條	
 		,isx02 bit-- 二呎	
 		,isx03 bit-- 三呎	
@@ -1255,8 +1252,6 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,isx05 bit-- 十呎
 		,isx06 bit-- 重工
 		,isx07 bit-- 挑板
-		,tweight float-- 在製品完工重
-		,cost float-- 在製品成本
 		,mins float-- 加工工時
 		,x01 float-- 加工成本-分條	
 		,x02 float-- 加工成本-二呎
@@ -1265,211 +1260,189 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,x05 float-- 加工成本-十呎
 		,x06 float-- 加工成本-重工
 		,x07 float-- 加工成本-挑板
-		,xmoney float-- 加工金額
-		,xprice float-- 加工單位成本
-		,total float-- 製成品金額
-		,price float-- 製成品單位成本
-	)
-	insert into @tmp(gno,pno,makeno,cost,[weight],total)
-	select '1',1,a.cname,SUM(ISNULL(a.scost,0)),SUM(ISNULL(a.[weight],0)),SUM(ISNULL(a.total,0))
+		,xmoney float-- 加工成本
+		
+		,tweight float-- 在製品完工重
+	) 
+	insert into @tmpa(accy,noa,noq,datea
+		,makeno,dime,radius,width,lengthb,cust,cost,[weight],total)
+	select a.accy,a.noa,a.noq,a.datea 
+		,isnull(a.cname,''),isnull(a.dime,0),isnull(a.radius,0),isnull(a.width,0),isnull(a.lengthb,0)
+		,isnull(a.comp,'')
+		,isnull(a.scost,0),isnull(a.[weight],0),isnull(a.total,0)
 	from view_cuts a
 	left join view_cut b on a.accy=b.accy and a.noa=b.noa
 	where a.datea between @t_bdate and @t_edate
 	and (len(@t_makeno)=0 or a.cname=@t_makeno)
 	and len(ISNULL(a.cname,''))>0
-	group by a.cname
-	
-	update @tmp set pvcno=b.pvcno,pvc=b.pvc,dime=b.dime,radius=b.radius,width=b.width,lengthb=b.lengthb
-		,tweight=isnull(b.weight04,0)
-	from @tmp a
-	left join #z_cub_rkp04 b on a.makeno=b.makeno
-	
-	update @tmp set w01=ISNULL(b.w01,0),w02=ISNULL(b.w02,0),w03=ISNULL(b.w03,0),mins=ISNULL(b.mins,0)
-	from @tmp a
-	left join(
-		select a.cubno makeno
-			,SUM(ISNULL(a.weight8,0)) w01
-			,SUM(ISNULL(a.weight9,0)) w02
-			,SUM(ISNULL(a.weight10,0)) w03
-			,SUM(ISNULL(a.mins,0)) mins
-		from view_cucs a
-		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
-		left join @tmp c on a.cubno=c.makeno
-		where b.datea between @t_bdate and @t_edate
-		and c.makeno is not null
-		group by a.cubno) b on a.makeno=b.makeno
-	
-	update @tmp set isx01 = case when b.[mins] is null then 0 else 1 end
-		,x01 = ISNULL(b.[money],0)
-	from @tmp a
-	outer apply(select SUM(ISNULL(y.mins,0)) [mins] 
-		,SUM(ISNULL(y.w01,0)+ISNULL(y.w02,0)+ISNULL(y.w04,0)+ISNULL(y.w05,0)) [money] 
-		from view_cuc x 
-		left join view_cucs y on x.accy=y.accy and x.noa=y.noa
-		where x.datea between @t_bdate and @t_edate
-		and x.typea='分條作業'
-		and y.cubno=a.makeno ) b
-	
-	update @tmp set isx02 = case when b.[mins] is null then 0 else 1 end
-		,x02 = ISNULL(b.[money],0)
-	from @tmp a
-	outer apply(select SUM(ISNULL(y.mins,0)) [mins] 
-		,SUM(ISNULL(y.w01,0)+ISNULL(y.w02,0)+ISNULL(y.w04,0)+ISNULL(y.w05,0)) [money] 
-		from view_cuc x 
-		left join view_cucs y on x.accy=y.accy and x.noa=y.noa
-		where x.datea between @t_bdate and @t_edate
-		and x.typea='二呎裁切'
-		and y.cubno=a.makeno ) b
-	
-	update @tmp set isx03 = case when b.[mins] is null then 0 else 1 end
-		,x03 = ISNULL(b.[money],0)
-	from @tmp a
-	outer apply(select SUM(ISNULL(y.mins,0)) [mins] 
-		,SUM(ISNULL(y.w01,0)+ISNULL(y.w02,0)+ISNULL(y.w04,0)+ISNULL(y.w05,0)) [money] 
-		from view_cuc x 
-		left join view_cucs y on x.accy=y.accy and x.noa=y.noa
-		where x.datea between @t_bdate and @t_edate
-		and x.typea='三呎裁切'
-		and y.cubno=a.makeno ) b
-	
-	update @tmp set isx04 = case when b.[mins] is null then 0 else 1 end
-		,x04 = ISNULL(b.[money],0)
-	from @tmp a
-	outer apply(select SUM(ISNULL(y.mins,0)) [mins] 
-		,SUM(ISNULL(y.w01,0)+ISNULL(y.w02,0)+ISNULL(y.w04,0)+ISNULL(y.w05,0)) [money] 
-		from view_cuc x 
-		left join view_cucs y on x.accy=y.accy and x.noa=y.noa
-		where x.datea between @t_bdate and @t_edate
-		and x.typea='四呎裁切'
-		and y.cubno=a.makeno ) b
-	
-	update @tmp set isx05 = case when b.[mins] is null then 0 else 1 end
-		,x05 = ISNULL(b.[money],0)
-	from @tmp a
-	outer apply(select SUM(ISNULL(y.mins,0)) [mins] 
-		,SUM(ISNULL(y.w01,0)+ISNULL(y.w02,0)+ISNULL(y.w04,0)+ISNULL(y.w05,0)) [money] 
-		from view_cuc x 
-		left join view_cucs y on x.accy=y.accy and x.noa=y.noa
-		where x.datea between @t_bdate and @t_edate
-		and x.typea='十呎裁切'
-		and y.cubno=a.makeno ) b
-	
-	update @tmp set isx06 = case when b.[mins] is null then 0 else 1 end
-		,x06 = ISNULL(b.[money],0)
-	from @tmp a
-	outer apply(select SUM(ISNULL(y.mins,0)) [mins] 
-		,SUM(ISNULL(y.w01,0)+ISNULL(y.w02,0)+ISNULL(y.w04,0)+ISNULL(y.w05,0)) [money] 
-		from view_cuc x 
-		left join view_cucs y on x.accy=y.accy and x.noa=y.noa
-		where x.datea between @t_bdate and @t_edate
-		and x.typea='重工'
-		and y.cubno=a.makeno ) b
-		
-	update @tmp set isx07 = case when b.[mins] is null then 0 else 1 end
-		,x07 = ISNULL(b.[money],0)
-	from @tmp a
-	outer apply(select SUM(ISNULL(y.mins,0)) [mins] 
-		,SUM(ISNULL(y.w01,0)+ISNULL(y.w02,0)+ISNULL(y.w04,0)+ISNULL(y.w05,0)) [money] 
-		from view_cuc x 
-		left join view_cucs y on x.accy=y.accy and x.noa=y.noa
-		where x.datea between @t_bdate and @t_edate
-		and x.typea='挑板'
-		and y.cubno=a.makeno ) b
-	
-	update @tmp set xmoney=ISNULL(x01,0)+ISNULL(x02,0)+ISNULL(x03,0)+ISNULL(x04,0)+ISNULL(x05,0)+ISNULL(x06,0)+ISNULL(x07,0)
-	update @tmp set xprice = case when ISNULL([weight],0)=0 then 0 else ROUND(xmoney/[weight],4) end
-		,price = case when ISNULL([weight],0)=0 then 0 else ROUND(total/[weight],4) end
-	---------------------------------------------------------------------------------------------------------------		
-	declare @makeno nvarchar(max)
-	declare @cust nvarchar(max)
-	declare @xcust nvarchar(max)
-	declare @dime nvarchar(max)
-	declare @radius nvarchar(max)
-	declare @width nvarchar(max)
-	declare @lengthb nvarchar(max)
-	declare @xdime nvarchar(max)
-	declare @xradius nvarchar(max)
-	declare @xwidth nvarchar(max)
-	declare @xlengthb nvarchar(max)
+	--group by a.cname,a.dime,a.radius,a.width,a.lengthb,a.comp
+	------------------------------------------------------------------------------------------------------------
+	declare @makeno nvarchar(30)
+	declare @totweight float
+	declare @w01 decimal(25,2) -- 不良損耗
+	declare @w02 decimal(25,2) -- 尺寸損耗
+	declare @w03 decimal(25,2) -- 頭尾損耗
+	declare @mins float -- 工時
+	declare @totw01 decimal(25,2)
+	declare @totw02 decimal(25,2)
+	declare @totw03 decimal(25,2)
+	declare @totmins float
+	declare @x01 float,@x02 float,@x03 float,@x04 float,@x05 float,@x06 float,@x07 float
+	declare @totx01 float,@totx02 float,@totx03 float,@totx04 float,@totx05 float,@totx06 float,@totx07 float
+	declare @tweight decimal(25,2)
+	declare @totTweight decimal(25,2)
 	
 	declare cursor_table cursor for
-	select makeno from @tmp
+	select makeno from @tmpa where makeno='M175835-1' group by makeno
 	open cursor_table
 	fetch next from cursor_table
 	into @makeno
 	while(@@FETCH_STATUS <> -1)
 	begin
-		set @xcust = ''
-		--cust
-		declare cursor_table2 cursor for
-			select isnull(comp,'')
-			from view_cuts 
-			where cname=@makeno
-			and datea between @t_bdate and @t_edate
-			group by isnull(comp,'')
-		open cursor_table2
-		fetch next from cursor_table2
-		into @cust
-		while(@@FETCH_STATUS <> -1)
-		begin
-			set @xcust = @xcust + case when LEN(@xcust)=0 then '' else ',' end + @cust
-			fetch next from cursor_table2
-			into @cust
-		end
-		close cursor_table2
-		deallocate cursor_table2
-		-- width,length
-		select @xdime='',@xradius='',@xwidth='',@xlengthb=''
+		select @totweight = 0
+		select @totweight = SUM([weight]) from @tmpa where makeno=@makeno
+		select @tweight = 0
+		select @tweight = SUM(isnull(weight04,0)) from #z_cub_rkp04 where makeno=@makeno
 		
-		declare cursor_table2 cursor for
-			select cast(isnull(dime,0) as nvarchar)
-				,cast(isnull(radius,0) as nvarchar)
-				,cast(isnull(width,0) as nvarchar)
-				,cast(isnull(lengthb,0) as nvarchar)
-			from view_cuts 
-			where cname=@makeno
-			and datea between @t_bdate and @t_edate
-			group by cast(isnull(dime,0) as nvarchar)
-				,cast(isnull(radius,0) as nvarchar)
-				,cast(isnull(width,0) as nvarchar)
-				,cast(isnull(lengthb,0) as nvarchar)
-		open cursor_table2
-		fetch next from cursor_table2
-		into @dime,@radius,@width,@lengthb
-		while(@@FETCH_STATUS <> -1)
+		select @w01=0,@w02=0,@w03=0,@mins=0
+			,@x01=0,@x02=0,@x03=0,@x04=0,@x05=0,@x06=0,@x07=0
+		select @w01=SUM(ISNULL(a.weight8,0))
+			,@w02=SUM(ISNULL(a.weight9,0))
+			,@w03=SUM(ISNULL(a.weight10,0))
+			,@mins=SUM(ISNULL(a.mins,0))
+			,@x01=sum(case when b.typea='分條作業' then ISNULL(a.w01,0)+ISNULL(a.w02,0)+ISNULL(a.w04,0)+ISNULL(a.w05,0) else 0 end)
+			,@x02=sum(case when b.typea='二呎裁切' then ISNULL(a.w01,0)+ISNULL(a.w02,0)+ISNULL(a.w04,0)+ISNULL(a.w05,0) else 0 end)
+			,@x03=sum(case when b.typea='三呎裁切' then ISNULL(a.w01,0)+ISNULL(a.w02,0)+ISNULL(a.w04,0)+ISNULL(a.w05,0) else 0 end)
+			,@x04=sum(case when b.typea='四呎裁切' then ISNULL(a.w01,0)+ISNULL(a.w02,0)+ISNULL(a.w04,0)+ISNULL(a.w05,0) else 0 end)
+			,@x05=sum(case when b.typea='十呎裁切' then ISNULL(a.w01,0)+ISNULL(a.w02,0)+ISNULL(a.w04,0)+ISNULL(a.w05,0) else 0 end)
+			,@x06=sum(case when b.typea='重工' then ISNULL(a.w01,0)+ISNULL(a.w02,0)+ISNULL(a.w04,0)+ISNULL(a.w05,0) else 0 end)
+			,@x07=sum(case when b.typea='挑板' then ISNULL(a.w01,0)+ISNULL(a.w02,0)+ISNULL(a.w04,0)+ISNULL(a.w05,0) else 0 end)
+		from view_cucs a
+		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+		where b.datea between @t_bdate and @t_edate
+		and a.cubno=@makeno
+
+		if @totweight!=0
 		begin
-			if @dime!='0'
-				set @xdime = @xdime + case when LEN(@xdime)=0 then '' else ',' end + @dime
-			if @radius!='0'
-				set @xradius = @xradius + case when LEN(@xradius)=0 then '' else ',' end + @radius
-			if @width!='0'
-				set @xwidth = @xwidth + case when LEN(@xwidth)=0 then '' else ',' end + @width
-			if @lengthb!='0'
-				set @xlengthb = @xlengthb + case when LEN(@xlengthb)=0 then '' else ',' end + @lengthb
-			fetch next from cursor_table2
-			into @dime,@radius,@width,@lengthb
+			update @tmpa set w01 = round(@w01*[weight]/@totweight,2)
+				,w02 = round(@w02*[weight]/@totweight,2)
+				,w03 = round(@w03*[weight]/@totweight,2)
+				,mins = round(@mins*[weight]/@totweight,0)
+				,x01 = round(@x01*[weight]/@totweight,0)
+				,x02 = round(@x02*[weight]/@totweight,0)
+				,x03 = round(@x03*[weight]/@totweight,0)
+				,x04 = round(@x04*[weight]/@totweight,0)
+				,x05 = round(@x05*[weight]/@totweight,0)
+				,x06 = round(@x06*[weight]/@totweight,0)
+				,x07 = round(@x07*[weight]/@totweight,0)
+				,tweight = round(@tweight*[weight]/@totweight,0)
+			where makeno=@makeno
 		end
-		close cursor_table2
-		deallocate cursor_table2
-		
-		update @tmp set cust=@xcust
-			,cdime=@xdime
-			,cradius=@xradius
-			,cwidth=@xwidth
-			,clengthb=@xlengthb 
+	
+		--尾差修正(找最後一筆來修正)
+		select @totw01=0,@totw02=0,@totw03=0,@totmins=0
+			,@totx01=0,@totx02=0,@totx03=0,@totx04=0,@totx05=0,@totx06=0,@totx07=0
+			,@totTweight=0
+		select @totw01=SUM(ISNULL(w01,0)),@totw02=SUM(ISNULL(w02,0)),@totw03=SUM(ISNULL(w03,0)),@totmins=SUM(ISNULL(mins,0))
+			,@totx01=SUM(ISNULL(x01,0)),@totx02=SUM(ISNULL(x02,0)),@totx03=SUM(ISNULL(x03,0)),@totx04=SUM(ISNULL(x04,0))
+			,@totx05=SUM(ISNULL(x05,0)),@totx06=SUM(ISNULL(x06,0)),@totx07=SUM(ISNULL(x07,0))
+			,@totTweight=SUM(ISNULL(tweight,0))
+		from @tmpa 
 		where makeno=@makeno
 		
+		update @tmpa set w01=isnull(a.w01,0) + (@w01-@totw01)
+			,w02=isnull(a.w02,0) + (@w02-@totw02)
+			,w03=isnull(a.w03,0) + (@w03-@totw03)
+			,mins=isnull(a.mins,0) + (@mins-@totmins)
+			,x01=isnull(a.x01,0) + (@x01-@totx01)
+			,x02=isnull(a.x02,0) + (@x02-@totx02)
+			,x03=isnull(a.x03,0) + (@x03-@totx03)
+			,x04=isnull(a.x04,0) + (@x04-@totx04)
+			,x05=isnull(a.x05,0) + (@x05-@totx05)
+			,x06=isnull(a.x06,0) + (@x06-@totx06)
+			,x07=isnull(a.x07,0) + (@x07-@totx07)
+			,tweight=isnull(a.tweight,0) + (@tweight-@tottweight)
+		from @tmpa a
+		outer apply(select top 1 sel from @tmpa where makeno=a.makeno order by datea desc,accy desc,noa desc,noq desc) b
+		where a.makeno=@makeno and a.sel=b.sel
+
 		fetch next from cursor_table
 		into @makeno
 	end
 	close cursor_table
 	deallocate cursor_table		
-			
-	update @tmp set recno=b.recno
-	from @tmp a
-	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
 	
-	insert into @tmp(gno,pno,makeno,[weight],w01,w02,w03
+	update @tmpa set xmoney = ISNULL(x01,0)+ISNULL(x02,0)+ISNULL(x03,0)+ISNULL(x04,0)+ISNULL(x05,0)+ISNULL(x06,0)+ISNULL(x07,0)
+	-----------------------------------------------------------------------------------------------------------
+	declare @tmpb table(
+		sel int identity(1,1)
+		,gno nvarchar(10)
+		,pno int
+		,recno int
+		,makeno nvarchar(30)
+		,dime float
+		,radius float
+		,width float
+		,lengthb float
+		,pvcno nvarchar(30)
+		,pvc nvarchar(50)
+		,cust nvarchar(max)
+		,cost float -- 在製品成本
+		,[weight] float -- 進倉重量
+		,total float -- 製成品金額
+		
+		,w01 decimal(25,2) -- 不良損耗
+		,w02 decimal(25,2) -- 尺寸損耗
+		,w03 decimal(25,2) -- 頭尾損耗
+		,isx01 bit-- 分條	
+		,isx02 bit-- 二呎	
+		,isx03 bit-- 三呎	
+		,isx04 bit-- 四呎	
+		,isx05 bit-- 十呎
+		,isx06 bit-- 重工
+		,isx07 bit-- 挑板
+		,mins float-- 加工工時
+		,x01 float-- 加工成本-分條	
+		,x02 float-- 加工成本-二呎
+		,x03 float-- 加工成本-三呎
+		,x04 float-- 加工成本-四呎
+		,x05 float-- 加工成本-十呎
+		,x06 float-- 加工成本-重工
+		,x07 float-- 加工成本-挑板
+		,xmoney float-- 加工成本
+		
+		,tweight float-- 在製品完工重
+	) 
+	insert into @tmpb(gno,pno,makeno,dime,radius,width,lengthb,pvcno,pvc,cust
+		,cost,[weight],total,w01,w02,w03,mins
+		,x01,x02,x03,x04,x05,x06,x07,xmoney
+		,tweight)
+	select '1',1,isnull(makeno,''),isnull(dime,0),isnull(radius,0),isnull(width,0),isnull(lengthb,0),isnull(pvcno,''),isnull(pvc,''),isnull(cust,'') 	
+		,SUM(isnull(cost,0)),SUM(isnull([weight],0)),SUM(isnull(total,0))
+		,SUM(isnull(w01,0)),SUM(isnull(w02,0)),SUM(isnull(w03,0)),SUM(isnull(mins,0))
+		,SUM(isnull(x01,0)),SUM(isnull(x02,0)),SUM(isnull(x03,0)),SUM(isnull(x04,0))
+		,SUM(isnull(x05,0)),SUM(isnull(x06,0)),SUM(isnull(x07,0)),SUM(isnull(xmoney,0))
+		,SUM(isnull(tweight,0))
+	from @tmpa
+	group by isnull(makeno,''),isnull(dime,0),isnull(radius,0),isnull(width,0),isnull(lengthb,0),isnull(pvcno,''),isnull(pvc,''),isnull(cust,'') 	
+	
+	update @tmpb set isx01 = case when ISNULL(x01,0)=0 then 0 else 1 end
+		,isx02 = case when ISNULL(x02,0)=0 then 0 else 1 end
+		,isx03 = case when ISNULL(x03,0)=0 then 0 else 1 end
+		,isx04 = case when ISNULL(x04,0)=0 then 0 else 1 end
+		,isx05 = case when ISNULL(x05,0)=0 then 0 else 1 end
+		,isx06 = case when ISNULL(x06,0)=0 then 0 else 1 end
+		,isx07 = case when ISNULL(x07,0)=0 then 0 else 1 end
+
+	update @tmpb set pvcno=ISNULL(b.pvcno,''),pvc=ISNULL(b.pvc,'')
+	from @tmpb a
+	left join #z_cub_rkp04 b on a.makeno=b.makeno
+	----------------------------------------------------------------------------------------------------
+	update @tmpb set recno=b.recno
+	from @tmpb a
+	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmpb) b on a.sel=b.sel
+	
+	insert into @tmpb(gno,pno,makeno,[weight],w01,w02,w03
 		,tweight,cost,mins
 		,x01,x02,x03,x04,x05,x06,x07
 		,xmoney,total)
@@ -1477,11 +1450,11 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,SUM(ISNULL([tweight],0)),SUM(ISNULL([cost],0)),SUM(ISNULL([mins],0))
 		,SUM(ISNULL([x01],0)),SUM(ISNULL([x02],0)),SUM(ISNULL([x03],0)),SUM(ISNULL([x04],0)),SUM(ISNULL([x05],0)),SUM(ISNULL([x06],0)),SUM(ISNULL([x07],0))
 		,SUM(ISNULL([xmoney],0)),SUM(ISNULL([total],0))
-	from @tmp
+	from @tmpb
 	where pno=1
 	group by LEFT(makeno,1) 
 	
-	insert into @tmp(gno,pno,[weight],w01,w02,w03
+	insert into @tmpb(gno,pno,[weight],w01,w02,w03
 		,tweight,cost,mins
 		,x01,x02,x03,x04,x05,x06,x07
 		,xmoney,total)
@@ -1489,17 +1462,17 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,SUM(ISNULL([tweight],0)),SUM(ISNULL([cost],0)),SUM(ISNULL([mins],0))
 		,SUM(ISNULL([x01],0)),SUM(ISNULL([x02],0)),SUM(ISNULL([x03],0)),SUM(ISNULL([x04],0)),SUM(ISNULL([x05],0)),SUM(ISNULL([x06],0)),SUM(ISNULL([x07],0))
 		,SUM(ISNULL([xmoney],0)),SUM(ISNULL([total],0))
-	from @tmp
+	from @tmpb
 	where pno=1
 	
 	
 	select gno
 		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
 		,recno rr
-		,cdime a01
-		,cradius a02
-		,cwidth a03
-		,clengthb a04
+		,dime a01
+		,radius a02
+		,width a03
+		,lengthb a04
 		,pvcno a05
 		,makeno a06
 		,cust a07
@@ -1526,10 +1499,10 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		,dbo.getComma([x06],-1) a28
 		,dbo.getComma([x07],-1) a29
 		,dbo.getComma([xmoney],-1) a30
-		,dbo.getComma([xprice],4) a31
+		,dbo.getComma(case when ISNULL([weight],0)=0 then 0 else ROUND(xmoney/[weight],4) end,4) a31
 		,dbo.getComma([total],-1) a32
-		,dbo.getComma([xprice],4) a33
-	from @tmp order by pno,recno
+		,dbo.getComma(case when ISNULL([weight],0)=0 then 0 else ROUND(total/[weight],4) end,4) a33
+	from @tmpb order by pno,recno
 	drop table #z_cub_rkp04;
 	
 z_cub_rkp04:--z_cub_rkp04	在製品彙總表
