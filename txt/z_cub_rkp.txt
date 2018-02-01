@@ -426,7 +426,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	insert into @tmp01(kind,datea,uno,makeno,size,weight,price,total,storeno,store,place)
 	execute [dbo].[z_ucc_rk02] @x_stktype,@x_kind,@x_edate,@x_storeno
 	
-	delete @tmp where not((len(@t_makeno)=0 or makeno=@t_makeno) and (len(@t_uno)=0 or uno=@t_uno))
+	delete @tmp where not((len(@t_makeno)=0 or isnull(makeno,'')=@t_makeno) and (len(@t_uno)=0 or isnull(uno,'')=@t_uno))
 	-----------------------------------------------------------------------------------------------------
 	--期初
 	update @tmp set w01=b.weight,p01=b.price,m01=b.total
@@ -728,7 +728,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null 
 	-----------------------------------------------------------------------------------------------------
-	delete @tmp where not((len(@t_makeno)=0 or makeno=@t_makeno) and (len(@t_uno)=0 or uno=@t_uno) and (len(@t_ordeno)=0 or ordeno=@t_ordeno))
+	delete @tmp where not((len(@t_makeno)=0 or isnull(makeno,'')=@t_makeno) and (len(@t_uno)=0 or isnull(uno,'')=@t_uno) and (len(@t_ordeno)=0 or isnull(ordeno,'')=@t_ordeno))
 	
 	update @tmp set w01=ISNULL(w01,0)
 		,w02=ISNULL(w02,0)
