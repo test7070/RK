@@ -52,7 +52,7 @@
 				if(t_uno.length>0)
 		       		t_where += " and exists(select noa from vcfs where vcfs.noa=vcf.noa and vcfs.uno='"+t_uno+"')";	
 		       	if(t_makeno.length>0)
-		       		t_makeno += " and exists(select noa from vcft where vcft.noa=vcf.noa and vcft.uno='"+t_makeno+"')";	
+		       		t_where += " and exists(select noa from vcft where vcft.noa=vcf.noa and vcft.uno='"+t_makeno+"')";	
 		       			
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
