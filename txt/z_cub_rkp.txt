@@ -1997,7 +1997,7 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 	outer apply(select top 1 * from view_cubt where accy=b.accy and noa=b.noa and nor=b.noq and kind='2') c
 	outer apply(select top 1 x.* from view_cubu x
 		left join ucc y on x.productno=y.noa
-		where x.accy=b.accy and x.noa=b.noa and y.groupano='A3') d
+		where x.accy=b.accy and x.noa=b.noa and y.groupano='A03') d
 	left join view_uccb e on b.uno=e.uno
 	outer apply(select SUM(ISNULL([weight],0)) [weight] from view_cuts where cname=a.makeno) f
 	--沒有皮膜就改顯示面漆
