@@ -2000,10 +2000,17 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		where x.accy=b.accy and x.noa=b.noa and y.groupano='A03') d
 	left join view_uccb e on b.uno=e.uno
 	outer apply(select SUM(ISNULL([weight],0)) [weight] from view_cuts where cname=a.makeno) f
+	
+	update @tmpb set spec = b.productno +' '+ ISNULL(c.product,'') 
+	from @tmpb a
+	left join view_uccb b on a.uno=b.uno
+	left join spec c on b.spec=c.noa
+	
 	--沒有皮膜就改顯示面漆
 	update @tmpb set pvcno=c.productno,pvc=c.product
 	from @tmpb a
 	outer apply(select top 1 * from view_cubt where accy=a.accy and noa=a.noa and nor=a.noq and kind='1') c
+	where c.noa is not null
 	
 	update @tmpb set pvcno=b.productno,pvc=b.product
 	from @tmpb a
