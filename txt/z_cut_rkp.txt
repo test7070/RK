@@ -25,6 +25,7 @@ z_cut_rkp03:--z_cut_rkp03
 		,uno nvarchar(30)
 		,productno nvarchar(20)
 		,product nvarchar(max)
+		,spec nvarchar(max)
 		,size nvarchar(max)
 		,pvcno nvarchar(20)
 		,pvc nvarchar(max)
@@ -75,7 +76,11 @@ z_cut_rkp03:--z_cut_rkp03
 	and (len(isnull(@t_product,''))=0 or CHARINDEX(@t_product,a.productno)>0 or CHARINDEX(@t_product,a.product)>0)
 	and (len(isnull(@t_pvc,''))=0 or CHARINDEX(@t_pvc,a.spec)>0 or CHARINDEX(@t_pvc,a.[class])>0)
 	
-	
+	update @tmp set spec=isnull(c.product,b.spec)
+	from @tmp a
+	left join view_uccb b on a.uno=b.uno
+	left join spec c on b.spec=c.noa
+
 	declare @tmpb table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -84,6 +89,7 @@ z_cut_rkp03:--z_cut_rkp03
 		,makeno nvarchar(30)
 		,productno nvarchar(20)
 		,product nvarchar(50)
+		,spec nvarchar(max)
 		,size nvarchar(max)
 		,pvcno nvarchar(20)
 		,pvc nvarchar(50)
@@ -97,18 +103,18 @@ z_cut_rkp03:--z_cut_rkp03
 		,mount float
 		,weight float
 	)
-	insert into @tmpb(gno,pno,makeno,productno,product,size,pvcno,pvc,custno,cust
+	insert into @tmpb(gno,pno,makeno,productno,product,spec,size,pvcno,pvc,custno,cust
 		,dime,radius,width,lengthb,hweight,mount,[weight])
-	select '1',1,makeno,productno,product,size,pvcno,pvc,custno,cust
+	select '1',1,makeno,productno,product,spec,size,pvcno,pvc,custno,cust
 		,dime,radius,width,lengthb
 		,sum(isnull([hweight],0)),sum(isnull(mount,0)),sum(isnull([weight],0))
 	from @tmp
-	group by makeno,productno,product,size,pvcno,pvc,custno,cust
+	group by makeno,productno,product,spec,size,pvcno,pvc,custno,cust
 		,dime,radius,width,lengthb
 
 	update @tmpb set recno=b.recno
 	from @tmpb a
-	left join (select sel,ROW_NUMBER()over(order by makeno,productno,product,size,pvcno,pvc,custno,cust
+	left join (select sel,ROW_NUMBER()over(order by makeno,productno,product,spec,size,pvcno,pvc,custno,cust
 		,dime,radius,width,lengthb) recno from @tmpb) b on a.sel=b.sel
 	
 	insert into @tmpb(gno,pno,hweight,mount,[weight])
@@ -120,14 +126,15 @@ z_cut_rkp03:--z_cut_rkp03
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
 		,recno rr
 		,makeno a01
-		,product a02
-		,size a03 
-		,pvcno a04
-		,pvc a05
-		,cust a06
-		,dbo.getComma(hweight,-1) a07
-		,dbo.getComma(mount,-1) a08
-		,dbo.getComma(weight,-1) a09
+		,spec a02
+		,product a03
+		,size a04 
+		,pvcno a05
+		,pvc a06
+		,cust a07
+		,dbo.getComma(hweight,-1) a08
+		,dbo.getComma(mount,-1) a09
+		,dbo.getComma(weight,-1) a10
 	from @tmpb order by pno,recno;
 
 z_cut_rkp02:--z_cut_rkp02
