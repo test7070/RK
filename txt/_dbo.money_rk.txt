@@ -29,6 +29,8 @@ begin
 	where a.uno=@t_uno
 	and b.datea<=@t_date
 	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
+	
+
 	--===============================================================================================
 	-- 入庫
 	------ 非領料組合來的
@@ -42,6 +44,7 @@ begin
 	and b.datea<=@t_date
 	and c.noa is null
 	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
+
 	------ 領料組合
 	select @tmpweight=0,@tmpmoney=0
 	select @tmpweight=SUM(ISNULL(a.weight,0)) 
@@ -80,6 +83,7 @@ begin
 	end
 	close cursor_table
 	deallocate cursor_table
+	
 	--===============================================================================================
 	-- 成品進倉
 	declare @tmpa table(
@@ -101,8 +105,10 @@ begin
 	from (select cname makeno from view_cuts where bno=@t_uno and len(cname)>0 and datea<=@t_date) a
 	left join view_cuts b on a.makeno=b.cname
 	left join view_cut c on b.accy=c.accy and b.noa=c.noa
-	where b.datea<=@t_date
+	where left(b.datea,len(b.datea)-3)<=left(b.datea,len(@t_date)-3)
 	order by b.datea,b.accy,b.noa,b.noq
+
+
 	--取得生產成本單價
 	-- cubs.hweight = cuts.weight + (cucs.weight8+cucs.weight9+cucs.weight10)
 	declare @tmpb table(
@@ -120,6 +126,7 @@ begin
 	into @makeno 
 	while(@@FETCH_STATUS <> -1)
 	begin
+	
 		insert into @tmpb(makeno,[weight],[money],price)
 		select @makeno,[weight],total,case when [weight]=0 then 0 else ROUND(total/[weight],4) end 
 		from dbo.makecost_rk(@makeno)
@@ -129,6 +136,7 @@ begin
 	end
 	close cursor_table
 	deallocate cursor_table
+
 	
 	declare @tmpc table(
 		sel int identity(1,1)
@@ -172,12 +180,13 @@ begin
 	from @tmpc a
 	left join @tmpb b on a.makeno=b.makeno
 
+
+
 	update @tmpc set price2 = round(case when [weight]=0 then 0 else total/[weight] end,4)
 	update @tmpa set price = b.price2,cost=round(a.[weight]*b.price2,0)
 	from @tmpa a
 	left join @tmpc b on a.makeno=b.makeno and a.mon=b.mon
 	where len(a.noa)!=5
-		
 	--修正尾差
 
 	declare cursor_table cursor for

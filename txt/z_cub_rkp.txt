@@ -1521,7 +1521,7 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	BEGIN
 		drop table #z_cub_rkp04
 	END
-	select * into #z_cub_rkp04 from [dbo].[z_cub_rkp04]('106/10/01','106/10/31','')
+	select * into #z_cub_rkp04 from [dbo].[z_cub_rkp04](@t_bdate,@t_edate,@t_makeno)
 	
 	-----------------------------------------------------------------
 	-- 期初資料排在前面 itema
