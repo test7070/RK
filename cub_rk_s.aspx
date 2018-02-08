@@ -59,7 +59,7 @@
 			       	if(t_ordeno2.length>0)
 			       		t_where += " and exists(select noa from view_cubs"+r_accy+" where view_cubs"+r_accy+".noa=view_cub"+r_accy+".noa and view_cubs"+r_accy+".no2='"+t_ordeno2+"')";	
 		       		if(t_custno.length>0)
-			       		t_where += " and exists(select noa from view_cubs"+r_accy+" where view_cubs"+r_accy+".noa=view_cub"+r_accy+".noa and view_cubs"+r_accy+".custno='"+t_custno+"')";
+			       		t_where += " and exists(select noa from view_cubs"+r_accy+" where view_cubs"+r_accy+".noa=view_cub"+r_accy+".noa and (view_cubs"+r_accy+".custno='"+t_custno+"' or charindex('"+t_custno+"',view_cubs"+r_accy+".comp)>0 ))";
 			       	if(t_productno_bbt.length>0)
 			       		t_where += " and exists(select noa from view_cubt"+r_accy+" where view_cubt"+r_accy+".noa=view_cub"+r_accy+".noa and view_cubt"+r_accy+".productno='"+t_productno_bbt+"')";	
 				t_where = ' where=^^' + t_where + '^^ ';
@@ -114,7 +114,7 @@
 					</td>
 				</tr>
 				<tr class='seek_tr'>
-					<td class='seek' style="width:90px;"><a id='lblCustno'>客戶編號</a></td>
+					<td class='seek' style="width:90px;"><a id='lblCustno'>客戶</a></td>
 					<td style="width:215px;">
 						<input class="txt" id="txtCustno" type="text" style="width:220px;" />
 					</td>
