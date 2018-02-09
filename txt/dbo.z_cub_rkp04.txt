@@ -82,7 +82,7 @@ begin
 	from view_cubs a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	where b.datea<=@t_edate
-	and (len(@t_makeno)=0 or a.makeno=@t_makeno)
+	and (len(@t_makeno)=0 or a.makeno=@t_makeno or LEFT(a.makeno,1)='R') --因為要算再投入的,所以R的也都要算,之後再刪
 
 	--規格
 	update @tmp set spec = b.spec,cspec=c.product
@@ -169,7 +169,7 @@ begin
 		begin
 			set @aa =reverse( RIGHT(@aa,LEN(@aa)-CHARINDEX('-',@aa)))
 		end
-	
+
 		update @tmp set weight07=ISNULL(a.weight07,0) + isnull(b.x01,0)
 			,total07=ISNULL(a.total07,0) + isnull(b.y01,0)
 		from @tmp a
@@ -181,13 +181,12 @@ begin
 	end
 	close cursor_table
 	deallocate cursor_table
-	
-	
 	-- 本期耗料 =  前期庫存 + 盤點調整 + 本期完工投入 - 本期樣品 - 本期報廢 - 本期領用 - 期末存貨
 	update @tmp set weight04 = ISNULL(weight01,0) + ISNULL(weight02,0) +ISNULL(weight03,0) - ISNULL(weight05,0) - ISNULL(weight06,0)- ISNULL(weight07,0)- ISNULL(weight10,0)
 		,total04 = ISNULL(total01,0) + ISNULL(total02,0) +ISNULL(total03,0) - ISNULL(total05,0) - ISNULL(total06,0)- ISNULL(total07,0)- ISNULL(total10,0)
 		
 	------------------------------------------------------------------------------------------	
+	delete @tmp where not(len(@t_makeno)=0 or makeno=@t_makeno)
 	--刪除都是0的
 	delete @tmp where ISNULL(weight01,0)=0 and ISNULL(weight02,0)=0 and ISNULL(weight03,0)=0
 		and ISNULL(weight04,0)=0 and ISNULL(weight05,0)=0 and ISNULL(weight06,0)=0 

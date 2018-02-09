@@ -2560,12 +2560,24 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @totweight float
 	declare @m01 float,@m02 float,@m03 float,@m04 float
 	declare @totm01 float,@totm02 float,@totm03 float,@totm04 float
+	
+	declare @y01 float,@y02 float,@y03 float,@y04 float,@y05 float,@y06 float,@y07 float,@y08 float,@total float
+	declare @n int = 0,@m int = 0
+	
+	declare @tmp table(
+		gno nvarchar(10)
+		,title nvarchar(max)
+		,n int
+		,ms float
+	)
+	
+	DECLARE @t1 DATETIME
+	DECLARE @t2 DATETIME
+	declare @tott1 datetime=getdate(),@tott2 datetime
 	--=============================================================================================
 	--=============================================================================================
 	--半成品
-	declare @y01 float,@y02 float,@y03 float,@y04 float,@y05 float,@y06 float,@y07 float,@y08 float,@total float
-	declare @n int = 0
-
+	SET @t1 = GETDATE()
 	IF OBJECT_ID('tempdb..#z_cub_rkp03_aa')is not null
 	BEGIN
 		drop table #z_cub_rkp03_aa
@@ -2593,8 +2605,6 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		,x08 float
 		,w03 float
 	)
-
-	
 	declare cursor_table cursor for
 		select a.accy,a.noa,a.noq,a.makeno 
 		from view_cubs a
@@ -2621,6 +2631,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	close cursor_table
 	deallocate cursor_table
 	---update
+	select @n=0
+	
 	declare cursor_table cursor for
 		select accy from #z_cub_rkp03_aa group by accy
 	open cursor_table
@@ -2638,14 +2650,31 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		from cubs"+@accy+" a
 		left join #z_cub_rkp03_aa b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
 		where b.noa is not null"
-		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-		,@accy=@accy,@noa=@noa,@noq=@noq
+		execute sp_executesql @cmd,N'@accy nvarchar(10)'
+		,@accy=@accy
+
+		select @m = 0
+		set @cmd =
+		"select @m = count(1) 
+		from cubs"+@accy+" a
+		left join #z_cub_rkp03_aa b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@m int output'
+		,@accy=@accy,@m=@m output
+		set @n = @n + @m
 
 		fetch next from cursor_table
 		into @accy
 	end
 	close cursor_table
 	deallocate cursor_table
+	SET @t2 = GETDATE()
+
+	insert into @tmp(gno,title,n,ms)
+	select '1'
+		,'半成品成本-生產作業'
+		,@n
+		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
 	
 	drop table #z_cub_rkp03_aa
 	--=============================================================================================
@@ -2661,10 +2690,10 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		,noq nvarchar(10)
 		,cost float
 	)
-	
 
 	--=============================================================================================
 	-- VCC
+	SET @t1 = GETDATE()
 	delete #z_cub_rkp03_bb
 	declare cursor_table cursor for
 		select a.accy,a.noa,a.noq 
@@ -2689,6 +2718,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	close cursor_table
 	deallocate cursor_table
 	---update
+	select @n = 0
+	
 	declare cursor_table cursor for
 		select accy from #z_cub_rkp03_bb group by accy
 	open cursor_table
@@ -2701,16 +2732,34 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		from vccs"+@accy+" a
 		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
 		where b.noa is not null"
-		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-		,@accy=@accy,@noa=@noa,@noq=@noq
-
+		execute sp_executesql @cmd,N'@accy nvarchar(10)'
+		,@accy=@accy
+		
+		select @m = 0
+		set @cmd =
+		"select @m = count(1) 
+		from vccs"+@accy+" a
+		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@m int output'
+		,@accy=@accy,@m=@m output
+		set @n = @n + @m
+		
 		fetch next from cursor_table
 		into @accy
 	end
 	close cursor_table
 	deallocate cursor_table
+	
+	SET @t2 = GETDATE()
+	insert into @tmp(gno,title,n,ms)
+	select '1'
+		,'領料成本-出貨作業'
+		,@n
+		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
 	--=============================================================================================
 	-- GET
+	SET @t1 = GETDATE()
 	delete #z_cub_rkp03_bb
 	declare cursor_table cursor for
 		select a.accy,a.noa,a.noq 
@@ -2735,6 +2784,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	close cursor_table
 	deallocate cursor_table
 	---update
+	select @n = 0
+	
 	declare cursor_table cursor for
 		select accy from #z_cub_rkp03_bb group by accy
 	open cursor_table
@@ -2747,16 +2798,34 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		from gets"+@accy+" a
 		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
 		where b.noa is not null"
-		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-		,@accy=@accy,@noa=@noa,@noq=@noq
-
+		execute sp_executesql @cmd,N'@accy nvarchar(10)'
+		,@accy=@accy
+		
+		select @m = 0
+		set @cmd =
+		"select @m = count(1) 
+		from gets"+@accy+" a
+		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@m int output'
+		,@accy=@accy,@m=@m output
+		set @n = @n + @m
+		
 		fetch next from cursor_table
 		into @accy
 	end
 	close cursor_table
 	deallocate cursor_table
+	
+	SET @t2 = GETDATE()
+	insert into @tmp(gno,title,n,ms)
+	select '1'
+		,'領料成本-鋼捲、物料'
+		,@n
+		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
 	--=============================================================================================
 	-- CUBT
+	SET @t1 = GETDATE()
 	delete #z_cub_rkp03_bb
 	declare cursor_table cursor for
 		select a.accy,a.noa,a.noq 
@@ -2781,6 +2850,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	close cursor_table
 	deallocate cursor_table
 	---update
+	select @n = 0
+	
 	declare cursor_table cursor for
 		select accy from #z_cub_rkp03_bb group by accy
 	open cursor_table
@@ -2793,18 +2864,36 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		from cubt"+@accy+" a
 		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
 		where b.noa is not null"
-		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-		,@accy=@accy,@noa=@noa,@noq=@noq
-
+		execute sp_executesql @cmd,N'@accy nvarchar(10)'
+		,@accy=@accy
+		
+		select @m = 0
+		set @cmd =
+		"select @m = count(1) 
+		from cubt"+@accy+" a
+		left join #z_cub_rkp03_bb b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@m int output'
+		,@accy=@accy,@m=@m output
+		set @n = @n + @m
+		
 		fetch next from cursor_table
 		into @accy
 	end
 	close cursor_table
 	deallocate cursor_table
 	drop table #z_cub_rkp03_bb
+	
+	SET @t2 = GETDATE()
+	insert into @tmp(gno,title,n,ms)
+	select '1'
+		,'領料成本-皮膜、保護膜'
+		,@n
+		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
 	--=============================================================================================
 	--=============================================================================================
 	--成品進倉
+	SET @t1 = GETDATE()
 	IF OBJECT_ID('tempdb..#z_cub_rkp03_cc')is not null
 	BEGIN
 		drop table #z_cub_rkp03_cc
@@ -2883,7 +2972,9 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		,SUM(ISNULL(a.w01,0)),SUM(ISNULL(a.w02,0)),SUM(ISNULL(a.w04,0)),SUM(ISNULL(a.w05,0))
 	from view_cucs a
 	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
-	left join (select makeno,mon from @tmpc group by makeno,mon) c on a.cubno=c.makeno and substring(b.datea,1,len(b.datea)-3)=c.mon
+	left join (select makeno,mon from @tmpc group by makeno,mon) c on a.cubno=c.makeno 
+	and substring(b.datea,1,len(b.datea)-3)<=c.mon
+	--and substring(b.datea,1,len(b.datea)-3)=c.mon
 	where c.makeno is not null
 	group by a.cubno,substring(b.datea,1,len(b.datea)-3)
 	
@@ -2939,6 +3030,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 --select * from #z_cub_rkp03_cc where makeno='M175428-1'
 --return
 	---update
+	select @n = 0
 	declare cursor_table cursor for
 		select accy from #z_cub_rkp03_cc group by accy
 	open cursor_table
@@ -2953,9 +3045,20 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		where b.noa is not null
 		and len(a.noa)!=5
 		"
-		execute sp_executesql @cmd,N'@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)'
-		,@accy=@accy,@noa=@noa,@noq=@noq
-
+		execute sp_executesql @cmd,N'@accy nvarchar(10)'
+		,@accy=@accy
+		
+		select @m = 0
+		set @cmd =
+		"select @m = count(1) 
+		from cuts"+@accy+" a
+		left join #z_cub_rkp03_cc b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null
+		and len(a.noa)!=5"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@m int output'
+		,@accy=@accy,@m=@m output
+		set @n = @n + @m
+		
 		fetch next from cursor_table
 		into @accy
 	end
@@ -2963,7 +3066,21 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	deallocate cursor_table
 	drop table #z_cub_rkp03_cc
 	
-	select 0 gno, '' uno,'' msg;
+	SET @t2 = GETDATE()
+	insert into @tmp(gno,title,n,ms)
+	select '1'
+		,'成品成本-進倉作業'
+		,@n
+		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
+		
+	SET @tott2 = GETDATE()
+	/*insert into @tmp(gno,title,n,ms)
+	select '2'
+		,'總計算'
+		,0
+		,dbo.getComma(DATEDIFF(millisecond,@tott1,@tott2)/1000,3)*/
+		
+	select * from @tmp;
 	
 z_cub_rkp03X: -- z_cub_rkp03X  成本結轉
 	---  要先計算  人工費用、製造費用、電費、瓦斯費

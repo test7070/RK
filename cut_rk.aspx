@@ -17,7 +17,7 @@
             q_tables = 's';
             var q_name = "cut";
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
-            var q_readonlys = ['txtCname'];
+            var q_readonlys = [];
             var bbmNum = [];
             var bbsNum = [['txtHours', 10, 0, 1], ['txtHweight', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 3, 1], ['txtSprice'], ['txtTotal'], ['txtScost']];
             var bbmMask = [];
