@@ -1220,6 +1220,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
 	--------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------
 	IF OBJECT_ID('tempdb..#z_cub_rkp04')is not null
 	BEGIN
 		drop table #z_cub_rkp04
@@ -1374,6 +1375,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	close cursor_table
 	deallocate cursor_table		
 	
+	update @tmpa set cost=0 where ISNULL(tweight,0)=0
 	update @tmpa set xmoney = ISNULL(x01,0)+ISNULL(x02,0)+ISNULL(x03,0)+ISNULL(x04,0)+ISNULL(x05,0)+ISNULL(x06,0)+ISNULL(x07,0)
 	-----------------------------------------------------------------------------------------------------------
 	declare @tmpb table(
@@ -1440,6 +1442,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	from @tmpb a
 	left join #z_cub_rkp04 b on a.makeno=b.makeno
 	----------------------------------------------------------------------------------------------------
+	
 	update @tmpb set recno=b.recno
 	from @tmpb a
 	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmpb) b on a.sel=b.sel
