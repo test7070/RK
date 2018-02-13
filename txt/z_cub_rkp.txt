@@ -2677,7 +2677,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	select '1'
 		,'半成品成本-生產作業'
 		,@n
-		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
+		,round(DATEDIFF(millisecond,@t1,@t2)/1000,0)
 	
 	drop table #z_cub_rkp03_aa
 	--=============================================================================================
@@ -2759,7 +2759,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	select '1'
 		,'領料成本-出貨作業'
 		,@n
-		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
+		,round(DATEDIFF(millisecond,@t1,@t2)/1000,0)
 	--=============================================================================================
 	-- GET
 	SET @t1 = GETDATE()
@@ -2825,7 +2825,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	select '1'
 		,'領料成本-鋼捲、物料'
 		,@n
-		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
+		,round(DATEDIFF(millisecond,@t1,@t2)/1000,0)
 	--=============================================================================================
 	-- CUBT
 	SET @t1 = GETDATE()
@@ -2892,7 +2892,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	select '1'
 		,'領料成本-皮膜、保護膜'
 		,@n
-		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
+		,round(DATEDIFF(millisecond,@t1,@t2)/1000,0)
 	--=============================================================================================
 	--=============================================================================================
 	--成品進倉
@@ -3074,7 +3074,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	select '1'
 		,'成品成本-進倉作業'
 		,@n
-		,dbo.getComma(DATEDIFF(millisecond,@t1,@t2)/1000,3)
+		,round(DATEDIFF(millisecond,@t1,@t2)/1000,0)
 		
 	SET @tott2 = GETDATE()
 	/*insert into @tmp(gno,title,n,ms)
