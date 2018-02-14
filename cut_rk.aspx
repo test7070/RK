@@ -223,9 +223,6 @@
 				Lock(1, {
                     opacity : 0
                 });
-                
-                
-                
                 if ($('#txtDatea').val().length == 0 || !q_cd($('#txtDatea').val())) {
                     alert(q_getMsg('lblDatea') + '錯誤。');
                     Unlock(1);
@@ -237,9 +234,9 @@
             		// 廢料,  製造批號後頭固定多"-S"
             		if($.trim($('#txtProductno_'+i).val())=='12'){
             			var makeno = $.trim($('#txtCname_'+i).val());
-            			if(/^(.+)(-S)$/g.test(makeno)){
+            			if(/^(.*)(-S)$/g.test(makeno)){
             				// OK
-            			}else if(/^(.+)(-)$/g.test(makeno)){
+            			}else if(/^(.*)(-)$/g.test(makeno)){
             				$('#txtCname_'+i).val($('#txtCname_'+i).val()+'S');
             			}else{
             				$('#txtCname_'+i).val($('#txtCname_'+i).val()+'-S');
