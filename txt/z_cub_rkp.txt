@@ -2834,7 +2834,7 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		select a.accy,a.noa,a.noq 
 		from view_cubt a
 		left join view_cub b on a.accy=b.accy and a.noa=b.noa 
-		where len(isnull(a.ucolor,''))>0 
+		where len(isnull(a.uno,''))>0 
 		and b.datea between @t_bdate and @t_edate
 		order by a.accy,a.noa,a.noq
 	open cursor_table
