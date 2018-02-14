@@ -17,7 +17,7 @@
             q_tables = 's';
             var q_name = "cut";
             var q_readonly = ['txtNoa', 'txtWorker', 'txtWorker2'];
-            var q_readonlys = [];
+            var q_readonlys = ['txtCname'];
             var bbmNum = [];
             var bbsNum = [['txtHours', 10, 0, 1], ['txtHweight', 10, 0, 1], ['txtMount', 10, 0, 1], ['txtWeight', 10, 3, 1], ['txtSprice'], ['txtTotal'], ['txtScost']];
             var bbmMask = [];
@@ -223,6 +223,9 @@
 				Lock(1, {
                     opacity : 0
                 });
+                
+                
+                
                 if ($('#txtDatea').val().length == 0 || !q_cd($('#txtDatea').val())) {
                     alert(q_getMsg('lblDatea') + '錯誤。');
                     Unlock(1);
@@ -231,6 +234,17 @@
                 for(var i=0;i<q_bbsCount;i++){
                 	if($('#txtDatea_'+i).val().length==0)
                 		$('#txtDatea_'+i).val($('#txtDatea').val());
+            		// 廢料,  製造批號後頭固定多"-S"
+            		if($.trim($('#txtProductno_'+i).val())=='12'){
+            			var makeno = $.trim($('#txtCname_'+i).val());
+            			if(/^(.+)(-S)$/g.test(makeno)){
+            				// OK
+            			}else if(/^(.+)(-)$/g.test(makeno)){
+            				$('#txtCname_'+i).val($('#txtCname_'+i).val()+'S');
+            			}else{
+            				$('#txtCname_'+i).val($('#txtCname_'+i).val()+'-S');
+            			}
+            		}
                 }
                 
                 if (q_cur == 1)
