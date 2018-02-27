@@ -1220,7 +1220,6 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
 	--------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
 	IF OBJECT_ID('tempdb..#z_cub_rkp04')is not null
 	BEGIN
 		drop table #z_cub_rkp04
@@ -1305,7 +1304,7 @@ z_cub_rkp06:--z_cub_rkp06	製成品單位成本表
 		select @totweight = 0
 		select @totweight = SUM([weight]) from @tmpa where makeno=@makeno
 		select @tweight = 0
-		select @tweight = SUM(isnull(weight04,0)) from #z_cub_rkp04 where makeno=@makeno
+		select @tweight = SUM(isnull(weight04,0)+isnull(weight07,0)) from #z_cub_rkp04 where makeno=@makeno
 		
 		select @w01=0,@w02=0,@w03=0,@mins=0
 			,@x01=0,@x02=0,@x03=0,@x04=0,@x05=0,@x06=0,@x07=0
