@@ -540,7 +540,7 @@ z_cub_rk01:--z_cub_rk01
 	outer apply(select * from @tmp where recno2=1 and accy=a.accy and noa=a.noa and noq=a.noq) b
 
 	select a.gno
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+case when b.recno=1 and len(a.datea)>0 then a.datea else '' end+'</a>' dd
+		,a.datea dd
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+cast(a.recno as nvarchar) +'</a>' rr
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+a.makeno +'</a>' a01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+a.cust +'</a>' a02
