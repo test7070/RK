@@ -738,7 +738,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,w06=ISNULL(w06,0)
 		,w07=ISNULL(w07,0)
 		,w08=ISNULL(w08,0)
-		,w09=ISNULL(w08,0)
+		,w09=ISNULL(w09,0)
 		,w10=ISNULL(w10,0)
 		,m01=ISNULL(m01,0)
 		,m02=ISNULL(m02,0)
