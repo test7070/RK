@@ -3029,12 +3029,6 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	
 	update #z_cub_rkp03_cc set total=ISNULL(cost,0)+ISNULL(m01,0)+ISNULL(m02,0)+ISNULL(m03,0)+ISNULL(m04,0)
 	
-	--成品期初開帳
-	update #z_cub_rkp03_cc set total=b.[money] 
-	from #z_cub_rkp03_cc a
-	left join itemb b on a.uno=b.uno
-	where b.uno is not null
-	
 --select * from #z_cub_rkp03_cc where makeno='M175428-1'
 --return
 	---update
