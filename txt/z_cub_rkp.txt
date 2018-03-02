@@ -846,7 +846,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
 	where ISNULL(a.recno,0)=0
 	
-	update @tmp set recno=b.recno
+	update @tmp set recno=b.recno,typea=b.typea
 	from @tmp a
 	left join itemb b on a.uno=b.uno
 	where b.uno is not null
