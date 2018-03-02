@@ -843,7 +843,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	
 	update @tmp set recno=b.recno+1000
 	from @tmp a
-	left join (select sel,ROW_NUMBER()over(order by sel) recno from @tmp) b on a.sel=b.sel
+	left join (select sel,ROW_NUMBER()over(order by makeno) recno from @tmp) b on a.sel=b.sel
 	where ISNULL(a.recno,0)=0
 	
 	update @tmp set recno=b.recno
@@ -853,7 +853,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	
 	update @tmp set recno=b.recno
 	from @tmp a
-	left join (select sel,ROW_NUMBER()over(order by sel) recno from @tmp) b on a.sel=b.sel
+	left join (select sel,ROW_NUMBER()over(order by recno) recno from @tmp) b on a.sel=b.sel
 
 	select gno
 		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
