@@ -44,6 +44,7 @@
 				var t_noa = $.trim($('#txtNoa').val());
 				var t_makeno = $.trim($('#txtMakeno').val());
 				var t_spec = $.trim($('#txtSpec').val());
+				var t_cust = $.trim($('#txtCust').val());
 				
 				var t_where = " 1=1 " 
 					+ q_sqlPara2("datea", t_bdate,t_edate) 
@@ -52,7 +53,9 @@
 				if(t_makeno.length>0)
 		       		t_where += " and exists(select noa from view_cucs"+r_accy+" where view_cucs"+r_accy+".noa=view_cuc"+r_accy+".noa and view_cucs"+r_accy+".cubno='"+t_makeno+"')";
 		       	if(t_spec.length>0)
-		       		t_where += " and exists(select noa from view_cucs"+r_accy+" where view_cucs"+r_accy+".noa=view_cuc"+r_accy+".noa and view_cucs"+r_accy+".spec='"+t_spec+"')";		
+		       		t_where += " and exists(select noa from view_cucs"+r_accy+" where view_cucs"+r_accy+".noa=view_cuc"+r_accy+".noa and view_cucs"+r_accy+".spec='"+t_spec+"')";	
+	       		if(t_cust.length>0)
+		       		t_where += " and exists(select noa from view_cucs"+r_accy+" where view_cucs"+r_accy+".noa=view_cuc"+r_accy+".noa and (view_cucs"+r_accy+".custno='"+t_cust+"' or charindex('"+t_cust+"',view_cucs"+r_accy+".cust)>0 ))";			
 				t_where = ' where=^^' + t_where + '^^ ';
 				return t_where;
 			}
