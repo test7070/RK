@@ -4090,6 +4090,7 @@ z_cub_rkp01:--z_cub_rkp01  費用攤提
 	end
 	close cursor_table
 	deallocate cursor_table
+
 	----------------------------------------------------------------------------------------------------------
 	-- UPDATE DATA
 	declare @table nvarchar(20)
@@ -4105,15 +4106,19 @@ z_cub_rkp01:--z_cub_rkp01  費用攤提
 		"update "+@table+@accy+" set w01=0,w02=0,w04=0,w05=0
 		from "+@table+@accy+" a
 		left join #z_cub_rkp04a b on b.tablea=@table and b.accy=@accy and a.noa=b.noa and a.noq=b.noq
-		where b.noa is null"
-		execute sp_executesql @cmd,N'@table nvarchar(20),@accy nvarchar(10)',@table=@table,@accy=@accy
+		left join cub"+@accy+" c on a.noa=c.noa
+		where b.noa is null 
+		and left(c.datea,6)=@t_mon"
+		execute sp_executesql @cmd,N'@table nvarchar(20),@accy nvarchar(10),@t_mon nvarchar(max)'
+		,@table=@table,@accy=@accy,@t_mon=@t_mon
 		
 		set @cmd=
 		"update "+@table+@accy+" set w01=b.money01,w02=b.money02,w04=b.money03,w05=b.money04
 		from "+@table+@accy+" a
 		left join #z_cub_rkp04a b on b.tablea=@table and b.accy=@accy and a.noa=b.noa and a.noq=b.noq
 		where b.noa is not null"
-		execute sp_executesql @cmd,N'@table nvarchar(20),@accy nvarchar(10)',@table=@table,@accy=@accy
+		execute sp_executesql @cmd,N'@table nvarchar(20),@accy nvarchar(10)'
+		,@table=@table,@accy=@accy
 
 		fetch next from cursor_table
 		into @table,@accy
@@ -4132,8 +4137,11 @@ z_cub_rkp01:--z_cub_rkp01  費用攤提
 		"update "+@table+@accy+" set w01=0,w02=0,w04=0,w05=0
 		from "+@table+@accy+" a
 		left join #z_cub_rkp04b b on b.tablea=@table and b.accy=@accy and a.noa=b.noa and a.noq=b.noq
-		where b.noa is null"
-		execute sp_executesql @cmd,N'@table nvarchar(20),@accy nvarchar(10)',@table=@table,@accy=@accy
+		left join cuc"+@accy+" c on a.noa=c.noa
+		where b.noa is null
+		and left(c.datea,6)=@t_mon"
+		execute sp_executesql @cmd,N'@table nvarchar(20),@accy nvarchar(10),@t_mon nvarchar(max)'
+		,@table=@table,@accy=@accy,@t_mon=@t_mon
 		
 		set @cmd=
 		"update "+@table+@accy+" set w01=b.money01,w02=b.money02,w04=b.money03,w05=b.money04
