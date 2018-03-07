@@ -849,7 +849,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	from @tmp
 	where gno='1'
 	
-	update @tmp set profit = ISNULL(vccmoney,0)-ISNULL(w06,0)
+	update @tmp set profit = ISNULL(vccmoney,0)-ISNULL(m06,0)
 	
 	update @tmp set p01 = case when ISNULL(w01,0)=0 then 0 else round(ISNULL(m01,0)/ISNULL(w01,0),4)end
 		,p02 = case when ISNULL(w02,0)=0 then 0 else round(ISNULL(m02,0)/ISNULL(w02,0),4)end
