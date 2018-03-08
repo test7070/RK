@@ -1,7 +1,7 @@
 --進貨、入庫成本
 ALTER function [dbo].[money_rk](@t_uno nvarchar(30),@t_date nvarchar(20))
 returns @result table(
-	[weight] float,[money] float
+	[weight] float,[money] float,total float
 ) as
 begin
 	declare @cost float = 0
@@ -9,6 +9,7 @@ begin
 	declare @tmpmoney float
 	declare @xweight float = 0 --庫存量
 	declare @xmoney float = 0--庫存金額
+	declare @xtotal float = 0
 	declare @date nvarchar(20)
 	declare @weight float
 	declare @money float
@@ -16,6 +17,8 @@ begin
 	declare @waste float
 	declare @diff float
 	declare @mon nvarchar(20)
+	declare @m01 float,@m02 float,@m03 float,@m04 float
+	declare @tmpm01 float,@tmpm02 float,@tmpm03 float,@tmpm04 float
 	--===============================================================================================
 	-- 進貨
 	------ 進口報單轉來的要注意
@@ -98,6 +101,10 @@ begin
 		,[weight] float
 		,price float
 		,cost float
+		,m01 float--直接人工 cucs.w01 
+		,m02 float--製造費用 cucs.w02	
+		,m03 float--電費	 cucs.w04
+		,m04 float--瓦斯費   cucs.w05
 	)
 	--期初轉入的忽略
 	insert into @tmpa(accy,noa,noq,datea,makeno,mon,uno,[weight],cost)
@@ -148,16 +155,24 @@ begin
 		,w03 float--盤盈 cucs.weight11
 		,waste float  --  損耗重   cucs.weight8+cucs.weight9+cucs.weight10
 		,price float
-		,total float  --  成本
+		,cost float --  成本
+		,total float  
 		,price2 float -- total/weight
+		
+		,m01 float--直接人工 cucs.w01 
+		,m02 float--製造費用 cucs.w02	
+		,m03 float--電費	 cucs.w04
+		,m04 float--瓦斯費   cucs.w05
 	)	
-	insert into @tmpc(makeno,mon,[weight],w01,w02,w03,waste)
+	insert into @tmpc(makeno,mon,[weight],w01,w02,w03,waste,m01,m02,m03,m04)
 	select makeno,mon,SUM(ISNULL([weight],0))
 		,SUM(ISNULL([w01],0)),SUM(ISNULL([w02],0)),SUM(ISNULL([w03],0)),SUM(ISNULL([waste],0))
+		,SUM(ISNULL([m01],0)),SUM(ISNULL([m02],0)),SUM(ISNULL([m03],0)),SUM(ISNULL([m04],0))
 	from(
 		select a.cname makeno,SUBSTRING(a.datea,1,len(a.datea)-3) mon
 			,SUM(ISNULL(a.[weight],0)) [weight]
 			,0 w01,0 w02,0 w03,0 waste
+			,0 m01,0 m02,0 m03,0 m04
 		from view_cuts a
 		left join @tmpb b on a.cname=b.makeno
 		where b.makeno is not null
@@ -169,6 +184,10 @@ begin
 			,SUM(ISNULL(a.weight7,0)) w02
 			,SUM(ISNULL(a.weight11,0)) w03
 			,SUM(ISNULL(a.weight8,0)+ISNULL(a.weight9,0)+ISNULL(a.weight10,0)) waste
+			,SUM(ISNULL(a.w01,0)) m01
+			,SUM(ISNULL(a.w02,0)) m02
+			,SUM(ISNULL(a.w04,0)) m03
+			,SUM(ISNULL(a.w05,0)) m04
 		from view_cucs a
 		left join view_cuc b on a.accy=b.accy and a.noa=b.noa
 		left join @tmpb c on a.cubno=c.makeno
@@ -176,19 +195,57 @@ begin
 		group by a.cubno,SUBSTRING(b.datea,1,len(b.datea)-3))a
 	group by makeno,mon
 	
-	update @tmpc set price=b.price,total= round((a.[weight]+a.waste)*b.price,0)
+	update @tmpc set price=b.price
+		,cost = round((a.[weight]+a.waste)*b.price,0)
+		,total= round((a.[weight]+a.waste)*b.price,0) + a.m01 + a.m02 + a.m03 + a.m04
 	from @tmpc a
 	left join @tmpb b on a.makeno=b.makeno
 
 
-
-	update @tmpc set price2 = round(case when [weight]=0 then 0 else total/[weight] end,4)
+	update @tmpc set price2 = round(case when [weight]=0 then 0 else cost/[weight] end,4)
 	update @tmpa set price = b.price2,cost=round(a.[weight]*b.price2,0)
 	from @tmpa a
 	left join @tmpc b on a.makeno=b.makeno and a.mon=b.mon
 	where len(a.noa)!=5
+	
+	---- 人工、製費
+	declare cursor_table cursor for
+		select makeno,mon,sum(isnull(m01,0)),sum(isnull(m02,0)),sum(isnull(m03,0)),sum(isnull(m04,0)) 
+		from @tmpc group by makeno,mon
+	open cursor_table
+	fetch next from cursor_table
+	into @makeno,@mon,@m01,@m02,@m03,@m04 
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @tmpweight = 0
+		select @tmpweight = sum(isnull([weight],0)) from @tmpa where makeno=@makeno and mon=@mon
+		
+		update @tmpa set m01 = case when isnull(@tmpweight,0) = 0 then 0 else round(@m01*[weight]/@tmpweight,0) end
+			,m02 = case when isnull(@tmpweight,0) = 0 then 0 else round(@m02*[weight]/@tmpweight,0) end
+			,m03 = case when isnull(@tmpweight,0) = 0 then 0 else round(@m03*[weight]/@tmpweight,0) end
+			,m04 = case when isnull(@tmpweight,0) = 0 then 0 else round(@m04*[weight]/@tmpweight,0) end
+		where makeno=@makeno and mon=@mon
+		
+		select @tmpm01=0,@tmpm02=0,@tmpm03=0,@tmpm04=0
+		select @tmpm01=SUM(isnull(m01,0)),@tmpm02=SUM(isnull(m02,0)),@tmpm03=SUM(isnull(m03,0)),@tmpm04=SUM(isnull(m04,0))
+		from @tmpa
+		where makeno=@makeno and mon=@mon
+		
+		update @tmpa set m01 = ISNULL(a.m01,0) + @m01 - @tmpm01
+			,m02 = ISNULL(a.m02,0) + @m02 - @tmpm02
+			,m03 = ISNULL(a.m03,0) + @m03 - @tmpm03
+			,m04 = ISNULL(a.m04,0) + @m04 - @tmpm04 
+		from @tmpa a
+		outer apply(select top 1 sel from @tmpa where makeno=@makeno and mon=@mon order by sel desc) b
+		where a.sel=b.sel
+		
+		fetch next from cursor_table
+		into @makeno,@mon,@m01,@m02,@m03,@m04
+	end
+	close cursor_table
+	deallocate cursor_table
+	
 	--修正尾差
-
 	declare cursor_table cursor for
 		select makeno,mon,sum(isnull([total],0)) from @tmpc group by makeno,mon
 	open cursor_table
@@ -217,12 +274,17 @@ begin
 	deallocate cursor_table
 	
 	select @tmpweight=0,@tmpmoney=0
+		,@tmpm01=0,@tmpm02=0,@tmpm03=0,@tmpm04=0
 	select @tmpweight=[weight],@tmpmoney=[cost]
+		,@tmpm01=isnull(m01,0),@tmpm02=isnull(m02,0)
+		,@tmpm03=isnull(m03,0),@tmpm04=isnull(m04,0)
 	from @tmpa 
 	where uno=@t_uno
-	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
+	select @xweight=@xweight+isnull(@tmpweight,0)
+		,@xmoney=@xmoney+isnull(@tmpmoney,0)
+	select @xtotal=@xmoney+@tmpm01+@tmpm02+@tmpm03+@tmpm04
 	--===============================================================================================
-	insert into @result([weight],[money])values(@xweight,@xmoney)
+	insert into @result([weight],[money],total)values(@xweight,@xmoney,@xtotal)
 	
 	return
 end

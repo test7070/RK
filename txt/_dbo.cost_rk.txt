@@ -1,5 +1,3 @@
---z_cub_rkp.txt  z_cub_rkp03 會用到
---領料成本
 --領料成本
 ALTER function [dbo].[cost_rk](@tablea nvarchar(20)
 	,@accy nvarchar(10)
@@ -138,13 +136,13 @@ begin
 	if len(@strdate)>0
 	begin
 		--開帳資料
-		select @weight=@strweight,@money=@strmoney from [dbo].[money_rk](@uno,@date) --進貨總成本
+		select @weight=@strweight,@money=@strmoney --進貨總成本
 		select @totweight = SUM(isnull(weight,0)) from @tmp
 		update @tmp set [money] = round([weight]*@strprice,0) where isnull(isucce,0)=0
 	end
 	else
 	begin
-		select @weight=[weight],@money=[money] from [dbo].[money_rk](@uno,@date) --進貨總成本
+		select @weight=[weight],@money=[total] from [dbo].[money_rk](@uno,@date) --進貨總成本
 		select @sprice=case when @weight=0 then 0 else round(@money/@weight,4) end
 		select @totweight = SUM(isnull(weight,0)) from @tmp
 		update @tmp set [money] = round([weight]*@sprice,0) where isnull(isucce,0)=0

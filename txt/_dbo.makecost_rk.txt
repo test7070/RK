@@ -1,4 +1,3 @@
---z_cub_rkp.txt  z_cub_rkp03 會用到
 --半成品成本
 ALTER function [dbo].[makecost_rk](@t_makeno nvarchar(30))
 returns @result table(
