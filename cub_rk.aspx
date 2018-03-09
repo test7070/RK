@@ -972,7 +972,7 @@
 						<td style="width:100px;" align="center">COIL<BR>規格<BR>尺寸(厚X寬)</td>
 						<td style="width:100px;" align="center">COIL<BR>重量(KG)</td>
 						<td style="width:100px;" align="center">PVC皮規格</td>
-						<td style="display:none;" align="center">RECOIL編號</td>
+						<td style="width:100px;" align="center">RECOIL編號</td>
 						<td style="width:100px;" align="center">RECOIL<BR>M<BR>重量(KG)</td>
 						<td style="width:100px;" align="center">廢料重量(KG)</td>
 						<td style="width:100px;" align="center">包裝數量<BR>/LOT</td>
@@ -1045,7 +1045,7 @@
 							<input id="txtRadius.*" type="text" class="num" style="float:left;width:45%;"/>
 							<input id="txtLengthb.*" type="text" class="num" style="float:left;width:45%;"/>
 						</td>
-						<td title="RECOIL編號" style="display:none;">
+						<td title="RECOIL編號">
 							<input id="txtOth.*" type="text" style="float:left;width:95%;"/>
 						</td>
 						<td title="RECOIL重量(KG)">
