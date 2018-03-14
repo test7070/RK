@@ -247,7 +247,7 @@ begin
 	
 	--修正尾差
 	declare cursor_table cursor for
-		select makeno,mon,sum(isnull([total],0)) from @tmpc group by makeno,mon
+		select makeno,mon,sum(isnull([cost],0)) from @tmpc group by makeno,mon
 	open cursor_table
 	fetch next from cursor_table
 	into @makeno,@mon,@money
