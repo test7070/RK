@@ -44,7 +44,7 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 	
 	declare @t_uno nvarchar(max) = case when '#non'=[19] then '' else [19] end 
 	declare @t_cust nvarchar(max) = case when '#non'=N[20] then '' else N[20] end 
-	------------------------------------------------------------------------
+	--------------------------------------------------------------------------------------------
 	--  一個批號只會有一個倉庫一個儲位
 	IF OBJECT_ID('tempdb..#z_ucc_rk02_a')is not null
 	BEGIN
@@ -343,10 +343,11 @@ z_ucc_rk02:--z_ucc_rk02 庫存表
 	left join view_rc2 c on b.accy=c.accy and b.noa=c.noa
 	where b.noa is not null
 	
-	update #z_ucc_rk02_b set cust=isnull(a.cust,'')+' <a style="color:blue">'+ISNULL(c.cust,'')+'</a>'
+	update #z_ucc_rk02_b set cust=isnull(a.cust,'')+' <a style="color:blue">'+ISNULL(d.nick,'')+'</a>'
 	from #z_ucc_rk02_b a
 	left join view_uccb b on a.uno=b.uno and b.tablea='inas'
 	left join view_ina c on b.accy=c.accy and b.noa=c.noa
+	left join cust d on c.custno=d.noa
 	where b.noa is not null
 	
 	if len(@t_cust)>0
