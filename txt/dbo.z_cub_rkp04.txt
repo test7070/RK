@@ -187,6 +187,10 @@ begin
 		
 	------------------------------------------------------------------------------------------	
 	delete @tmp where not(len(@t_makeno)=0 or makeno=@t_makeno)
+	--刪除重量都是0的
+	delete @tmp where ISNULL(weight01,0)=0 and ISNULL(weight02,0)=0 and ISNULL(weight03,0)=0
+		and ISNULL(weight04,0)=0 and ISNULL(weight05,0)=0 and ISNULL(weight06,0)=0 
+		and ISNULL(weight07,0)=0 and ISNULL(weight10,0)=0
 	--刪除都是0的
 	delete @tmp where ISNULL(weight01,0)=0 and ISNULL(weight02,0)=0 and ISNULL(weight03,0)=0
 		and ISNULL(weight04,0)=0 and ISNULL(weight05,0)=0 and ISNULL(weight06,0)=0 
