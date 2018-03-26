@@ -1448,6 +1448,14 @@ z_cub_rkp02:--z_cub_rkp02	在製品單位成本表
 	from @tmp a
 	outer apply (select top 1 productno,product from view_cubt where noa=a.cubno and nor=a.cubnoq and kind='2' order by noq) b
 	
+	--沒有皮膜就改顯示面漆
+	update @tmp set pvcno=d.noa,pvc=d.product
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	left join view_cubu	c on b.accy=c.accy and b.noa=c.noa
+	left join ucc d on c.productno=d.noa
+	where d.groupano = 'A05'
+	
 	--皮膜(再投入)	
 	update @tmp set pvcno=case when len(a.pvcno)>0 then a.pvcno else ISNULL(b.spec,a.pvcno) end
 		,pvc=case when len(a.pvc)>0 then a.pvc else  ISNULL(b.class,a.pvc) end

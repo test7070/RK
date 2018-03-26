@@ -95,6 +95,15 @@ begin
 	update @tmp set pvcno=ISNULL(b.productno,''),pvc=ISNULL(b.product,'')
 	from @tmp a
 	outer apply (select top 1 productno,product from view_cubt where noa=a.noa and nor=a.noq and kind='1' order by noq) b
+	
+	--沒有皮膜就改顯示面漆
+	update @tmp set pvcno=d.noa,pvc=d.product
+	from @tmp a
+	left join view_cubs b on a.makeno=b.makeno
+	left join view_cubu	c on b.accy=c.accy and b.noa=c.noa
+	left join ucc d on c.productno=d.noa
+	where d.groupano = 'A05'
+	
 	--皮膜(再投入)	
 	update @tmp set pvcno=ISNULL(b.spec,a.pvcno),pvc=ISNULL(b.class,a.pvc)
 	from @tmp a
