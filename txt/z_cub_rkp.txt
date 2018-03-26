@@ -1252,6 +1252,16 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 	select * into #z_cub_rkp04 from [dbo].[z_cub_rkp04](@t_bdate,@t_edate,@t_makeno)
 	
 	-----------------------------------------------------------------
+	-- 排除成品再投入的情形
+	delete #z_cub_rkp04
+	where isnull(weight01,0)=0 and ISNULL(total01,0)=0
+		and isnull(weight02,0)=0 and ISNULL(total02,0)=0
+		and isnull(weight03,0)=0 and ISNULL(total03,0)=0
+		and isnull(weight05,0)=0 and ISNULL(total05,0)=0
+		and isnull(weight06,0)=0 and ISNULL(total06,0)=0
+		and isnull(weight10,0)=0 and ISNULL(total10,0)=0
+		and (isnull(weight04,0)=-isnull(weight07,0) and ISNULL(total04,0)=-ISNULL(total07,0))
+		
 	-- 期初資料排在前面 itema
 	update #z_cub_rkp04 set recno= b.recno
 	from #z_cub_rkp04 a
