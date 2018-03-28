@@ -43,18 +43,22 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		,x04 float	--背漆稀釋液
 		,x05 float  --面漆
 		-----------------------------
+	
+		
 		,total float --總投入成本(含直接人工、製造費用)
 		,emoney float  --期末半成品成本 - 樣品金額 - 報廢金額 + 盤盈金額
 		
 		,w01 float--總投入重量
-		,w02 float--本期生產半成品
+		,w02 float--生產半成品
+		,w02a float --前期生產半成品
+		,w02b float --本期生產半成品
 		,w03 float--(a1)生產線廢料	
 		,w04 float--(a2)生產線分條餘料
 		,w05 float--待修品再投入   cucs.weight5	
 		,w06 float--成品再投入	   cucs.para
 		--,w07 nvarchar(40)--成品規格	
 		,w08 float--(1)進倉成品	   cuts.weight
-		,m08 float--   成品金額	   cuts.total
+		,m08 float--   成品金額	   cuts.scost
 		,w09 float--(2)樣品	cucs.weight6
 		,m09 float--   樣品金額	cucs.m02
 		,w10 float--(2)報廢 cucs.weight7 
@@ -76,6 +80,7 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		,w23 float--期末半成品結存(總投入量+待修品再投入+成品再投入-a1-a2-b1-b2-b3-進倉成品-樣品-報廢)  w01+w05+w06-w08-w09-w10-w21 
 		,w24 float--完工總損耗率 w16+w17+w18+w19
 		,memo nvarchar(max)
+
 	) as
 	begin
 		-- 開帳資料itema的金額數量會寫入CUBS
@@ -169,10 +174,14 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 		--w01 總投入重量
 		update @tmpa set w01 = ISNULL([weight],0) + ISNULL([pvcweight],0) + ISNULL([pveweight],0) + ISNULL([x01],0) + ISNULL([x02],0) + ISNULL([x03],0) + ISNULL([x04],0) + ISNULL([x05],0)
 		--w02 本期生產半成品, 期初開帳的由itema抓
-		update @tmpa set w02 = case when c.makeno is not null then c.hweight else isnull(b.hweight,0) end
+		update @tmpa set 
+			w02a = case when c.datea<@t_bdate then (case when d.makeno is not null then d.hweight else isnull(b.hweight,0) end) else 0 end
+			,w02b = case when c.datea>=@t_bdate then (case when d.makeno is not null then d.hweight else isnull(b.hweight,0) end) else 0 end
+			,w02 = case when d.makeno is not null then d.hweight else isnull(b.hweight,0) end
 		from @tmpa a
 		left join view_cubs b on a.accy=b.accy and a.noa=b.noa and a.noq=b.noq
-		left join itema c on a.makeno=c.makeno
+		left join view_cub c on b.accy=c.accy and b.noa=c.noa
+		left join itema d on a.makeno=d.makeno
 		where b.noa is not null
 		
 		--w04 生產線分條餘料(a2) cucs.weight4

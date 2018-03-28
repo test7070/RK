@@ -8,6 +8,7 @@ z_cub_rk02:--z_cub_rk02
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	declare @t_chk nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	----------------------------------------------------------------------------------------------
+	----------------------------------------------------------------------------------------------
 	declare @tmpa table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -52,7 +53,9 @@ z_cub_rk02:--z_cub_rk02
 		,emoney float  --期末半成品成本 - 樣品金額 - 報廢金額 + 盤盈金額
 		
 		,w01 float--總投入重量
-		,w02 float--本期生產半成品
+		,w02 float--生產半成品
+		,w02a float --前期生產半成品
+		,w02b float --本期生產半成品
 		,w03 float--(a1)生產線廢料	
 		,w04 float--(a2)生產線分條餘料
 		,w05 float--待修品再投入   cucs.weight5	
@@ -86,7 +89,7 @@ z_cub_rk02:--z_cub_rk02
 		,uno,dime,width,lengthb,radius,[weight],mount
 		,pvcno,pvc,pvcweight,pvcmount,pveno,pve,pveweight,pvemount
 		,x01,x02,x03,x04,x05
-		,w01,w02,w03,w04,w05,w06,w08,w09,w10
+		,w01,w02,w02a,w02b,w03,w04,w05,w06,w08,w09,w10
 		,w11,w12,w13,w14,w15,w16,w17,w18,w19
 		,w21,w22,w23,w24,memo
 		,m08,m09,m10,m15,total,emoney)
@@ -94,7 +97,7 @@ z_cub_rk02:--z_cub_rk02
 		,uno,dime,width,lengthb,radius,[weight],mount
 		,pvcno,pvc,pvcweight,pvcmount,pveno,pve,pveweight,pvemount
 		,x01,x02,x03,x04,x05
-		,w01,w02,w03,w04,w05,w06,w08,w09,w10
+		,w01,w02,w02a,w02b,w03,w04,w05,w06,w08,w09,w10
 		,w11,w12,w13,w14,w15,w16,w17,w18,w19
 		,w21,w22,w23,w24,memo 
 		,m08,m09,m10,m15,total,emoney
@@ -111,12 +114,13 @@ z_cub_rk02:--z_cub_rk02
 	left join view_uccb b on a.uno=b.uno
 	left join spec c on b.spec=c.noa	
 	-------------------------------------------------------------------------------------------------------
-	insert into @tmpa(gno,w01,w02,w03,w04,w05,w06
+	insert into @tmpa(gno,w01,w02,w02a,w02b,w03,w04,w05,w06
 		,w08,w09,w10,w11,w12
 		,w13,w14,w15,w16,w17,w18
 		,w19,w21,w22,w23,w24
 		,m08,m09,m10,m15,total,emoney)
-	select '2',SUM(ISNULL(w01,0)),SUM(ISNULL(w02,0)),SUM(ISNULL(w03,0)),SUM(ISNULL(w04,0)),SUM(ISNULL(w05,0)),SUM(ISNULL(w06,0))
+	select '2',SUM(ISNULL(w01,0)),SUM(ISNULL(w02,0)),SUM(ISNULL(w02a,0)),SUM(ISNULL(w02b,0))
+		,SUM(ISNULL(w03,0)),SUM(ISNULL(w04,0)),SUM(ISNULL(w05,0)),SUM(ISNULL(w06,0))
 		,SUM(ISNULL(w08,0)),SUM(ISNULL(w09,0)),SUM(ISNULL(w10,0)),SUM(ISNULL(w11,0)),SUM(ISNULL(w12,0))
 		,SUM(ISNULL(w13,0)),SUM(ISNULL(w14,0)),SUM(ISNULL(w15,0)),SUM(ISNULL(w16,0)),SUM(ISNULL(w17,0)),SUM(ISNULL(w18,0))
 		,SUM(ISNULL(w19,0)),SUM(ISNULL(w21,0)),SUM(ISNULL(w22,0)),SUM(ISNULL(w23,0)),SUM(ISNULL(w24,0))
@@ -137,7 +141,9 @@ z_cub_rk02:--z_cub_rk02
 
 		,a.w01 a09--總投入重量	
 		,dbo.getComma(a.total,0) b09
-		,a.w02 a10--本期生產半成品
+		,a.w02 a10--生產半成品
+		,a.w02a a10a --前期生產半成品
+		,a.w02b a10b --本期生產半成品
 		,a.w03 a11--(a1)生產線廢料
 		,a.w04 a12--(a2)生產線分條餘料
 		,a.w05 a13--待修品再投入
