@@ -292,6 +292,6 @@ ALTER function [dbo].[z_cub_rk02](@t_bdate nvarchar(max), @t_edate nvarchar(max)
 			,w24 = ISNULL(w16,0)+ISNULL(w17,0)+ISNULL(w18,0)+ISNULL(w19,0)
 		--update @tmpa set emoney=round(w23/w01*total,0)
 		update @tmpa set emoney=case when isnull(w23,0)>0 then total-m08-m09-m10+m15 else 0 end
-		
+		update @tmpa set w01 = round(w01,3),w22 = round(w22,3)
 		return
 	end

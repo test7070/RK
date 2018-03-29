@@ -8,7 +8,6 @@ z_cub_rk02:--z_cub_rk02
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	declare @t_chk nvarchar(max) = case when '#non' = [7] then '' else [7] end
 	----------------------------------------------------------------------------------------------
-	----------------------------------------------------------------------------------------------
 	declare @tmpa table(
 		sel int identity(1,1)
 		,gno nvarchar(10)
@@ -52,7 +51,7 @@ z_cub_rk02:--z_cub_rk02
 		,total float --總投入成本(含直接人工、製造費用)
 		,emoney float  --期末半成品成本 - 樣品金額 - 報廢金額 + 盤盈金額
 		
-		,w01 float--總投入重量
+		,w01 decimal(25,4)--總投入重量
 		,w02 float--生產半成品
 		,w02a float --前期生產半成品
 		,w02b float --本期生產半成品
@@ -80,7 +79,7 @@ z_cub_rk02:--z_cub_rk02
 		,w19 float--扣除求償損耗率	
 		
 		,w21 float--(3)損耗總重量(a1+a2+b1+b2+b3)	 w03+w04+w11+w12+w13
-		,w22 float--當月耗量(1+2+3)	  w08+w09+w10+w21
+		,w22 decimal(25,4) --當月耗量(1+2+3)	  w08+w09+w10+w21
 		,w23 float--期末半成品結存(總投入量+待修品再投入+成品再投入-a1-a2-b1-b2-b3-進倉成品-樣品-報廢)  w01+w05+w06-w08-w09-w10-w21 
 		,w24 float--完工總損耗率 w16+w17+w18+w19
 		,memo nvarchar(max)
@@ -97,10 +96,12 @@ z_cub_rk02:--z_cub_rk02
 		,uno,dime,width,lengthb,radius,[weight],mount
 		,pvcno,pvc,pvcweight,pvcmount,pveno,pve,pveweight,pvemount
 		,x01,x02,x03,x04,x05
-		,w01,w02,w02a,w02b,w03,w04,w05,w06,w08,w09,w10
-		,w11,w12,w13,w14,w15,w16,w17,w18,w19
-		,w21,w22,w23,w24,memo 
-		,m08,m09,m10,m15,total,emoney
+		,round(w01,3),round(w02,3),round(w02a,3),round(w02b,3),round(w03,3)
+		,round(w04,3),round(w05,3),round(w06,3),round(w08,3),round(w09,3),round(w10,3)
+		,round(w11,3),round(w12,3),round(w13,3),round(w14,3),round(w15,3)
+		,round(w16,3),round(w17,3),round(w18,3),round(w19,3)
+		,round(w21,3),round(w22,3),round(w23,3),round(w24,3),memo 
+		,round(m08,3),round(m09,3),round(m10,3),round(m15,3),round(total,3),emoney
 		from dbo.z_cub_rk02(@t_bdate,@t_edate,@t_makeno,@t_pvcno,@t_bcustno,@t_ecustno)
 
 	----條件過濾2
@@ -108,6 +109,7 @@ z_cub_rk02:--z_cub_rk02
 		delete @tmpa where datea<@t_bdate
 	else
 		delete @tmpa where datea<@t_bdate and w23=0
+		--delete @tmpa where datea<dbo.AD2ChineseEraName( dateadd(MM,-1, dbo.ChineseEraName2AD(left(@t_bdate,6)+'/01')))
 		
 	update @tmpa set spec=isnull(c.product,b.spec)
 	from @tmpa a
@@ -139,7 +141,7 @@ z_cub_rk02:--z_cub_rk02
 		,a.pvcno a07--PVC皮	
 		,CAST(a.dime as nvarchar)+'*'+CAST(a.width as nvarchar) a08--原鋼材規格	
 
-		,a.w01 a09--總投入重量	
+		,cast(a.w01 as float) a09--總投入重量	
 		,dbo.getComma(a.total,0) b09
 		,a.w02 a10--生產半成品
 		,a.w02a a10a --前期生產半成品
@@ -167,7 +169,7 @@ z_cub_rk02:--z_cub_rk02
 		,case when ISNULL(a.w18,0)=0 then '' else dbo.getComma(a.w18,2)+'%' end a25--頭尾損耗率
 		,case when ISNULL(a.w19,0)=0 then '' else dbo.getComma(a.w19,2)+'%' end a26--扣除求償損耗率
 		,a.w21 a27--(3)損耗總重量
-		,a.w22 a28--當月耗量
+		,cast(a.w22 as float) a28--當月耗量
 		,a.w23 a29--期末半成品結存
 		,dbo.getComma(a.emoney,0) b29
 		,case when ISNULL(a.w24,0)=0 then '' else dbo.getComma(a.w24,2)+'%' end a30--完工總損耗率
