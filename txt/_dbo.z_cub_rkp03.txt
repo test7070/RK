@@ -13,7 +13,7 @@ begin
 	-- start 在DRUN記錄執行的時間及條件
 	insert into drun(datea,timea,usera,action,noa,tablea,title,memo)
 		select convert(nvarchar,getdate(),111),left(convert(nvarchar,getdate(),108),5)
-			,'AUTO','START',@guid,'z_cub_rkp03','成本結轉',@t_bdate+'~'+@t_bdate
+			,'AUTO','START',@guid,'z_cub_rkp03','成本結轉',@t_bdate+'~'+@t_edate
 
 	-- z_cub_rkp03  成本結轉
 	---  要先計算  人工費用、製造費用、電費、瓦斯費
@@ -452,7 +452,7 @@ begin
 	-- END 在DRUN記錄執行的時間及條件
 	insert into drun(datea,timea,usera,action,noa,tablea,title,memo)
 		select convert(nvarchar,getdate(),111),left(convert(nvarchar,getdate(),108),5)
-			,'AUTO','END',@guid,'z_cub_rkp03','成本結轉',@t_bdate+'~'+@t_bdate
+			,'AUTO','END',@guid,'z_cub_rkp03','成本結轉',@t_bdate+'~'+@t_edate
 				
 	select * from @tmp;
 end
