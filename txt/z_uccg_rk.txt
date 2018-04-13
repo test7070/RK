@@ -1457,6 +1457,10 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join @tmp_itemb b on a.uno=b.uno
 	where b.uno is null
 	
+	delete @tmpa
+	from @tmpa a
+	left join view_uccb b on a.uno=b.uno
+	where not(isnull(b.productno,'') between @t_bproductno and @t_eproductno)
 	-- tmpa 01
 	insert into @tmp(uno,mount01,weight01,total01)
 	select uno,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),round(SUM(ISNULL([total],0)),0)
