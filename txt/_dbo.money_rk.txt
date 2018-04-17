@@ -1,3 +1,6 @@
+
+SET QUOTED_IDENTIFIER ON
+GO
 --進貨、入庫成本
 ALTER function [dbo].[money_rk](@t_uno nvarchar(30),@t_date nvarchar(20))
 returns @result table(
@@ -32,8 +35,46 @@ begin
 	where a.uno=@t_uno
 	and b.datea<=@t_date
 	select @xweight=@xweight+isnull(@tmpweight,0),@xmoney=@xmoney+isnull(@tmpmoney,0)
-	
+	---- 扣除已領的
+	declare @tmpx table(
+		sel int identity(1,1)
+		,tablea nvarchar(20)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,[weight] float
+		,[cost] float
+	)
+	--------  VCC
+	insert into @tmpx(tablea,accy,noa,noq,[weight],[cost])
+	select 'vccs',a.accy,a.noa,a.noq
+		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		,isnull(a.scost,0)
+	from view_vccs a
+	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+	where a.uno=@t_uno
+	and b.datea<@t_date
+	--------  GET
+	insert into @tmpx(tablea,accy,noa,noq,[weight],[cost])
+	select 'gets',a.accy,a.noa,a.noq,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		,isnull(a.scost,0)
+	from view_gets a
+	left join view_get b on a.accy=b.accy and a.noa=b.noa
+	where a.uno=@t_uno
+	and b.datea<@t_date
+	--------  CUBT
+	insert into @tmpx(tablea,accy,noa,noq,[weight],[cost])
+	select 'cubt',a.accy,a.noa,a.noq,isnull(a.[weight],0),isnull(a.scost,0)
+	from view_cubt a
+	left join view_cub b on a.accy=b.accy and a.noa=b.noa
+	where a.uno=@t_uno
+	and b.datea<@t_date
+	--------------------------------------------------------------------------------------------------
+	declare @sel int,@tablea nvarchar(20),@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)
 
+	select @tmpweight=0,@tmpmoney=0
+	select @tmpweight=sum(isnull([weight],0)),@tmpmoney=sum(isnull([cost],0)) from @tmpx
+	select @xweight=@xweight-isnull(@tmpweight,0),@xmoney=@xmoney-isnull(@tmpmoney,0)
 	--===============================================================================================
 	-- 入庫
 	------ 非領料組合來的
@@ -60,7 +101,6 @@ begin
 	select @xweight=@xweight+isnull(@tmpweight,0)
 
 	declare @inaccy nvarchar(10),@innoa nvarchar(20),@innoq nvarchar(10)
-	declare @accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)
 	declare @ymoney float
 	
 	declare cursor_table cursor for
