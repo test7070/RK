@@ -61,7 +61,10 @@
                     },{
 						type : '6', //[14]     9
 						name : 'xpvcno'
-					}]
+					},{
+                        type : '6',//[15]      10
+                        name : 'ydate'
+                    }]
 				});
 				q_popAssign();
 
@@ -84,6 +87,9 @@
                 $('#txtXdate1').datepicker();
                 $('#txtXdate2').mask('999/99/99');
                 $('#txtXdate2').datepicker();
+                
+                $('#txtYdate1').mask('999/99/99');
+                $('#txtYdate').datepicker();
                 
 	            $('#textBmon').mask('999/99');
                 $('#textEmon').mask('999/99');

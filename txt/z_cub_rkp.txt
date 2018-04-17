@@ -2292,9 +2292,9 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 	declare @cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
 	declare @t_db nvarchar(max) = '[2]'
-	
-	declare @t_bdate nvarchar(10) = case when '#non'=[4] then '' else [4] end
-	declare @t_edate nvarchar(10) = case when '#non'=[5] then char(255) else [5] end
+	-- 2018/04/17  改為一次只能算一天
+	declare @t_bdate nvarchar(10) = case when '#non'=[15] then '' else [15] end
+	declare @t_edate nvarchar(10) = case when '#non'=[15] then char(255) else [15] end
 	
 	--=============================================================================================
 	declare @z_cub_rkp03 table(
