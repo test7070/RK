@@ -2302,6 +2302,8 @@ z_cub_rkp03: -- z_cub_rkp03  成本結轉
 		,title nvarchar(max)
 		,n int
 		,ms float
+		,bdate nvarchar(20)
+		,edate nvarchar(20)
 	)
 	insert into @z_cub_rkp03
 	execute [dbo].[z_cub_rkp03] @t_bdate,@t_edate
