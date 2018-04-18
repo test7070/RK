@@ -1,6 +1,8 @@
 SET QUOTED_IDENTIFIER OFF
 GO
 
+
+
 ALTER PROCEDURE [dbo].[z_cub_rkp03](
 	@t_bdate nvarchar(max)
 	,@t_edate nvarchar(max))
@@ -448,13 +450,89 @@ begin
 		,'總計算'
 		,0
 		,dbo.getComma(DATEDIFF(millisecond,@tott1,@tott2)/1000,3)*/
+	--===========CUCS=======================================================
+	------------------------------------------------------------------------------------
+	-----------------------------------------------------------------------
+	-- 計算 樣品、報廢   z_cub_rkp01  費用攤提也有
+	-----------------------------------------------------------------------	
+	-- 計算在製品成本  CUCS
+	IF OBJECT_ID('tempdb..#z_uccg_rk_cucs')is not null
+	BEGIN
+		drop table #z_uccg_rk_cucs
+	END
+	create table #z_uccg_rk_cucs(
+		sel int identity(1,1)
+		
+		,accy nvarchar(10) 
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,makeno nvarchar(20)
+		,price float   		
+		
+		,weight6 float  -- 樣品重
+		,weight7 float  -- 報廢重
+		,weight11 float -- 盤盈
+		,template_money float
+		,waste_money float
+		,surplus_money float
+	)
 	
+	insert into #z_uccg_rk_cucs(accy,noa,noq,makeno,weight6,weight7,weight11)
+	select a.accy,a.noa,a.noq,a.cubno,a.weight6,a.weight7,a.weight11
+	from view_cucs a
+	left join view_cuc b on a.accy=b.accy and a.noa=b.noa
+	where 1=1
+	and b.datea between @t_bdate and @t_edate	
+	and not(ISNULL(a.weight6,0)=0 and ISNULL(a.weight7,0)=0 and ISNULL(a.weight11,0)=0)
+	
+	declare @tmpCubs table(
+		sel int identity(1,1)
+		,makeno nvarchar(20)
+		,[weight] float  --用完工重量計算
+		,total float
+		,price float
+	)
+	--計算原物料單位成本
+	insert into @tmpCubs(makeno,[weight],total,price)
+	select a.makeno ,a.hweight,a.total,case when ISNULL(a.hweight,0)=0 then 0 else ROUND(ISNULL(a.total,0)/a.hweight,2) end
+	from view_cubs a
+	left join (select makeno from #z_uccg_rk_cucs group by makeno) b on a.makeno=b.makeno
+	where b.makeno is not null
+	--推算出樣品、報廢成本,        **成品成本= 原物料成本 - 樣品成本 - 報廢成本
+	update #z_uccg_rk_cucs set template_money = round(a.weight6 * b.price,0)
+		,waste_money = ROUND(a.weight7*b.price,0)
+		,surplus_money = ROUND(a.weight11*b.price,0)
+	from #z_uccg_rk_cucs a
+	left join @tmpCubs b on a.makeno=b.makeno
+	-----資料回寫
+	declare cursor_table cursor for
+	select accy from #z_uccg_rk_cucs group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy	
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update cucs"+@accy+" set m02=b.template_money,m03=b.waste_money,m04=b.surplus_money
+		from cucs"+@accy+" a
+		left join #z_uccg_rk_cucs b on b.accy=@accy and a.noa=b.noa and a.noq=b.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(20)',@accy=@accy
+		
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+
+
+
 	-- END 在DRUN記錄執行的時間及條件
 	insert into drun(datea,timea,usera,action,noa,tablea,title,memo)
 		select convert(nvarchar,getdate(),111),left(convert(nvarchar,getdate(),108),5)
 			,'AUTO','END',@guid,'z_cub_rkp03','成本結轉',@t_bdate+'~'+@t_edate
 				
-	select * from @tmp;
+	select *,@t_bdate bdate,@t_bdate edate from @tmp;
 end
 GO
 
