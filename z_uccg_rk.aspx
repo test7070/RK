@@ -56,7 +56,10 @@
 							type : '8', //[10]            6
 							name : 'ykind',
 							value : "A1@金屬底材,A4@皮膜,A5@保護膜,A7@成品,A8@溶劑".split(',')
-						}
+						},{
+	                        type : '6',
+	                        name : 'xuno' //[11]       7
+	                    }
                     ]
                 });
                 q_popAssign();
