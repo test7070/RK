@@ -912,7 +912,6 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	declare @t_kind nvarchar(max) = case when '#non'=[10] then '' else [10] end
 	declare @t_uno nvarchar(max) = case when '#non'=[11] then '' else [11] end
 	-----------------------------------------------------------------------------------------------------
-	-----------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -1497,7 +1496,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	insert into @tmp(uno,mount01,weight01,total01)
 	select uno,SUM(ISNULL(mount,0)),SUM(ISNULL([weight],0)),round(SUM(ISNULL([total],0)),0)
 	from @tmpa a
-	and (len(@t_uno)=0 or b.uno=@t_uno)
+	
 --	left join itemb 
 	group by uno
 

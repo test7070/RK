@@ -2,7 +2,6 @@ SET QUOTED_IDENTIFIER OFF
 GO
 
 
-
 ALTER PROCEDURE [dbo].[z_cub_rkp03](
 	@t_bdate nvarchar(max)
 	,@t_edate nvarchar(max))
@@ -29,6 +28,8 @@ begin
 	declare @totweight float
 	declare @m01 float,@m02 float,@m03 float,@m04 float
 	declare @totm01 float,@totm02 float,@totm03 float,@totm04 float
+	declare @money float
+	declare @sel int
 	
 	declare @y01 float,@y02 float,@y03 float,@y04 float,@y05 float,@y06 float,@y07 float,@y08 float,@total float
 	declare @n int = 0,@m int = 0
@@ -43,6 +44,94 @@ begin
 	DECLARE @t1 DATETIME
 	DECLARE @t2 DATETIME
 	declare @tott1 datetime=getdate(),@tott2 datetime
+	--=============================================================================================
+	--=============================================================================================
+	-- 調料
+	SET @t1 = GETDATE()
+	IF OBJECT_ID('tempdb..#z_cub_rkp03_dd')is not null
+	BEGIN
+		drop table #z_cub_rkp03_dd
+	END
+	create table #z_cub_rkp03_dd(
+		sel int identity(1,1)
+		,accy nvarchar(10)
+		,noa nvarchar(20)
+		,noq nvarchar(10)
+		,uno nvarchar(max)
+		,datea nvarchar(20)
+		,[weight] float
+		,price float
+		,[money] float
+	)
+	insert into #z_cub_rkp03_dd(accy,noa,noq,uno,datea,[weight])
+	select a.accy,a.noa,a.noq,a.uno,b.datea,a.[weight]
+	from view_inas a
+	left join view_ina b on a.accy=b.accy and a.noa=b.noa
+	outer apply(select top 1 * from view_get where noa=a.noa) c
+	where c.noa is not null
+	and len(isnull(a.uno,''))>0
+	and b.datea between @t_bdate and @t_edate
+
+	declare cursor_table cursor for
+		select sel,uno,datea from #z_cub_rkp03_dd
+	open cursor_table
+	fetch next from cursor_table
+	into @sel,@uno,@date
+	while(@@FETCH_STATUS <> -1)
+	begin
+		select @money = 0
+		select @money = total from dbo.money_rk(@uno,@date)
+		update #z_cub_rkp03_dd set [money]=@money
+			,price = case when isnull([weight],0)=0 then 0 else round(@money/[weight],3) end
+		where sel=@sel
+		
+		fetch next from cursor_table
+		into @sel,@uno,@date
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	---update
+	select @n=0
+	
+	declare cursor_table cursor for
+		select accy from #z_cub_rkp03_dd group by accy
+	open cursor_table
+	fetch next from cursor_table
+	into @accy
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @cmd =
+		"update inas"+@accy+" set total = [money],price = a.price 
+		from inas"+@accy+" a
+		left join #z_cub_rkp03_dd b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10)',@accy=@accy
+
+		select @m = 0
+		set @cmd =
+		"select @m = count(1) 
+		from inas"+@accy+" a
+		left join #z_cub_rkp03_dd b on b.accy=@accy and b.noa=a.noa and b.noq=a.noq
+		where b.noa is not null"
+		execute sp_executesql @cmd,N'@accy nvarchar(10),@m int output'
+		,@accy=@accy,@m=@m output
+		set @n = @n + @m
+
+		fetch next from cursor_table
+		into @accy
+	end
+	close cursor_table
+	deallocate cursor_table
+	SET @t2 = GETDATE()
+
+	insert into @tmp(gno,title,n,ms)
+	select '1'
+		,'調料成本-入庫作業'
+		,@n
+		,round(DATEDIFF(millisecond,@t1,@t2)/1000,0)
+	
+	drop table #z_cub_rkp03_dd
 	--=============================================================================================
 	--=============================================================================================
 	--半成品
@@ -453,7 +542,7 @@ begin
 	--===========CUCS=======================================================
 	------------------------------------------------------------------------------------
 	-----------------------------------------------------------------------
-	-- 計算 樣品、報廢   z_cub_rkp01  費用攤提也有
+	-- 計算 樣品、報廢
 	-----------------------------------------------------------------------	
 	-- 計算在製品成本  CUCS
 	IF OBJECT_ID('tempdb..#z_uccg_rk_cucs')is not null
