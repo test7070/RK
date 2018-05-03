@@ -76,7 +76,7 @@ z_cuc_rkp01:--z_cuc_rkp01
 	close cursor_table
 	deallocate cursor_table
 	--------------------------------------------------------------------------------
-	declare @reportno nvarchar(max) = '表單編號：LC-11-00-03-04'
+	declare @reportno nvarchar(max) = '表單編號：LC-11-00-03-05'
 	declare @sign1 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">R</a>'
 	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
 	
