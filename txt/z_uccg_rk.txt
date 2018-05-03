@@ -995,11 +995,13 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	select a.uno
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.mount,0)
 		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[weight],0)
-		,case when b.typea='1' then 1 else -1 end * ISNULL(a.[total],0)
+		,case when b.typea='1' then 1 else -1 end * case when e.noa is not null then ISNULL(e.cost,0) else ISNULL(a.total,0) end
 		,b.datea
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
+	left join deli d on a.noa=d.rc2no
+	left join delis e on d.noa=e.noa and a.noq=e.noq
 	where b.datea<@t_bdate
 	and len(a.uno)>0
 	and (len(@t_uno)=0 or a.uno=@t_uno)
