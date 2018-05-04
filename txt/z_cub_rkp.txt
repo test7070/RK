@@ -1729,10 +1729,13 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 	deallocate cursor_table
 	
 	update @tmpb set gno='1'
-	
-	insert into @tmpb(gno,pno,makeno,tmakeno,typea,mount1,weight1,mount2,weight2,weight3,weight4,mins)
+
+	insert into @tmpb(gno,pno,makeno,tmakeno,typea,mount1,weight1,mount2,weight2,weight3,weight4,mins
+		,weight8,weight9,weight10)
 	select '2',4,makeno,makeno,typea,SUM(ISNULL(mount1,0)),SUM(ISNULL(weight1,0)),SUM(ISNULL(mount2,0)),SUM(ISNULL(weight2,0))
 		,SUM(ISNULL(weight3,0)),SUM(ISNULL(weight4,0)),SUM(ISNULL(mins,0))
+		,null,null,null
+		--,SUM(ISNULL(weight8,0)),SUM(ISNULL(weight9,0)),SUM(ISNULL(weight10,0))
 	from @tmpb
 	where typea='進倉'
 	group by makeno,typea
@@ -1790,7 +1793,7 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 	insert into @tmpb(makeno,gno,pno)select makeno,'3',999 from @tmpb group by makeno
 	
 	select gno,pno
-		,'LC-11-00-05-04' reportno
+		,'表單編號：LC-11-00-05-04' reportno
 		, cust a01
 		, pveno+' '+pve a02
 		, makeno a03a
