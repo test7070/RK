@@ -1008,6 +1008,7 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	and (c.kind='A1' or c.kind='A4' or c.kind='A5' or c.kind='A7' or c.kind='A8')
 	and ISNULL(c.productno,'') between @t_bproductno and @t_eproductno 
 	and (len(@t_kind)=0 or CHARINDEX(c.kind,@t_kind)>0)
+
 	---- INA
 	insert into @tmpa(uno,mount,[weight],total,datea)	
 	select a.uno
@@ -1154,10 +1155,12 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	select a.uno
 		,ISNULL(a.mount,0)
 		,ISNULL(a.[weight],0)
-		,ISNULL(a.[total],0)
+		, case when e.noa is not null then ISNULL(e.cost,0) else ISNULL(a.total,0) end
 	from view_rc2s a
 	left join view_rc2 b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
+	left join deli d on a.noa=d.rc2no
+	left join delis e on d.noa=e.noa and a.noq=e.noq
 	where b.datea between @t_bdate and @t_edate
 	and len(a.uno)>0
 	and (len(@t_uno)=0 or a.uno=@t_uno)
