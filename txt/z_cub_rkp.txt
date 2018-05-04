@@ -1536,6 +1536,10 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 	declare @t_edate nvarchar(20) = case when '#non' = [5] then char(255) else [5] end
 	declare @t_makeno nvarchar(max) = case when '#non' = [8] then '' else [8] end
 	declare @t_uno nvarchar(max) = case when '#non' = [9] then '' else [9] end
+	
+	declare @t_cust nvarchar(max) = case when '#non' = [16] then '' else [16] end
+	declare @t_contractno nvarchar(max) = case when '#non' = [17] then '' else [17] end
+	declare @t_pvcno nvarchar(max) = case when '#non' = [18] then '' else [18] end
 	------------------------------------------------------------------------------------
 	declare @tmpa table(
 		sel int identity(1,1)
@@ -1577,7 +1581,10 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		--不良品
 		,mount2 float--數量	
 		,weight2 float--重量
-		
+		,weight8 float -- 不良損耗 cucs.weight8
+		,weight9 float -- 尺寸損耗 cucs.weight9
+		,weight10 float -- 頭尾損耗 cucs.weight10
+
 		--餘料	
 		,weight3 float
 		--廢料
@@ -1649,7 +1656,7 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		--CUC
 		insert into @tmpb(makeno,tmakeno,pno,typea,datea,accy,noa,noq,size,memo
 			,mount1,length1,weight1
-			,mount2,weight2
+			,mount2,weight2,weight8,weight9,weight10
 			,weight3
 			,weight4
 			,mins)
@@ -1662,6 +1669,7 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 			,case when CHARINDEX('分條',b.typea)>0 then a.weight2 when CHARINDEX('裁切',b.typea)>0 then a.weight3 else 0 end
 			,0 mount2
 			,ISNULL(a.weight8,0)+ISNULL(a.weight9,0)+ISNULL(a.weight10,0) weight2
+			,ISNULL(a.weight8,0),ISNULL(a.weight9,0),ISNULL(a.weight10,0)
 			,ISNULL(a.weight4,0) weight3
 			,ISNULL(a.waste,0)+ISNULL(a.weight7,0) weight4
 			,isnull(a.mins,0) mins
@@ -1729,7 +1737,6 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 	where typea='進倉'
 	group by makeno,typea
 	
-	
 	update @tmpb set custno=b.custno,cust=b.comp,contractno=b.ordeno+'-'+b.no2
 		,asize=CAST(b.dime as nvarchar)+'+'+CAST(b.radius as nvarchar)+'*'+CAST(b.width as nvarchar)+'*'+CAST(b.lengthb as nvarchar)
 		,pveno=c.productno,pve=c.product,item1=d.product
@@ -1737,7 +1744,7 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		,bsize=CAST(b.dime as nvarchar)+'*'+CAST(b.width as nvarchar)
 		,uno=b.uno,uno2=e.uno2
 		,w01=b.w03,w02=f.[weight]
-		,rate01= case when ISNULL(b.hweight,0)=0 then 0 else  round((ISNULL(b.hweight,0)-ISNULL(f.[weight],0))*100/ISNULL(b.hweight,0),2) end
+		,rate01= case when ISNULL(b.w03,0)=0 then 0 else  round((ISNULL(b.w03,0)-ISNULL(f.[weight],0))*100/ISNULL(b.w03,0),2) end
 	from @tmpb a
 	left join view_cubs b on a.makeno=b.makeno
 	outer apply(select top 1 * from view_cubt where accy=b.accy and noa=b.noa and nor=b.noq and kind='2') c
@@ -1765,11 +1772,25 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 			left join ucc y on x.productno=y.noa 
 			where x.accy=a.accy and x.noa=a.noa and y.groupano='A05') b
 	where len(ISNULL(pvcno,''))=0
-	
+	----- 條件過濾	
+	if len(@t_cust)>0
+	begin
+		delete @tmpb where not charindex(@t_cust,cust)>0
+	end
+	if len(@t_contractno)>0
+	begin
+		delete @tmpb where not charindex(@t_contractno,contractno)>0
+	end
+	if len(@t_pvcno)>0
+	begin
+		delete @tmpb where not charindex(@t_pvcno,pvcno)>0
+	end
+
 	--換頁
 	insert into @tmpb(makeno,gno,pno)select makeno,'3',999 from @tmpb group by makeno
 	
 	select gno,pno
+		,'LC-11-00-05-04' reportno
 		, cust a01
 		, pveno+' '+pve a02
 		, makeno a03a
@@ -1793,12 +1814,13 @@ z_cub_rkp09:--z_cub_rkp09	批量管制卡
 		,mount1 b05
 		,length1 b06
 		,weight1 b07
-		,mount2 b08
-		,weight2 b09
-		,weight3 b10
-		,weight4 b11
-		,mins b12
-		,memo b13
+		,weight8 b08
+		,weight9 b09
+		,weight10 b10
+		,weight3 b11
+		,weight4 b12
+		,mins b13
+		,memo b14
 	from @tmpb 
 	order by makeno,pno;
 

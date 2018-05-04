@@ -64,7 +64,16 @@
 					},{
                         type : '6',//[15]      10
                         name : 'ydate'
-                    }]
+                    },{
+						type : '6', //[16]     11 
+						name : 'ycust'
+					},{
+						type : '6', //[17]     12
+						name : 'ycontractno'
+					},{
+						type : '6', //[18]     13
+						name : 'ypvcno'
+					}]
 				});
 				q_popAssign();
 
