@@ -81,11 +81,27 @@ z_cuc_rkp01:--z_cuc_rkp01
 	declare @sign2 nvarchar(max) = N'<a style="font-family:'+CHAR(39)+'Wingdings 2'+CHAR(39)+'">'+NCHAR(163)+'</a>'
 	
 	declare @typea nvarchar(max) = ''
-	declare @nick nvarchar(max)
+	declare @nick nvarchar(max) = ''
 	declare @noa nvarchar(max)
 	declare @datea nvarchar(max)
-	
-	select top 1 @typea=typea,@nick=nick,@noa=noa,@datea=datea from @tmp
+	declare @string nvarchar(max)
+
+	declare cursor_table cursor for
+		select nick from @tmp where len(isnull(nick,''))>0 group by nick
+	open cursor_table
+	fetch next from cursor_table
+	into @string
+	while(@@FETCH_STATUS <> -1)
+	begin
+		set @nick = @nick + case when len(@nick)=0 then '' else ',' end + @string
+		
+		fetch next from cursor_table
+		into @string
+	end
+	close cursor_table
+	deallocate cursor_table
+
+	select top 1 @typea=typea,@noa=noa,@datea=datea from @tmp
 	set @typea = case when @typea='分條作業' then @sign1 else @sign2 end + '分條作業'
 		+case when @typea='十呎裁切' then @sign1 else @sign2 end + '十呎裁切'
 		+case when @typea='四呎裁切' then @sign1 else @sign2 end + '四呎裁切'
@@ -93,7 +109,7 @@ z_cuc_rkp01:--z_cuc_rkp01
 		+case when @typea='二呎裁切' then @sign1 else @sign2 end + '二呎裁切'
 	select gno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@typea +'</a>' typea
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+@nick +'</a>' nick
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">客戶名稱：'+@nick +'</a>' nick
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">本單編號：'+@noa +'</a>' aa
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">日　　期：'+@datea +'</a>' bb
 		,'<img src="'+@t_path+'getlogo.aspx?noa=LC03'+CHAR(38)+'db='+@t_db+'"/>' logo
