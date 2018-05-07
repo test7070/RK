@@ -1,6 +1,10 @@
-
 SET QUOTED_IDENTIFIER ON
 GO
+
+
+
+
+
 --進貨、入庫成本
 ALTER function [dbo].[money_rk](@t_uno nvarchar(30),@t_date nvarchar(20))
 returns @result table(
@@ -8,9 +12,9 @@ returns @result table(
 ) as
 begin
 	declare @cost float = 0
-	declare @tmpweight float
+	declare @tmpweight decimal(25,5)
 	declare @tmpmoney float
-	declare @xweight float = 0 --庫存量
+	declare @xweight decimal(25,5) = 0 --庫存量
 	declare @xmoney float = 0--庫存金額
 	declare @xtotal float = 0
 	declare @date nvarchar(20)
@@ -48,8 +52,8 @@ begin
 	--------  VCC
 	insert into @tmpx(tablea,accy,noa,noq,[weight],[cost])
 	select 'vccs',a.accy,a.noa,a.noq
-		,case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
-		,isnull(a.scost,0)
+		,case when b.typea='1' then 1 else -1 end * case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+		,case when b.typea='1' then 1 else -1 end * isnull(a.scost,0)
 	from view_vccs a
 	left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 	where a.uno=@t_uno
