@@ -16,6 +16,7 @@ begin
 	declare @xweight float = 0
 	declare @xmoney float = 0
 	-------------------------------------------------------------
+	declare @typea nvarchar(20)
 	declare @money float 
 	declare @uno nvarchar(30)
 	declare @date nvarchar(20)
@@ -24,10 +25,10 @@ begin
 	declare @weight float
 	declare @sprice float
 	--===============================================================================================
-	select @uno = ''
+	select @uno = '',@typea=''
 	if @tablea='vccs'
 	begin
-		select @uno = a.uno,@date=b.datea,@xweight=isnull(a.weight,0)
+		select @typea=b.typea,@uno = a.uno,@date=b.datea,@xweight=case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
 		from view_vccs a
 		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 		where a.accy=@accy and a.noa=@noa and a.noq=@noq
@@ -48,10 +49,39 @@ begin
 	end
 	insert into @result(uno,[weight],[money])
 	select @uno,@xweight,0
-	
+
 	if len(@uno)=0
 		return 
-	
+	--出貨退回
+	declare @ydate nvarchar(20) = ''
+	declare @yweight float = 0
+	declare @ycost float = 0
+	if @tablea='vccs' and @typea='2'
+	begin
+		--找出上一筆該批號的出貨
+		select top 1 @ydate=b.datea
+			,@yweight = case when isnull(a.gweight,0)!=0 then a.gweight else isnull(a.[weight],0) end
+			,@ycost = isnull(a.scost,0)
+		from view_vccs a
+		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
+		where uno=@uno
+		and b.datea<@date
+		and b.typea='1'
+		order by b.datea desc,a.accy desc,a.noa desc,a.noq desc
+
+		if @xweight=@yweight
+		begin
+			--代表一次退完,所以成本就依上次的出貨
+			update @result set [money] = @ycost
+		end
+		else
+		begin
+			-- 成本就依上次的出貨 (成本/重量)*退貨重量
+			-- 暫不管尾差,等之後再說
+			update @result set [money] = case when isnull(@yweight,0)=0 then 0 else round(@ycost/@yweight*@xweight,0) end
+		end
+		return
+	end
 	--開帳成品
 	declare @strdate nvarchar(20) = ''
 	declare @strweight float = 0
