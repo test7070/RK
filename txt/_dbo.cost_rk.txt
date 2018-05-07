@@ -3,6 +3,7 @@ GO
 
 
 
+
 --領料成本
 ALTER function [dbo].[cost_rk](@tablea nvarchar(20)
 	,@accy nvarchar(10)
@@ -13,7 +14,7 @@ returns @result table(
 ) as
 begin
 	-- 2018/04/17  改為一次只會算一天
-	declare @xweight float = 0
+	declare @xweight decimal(25,5) = 0
 	declare @xmoney float = 0
 	-------------------------------------------------------------
 	declare @typea nvarchar(20)
@@ -22,7 +23,7 @@ begin
 	declare @date nvarchar(20)
 	declare @datea nvarchar(10)
 	declare @mount float
-	declare @weight float
+	declare @weight decimal(25,5)
 	declare @sprice float
 	--===============================================================================================
 	select @uno = '',@typea=''
@@ -84,7 +85,7 @@ begin
 	end
 	--開帳成品
 	declare @strdate nvarchar(20) = ''
-	declare @strweight float = 0
+	declare @strweight decimal(25,5) = 0
 	declare @strprice float = 0
 	declare @strmoney float	=0
 	select @strdate=datea ,@strweight=mount,@strprice=price,@strmoney=[money]
@@ -168,7 +169,7 @@ begin
 	and b.datea>@strdate
 	----===============================================================================================
 	select @weight=0,@money=0,@sprice=0
-	declare @totweight float = 0,@totmoney float =0
+	declare @totweight decimal(25,5) = 0,@totmoney float =0
 	if len(@strdate)>0
 	begin
 		--開帳資料
@@ -199,3 +200,7 @@ begin
 	update @result set [money]=@xmoney
 	return
 end
+
+GO
+
+

@@ -1,3 +1,6 @@
+SET QUOTED_IDENTIFIER ON
+GO
+
 --半成品成本
 ALTER function [dbo].[makecost_rk](@t_makeno nvarchar(30))
 returns @result table(
@@ -52,7 +55,7 @@ begin
 	from view_cubs 
 	where makeno=@t_makeno
 	
-	declare @weight float,@money float
+	declare @weight decimal(25,5),@money float
 	declare @table nvarchar(20),@accy nvarchar(10),@noa nvarchar(20),@noq nvarchar(10)
 	--==========================================================================================
 	--鋼捲成本
@@ -268,3 +271,6 @@ begin
 	where b.makeno is  not null
 	return
 end
+GO
+
+

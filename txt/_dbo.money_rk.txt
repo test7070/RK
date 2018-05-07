@@ -1,8 +1,6 @@
+
 SET QUOTED_IDENTIFIER ON
 GO
-
-
-
 
 
 --進貨、入庫成本
@@ -18,7 +16,7 @@ begin
 	declare @xmoney float = 0--庫存金額
 	declare @xtotal float = 0
 	declare @date nvarchar(20)
-	declare @weight float
+	declare @weight decimal(25,5)
 	declare @money float
 	declare @makeno nvarchar(30)
 	declare @waste float
@@ -332,3 +330,7 @@ begin
 	
 	return
 end
+
+GO
+
+
