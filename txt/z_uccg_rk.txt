@@ -1489,12 +1489,13 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	left join itemb b on a.uno=b.uno
 	where b.uno is not null and a.datea<=b.datea
 	
+	--2018/05/08
 	insert into #z_uccg_rk01a(uno,mount,weight,price,total,datea)
 	select a.uno,1,a.mount,a.price,a.money,a.datea 
 	from itemb a
 	left join @tmp_itemb b on a.uno=b.uno
-	where b.uno is null
-	and (len(@t_uno)=0 or b.uno=@t_uno)
+	--where b.uno is null and (len(@t_uno)=0 or b.uno=@t_uno)
+	where (len(@t_uno)=0 or b.uno=@t_uno)
 	
 	delete #z_uccg_rk01a
 	from #z_uccg_rk01a a
