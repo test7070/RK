@@ -188,6 +188,7 @@ z_cub_rk01:--z_cub_rk01
 	declare @t_bcustno nvarchar(max) = case when '#non' = [5] then '' else [5] end
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	-------------------------------------------------------------------------------------------------
+	-------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -318,10 +319,11 @@ z_cub_rk01:--z_cub_rk01
 		declare cursor_table2 cursor for
 		
 		select row_number()over(order by a.noq) 
-			,b.uno,c.radius,c.lengthb,b.productno,b.product,b.[weight],b.[wweight]
+			,b.uno,d.dime,d.width,b.productno,b.product,b.[weight],b.[wweight]
 		from @tmp a
 		left join view_cubt b on a.accy=b.accy and a.noa=b.noa and a.noq=b.nor
 		left join view_cubs c on a.accy=c.accy and a.noa=c.noa and a.noq=c.noq
+		left join view_uccb d on b.uno=d.uno
 		where b.noa is not null
 		and len(ISNULL(b.uno,''))>0
 		and b.kind='1'
@@ -462,6 +464,8 @@ z_cub_rk01:--z_cub_rk01
 		delete @tmp where isnull(productno2,'')!=@t_pvcno
 		
 	delete @tmp where not(isnull(custno,'') between @t_bcustno and @t_ecustno)
+
+	--select * from @tmp
 	------------------------------------------------------------------------
 	declare cursor_table cursor for
 	select accy,noa,noq,count(1) from @tmp group by accy,noa,noq
