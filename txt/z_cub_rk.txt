@@ -188,7 +188,6 @@ z_cub_rk01:--z_cub_rk01
 	declare @t_bcustno nvarchar(max) = case when '#non' = [5] then '' else [5] end
 	declare @t_ecustno nvarchar(max) = case when '#non' = [6] then char(255) else [6] end
 	-------------------------------------------------------------------------------------------------
-	-------------------------------------------------------------------------------------------------
 	declare @tmp table(
 		sel int identity(1,1)
 		,gno nvarchar(20)
@@ -228,6 +227,8 @@ z_cub_rk01:--z_cub_rk01
 		,mount3 float
 		,weight3 float
 		--物料
+		,productno4 nvarchar(20) -- 取第一項的物料
+		,product4 nvarchar(50)
 		,w01 float  --接著劑
 		,w02 float  --接著劑稀釋液	
 		,w03 float  --背漆
@@ -465,7 +466,11 @@ z_cub_rk01:--z_cub_rk01
 		
 	delete @tmp where not(isnull(custno,'') between @t_bcustno and @t_ecustno)
 
-	--select * from @tmp
+	-- 物料顯示第一項的
+	update @tmp set productno4=isnull(b.productno,''),product4=isnull(b.product,'')
+	from @tmp a
+	outer apply(select top 1 * from view_cubu where accy=a.accy and noa=a.noa order by noq) b
+
 	------------------------------------------------------------------------
 	declare cursor_table cursor for
 	select accy,noa,noq,count(1) from @tmp group by accy,noa,noq
@@ -593,6 +598,7 @@ z_cub_rk01:--z_cub_rk01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y03],-1) +'</a>' h03
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y04],-1) +'</a>' h04
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+dbo.getComma(a.[y05],-1) +'</a>' h05
+		,a.productno4 pp04
 	from @tmp a
 	left join (select sel,ROW_NUMBER()over(partition by datea order by recno) recno from @tmp) b on a.sel=b.sel
 	order by a.makeno,a.recno,a.recno2;
