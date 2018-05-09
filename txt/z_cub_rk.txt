@@ -427,7 +427,7 @@ z_cub_rk01:--z_cub_rk01
 			begin
 				update @tmp set uno3=@uno,dime3=@dime,width3=@width
 					,productno3=@productno,product3=@product,mount3=@mount,weight3=@weight
-					,size3=case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime2,0) as nvarchar)+' * '+CAST(ISNULL(@width2,0) as nvarchar) end
+					,size3=case when @dime2=0 and @width2=0 then '' else CAST(ISNULL(@dime2,0) as nvarchar)+' * '+CAST(ISNULL(@width2,0) as nvarchar) end
 				where recno=@recno and recno2=@n
 			end
 			else
@@ -437,7 +437,7 @@ z_cub_rk01:--z_cub_rk01
 					,size3)
 				select '2',recno,@n,accy,noa,noq,makeno,custno,cust
 					,@uno,@dime,@width,@productno,@product,@mount,@weight
-					,case when @dime=0 and @width=0 then '' else CAST(ISNULL(@dime2,0) as nvarchar)+' * '+CAST(ISNULL(@width2,0) as nvarchar) end
+					,case when @dime2=0 and @width2=0 then '' else CAST(ISNULL(@dime2,0) as nvarchar)+' * '+CAST(ISNULL(@width2,0) as nvarchar) end
 				from @tmp
 				where recno=@recno and recno2=1
 			end
