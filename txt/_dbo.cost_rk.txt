@@ -2,8 +2,6 @@ SET QUOTED_IDENTIFIER ON
 GO
 
 
-
-
 --領料成本
 ALTER function [dbo].[cost_rk](@tablea nvarchar(20)
 	,@accy nvarchar(10)
@@ -66,7 +64,8 @@ begin
 		from view_vccs a
 		left join view_vcc b on a.accy=b.accy and a.noa=b.noa
 		where uno=@uno
-		and b.datea<@date
+		-- 2018/05/10 出、退貨有可能同一天   原本是 b.datea<@date,現在改為b.datea<=@date
+		and b.datea<=@date
 		and b.typea='1'
 		order by b.datea desc,a.accy desc,a.noa desc,a.noq desc
 
@@ -200,7 +199,3 @@ begin
 	update @result set [money]=@xmoney
 	return
 end
-
-GO
-
-
