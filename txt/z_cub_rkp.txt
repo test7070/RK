@@ -686,7 +686,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,SUM(case when not (b.typea='盤點' or b.typea='報廢' or b.typea='樣品') then 
 			case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end
 			else 0 end) wa
-		,SUM(case when not (b.typea='盤點' or b.typea='報廢') then a.scost else 0 end) ma
+		,SUM(case when not (b.typea='盤點' or b.typea='報廢' or b.typea='樣品') then a.scost else 0 end) ma
 		,SUM(case when b.typea='盤點' then 
 			case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end
 			else 0 end) wb
