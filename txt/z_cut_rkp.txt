@@ -345,7 +345,7 @@ z_cut_rkp01:--z_cut_rkp01
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+uno +'</a>' uno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+bno +'</a>' bno
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+special +'</a>' special
-		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+memo+'</a>' memo
+		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+left(memo,10)+'</a>' memo  --測試是不是因為備註太長,導致印不出來
 		,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+isnull(pvcno,'')+isnull(pvc,'')+'</a>' pvc
 		--,'<a style="font-family:'+ "'Times New Roman','標楷體', serif"+char(59)+'">'+pvc+'</a>' ppvc
 	from @tmp
