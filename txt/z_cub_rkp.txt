@@ -1457,7 +1457,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total01,0)!=0
-	--group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '01',isnull(c.item,'')
+	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '01',isnull(c.item,'')
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '02'
@@ -1467,6 +1467,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total02,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '02',isnull(c.item,'')
+	having sum(isnull(a.weight02,0))!=0 and sum(isnull(a.total02,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '03'
@@ -1476,6 +1477,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total03,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '03',isnull(c.item,'')
+	having sum(isnull(a.weight03,0))!=0 and sum(isnull(a.total03,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '04'
@@ -1485,6 +1487,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total04,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '04',isnull(c.item,'')
+	having sum(isnull(a.weight04,0))!=0 and sum(isnull(a.total04,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '05'
@@ -1494,6 +1497,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total05,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '05',isnull(c.item,'')
+	having sum(isnull(a.weight05,0))!=0 and sum(isnull(a.total05,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '06'
@@ -1503,6 +1507,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total06,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '06',isnull(c.item,'')
+	having sum(isnull(a.weight06,0))!=0 and sum(isnull(a.total06,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '07'
@@ -1512,6 +1517,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total07,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '07',isnull(c.item,'')
+	having sum(isnull(a.weight07,0))!=0 and sum(isnull(a.total07,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '08'
@@ -1521,6 +1527,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total08,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '08',isnull(c.item,'')
+	having sum(isnull(a.weight08,0))!=0 and sum(isnull(a.total08,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '09'
@@ -1530,6 +1537,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total09,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '09',isnull(c.item,'')
+	having sum(isnull(a.weight09,0))!=0 and sum(isnull(a.total09,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '10'
@@ -1539,6 +1547,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total10,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '10',isnull(c.item,'')
+	having sum(isnull(a.weight10,0))!=0 and sum(isnull(a.total10,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '11'
@@ -1548,6 +1557,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total11,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '11',isnull(c.item,'')
+	having sum(isnull(a.weight11,0))!=0 and sum(isnull(a.total11,0))!=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '12'
