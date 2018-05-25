@@ -1429,6 +1429,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	--select * from #z_cub_rkp04
 	----製成品彙總表
 	--select * from @tmp
+	delete @tmp  where gno = '2'
 	--=========================================================================================================================
 	declare @itema table(noa nvarchar(20),item nvarchar(20))
 	insert into @itema(noa,item)values('A1','金屬底材')
@@ -1450,6 +1451,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 		,[money] float--金額
 	)
 	--原物料彙總明細表
+	insert into @tmpa(gno,pno,sorder,product)
+	select '2',2,'A000','原物料'
+
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '01'
 		,isnull(c.item,'') product,'期初存貨' item,sum(isnull(weight01,0)) mount,sum(isnull(total01,0)) [money]
@@ -1691,6 +1695,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	--having sum(isnull(weight12,0))!=0 and sum(isnull(total12,0))!=0
 
 	--在製品彙總表	
+	insert into @tmpa(gno,pno,sorder,product)
+	select '2',2,'B000','在製品'
+
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,'B001' sorder,'' product,'期初存貨' item,sum(isnull(a.weight01,0)) mount,sum(isnull(a.total01,0)) [money]
 	from #z_cub_rkp04 a
@@ -1733,6 +1740,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	
 
 	--製成品彙總表 
+	insert into @tmpa(gno,pno,sorder,product)
+	select '2',2,'C000','製成品'
+
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,'C001' sorder,'' product,'期初存貨' item,sum(isnull(a.w01,0)) mount,sum(isnull(a.m01,0)) [money]
 	from @tmp a
