@@ -1445,6 +1445,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 		,pno int
 		,sorder nvarchar(20)
 		,product nvarchar(50)--品名
+		,typea nvarchar(20) -- 加 OR 減
 		,item nvarchar(40)--項目
 		,mount float--數量
 		,price float--單價
@@ -1463,9 +1464,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	where isnull(a.total01,0)!=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '01',isnull(c.item,'')
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '02'
-		,isnull(c.item,'') product,'盤點調整' item,sum(isnull(weight02,0)) mount,sum(isnull(total02,0)) [money]
+		,isnull(c.item,'') product,'加','盤點調整' item,sum(isnull(weight02,0)) mount,sum(isnull(total02,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1473,9 +1474,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '02',isnull(c.item,'')
 	having sum(isnull(a.weight02,0))!=0 and sum(isnull(a.total02,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '03'
-		,isnull(c.item,'') product,'本期購入' item,sum(isnull(weight03,0)) mount,sum(isnull(total03,0)) [money]
+		,isnull(c.item,'') product,'加','本期購入' item,sum(isnull(weight03,0)) mount,sum(isnull(total03,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1483,9 +1484,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '03',isnull(c.item,'')
 	having sum(isnull(a.weight03,0))!=0 and sum(isnull(a.total03,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '04'
-		,isnull(c.item,'') product,'本期耗料' item,sum(isnull(weight04,0)) mount,sum(isnull(total04,0)) [money]
+		,isnull(c.item,'') product,'減','本期耗料' item,sum(isnull(weight04,0)) mount,sum(isnull(total04,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1493,9 +1494,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '04',isnull(c.item,'')
 	having sum(isnull(a.weight04,0))!=0 and sum(isnull(a.total04,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '05'
-		,isnull(c.item,'') product,'本期領料' item,sum(isnull(weight05,0)) mount,sum(isnull(total05,0)) [money]
+		,isnull(c.item,'') product,'減','本期領料' item,sum(isnull(weight05,0)) mount,sum(isnull(total05,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1503,9 +1504,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '05',isnull(c.item,'')
 	having sum(isnull(a.weight05,0))!=0 and sum(isnull(a.total05,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '06'
-		,isnull(c.item,'') product,'本期自調入' item,sum(isnull(weight06,0)) mount,sum(isnull(total06,0)) [money]
+		,isnull(c.item,'') product,'加','本期自調入' item,sum(isnull(weight06,0)) mount,sum(isnull(total06,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1513,9 +1514,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '06',isnull(c.item,'')
 	having sum(isnull(a.weight06,0))!=0 and sum(isnull(a.total06,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '07'
-		,isnull(c.item,'') product,'本期自調用料' item,sum(isnull(weight07,0)) mount,sum(isnull(total07,0)) [money]
+		,isnull(c.item,'') product,'減','本期自調用料' item,sum(isnull(weight07,0)) mount,sum(isnull(total07,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1523,9 +1524,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '07',isnull(c.item,'')
 	having sum(isnull(a.weight07,0))!=0 and sum(isnull(a.total07,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '08'
-		,isnull(c.item,'') product,'本期銷貨' item,sum(isnull(weight08,0)) mount,sum(isnull(total08,0)) [money]
+		,isnull(c.item,'') product,'減','本期銷貨' item,sum(isnull(weight08,0)) mount,sum(isnull(total08,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1533,9 +1534,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '08',isnull(c.item,'')
 	having sum(isnull(a.weight08,0))!=0 and sum(isnull(a.total08,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '09'
-		,isnull(c.item,'') product,'本期銷貨退回' item,sum(isnull(weight09,0)) mount,sum(isnull(total09,0)) [money]
+		,isnull(c.item,'') product,'加','本期銷貨退回' item,sum(isnull(weight09,0)) mount,sum(isnull(total09,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1543,9 +1544,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '09',isnull(c.item,'')
 	having sum(isnull(a.weight09,0))!=0 and sum(isnull(a.total09,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '10'
-		,isnull(c.item,'') product,'本期報廢' item,sum(isnull(weight10,0)) mount,sum(isnull(total10,0)) [money]
+		,isnull(c.item,'') product,'減','本期報廢' item,sum(isnull(weight10,0)) mount,sum(isnull(total10,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1553,9 +1554,9 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '10',isnull(c.item,'')
 	having sum(isnull(a.weight10,0))!=0 and sum(isnull(a.total10,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '11'
-		,isnull(c.item,'') product,'本期退料' item,sum(isnull(weight11,0)) mount,sum(isnull(total11,0)) [money]
+		,isnull(c.item,'') product,'減','本期退料' item,sum(isnull(weight11,0)) mount,sum(isnull(total11,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
@@ -1584,105 +1585,105 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '21',isnull(c.item,'')
 	--having sum(isnull(weight01,0))!=0 and sum(isnull(total01,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '22'
-		,isnull(c.item,'')+'-客供' product,'盤點調整-客供' item,sum(isnull(weight02,0)) mount,sum(isnull(total02,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'加','盤點調整-客供' item,sum(isnull(weight02,0)) mount,sum(isnull(total02,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total02,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '22',isnull(c.item,'')
-	having sum(isnull(weight02,0))!=0 and sum(isnull(total02,0))!=0
+	having sum(isnull(weight02,0))!=0 and sum(isnull(total02,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '23'
-		,isnull(c.item,'')+'-客供' product,'本期購入-客供' item,sum(isnull(weight03,0)) mount,sum(isnull(total03,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'加','本期購入-客供' item,sum(isnull(weight03,0)) mount,sum(isnull(total03,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total03,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '23',isnull(c.item,'')
-	having sum(isnull(weight03,0))!=0 and sum(isnull(total03,0))!=0
+	having sum(isnull(weight03,0))!=0 and sum(isnull(total03,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '24'
-		,isnull(c.item,'')+'-客供' product,'本期耗料-客供' item,sum(isnull(weight04,0)) mount,sum(isnull(total04,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'減','本期耗料-客供' item,sum(isnull(weight04,0)) mount,sum(isnull(total04,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total04,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '24',isnull(c.item,'')
-	having sum(isnull(weight04,0))!=0 and sum(isnull(total04,0))!=0
+	having sum(isnull(weight04,0))!=0 and sum(isnull(total04,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '25'
-		,isnull(c.item,'')+'-客供' product,'本期領料-客供' item,sum(isnull(weight05,0)) mount,sum(isnull(total05,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'減','本期領料-客供' item,sum(isnull(weight05,0)) mount,sum(isnull(total05,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total05,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '25',isnull(c.item,'')
-	having sum(isnull(weight05,0))!=0 and sum(isnull(total05,0))!=0
+	having sum(isnull(weight05,0))!=0 and sum(isnull(total05,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '26'
-		,isnull(c.item,'')+'-客供' product,'本期自調入-客供' item,sum(isnull(weight06,0)) mount,sum(isnull(total06,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'加','本期自調入-客供' item,sum(isnull(weight06,0)) mount,sum(isnull(total06,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total06,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '26',isnull(c.item,'')
-	having sum(isnull(weight06,0))!=0 and sum(isnull(total06,0))!=0
+	having sum(isnull(weight06,0))!=0 and sum(isnull(total06,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '27'
-		,isnull(c.item,'')+'-客供' product,'本期自調用料-客供' item,sum(isnull(weight07,0)) mount,sum(isnull(total07,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'減','本期自調用料-客供' item,sum(isnull(weight07,0)) mount,sum(isnull(total07,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total07,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '27',isnull(c.item,'')
-	having sum(isnull(weight07,0))!=0 and sum(isnull(total07,0))!=0
+	having sum(isnull(weight07,0))!=0 and sum(isnull(total07,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '28'
-		,isnull(c.item,'')+'-客供' product,'本期銷貨-客供' item,sum(isnull(weight08,0)) mount,sum(isnull(total08,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'減','本期銷貨-客供' item,sum(isnull(weight08,0)) mount,sum(isnull(total08,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total08,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '28',isnull(c.item,'')
-	having sum(isnull(weight08,0))!=0 and sum(isnull(total08,0))!=0
+	having sum(isnull(weight08,0))!=0 and sum(isnull(total08,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '29'
-		,isnull(c.item,'')+'-客供' product,'本期銷貨退回-客供' item,sum(isnull(weight09,0)) mount,sum(isnull(total09,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'加','本期銷貨退回-客供' item,sum(isnull(weight09,0)) mount,sum(isnull(total09,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total09,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '29',isnull(c.item,'')
-	having sum(isnull(weight09,0))!=0 and sum(isnull(total09,0))!=0
+	having sum(isnull(weight09,0))!=0 and sum(isnull(total09,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '30'
-		,isnull(c.item,'')+'-客供' product,'本期報廢-客供' item,sum(isnull(weight10,0)) mount,sum(isnull(total10,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'減','本期報廢-客供' item,sum(isnull(weight10,0)) mount,sum(isnull(total10,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total10,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '30',isnull(c.item,'')
-	having sum(isnull(weight10,0))!=0 and sum(isnull(total10,0))!=0
+	having sum(isnull(weight10,0))!=0 and sum(isnull(total10,0))=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '31'
-		,isnull(c.item,'')+'-客供' product,'本期退料-客供' item,sum(isnull(weight11,0)) mount,sum(isnull(total11,0)) [money]
+		,isnull(c.item,'')+'-客供' product,'減','本期退料-客供' item,sum(isnull(weight11,0)) mount,sum(isnull(total11,0)) [money]
 	from #z_uccg_rk01 a
 	left join view_uccb b on a.uno=b.uno
 	left join @itema c on b.kind = c.noa
 	where isnull(a.total11,0)=0
 	group by case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '31',isnull(c.item,'')
-	having sum(isnull(weight11,0))!=0 and sum(isnull(total11,0))!=0
+	having sum(isnull(weight11,0))!=0 and sum(isnull(total11,0))=0
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,case when len(isnull(b.kind,'')) = 0 then 'A0' else isnull(b.kind,'') end + '32'
@@ -1701,42 +1702,40 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,'B001' sorder,'' product,'期初存貨' item,sum(isnull(a.weight01,0)) mount,sum(isnull(a.total01,0)) [money]
 	from #z_cub_rkp04 a
-	--having sum(isnull(a.weight01,0))!=0 and sum(isnull(a.total01,0))!=0
 	
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'B002' sorder,'' product,'盤點調整' item,sum(isnull(a.weight02,0)) mount,sum(isnull(a.total02,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'B002' sorder,'' product,'加','盤點調整' item,sum(isnull(a.weight02,0)) mount,sum(isnull(a.total02,0)) [money]
 	from #z_cub_rkp04 a
-	having sum(isnull(a.weight02,0))!=0 and sum(isnull(a.total02,0))!=0
+	having not(sum(isnull(a.weight02,0))=0 and sum(isnull(a.total02,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'B003' sorder,'' product,'本期完工投入' item,sum(isnull(a.weight03,0)) mount,sum(isnull(a.total03,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'B003' sorder,'' product,'加','本期完工投入' item,sum(isnull(a.weight03,0)) mount,sum(isnull(a.total03,0)) [money]
 	from #z_cub_rkp04 a
-	having sum(isnull(a.weight03,0))!=0 and sum(isnull(a.total03,0))!=0
+	having not(sum(isnull(a.weight03,0))=0 and sum(isnull(a.total03,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'B004' sorder,'' product,'本期耗料' item,sum(isnull(a.weight04,0)) mount,sum(isnull(a.total04,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'B004' sorder,'' product,'減','本期耗料' item,sum(isnull(a.weight04,0)) mount,sum(isnull(a.total04,0)) [money]
 	from #z_cub_rkp04 a
-	having sum(isnull(a.weight04,0))!=0 and sum(isnull(a.total04,0))!=0
+	having not(sum(isnull(a.weight04,0))=0 and sum(isnull(a.total04,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'B005' sorder,'' product,'本期樣品' item,sum(isnull(a.weight05,0)) mount,sum(isnull(a.total05,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'B005' sorder,'' product,'減','本期樣品' item,sum(isnull(a.weight05,0)) mount,sum(isnull(a.total05,0)) [money]
 	from #z_cub_rkp04 a
-	having sum(isnull(a.weight05,0))!=0 and sum(isnull(a.total05,0))!=0
+	having not(sum(isnull(a.weight05,0))=0 and sum(isnull(a.total05,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'B006' sorder,'' product,'本期報廢' item,sum(isnull(a.weight06,0)) mount,sum(isnull(a.total06,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'B006' sorder,'' product,'減','本期報廢' item,sum(isnull(a.weight06,0)) mount,sum(isnull(a.total06,0)) [money]
 	from #z_cub_rkp04 a
-	having sum(isnull(a.weight06,0))!=0 and sum(isnull(a.total06,0))!=0
+	having not(sum(isnull(a.weight06,0))=0 and sum(isnull(a.total06,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'B007' sorder,'' product,'本期領用' item,sum(isnull(a.weight07,0)) mount,sum(isnull(a.total07,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'B007' sorder,'' product,'減','本期領用' item,sum(isnull(a.weight07,0)) mount,sum(isnull(a.total07,0)) [money]
 	from #z_cub_rkp04 a
-	having sum(isnull(a.weight07,0))!=0 and sum(isnull(a.total07,0))!=0
+	having not(sum(isnull(a.weight07,0))=0 and sum(isnull(a.total07,0))=0)
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,'B008' sorder,'' product,'期末存貨' item,sum(isnull(a.weight10,0)) mount,sum(isnull(a.total10,0)) [money]
 	from #z_cub_rkp04 a
-	--having sum(isnull(a.weight10,0))!=0 and sum(isnull(a.total10,0))!=0
 	
 
 	--製成品彙總表 
@@ -1746,71 +1745,70 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,'C001' sorder,'' product,'期初存貨' item,sum(isnull(a.w01,0)) mount,sum(isnull(a.m01,0)) [money]
 	from @tmp a
-	--having sum(isnull(a.w01,0))!=0 and sum(isnull(a.m01,0))!=0
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'進貨' item,sum(isnull(a.w02,0)) mount,sum(isnull(a.m02,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'加','進貨' item,sum(isnull(a.w02,0)) mount,sum(isnull(a.m02,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w02,0))!=0 and sum(isnull(a.m02,0))!=0
+	having not(sum(isnull(a.w02,0))=0 and sum(isnull(a.m02,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'進貨退回' item,sum(isnull(a.w03,0)) mount,sum(isnull(a.m03,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'減','進貨退回' item,sum(isnull(a.w03,0)) mount,sum(isnull(a.m03,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w03,0))!=0 and sum(isnull(a.m03,0))!=0
+	having not(sum(isnull(a.w03,0))=0 and sum(isnull(a.m03,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'入庫' item,sum(isnull(a.w04,0)) mount,sum(isnull(a.m04,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'加','入庫' item,sum(isnull(a.w04,0)) mount,sum(isnull(a.m04,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w04,0))!=0 and sum(isnull(a.m04,0))!=0
+	having not(sum(isnull(a.w04,0))=0 and sum(isnull(a.m04,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'成品進倉' item,sum(isnull(a.w05,0)) mount,sum(isnull(a.m05,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'加','成品進倉' item,sum(isnull(a.w05,0)) mount,sum(isnull(a.m05,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w05,0))!=0 and sum(isnull(a.m05,0))!=0
+	having not(sum(isnull(a.w05,0))=0 and sum(isnull(a.m05,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'領料' item,sum(isnull(a.w08a,0)+isnull(a.w09,0)) mount,sum(isnull(a.m08a,0)+isnull(a.m09,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'減','領料' item,sum(isnull(a.w08a,0)+isnull(a.w09,0)) mount,sum(isnull(a.m08a,0)+isnull(a.m09,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w08a,0)+isnull(a.w09,0))!=0 and sum(isnull(a.m08a,0)+isnull(a.m09,0))!=0
+	having not(sum(isnull(a.w08a,0)+isnull(a.w09,0))=0 and sum(isnull(a.m08a,0)+isnull(a.m09,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'盤點' item,sum(isnull(a.w08b,0)) mount,sum(isnull(a.m08b,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'加','盤點' item,sum(isnull(a.w08b,0)) mount,sum(isnull(a.m08b,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w08b,0))!=0 and sum(isnull(a.m08b,0))!=0
+	having not(sum(isnull(a.w08b,0))=0 and sum(isnull(a.m08b,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'報廢' item,sum(isnull(a.w08c,0)) mount,sum(isnull(a.m08c,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'減','報廢' item,sum(isnull(a.w08c,0)) mount,sum(isnull(a.m08c,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w08c,0))!=0 and sum(isnull(a.m08c,0))!=0
+	having not(sum(isnull(a.w08c,0))=0 and sum(isnull(a.m08c,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'樣品' item,sum(isnull(a.w08d,0)) mount,sum(isnull(a.m08d,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'減','樣品' item,sum(isnull(a.w08d,0)) mount,sum(isnull(a.m08d,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w08d,0))!=0 and sum(isnull(a.m08d,0))!=0
+	having not(sum(isnull(a.w08d,0))=0 and sum(isnull(a.m08d,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'出貨' item,sum(isnull(a.w06,0)) mount,sum(isnull(a.m06,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'減','出貨' item,sum(isnull(a.w06,0)) mount,sum(isnull(a.m06,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w06,0))!=0 and sum(isnull(a.m06,0))!=0
+	having not(sum(isnull(a.w06,0))=0 and sum(isnull(a.m06,0))=0)
 
-	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
-	select  '1',1,'C001' sorder,'' product,'出貨退回' item,sum(isnull(a.w07,0)) mount,sum(isnull(a.m07,0)) [money]
+	insert into @tmpa(gno,pno,sorder,product,typea,item,mount,[money])
+	select  '1',1,'C001' sorder,'' product,'加','出貨退回' item,sum(isnull(a.w07,0)) mount,sum(isnull(a.m07,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w07,0))!=0 and sum(isnull(a.m07,0))!=0
+	having not(sum(isnull(a.w07,0))=0 and sum(isnull(a.m07,0))=0)
 
 	insert into @tmpa(gno,pno,sorder,product,item,mount,[money])
 	select  '1',1,'C001' sorder,'' product,'期末存貨' item,sum(isnull(a.w10,0)) mount,sum(isnull(a.m10,0)) [money]
 	from @tmp a
-	having sum(isnull(a.w10,0))!=0 and sum(isnull(a.m10,0))!=0
 	
 	update @tmpa set price = case when isnull([mount],0)=0 then 0 else round(isnull([money],0)/isnull([mount],0),2) end 
 
 	select gno
 		, product a01
-		, item a02
-		, dbo.getComma(mount,-1) a03
-		, dbo.getComma(price,-1) a04
-		, dbo.getComma([money],-1) a05
+		, typea a02
+		, item a03
+		, dbo.getComma(mount,-1) a04
+		, dbo.getComma(price,-1) a05
+		, dbo.getComma([money],-1) a06
 	from @tmpa	
 	order by sorder
 
