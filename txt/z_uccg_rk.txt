@@ -1716,11 +1716,21 @@ z_uccg_rk01:-- z_uccg_rk01 原物料彙總明細表
 	update #z_uccg_rk01 set price12 = round(total12/weight12,3) where weight12!=0
 
 
+	--當庫存數量為0時  金額一律為0 不顯是負數金額
+	update #z_uccg_rk01 set total01=0 where gno=1 and weight01=0  --期初
+	update #z_uccg_rk01 set total02=0 where gno=1 and weight02=0  --盤點調整
+	update #z_uccg_rk01 set total12=0 where gno=1 and weight12=0  --期末
+
+	update #z_uccg_rk01 set total01=0 where gno=2 and weight01=0  --期初
+	update #z_uccg_rk01 set total02=0 where gno=2 and weight02=0  --盤點調整
+	update #z_uccg_rk01 set total12=0 where gno=2 and weight12=0  --期末
+
 --delete stbk.dbo._tmp01
 --insert into stbk.dbo._tmp01(uno,mount,weight,price,total)
 --select uno,mount12,weight12,price12,total12 from @tmp a where gno!='2' order by a.pno,a.uno
 --return
 	
+
 	
 	select	ROW_NUMBER()over(order by a.pno,a.uno) rr
 		,a.gno
