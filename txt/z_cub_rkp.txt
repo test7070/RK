@@ -1266,7 +1266,7 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	from @tmp a
 	left join @tmp08 b on a.uno=b.uno 
 	where b.uno is not null 
-	
+
 	insert into @tmp(gno,pno,uno,w08,m08
 		,w08a,m08a,w08b,m08b,w08c,m08c,w08d,m08d)
 	select '1',1,a.uno,a.weight,a.total
@@ -2545,6 +2545,8 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp08 b on a.uno=b.uno 
 	where b.uno is not null 
 	
+	update @tmp set w08b=0,m08b=0 where w08b<0  ---只顯示正數
+
 	insert into @tmp(gno,pno,uno,w08,m08
 		,w08a,m08a,w08b,m08b,w08c,m08c,w08d,m08d)
 	select '1',1,a.uno,a.weight,a.total
