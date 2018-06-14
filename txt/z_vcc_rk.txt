@@ -221,8 +221,10 @@ z_vcc_rk02:--z_vcc_rk02
 	left join (select sel, ROW_NUMBER()over(order by noa,noq) recno from @tmp ) b on a.sel=b.sel
 	
 	insert into @tmp(gno,mount,[weight],[money],[tmoney],lengthc,mweight)
-	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)),sum(isnull([tmoney],0)),sum(isnull([lengthc],0)) ,sum(isnull([mweight],0)) 
-	from @tmp
+	--select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)),sum(isnull([tmoney],0)),sum(isnull([lengthc],0)) ,sum(isnull([mweight],0)) from @tmp
+	select '2',sum(isnull(mount,0)),sum(isnull([weight],0)),sum(isnull([money],0)),0,sum(isnull([lengthc],0)) ,sum(isnull([mweight],0)) from @tmp
+	update @tmp set tmoney=(select sum(Totalus) from view_vcc where (datea between @t_bdate and @t_edate) and (custno between @t_bcustno and @t_ecustno)) from @tmp where gno='2' ---原幣單價 直接抓出貨單的金額，避免小數位差額
+	
 
 	select  gno
 		,"<a href="+CHAR(34)+"JavaScript:q_box('vcc_rk.aspx',' "+CHAR(59)+"noa=\'"+noa+"\'','95%','95%','"+accy+"')"+char(34)+">"+cast(recno as nvarchar)+"</a>" rr
