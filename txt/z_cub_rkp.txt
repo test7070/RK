@@ -3,7 +3,6 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 	declare @cmd nvarchar(max)
 	declare @t_path nvarchar(max) = '[1]'
 	declare @t_db nvarchar(max) = '[2]'
-	
 	declare @t_bdate nvarchar(max) = case when '#non' = [4] then '' else [4] end
 	declare @t_edate nvarchar(max) = case when '#non' = [5] then char(255) else [5] end
 	-----------------------------------------------------------------------------------------------------------------------------------
@@ -25,66 +24,18 @@ z_cub_rkp11:--z_cub_rkp11	營業成本表
 		,gno nvarchar(20)
 		,pno int
 		,uno nvarchar(20)
-		--期初存貨
-		,mount01 decimal(20,5)
-		,weight01 decimal(20,5)
-		,price01 decimal(20,5)
-		,total01 decimal(20,5)
-		--盤點調整   
-		,mount02 decimal(20,5)
-		,weight02 decimal(20,5)
-		,price02 decimal(20,5)
-		,total02 decimal(20,5)
-		--本期購入  
-		,mount03 decimal(20,5)
-		,weight03 decimal(20,5)
-		,price03 decimal(20,5)
-		,total03 decimal(20,5)
-		--本期耗料
-		,mount04 decimal(20,5)
-		,weight04 decimal(20,5)
-		,price04 decimal(20,5)
-		,total04 decimal(20,5)	
-		--本期領料	
-		,mount05 decimal(20,5)
-		,weight05 decimal(20,5)
-		,price05 decimal(20,5)
-		,total05 decimal(20,5)
-		--本期自調入
-		,mount06 decimal(20,5)
-		,weight06 decimal(20,5)
-		,price06 decimal(20,5)
-		,total06 decimal(20,5)
-		--本期自調用料
-		,mount07 decimal(20,5)
-		,weight07 decimal(20,5)
-		,price07 decimal(20,5)
-		,total07 decimal(20,5)
-		--本期銷貨
-		,mount08 decimal(20,5)
-		,weight08 decimal(20,5)
-		,price08 decimal(20,5)
-		,total08 decimal(20,5)
-		--本期銷貨退回	
-		,mount09 decimal(20,5)
-		,weight09 decimal(20,5)
-		,price09 decimal(20,5)
-		,total09 decimal(20,5)
-		--本期報廢	
-		,mount10 decimal(20,5)
-		,weight10 decimal(20,5)
-		,price10 decimal(20,5)
-		,total10 decimal(20,5)
-		--本期退料
-		,mount11 decimal(20,5)
-		,weight11 decimal(20,5)
-		,price11 decimal(20,5)
-		,total11 decimal(20,5)	
-		--期末存貨
-		,mount12 decimal(20,5)
-		,weight12 decimal(20,5)
-		,price12 decimal(20,5)
-		,total12 decimal(20,5)	
+		,mount01 decimal(20,5) ,weight01 decimal(20,5) ,price01 decimal(20,5) ,total01 decimal(20,5)    --期初存貨
+		,mount02 decimal(20,5) ,weight02 decimal(20,5) ,price02 decimal(20,5) ,total02 decimal(20,5)    --盤點調整
+		,mount03 decimal(20,5) ,weight03 decimal(20,5) ,price03 decimal(20,5) ,total03 decimal(20,5)    --本期購入
+		,mount04 decimal(20,5) ,weight04 decimal(20,5) ,price04 decimal(20,5) ,total04 decimal(20,5)	--本期耗料
+		,mount05 decimal(20,5) ,weight05 decimal(20,5) ,price05 decimal(20,5) ,total05 decimal(20,5)    --本期領料
+		,mount06 decimal(20,5) ,weight06 decimal(20,5) ,price06 decimal(20,5) ,total06 decimal(20,5)    --本期自調入
+		,mount07 decimal(20,5) ,weight07 decimal(20,5) ,price07 decimal(20,5) ,total07 decimal(20,5)    --本期自調用料
+		,mount08 decimal(20,5) ,weight08 decimal(20,5) ,price08 decimal(20,5) ,total08 decimal(20,5)    --本期銷貨
+		,mount09 decimal(20,5) ,weight09 decimal(20,5) ,price09 decimal(20,5) ,total09 decimal(20,5)    --本期銷貨退回
+		,mount10 decimal(20,5) ,weight10 decimal(20,5) ,price10 decimal(20,5) ,total10 decimal(20,5)    --本期報廢
+		,mount11 decimal(20,5) ,weight11 decimal(20,5) ,price11 decimal(20,5) ,total11 decimal(20,5)	--本期退料
+		,mount12 decimal(20,5) ,weight12 decimal(20,5) ,price12 decimal(20,5) ,total12 decimal(20,5)	--期末存貨
 	)
 	--===============================================================================================
 	--期初存貨
@@ -2495,18 +2446,14 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp08 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	update @tmp set w08b=w08b*(-2),m08b=m08b*(-2) where w08b<0  ---只顯示正數
+	update @tmp set w08b=w08b*(-1),m08b=m08b*(-1) where w08b<0  ---修改成 顯示正數
 
-	insert into @tmp(gno,pno,uno,w08,m08
-		,w08a,m08a,w08b,m08b,w08c,m08c,w08d,m08d)
-	select '1',1,a.uno,a.weight,a.total
-		,a.wa,a.ma,a.wb,a.mb,a.wc,a.mc,a.wd,a.md
+	insert into @tmp(gno,pno,uno,w08,m08,w08a,m08a,w08b,m08b,w08c,m08c,w08d,m08d)
+	select '1',1,a.uno,a.weight,a.total,a.wa,a.ma,a.wb,a.mb,a.wc,a.mc,a.wd,a.md
 	from @tmp08 a
 	left join @tmp b on a.uno=b.uno
 	where b.uno is null
-	--
-	
-		
+
 	--領料(CUBT)
 	declare @tmp09 table(
 		uno nvarchar(20)
@@ -2514,9 +2461,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,total float
 	)
 	insert into @tmp09(uno,weight,total)
-	select a.uno
-		,SUM(case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end) weight
-		,SUM(a.scost) total
+	select a.uno ,SUM(case when isnull(a.gweight,0)!=0 then a.gweight else a.weight end) weight ,SUM(a.scost) total
 	from view_cubt a
 	left join view_cub b on a.accy=b.accy and a.noa=b.noa
 	left join view_uccb c on a.uno=c.uno
