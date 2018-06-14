@@ -2977,6 +2977,8 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		and isnull(weight10,0)=0 and ISNULL(total10,0)=0
 		and (isnull(weight04,0)=-isnull(weight07,0) and ISNULL(total04,0)=-ISNULL(total07,0))
 		
+
+	update #z_cub_rkp04 set weight04=0,price04=0,total04=0 where weight04<0 and gno='1'  		---更新庫存數是負數的為0
 	-- 期初資料排在前面 itema
 	update #z_cub_rkp04 set recno= b.recno
 	from #z_cub_rkp04 a
@@ -3002,52 +3004,28 @@ z_cub_rkp04:--z_cub_rkp04	在製品彙總表
 		,sum(isnull(total05,0)),sum(isnull(total06,0)),sum(isnull(total07,0)),sum(isnull(total10,0))
 		,sum(isnull(mins,0))
 	from #z_cub_rkp04	
-
+	update #z_cub_rkp04 set weight04=0,price04=0,total04=0 where weight04<0 and gno='2'  		---更新庫存數是負數的為0
 	select gno
 		,'日期：'+case when @t_bdate=@t_edate then @t_bdate else @t_bdate+' ~ '+@t_edate end aa
-		,recno rr
-		,dime a01
-		,radius a02
-		,width a03
-		,lengthb a04
-		,pvcno a05
-		,makeno a06
-		,tmakeno a06a
-		,cust a07
-		,cspec a08
-		--期初存貨								
-		,dbo.getComma(weight01,-1) a09
-		,dbo.getComma(price01,4) a10
-		,dbo.getComma(total01,-1) a11
-		--盤點調整			
-		,dbo.getComma(weight02,-1) a12
-		,dbo.getComma(price02,4) a13
-		,dbo.getComma(total02,-1) a14
-		--本期完工投入
-		,dbo.getComma(weight03,-1) a15
-		,dbo.getComma(price03,4) a16
-		,dbo.getComma(total03,-1) a17			
-		--本期耗料
-		,dbo.getComma(weight04,-1) a18
-		,dbo.getComma(price04,4) a19
-		,dbo.getComma(total04,-1) a20			
-		--本期樣品 
-		,dbo.getComma(weight05,-1) a21
-		,dbo.getComma(price05,4) a22
-		,dbo.getComma(total05,-1) a23
-		--本期報廢	
-		,dbo.getComma(weight06,-1) a24
-		,dbo.getComma(price06,4) a25
-		,dbo.getComma(total06,-1) a26	
-		--本期領用
-		,dbo.getComma(weight07,-1) a27
-		,dbo.getComma(price07,4) a28
-		,dbo.getComma(total07,-1) a29
-		--期末存貨
-		,dbo.getComma(weight10,-1) a30
-		,dbo.getComma(price10,4) a31
-		,dbo.getComma(total10,-1) a32
-		,mins t01
+		,recno rr 
+		,dime a01 
+		,radius a02 
+		,width a03 
+		,lengthb a04 
+		,pvcno a05 
+		,makeno a06 
+		,tmakeno a06a 
+		,cust a07 
+		,cspec a08 
+		,dbo.getComma(weight01,-1) a09 ,dbo.getComma(price01,4) a10 ,dbo.getComma(total01,-1) a11 --期初存貨
+		,dbo.getComma(weight02,-1) a12 ,dbo.getComma(price02,4) a13 ,dbo.getComma(total02,-1) a14 --盤點調整
+		,dbo.getComma(weight03,-1) a15 ,dbo.getComma(price03,4) a16 ,dbo.getComma(total03,-1) a17 --本期完工投入
+		,dbo.getComma(weight04,-1) a18 ,dbo.getComma(price04,4) a19 ,dbo.getComma(total04,-1) a20 --本期耗料
+		,dbo.getComma(weight05,-1) a21 ,dbo.getComma(price05,4) a22 ,dbo.getComma(total05,-1) a23 --本期樣品
+		,dbo.getComma(weight06,-1) a24 ,dbo.getComma(price06,4) a25 ,dbo.getComma(total06,-1) a26 --本期報廢
+		,dbo.getComma(weight07,-1) a27 ,dbo.getComma(price07,4) a28 ,dbo.getComma(total07,-1) a29 --本期領用 
+		,dbo.getComma(weight10,-1) a30 ,dbo.getComma(price10,4) a31 ,dbo.getComma(total10,-1) a32 --期末存貨
+		,mins t01 
 	from #z_cub_rkp04 order by pno,recno
 	drop table #z_cub_rkp04;
 	
