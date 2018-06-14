@@ -2161,67 +2161,25 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		,[weight] float
 		,[money] float
 		,[price] float
-		
-		--期初存貨
-		,w01 float
-		,p01 float
-		,m01 float
-		--進貨(RC2S)
-		,w02 float
-		,p02 float
-		,m02 float
-		--進貨退回(RC2S)
-		,w03 float
-		,p03 float
-		,m03 float
-		--入庫(INAS)
-		,w04 float
-		,p04 float
-		,m04 float
-		--成品進倉(CUTS)
-		,w05 float
-		,p05 float
-		,m05 float
-		--出貨(VCCS)
-		,w06 float
-		,p06 float
-		,m06 float
+
+		,w01 float ,p01 float ,m01 float  --期初存貨
+		,w02 float ,p02 float ,m02 float  --進貨(RC2S)
+		,w03 float ,p03 float ,m03 float  --進貨退回(RC2S)
+		,w04 float ,p04 float ,m04 float  --入庫(INAS)
+		,w05 float ,p05 float ,m05 float  --成品進倉(CUTS)
+		,w06 float ,p06 float ,m06 float  --出貨(VCCS)
 		,vccprice float -- 銷售單價
 		,vccmoney float -- 銷售金額
 		,profit float -- 毛利
-		--出貨退回(VCCS)
-		,w07 float
-		,p07 float
-		,m07 float
+		,w07 float ,p07 float ,m07 float  --出貨退回(VCCS)
 		,bkmoney float -- 退貨金額
-		--領料(GETS)
-		,w08 float
-		,p08 float
-		,m08 float
-		----領料
-		,w08a float
-		,p08a float
-		,m08a float
-		----盤點	
-		,w08b float
-		,p08b float
-		,m08b float
-		----報廢
-		,w08c float
-		,p08c float
-		,m08c float
-		----樣品
-		,w08d float
-		,p08d float
-		,m08d float
-		--領料(CUBT)
-		,w09 float
-		,p09 float
-		,m09 float	
-		--期末存貨		
-		,w10 float
-		,p10 float
-		,m10 float
+		,w08 float ,p08 float ,m08 float  --領料(GETS)
+		,w08a float ,p08a float ,m08a float  ----領料
+		,w08b float ,p08b float ,m08b float  ----盤點
+		,w08c float ,p08c float ,m08c float  ----報廢
+		,w08d float ,p08d float ,m08d float  ----樣品
+		,w09 float ,p09 float ,m09 float	--領料(CUBT)
+		,w10 float ,p10 float ,m10 float  --期末存貨
 	)
 	insert into @tmp(gno,pno,datea,typea,dime,radius,width,lengthb,pvcno,makeno,uno,accy,noa,noq
 		,ordeaccy,ordeno,no2,[weight],[money],cust)
@@ -2483,18 +2441,10 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 		uno nvarchar(20)
 		,weight float
 		,total float
-		
-		,wa float
-		,ma float
-		----盤點
-		,wb float
-		,mb float
-		----報廢
-		,wc float
-		,mc float
-		----樣品
-		,wd float
-		,md float
+		,wa float ,ma float
+		,wb float ,mb float  ----盤點
+		,wc float ,mc float  ----報廢
+		,wd float ,md float  ----樣品
 	)
 	insert into @tmp08(uno,weight,total
 		,wa,ma,wb,mb,wc,mc,wd,md)
@@ -2545,7 +2495,7 @@ z_cub_rkp08:--z_cub_rkp08	製成品彙總表
 	left join @tmp08 b on a.uno=b.uno 
 	where b.uno is not null 
 	
-	update @tmp set w08b=0,m08b=0 where w08b<0  ---只顯示正數
+	update @tmp set w08b=w08b*(-2),m08b=m08b*(-2) where w08b<0  ---只顯示正數
 
 	insert into @tmp(gno,pno,uno,w08,m08
 		,w08a,m08a,w08b,m08b,w08c,m08c,w08d,m08d)
