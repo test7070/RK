@@ -503,7 +503,7 @@
 						<td style="width:100px; color:black;"><a>單號</a></td>
 					</tr>
 					<tr>
-						<td><input id="chkBrow.*" type="checkbox" style=''/></td>
+						<td><input id="chkBrow.*" type="checkbox" style=""/></td>
 						<td id='datea' style="text-align: center;">~datea</td>
 						<td id='noa' style="text-align: center;">~noa</td>
 					</tr>
@@ -561,7 +561,7 @@
 						<td>
 							<input class="txt" id="txtProductno.*" type="text" style="width:40%;float:left;"/>
 							<input class="txt" id="txtProduct.*" type="text" style="width:55%;float:left;"/>
-							<input id="btnProduct.*" type="button" style="display:none;">
+							<input id="btnProduct.*" type="button" style="display:none;"/>
 						</td>
 						<td><input id="txtMount.*" type="text" class="num" style="float:left;width:95%;"/></td>
 						<td><input id="txtWeight.*" type="text" class="num" style="float:left;width:95%;"/></td>
